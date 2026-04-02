@@ -12,5 +12,10 @@
       "myui/*": ["src/*", "*"]
     }
   },
-  "include": [".dumirc.ts", ".fatherrc.ts", "src/**/*"]
+  "include": [
+    "src/**/*", // 必须有这个！确保 TS 能扫描到 src 下的 typings.d.ts
+    ".dumi/**/*",
+    "docs/**/*",
+    ".eslintrc.js"
+  ]
 }

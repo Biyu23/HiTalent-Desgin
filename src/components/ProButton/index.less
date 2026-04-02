@@ -1,12 +1,10 @@
-@import '../style/variables.less';
+@import '../../style/variables.less';
 
-// 使用 Less 的插值语法 @{...} 来动态生成选择器
 .@{custom-prefix}-pro-btn {
-  border-radius: 6px;
+  padding: 4px 12px;
 
-  &-text {
-    // 对应 JS 里的 `${prefixCls}-text`
-    margin-right: 8px;
-    color: red;
+  &-placement-top,
+  &-placement-bottom {
+    height: auto;
   }
 }
