@@ -20,6 +20,7 @@ const Selector: React.FC<SelectorProps> = (props) => {
     ellipsis,
     allowClear = true,
     hasValue,
+    showArrow = true,
     onClear,
   } = props;
   const prefixCls = usePrefixCls('popover-selector');
@@ -28,6 +29,35 @@ const Selector: React.FC<SelectorProps> = (props) => {
     value,
     onChange,
   });
+
+  const renderChildren = () => {
+    if (typeof children === 'function') {
+      return children();
+    }
+    return (
+      <Typography.Paragraph className={`${prefixCls}-text`} ellipsis={ellipsis}>
+        {children}
+      </Typography.Paragraph>
+    );
+  };
+
+  const renderClearIcon = () => {
+    if (!allowClear || !hasValue) return null;
+    return (
+      <CloseCircleOutlined
+        className={`${prefixCls}-clear`}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClear?.(e);
+        }}
+      />
+    );
+  };
+
+  const renderArrow = () => {
+    if (!showArrow) return null;
+    return <DownOutlined className={`${prefixCls}-arrow`} />;
+  };
 
   return withNativeProps(
     props,
@@ -52,23 +82,9 @@ const Selector: React.FC<SelectorProps> = (props) => {
           [`${prefixCls}-active-btn`]: hasValue,
         })}
       >
-        <Typography.Paragraph
-          className={`${prefixCls}-text`}
-          ellipsis={ellipsis}
-        >
-          {children}
-        </Typography.Paragraph>
-        {allowClear && hasValue ? (
-          <CloseCircleOutlined
-            className={`${prefixCls}-clear`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onClear?.(e);
-            }}
-          />
-        ) : (
-          <DownOutlined className={`${prefixCls}-arrow`} />
-        )}
+        {renderChildren()}
+        {renderClearIcon()}
+        {renderArrow()}
       </Button>
     </Popover>,
   );

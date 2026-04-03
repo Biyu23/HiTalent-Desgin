@@ -62,15 +62,10 @@ const Component = <
 
   const realShowConfirm = mode === 'multiple' && showConfirm;
 
-  //实际提交值
-  const [internalValue, actions] = useMergeState<
-    ValueType[],
-    ValueType | ValueType[]
-  >({
-    value: props.value,
+  const mergeStateConfig: any = {
     defaultValue: props.defaultValue,
     onChange: props.onChange as any,
-    transformToOrigin: (externalVal) => {
+    transformToOrigin: (externalVal: any) => {
       if (externalVal == null) return [];
       if (typeof externalVal === 'string' && valueType === 'string') {
         if (mode === 'multiple') {
@@ -82,7 +77,7 @@ const Component = <
       }
       return Array.isArray(externalVal) ? externalVal : [externalVal];
     },
-    transformToResult: (internalArray) => {
+    transformToResult: (internalArray: any) => {
       if (mode === 'single') {
         return internalArray[0] as ValueType;
       }
@@ -91,7 +86,17 @@ const Component = <
       }
       return internalArray as ValueType[];
     },
-  });
+  };
+
+  //fix bug  受控非受控判断问题
+  if ('value' in props) {
+    mergeStateConfig.value = props.value;
+  }
+  //实际提交值
+  const [internalValue, actions] = useMergeState<
+    ValueType[],
+    ValueType | ValueType[]
+  >(mergeStateConfig);
 
   useEffect(() => {
     if (open) {
@@ -364,6 +369,10 @@ const Component = <
     }
     return selectedOptions.map((opt) => opt.label).join(separator);
   };
+
+  console.log('====================================');
+  console.log(internalValue, draftValue);
+  console.log('====================================');
 
   return withNativeProps(
     props,

@@ -26,6 +26,7 @@ export type SelectorProps = Pick<
     children?: React.ReactNode;
     allowClear?: boolean;
     hasValue?: boolean;
+    showArrow?: boolean;
     onClear?: (e: React.MouseEvent) => void;
   };
 

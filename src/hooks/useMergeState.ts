@@ -26,7 +26,7 @@ export function useMergeState<TOrigin, TResult = TOrigin>(
   } = props;
 
   // 判断是否为受控模式
-  const isControlled = typeof props.value !== 'undefined';
+  const isControlled = 'value' in props;
 
   // 使用 useRef 缓存转换函数，防止外部传入内联函数导致无意义的重渲染
   const transformOriginRef = useRef(transformToOrigin);
