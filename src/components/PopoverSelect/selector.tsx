@@ -2,7 +2,7 @@ import { CloseCircleOutlined, DownOutlined } from '@ant-design/icons';
 import { Button, Popover, Typography } from 'antd';
 import clsx from 'clsx';
 import { usePrefixCls } from 'myui/configProvider/usePrefixCls';
-import { useControllableValue } from 'myui/hooks';
+import { useMergeState } from 'myui/hooks';
 import { withNativeProps } from 'myui/util';
 import React, { memo } from 'react';
 import './index.less';
@@ -23,7 +23,7 @@ const Selector: React.FC<SelectorProps> = (props) => {
     onClear,
   } = props;
   const prefixCls = usePrefixCls('popover-selector');
-  const [open, onOpenChange] = useControllableValue({
+  const [open, { set: onOpenChange }] = useMergeState<boolean>({
     defaultValue: false,
     value,
     onChange,
