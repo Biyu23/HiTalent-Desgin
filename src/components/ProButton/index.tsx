@@ -36,8 +36,8 @@ const ProButton: React.FC<ProButtonProps> = (props) => {
     if (combinedLoading) return;
     const executeClick = async () => {
       if (!onClick) return;
-      const ret = onClick(e);
-      if (autoLoading && ret && typeof (ret as any).then === 'function') {
+      const ret = onClick(e) as any;
+      if (autoLoading && ret && typeof ret.then === 'function') {
         setInnerLoading(true);
         try {
           await ret;
@@ -82,7 +82,7 @@ const ProButton: React.FC<ProButtonProps> = (props) => {
     return (
       <span className={`${prefixCls}-content-wrapper`} style={placementStyles}>
         <span className={`${prefixCls}-icon`}>{icon}</span>
-        {!children && <span>{children}</span>}
+        {!!children && <span>{children}</span>}
       </span>
     );
   };
