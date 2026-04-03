@@ -81,7 +81,9 @@ const ProButton: React.FC<ProButtonProps> = (props) => {
 
     return (
       <span className={`${prefixCls}-content-wrapper`} style={placementStyles}>
-        <span className={`${prefixCls}-icon`}>{icon}</span>
+        {!combinedLoading && (
+          <span className={`${prefixCls}-icon`}>{icon}</span>
+        )}
         {!!children && <span>{children}</span>}
       </span>
     );

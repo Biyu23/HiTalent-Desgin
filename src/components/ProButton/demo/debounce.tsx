@@ -4,20 +4,28 @@
  */
 import { Space, message } from 'antd';
 import { ProButton } from 'myui';
-import React from 'react';
+import React, { useState } from 'react';
 
 export default () => {
-  const handleClick = () => {
-    message.info('触发了点击事件！');
+  const [count, setCount] = useState(0);
+
+  const handleSyncClick = () => {
+    setCount((c) => c + 1);
+    message.info('点击生效！');
   };
+
   return (
-    <Space>
-      <ProButton type="primary" onClick={handleClick} debounce={1000}>
-        防抖测试 (停顿 1s 后触发)
-      </ProButton>
-      <ProButton onClick={handleClick} debounce={0}>
-        无防抖 (狂点测试)
-      </ProButton>
+    <Space direction="vertical">
+      <div style={{ color: '#666' }}>当前数值: {count}</div>
+      <Space>
+        <ProButton
+          type="primary"
+          debounce={1000} // 点击后锁定 1000 毫秒
+          onClick={handleSyncClick}
+        >
+          疯狂点击我测试 (防抖 1000ms)
+        </ProButton>
+      </Space>
     </Space>
   );
 };
