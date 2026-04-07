@@ -3,7 +3,7 @@
  * description: 使用 `optionRender` 自定义每一项的长相，使用 `dropdownRender` 在列表外部追加自定义 DOM（如：新增按钮）。
  */
 import { PlusOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Divider, Tag } from 'antd';
+import { Button, Divider, Flex, Tag, Typography } from 'antd';
 import { PopoverSelect } from 'myui';
 import React from 'react';
 import { standardOptions } from './mock';
@@ -15,17 +15,16 @@ export default () => {
         options={standardOptions}
         placeholder="自定义列表与选项"
         optionRender={(item) => (
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <span style={{ flex: 1 }}>
-              <UserOutlined style={{ marginRight: 8, color: '#1677ff' }} />
+          <Flex align="center" gap={6} style={{ width: '100%' }}>
+            <UserOutlined style={{ color: '#1677ff' }} />
+            <Typography.Text
+              ellipsis={{
+                tooltip: item.label,
+              }}
+              style={{ flex: 1 }}
+            >
               {item.label}
-            </span>
+            </Typography.Text>
             {item.value === 'FE' && (
               <Tag
                 color="blue"
@@ -36,7 +35,7 @@ export default () => {
                 热门
               </Tag>
             )}
-          </div>
+          </Flex>
         )}
         // 2. 接管整个下拉面板
         dropdownRender={(menu) => (

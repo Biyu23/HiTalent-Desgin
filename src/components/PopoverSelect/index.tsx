@@ -198,7 +198,13 @@ const Component = <
   const renderItem = (item: OptionType) => {
     const targetValueList = realShowConfirm ? draftValue : internalValue;
     const isChecked = targetValueList.includes(item.value);
-    const labelNode = optionRender ? optionRender(item) : item.label;
+    const labelNode = optionRender ? (
+      optionRender(item)
+    ) : (
+      <Typography.Text ellipsis={{ tooltip: item.label }}>
+        {item.label}
+      </Typography.Text>
+    );
     return mode === 'multiple' ? (
       <Checkbox
         key={item.value}
@@ -208,9 +214,7 @@ const Component = <
         onChange={handleChange}
         className={`${prefixCls}-menu-checkbox`}
       >
-        <Typography.Text ellipsis={{ tooltip: item.label }}>
-          {labelNode}
-        </Typography.Text>
+        {labelNode}
       </Checkbox>
     ) : (
       <div
@@ -225,12 +229,7 @@ const Component = <
           [`${prefixCls}-menu-radio-active`]: isChecked,
         })}
       >
-        <Typography.Text
-          ellipsis={{ tooltip: item.label }}
-          style={{ color: 'inherit' }}
-        >
-          {labelNode}
-        </Typography.Text>
+        {labelNode}
       </div>
     );
   };
