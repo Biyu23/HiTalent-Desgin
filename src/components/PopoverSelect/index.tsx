@@ -11,6 +11,7 @@ import {
   Typography,
 } from 'antd';
 import clsx from 'clsx';
+import { useLocale } from 'myui/configProvider/useLocale';
 import { usePrefixCls } from 'myui/configProvider/usePrefixCls';
 import { useFieldNames, useMergeState } from 'myui/hooks';
 import { attachPropertiesToComponent, withNativeProps } from 'myui/util';
@@ -31,12 +32,13 @@ const Component = <
   props: PopoverSelectProps<ValueType, OptionType>,
 ) => {
   const prefixCls = usePrefixCls('popover-select');
+  const componentLocale = useLocale('PopoverSelect');
   const {
     options: optionsProp = [],
     fieldNames: customFieldNames,
     mode = 'single',
     dropdownRender,
-    placeholder = '请选择',
+    placeholder = componentLocale['placeholder'],
     allowClear = false,
     showConfirm = mode === 'multiple',
     className,
@@ -270,12 +272,12 @@ const Component = <
     const actionsBtn = [
       showClearBtn && (
         <Button key="clear" size="small" onClick={handleDraftClear}>
-          清空
+          {componentLocale['clearAll']}
         </Button>
       ),
       showCancelBtn && (
         <Button key="cancel" size="small" onClick={handleCancel}>
-          取消
+          {componentLocale['cancel']}
         </Button>
       ),
       realShowConfirm && (
@@ -285,7 +287,7 @@ const Component = <
           size="small"
           onClick={handleConfirm}
         >
-          确认
+          {componentLocale['confirm']}
         </Button>
       ),
     ].filter(Boolean);
@@ -296,7 +298,7 @@ const Component = <
           <div className={`${prefixCls}-search`}>
             <Input
               prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
-              placeholder="请输入搜索内容"
+              placeholder={componentLocale['xxx']}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               allowClear
@@ -312,7 +314,7 @@ const Component = <
               indeterminate={isPartiallySelected}
               onChange={handleSelectAll}
             >
-              全选
+              {componentLocale['selectAll']}
             </Checkbox>
           </div>
         )}
@@ -320,7 +322,7 @@ const Component = <
         {displayOptions.length === 0 ? (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description="无匹配结果"
+            description={componentLocale['noMatch']}
             style={{ padding: '16px 0' }}
           />
         ) : (
@@ -368,10 +370,6 @@ const Component = <
     }
     return selectedOptions.map((opt) => opt.label).join(separator);
   };
-
-  console.log('====================================');
-  console.log(internalValue, draftValue);
-  console.log('====================================');
 
   return withNativeProps(
     props,

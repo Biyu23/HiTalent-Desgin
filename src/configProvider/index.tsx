@@ -7,11 +7,13 @@ export interface CustomConfigProviderProps extends ConfigContextProps {
 
 export const CustomConfigProvider: React.FC<CustomConfigProviderProps> = ({
   prefixCls,
+  locale,
   children,
 }) => {
   // 合并用户传入的配置和默认配置
   const config = {
     prefixCls: prefixCls || 'my-ui',
+    locale,
   };
 
   return (
