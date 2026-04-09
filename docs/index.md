@@ -1,22 +1,14 @@
 ---
 hero:
-  title: library
-  description: A react library developed with dumi
+  title: myui
+  description: xxxx
   actions:
-    - text: Hello
-      link: /
-    - text: World
-      link: /
+    - text: 开始使用
+      link: /guide
+    - text: 组件列表
+      link: /components/pro-button
 features:
-  - title: Hello
+  - title: 开箱即用
     emoji: 💎
-    description: Put hello description here
-  - title: World
-    emoji: 🌈
-    description: Put world description here
-  - title: '!'
-    emoji: 🚀
-    description: Put ! description here
+    description: 深度封装 antd 复杂业务场景
 ---
-
-myui

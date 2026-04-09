@@ -14,7 +14,11 @@ import clsx from 'clsx';
 import { useLocale } from 'myui/configProvider/useLocale';
 import { usePrefixCls } from 'myui/configProvider/usePrefixCls';
 import { useFieldNames, useMergeState } from 'myui/hooks';
-import { attachPropertiesToComponent, withNativeProps } from 'myui/util';
+import {
+  attachPropertiesToComponent,
+  isNullOrBlank,
+  withNativeProps,
+} from 'myui/util';
 import VirtualList from 'rc-virtual-list';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import './index.less';
@@ -68,7 +72,7 @@ const Component = <
     defaultValue: props.defaultValue,
     onChange: props.onChange as any,
     transformToOrigin: (externalVal: any) => {
-      if (externalVal == null) return [];
+      if (isNullOrBlank(externalVal)) return [];
       if (typeof externalVal === 'string' && valueType === 'string') {
         if (mode === 'multiple') {
           return externalVal
@@ -89,7 +93,6 @@ const Component = <
       return internalArray as ValueType[];
     },
   };
-
   //fix bug  受控非受控判断问题
   if ('value' in props) {
     mergeStateConfig.value = props.value;

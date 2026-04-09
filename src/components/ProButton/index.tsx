@@ -14,7 +14,6 @@ const ProButton: React.FC<ProButtonProps> = (props) => {
     icon,
     children,
     loading: propsLoading,
-    className,
     ...restProps
   } = props;
 
@@ -98,7 +97,7 @@ const ProButton: React.FC<ProButtonProps> = (props) => {
       icon={nativeButtonIcon}
       loading={combinedLoading}
       onClick={handleClick}
-      className={clsx(prefixCls, className, {
+      className={clsx(prefixCls, {
         [`${prefixCls}-placement-${iconPosition}`]:
           icon && iconPosition !== 'left',
       })}

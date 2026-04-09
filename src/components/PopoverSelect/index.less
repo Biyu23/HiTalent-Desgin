@@ -7,7 +7,7 @@
         width: 100%;
         max-height: 400px;
         min-width: 150px;
-        padding: 4px 0px;
+        padding: 4px 0;
         overflow-x: hidden;
         overflow-y: auto;
         flex: 1;
@@ -18,8 +18,9 @@
           width: 100%;
           overflow: hidden;
           padding: 5px 18px;
-          color: rgba(0, 0, 0, 0.65);
+          color: rgba(0, 0, 0, 65%);
           transition: background-color 0.2s;
+
           &:hover {
             background-color: #e6f7ff;
           }
@@ -88,14 +89,16 @@
         border-top: 1px solid #f0f0f0;
       }
     }
-    .@{custom-prefix}-popover-select-search{
-      .ant-input-affix-wrapper{
+
+    .@{custom-prefix}-popover-select-search {
+      .ant-input-affix-wrapper {
         padding: 8px 12px;
         border-bottom: 1px solid #f0f0f0;
       }
     }
-    .@{custom-prefix}-popover-select-select-all{
-       padding: 5px 18px;
+
+    .@{custom-prefix}-popover-select-select-all {
+      padding: 5px 18px;
     }
   }
 
@@ -144,7 +147,7 @@
   }
 
   &-open .ant-popover-open {
-    color: rgba(0, 0, 0, 0.65) !important;
+    color: rgba(0, 0, 0, 65%) !important;
     background-color: #fff !important;
   }
 }
