@@ -1,0 +1,157 @@
+@import '../../style/variables.less';
+
+.@{custom-prefix}-pro-modal-minimize-dock-container {
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.@{custom-prefix}-pro-modal-minimize-dock-bottom-right {
+  bottom: 24px;
+  right: 24px;
+  flex-direction: column-reverse;
+}
+.@{custom-prefix}-pro-modal-minimize-dock-bottom-left {
+  bottom: 24px;
+  left: 24px;
+  flex-direction: column-reverse;
+}
+.@{custom-prefix}-pro-modal-minimize-dock-top-right {
+  top: 24px;
+  right: 24px;
+  flex-direction: column;
+}
+
+.@{custom-prefix}-pro-modal {
+  .ant-modal-render {
+    .ant-modal-content {
+      padding: 0;
+
+      .ant-modal-header,
+      .ant-modal-body,
+      .ant-modal-footer {
+        padding: 12px 24px;
+      }
+
+      .ant-modal-header {
+        border-bottom: 1px solid @border-split-color;
+        margin-bottom: 0;
+      }
+
+      .ant-modal-footer {
+        margin-top: 0;
+        border-top: 1px solid @border-split-color;
+      }
+    }
+  }
+
+  // 🌟 2. 最大化丝滑动画过渡
+  &-transition-active {
+    transition: width 0.3s cubic-bezier(0.645, 0.045, 0.355, 1),
+      height 0.3s cubic-bezier(0.645, 0.045, 0.355, 1),
+      top 0.3s cubic-bezier(0.645, 0.045, 0.355, 1),
+      padding 0.3s cubic-bezier(0.645, 0.045, 0.355, 1) !important;
+
+    .ant-modal-content {
+      transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1) !important;
+    }
+  }
+
+  &-header-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 16px;
+
+    &-draggable {
+      cursor: move;
+    }
+  }
+
+  &-title-text {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  &-header-actions {
+    flex-shrink: 0;
+
+    .ant-btn {
+      color: rgba(0, 0, 0, 45%);
+    }
+  }
+
+  //modal最大化
+  &-maximized {
+    top: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+
+    .ant-modal-content {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      border-radius: 0;
+    }
+
+    .ant-modal-body {
+      flex: 1;
+      overflow: auto;
+    }
+
+    .@{custom-prefix}-pro-modal-header-wrapper {
+      cursor: default;
+    }
+  }
+}
+
+// 🌟 3. 悬浮窗样式与出场动画
+.@{custom-prefix}-pro-modal-minimized-dock {
+  pointer-events: auto; // 恢复卡片的鼠标交互
+  width: 280px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 8%), 0 3px 6px -4px rgba(0, 0, 0, 12%),
+    0 9px 28px 8px rgba(0, 0, 0, 5%);
+  border: 1px solid #f0f0f0;
+  overflow: hidden;
+
+  // 最小化出场动画
+  animation: myui-dock-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+  .@{custom-prefix}-pro-modal-minimized-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
+
+    .@{custom-prefix}-pro-modal-title-text {
+      flex: 1;
+      overflow: hidden;
+      margin-right: 12px;
+    }
+  }
+}
+
+@keyframes myui-dock-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
