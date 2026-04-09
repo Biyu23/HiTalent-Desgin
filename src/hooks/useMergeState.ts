@@ -1,18 +1,31 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface UseMergeStateProps<TOrigin, TResult> {
-  /** 外部传入的值 (受控) */
+  /**
+   * 外部传入的值 (受控)
+   */
   value?: TResult;
-  /** 默认初始值 (非受控) */
+
+  /**
+   * 默认初始值 (非受控)
+   */
   defaultValue?: TResult;
-  /** 值改变时的回调 */
+
+  /**
+   * 值改变时的回调
+   */
   onChange?: (value: TResult, ...args: any[]) => void;
-  /** 将外部传入的 TResult 转换为组件内部使用的 TOrigin */
+
+  /**
+   * 将外部传入的 TResult 转换为组件内部使用的 TOrigin
+   */
   transformToOrigin?: (value: TResult | undefined) => TOrigin;
-  /** 将内部使用的 TOrigin 转换为输出给外部的 TResult */
+
+  /**
+   * 将内部使用的 TOrigin 转换为输出给外部的 TResult
+   */
   transformToResult?: (value: TOrigin) => TResult;
 }
-
 export function useMergeState<TOrigin, TResult = TOrigin>(
   props: UseMergeStateProps<TOrigin, TResult>,
 ) {
@@ -78,7 +91,7 @@ export function useMergeState<TOrigin, TResult = TOrigin>(
     (val: TOrigin | ((prev: TOrigin) => TOrigin), ...args: any[]) => {
       const nextValue =
         typeof val === 'function'
-          ? (val as Function)(internalValueRef.current)
+          ? (val as (prev: TOrigin) => TOrigin)(internalValueRef.current)
           : val;
       triggerChange(nextValue, ...args);
     },
