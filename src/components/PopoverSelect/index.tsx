@@ -109,7 +109,7 @@ const Component = <
     } else {
       setSearchValue('');
     }
-  }, [open, internalValue]);
+  }, [open]);
 
   const options = useMemo(() => {
     return optionsProp.map((item) => {
@@ -168,18 +168,19 @@ const Component = <
     }
   };
 
-  const handleChange: CheckboxProps['onChange'] = (event) => {
-    const itemValue = event.target.value;
-    const targetValueList = realShowConfirm ? draftValue : internalValue;
+  const handleValueToggle = (itemValue: ValueType) => {
+    const currentTargetList = realShowConfirm ? draftValue : internalValue;
     let newValues: ValueType[];
+
     if (mode === 'multiple') {
-      const isSelected = targetValueList.includes(itemValue);
+      const isSelected = currentTargetList.includes(itemValue);
       newValues = isSelected
-        ? targetValueList.filter((v) => v !== itemValue)
-        : [...targetValueList, itemValue];
+        ? currentTargetList.filter((v) => v !== itemValue)
+        : [...currentTargetList, itemValue];
     } else {
       newValues = [itemValue];
     }
+
     if (realShowConfirm) {
       setDraftValue(newValues);
     } else {
@@ -191,6 +192,9 @@ const Component = <
     }
   };
 
+  const handleChange: CheckboxProps['onChange'] = (event) => {
+    handleValueToggle(event.target.value as ValueType);
+  };
   const handleConfirm = () => {
     const newOptions = options.filter((opt) => draftValue.includes(opt.value));
     actions.set(draftValue, newOptions);
@@ -224,10 +228,7 @@ const Component = <
     ) : (
       <div
         key={item.value}
-        onClick={() =>
-          !item?.disabled &&
-          handleChange({ target: { value: item.value } } as any)
-        }
+        onClick={() => !item?.disabled && handleValueToggle(item.value)}
         className={clsx({
           [`${prefixCls}-menu-radio`]: true,
           [`${prefixCls}-menu-radio-disabled`]: item?.disabled,
@@ -301,7 +302,7 @@ const Component = <
           <div className={`${prefixCls}-search`}>
             <Input
               prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
-              placeholder={componentLocale['xxx']}
+              placeholder={componentLocale['searchPlaceholder']}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               allowClear

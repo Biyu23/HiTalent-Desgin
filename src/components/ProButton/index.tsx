@@ -33,6 +33,10 @@ const ProButton: React.FC<ProButtonProps> = (props) => {
 
   const handleClick = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
     if (combinedLoading) return;
+
+    if (e.persist) {
+      e.persist();
+    }
     const executeClick = async () => {
       if (!onClick) return;
       const ret = onClick(e) as any;

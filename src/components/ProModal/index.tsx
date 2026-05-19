@@ -2,7 +2,7 @@ import { Modal } from 'antd';
 import clsx from 'clsx';
 import { usePrefixCls } from 'myui/configProvider/usePrefixCls';
 import useDragBounds from 'myui/hooks/useDragBounds';
-import React, { memo, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import Draggable from 'react-draggable';
 import './index.less';
 import MinimizedDock from './minimizedDock';
@@ -32,6 +32,12 @@ const ProModal: React.FC<ProModalProps> = (props) => {
   const [isMinimized, setIsMinimized] = useState(false);
   //拖拽
   const [disabledDrag, setDisabledDrag] = useState(!draggable);
+
+  useEffect(() => {
+    if (!isMaximized) {
+      setDisabledDrag(!draggable);
+    }
+  }, [draggable, isMaximized]);
 
   const {
     dragRef: modalDragRef,
