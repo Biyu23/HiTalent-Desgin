@@ -1,10 +1,12 @@
 import { useContext } from 'react';
-import { zh_CN } from '../locales';
+import { localeMap, zh_CN } from '../locales';
 import { ConfigContext } from './context';
 
 //获取全局的语言包
 export const useLocale = (componentName: string) => {
   const context = useContext(ConfigContext);
-  const localeData = context?.locale || zh_CN;
+  const locale = context?.locale || zh_CN;
+  const localeData =
+    typeof locale === 'string' ? localeMap[locale] || zh_CN : locale;
   return localeData[componentName] || {};
 };

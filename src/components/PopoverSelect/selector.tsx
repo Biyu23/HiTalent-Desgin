@@ -1,10 +1,10 @@
 import { CloseCircleOutlined, DownOutlined } from '@ant-design/icons';
 import { Button, Popover, Typography } from 'antd';
 import clsx from 'clsx';
-import { usePrefixCls } from 'myui/configProvider/usePrefixCls';
-import { useMergeState } from 'myui/hooks';
-import { withNativeProps } from 'myui/util';
 import React, { memo } from 'react';
+import { usePrefixCls } from '../../configProvider/usePrefixCls';
+import { useMergeState } from '../../hooks';
+import { withNativeProps } from '../../util';
 import './index.less';
 import { SelectorProps } from './type';
 const Selector: React.FC<SelectorProps> = (props) => {
@@ -15,8 +15,8 @@ const Selector: React.FC<SelectorProps> = (props) => {
     openClassName,
     afterOpenChange,
     children,
-    open: value,
-    onOpenChange: onChange,
+    open: openProp,
+    onOpenChange: onOpenChangeProp,
     ellipsis,
     allowClear = true,
     hasValue,
@@ -26,8 +26,8 @@ const Selector: React.FC<SelectorProps> = (props) => {
   const prefixCls = usePrefixCls('popover-selector');
   const [open, { set: onOpenChange }] = useMergeState<boolean>({
     defaultValue: false,
-    value,
-    onChange,
+    value: openProp,
+    onChange: onOpenChangeProp,
   });
 
   const renderChildren = () => {

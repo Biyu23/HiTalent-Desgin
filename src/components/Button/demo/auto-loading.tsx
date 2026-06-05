@@ -3,7 +3,7 @@
  * description: 默认开启 `autoLoading`。当 `onClick` 返回一个 `Promise` 时，按钮会自动进入 `loading` 状态，并拦截点击操作，直到 Promise 决议后恢复。解决手动维护 `loading` 的烦恼。
  */
 import { message } from 'antd';
-import { ProButton } from 'myui';
+import { Button } from 'myui';
 import React from 'react';
 
 export default () => {
@@ -18,8 +18,8 @@ export default () => {
   };
 
   return (
-    <ProButton type="primary" onClick={mockApiRequest}>
+    <Button type="primary" onClick={mockApiRequest}>
       提交表单 (等待1.5秒)
-    </ProButton>
+    </Button>
   );
 };

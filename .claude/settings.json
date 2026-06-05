@@ -1,0 +1,5 @@
+{
+  "permissions": {
+    "allow": ["mcp__filesystem__edit_file"]
+  }
+}

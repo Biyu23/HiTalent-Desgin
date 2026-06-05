@@ -1,15 +1,15 @@
-import { Modal } from 'antd';
+import { Modal as AntdModal } from 'antd';
 import clsx from 'clsx';
-import { usePrefixCls } from 'myui/configProvider/usePrefixCls';
-import useDragBounds from 'myui/hooks/useDragBounds';
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import Draggable from 'react-draggable';
+import { usePrefixCls } from '../../configProvider/usePrefixCls';
+import useDragBounds from '../../hooks/useDragBounds';
 import './index.less';
 import MinimizedDock from './minimizedDock';
 import ModalHeader from './modalHeader';
-import { ProModalProps } from './type';
+import { ModalProps } from './type';
 
-const ProModal: React.FC<ProModalProps> = (props) => {
+const Modal: React.FC<ModalProps> = (props) => {
   const {
     open,
     title,
@@ -25,7 +25,7 @@ const ProModal: React.FC<ProModalProps> = (props) => {
     ...restProps
   } = props;
 
-  const prefixCls = usePrefixCls('pro-modal');
+  const prefixCls = usePrefixCls('modal');
   //最大化
   const [isMaximized, setIsMaximized] = useState(false);
   //最小化
@@ -45,34 +45,44 @@ const ProModal: React.FC<ProModalProps> = (props) => {
     onStart: onModalDragStart,
   } = useDragBounds();
 
-  // 处理关闭
-  const handleClose = (e: React.MouseEvent<any>) => {
+  const handleClose = (e: React.MouseEvent<HTMLElement>) => {
     setIsMinimized(false);
     setIsMaximized(false);
-    onCancel?.(e as any);
+    onCancel?.(e as React.MouseEvent<HTMLButtonElement>);
   };
 
-  const customModalRender = (modalNode: React.ReactNode) => {
-    const node = modalRender ? modalRender(modalNode) : modalNode;
-    //如果没有开启拖拽 或者 已经最大化了不允许拖拽
-    if (!draggable || isMaximized) return node;
-    return (
-      <Draggable
-        disabled={disabledDrag}
-        bounds={modalBounds}
-        nodeRef={modalDragRef}
-        onStart={onModalDragStart}
-      >
-        <div ref={modalDragRef} className={`${prefixCls}-draggable-wrapper`}>
-          {node}
-        </div>
-      </Draggable>
-    );
-  };
+  const customModalRender = useCallback(
+    (modalNode: React.ReactNode) => {
+      if (!draggable || isMaximized)
+        return modalRender ? modalRender(modalNode) : modalNode;
+      return (
+        <Draggable
+          disabled={disabledDrag}
+          bounds={modalBounds}
+          nodeRef={modalDragRef}
+          onStart={onModalDragStart}
+        >
+          <div ref={modalDragRef} className={`${prefixCls}-draggable-wrapper`}>
+            {modalRender ? modalRender(modalNode) : modalNode}
+          </div>
+        </Draggable>
+      );
+    },
+    [
+      draggable,
+      isMaximized,
+      disabledDrag,
+      modalBounds,
+      modalDragRef,
+      onModalDragStart,
+      modalRender,
+      prefixCls,
+    ],
+  );
 
   return (
     <>
-      <Modal
+      <AntdModal
         {...restProps}
         open={open && !isMinimized}
         closable={false}
@@ -103,7 +113,7 @@ const ProModal: React.FC<ProModalProps> = (props) => {
         }
       >
         {children}
-      </Modal>
+      </AntdModal>
       <MinimizedDock
         open={open}
         isMinimized={isMinimized}
@@ -116,4 +126,4 @@ const ProModal: React.FC<ProModalProps> = (props) => {
     </>
   );
 };
-export default memo(ProModal);
+export default memo(Modal);

@@ -7,6 +7,7 @@ const zh_CN: Record<string, any> = {
     cancel: '取消',
     confirm: '确定',
     noMatch: '无匹配结果',
+    searchPlaceholder: '搜索',
   },
 };
 

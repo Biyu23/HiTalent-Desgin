@@ -1,18 +1,17 @@
 import React from 'react';
-import { ConfigContext, ConfigContextProps } from './context';
+import { ConfigContext, ConfigContextProps, defaultConfig } from './context';
 
-export interface CustomConfigProviderProps extends ConfigContextProps {
+export interface ConfigProviderProps extends ConfigContextProps {
   children?: React.ReactNode;
 }
 
-export const CustomConfigProvider: React.FC<CustomConfigProviderProps> = ({
+export const ConfigProvider: React.FC<ConfigProviderProps> = ({
   prefixCls,
   locale,
   children,
 }) => {
-  // 合并用户传入的配置和默认配置
   const config = {
-    prefixCls: prefixCls || 'my-ui',
+    prefixCls: prefixCls || defaultConfig.prefixCls,
     locale,
   };
 

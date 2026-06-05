@@ -60,7 +60,7 @@ const ModalHeader = memo((props: ModalHeaderProps) => {
         size="small"
         type="text"
         onClick={onClose}
-        icon={<CloseOutlined onClick={onClose} />}
+        icon={<CloseOutlined />}
       />
     );
   };
@@ -80,13 +80,13 @@ const ModalHeader = memo((props: ModalHeaderProps) => {
         [`${prefixCls}-header-wrapper-draggable`]: draggable,
       })}
       onMouseOver={() =>
-        draggable && !isMaximized && disabledDrag && setDisabledDrag(false)
+        draggable && !isMaximized && disabledDrag && setDisabledDrag?.(false)
       }
-      onMouseOut={() => draggable && !disabledDrag && setDisabledDrag(true)}
+      onMouseOut={() => draggable && !disabledDrag && setDisabledDrag?.(true)}
     >
       <div className={`${prefixCls}-title-text`}>{element}</div>
       <Flex
-        hidden={!!!actions.length}
+        hidden={actions.length === 0}
         className={`${prefixCls}-header-actions`}
         gap={8}
         align="center"

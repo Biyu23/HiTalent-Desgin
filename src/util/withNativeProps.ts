@@ -1,6 +1,6 @@
 import clsx from 'clsx';
-import { NativeProps } from 'myui/types';
 import React, { ReactElement } from 'react';
+import { NativeProps } from '../types';
 
 /**
  * 将自定义的原生属性（如 className、style、tabIndex、data-* 和 aria-*）合并到一个 React 元素中

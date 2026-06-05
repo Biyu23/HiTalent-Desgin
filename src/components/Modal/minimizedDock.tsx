@@ -1,10 +1,10 @@
 import { CloseOutlined, ExpandOutlined } from '@ant-design/icons';
 import { Button, Flex } from 'antd';
-import isFunction from 'lodash-es/isFunction';
-import useDragBounds from 'myui/hooks/useDragBounds';
+import { isFunction } from 'lodash-es';
 import React, { memo } from 'react';
 import { createPortal } from 'react-dom';
 import Draggable from 'react-draggable';
+import useDragBounds from '../../hooks/useDragBounds';
 import { MinimizedDockProps, MinimizePosition } from './type';
 
 //创建 Flex 容器防止多个最小化窗口重叠
@@ -41,7 +41,7 @@ const MinimizedDock = memo((props: MinimizedDockProps) => {
         size="small"
         type="text"
         onClick={onRestore}
-        icon={<ExpandOutlined onClick={onRestore} />}
+        icon={<ExpandOutlined />}
       />
     );
   };
@@ -81,7 +81,7 @@ const MinimizedDock = memo((props: MinimizedDockProps) => {
         </div>
       </div>
     </Draggable>,
-    getMinimizeContainer(minimizePosition, prefixCls),
+    getMinimizeContainer(minimizePosition, prefixCls!),
   );
 });
 

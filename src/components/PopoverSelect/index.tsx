@@ -11,16 +11,17 @@ import {
   Typography,
 } from 'antd';
 import clsx from 'clsx';
-import { useLocale } from 'myui/configProvider/useLocale';
-import { usePrefixCls } from 'myui/configProvider/usePrefixCls';
-import { useFieldNames, useMergeState } from 'myui/hooks';
+import VirtualList from 'rc-virtual-list';
+import React, { memo, useEffect, useMemo, useState } from 'react';
+import { useLocale } from '../../configProvider/useLocale';
+import { usePrefixCls } from '../../configProvider/usePrefixCls';
+import { useFieldNames, useMergeState } from '../../hooks';
+import type { UseMergeStateProps } from '../../hooks/useMergeState';
 import {
   attachPropertiesToComponent,
   isNullOrBlank,
   withNativeProps,
-} from 'myui/util';
-import VirtualList from 'rc-virtual-list';
-import React, { memo, useEffect, useMemo, useState } from 'react';
+} from '../../util';
 import './index.less';
 import Selector from './selector';
 import {
@@ -37,12 +38,18 @@ const Component = <
 ) => {
   const prefixCls = usePrefixCls('popover-select');
   const componentLocale = useLocale('PopoverSelect');
+
+  type MappedOption = OptionType & {
+    label: React.ReactNode;
+    value: ValueType;
+    disabled?: boolean;
+  };
   const {
     options: optionsProp = [],
     fieldNames: customFieldNames,
     mode = 'single',
     dropdownRender,
-    placeholder = componentLocale['placeholder'],
+    placeholder = componentLocale.placeholder,
     allowClear = false,
     showConfirm = mode === 'multiple',
     className,
@@ -68,10 +75,13 @@ const Component = <
 
   const realShowConfirm = mode === 'multiple' && showConfirm;
 
-  const mergeStateConfig: any = {
+  const mergeStateConfig: UseMergeStateProps<
+    ValueType[],
+    ValueType | ValueType[]
+  > = {
     defaultValue: props.defaultValue,
-    onChange: props.onChange as any,
-    transformToOrigin: (externalVal: any) => {
+    onChange: props.onChange,
+    transformToOrigin: (externalVal) => {
       if (isNullOrBlank(externalVal)) return [];
       if (typeof externalVal === 'string' && valueType === 'string') {
         if (mode === 'multiple') {
@@ -81,9 +91,11 @@ const Component = <
         }
         return [externalVal] as ValueType[];
       }
-      return Array.isArray(externalVal) ? externalVal : [externalVal];
+      return (
+        Array.isArray(externalVal) ? externalVal : [externalVal]
+      ) as ValueType[];
     },
-    transformToResult: (internalArray: any) => {
+    transformToResult: (internalArray) => {
       if (mode === 'single') {
         return internalArray[0] as ValueType;
       }
@@ -93,11 +105,9 @@ const Component = <
       return internalArray as ValueType[];
     },
   };
-  //fix bug  受控非受控判断问题
   if ('value' in props) {
     mergeStateConfig.value = props.value;
   }
-  //实际提交值
   const [internalValue, actions] = useMergeState<
     ValueType[],
     ValueType | ValueType[]
@@ -112,7 +122,7 @@ const Component = <
   }, [open]);
 
   const options = useMemo(() => {
-    return optionsProp.map((item) => {
+    return optionsProp.map((item: OptionType) => {
       const mappedItem: Record<string, any> = { ...item };
       Object.entries(fieldNames).forEach(([standardKey, customKey]) => {
         if (customKey && typeof customKey === 'string') {
@@ -125,35 +135,36 @@ const Component = <
           }
         }
       });
-      return mappedItem as OptionType & {
-        label: React.ReactNode;
-        value: ValueType;
-        disabled?: boolean;
-      };
+      return mappedItem as MappedOption;
     });
   }, [optionsProp, fieldNames, getFieldValue]);
 
   const displayOptions = useMemo(() => {
     if (!searchValue) return options;
-    return options.filter((item) => {
+    return options.filter((item: MappedOption) => {
       const labelStr = String(item.label || '').toLowerCase();
       return labelStr.includes(searchValue.toLowerCase());
     });
   }, [options, searchValue]);
 
   const targetValueList = realShowConfirm ? draftValue : internalValue;
-  const enabledOptions = displayOptions.filter((o) => !o.disabled);
+  const enabledOptions = displayOptions.filter(
+    (o: MappedOption) => !o.disabled,
+  );
   const isAllSelected =
     enabledOptions.length > 0 &&
-    enabledOptions.every((o) => targetValueList.includes(o.value));
+    enabledOptions.every((o: MappedOption) =>
+      targetValueList.includes(o.value),
+    );
 
   const isPartiallySelected =
-    enabledOptions.some((o) => targetValueList.includes(o.value)) &&
-    !isAllSelected;
+    enabledOptions.some((o: MappedOption) =>
+      targetValueList.includes(o.value),
+    ) && !isAllSelected;
 
   const handleSelectAll = (e: CheckboxChangeEvent) => {
     const checked = e.target.checked;
-    const enabledValues = enabledOptions.map((o) => o.value);
+    const enabledValues = enabledOptions.map((o: MappedOption) => o.value);
     let newValues: ValueType[];
     if (checked) {
       newValues = Array.from(new Set([...targetValueList, ...enabledValues]));
@@ -163,7 +174,9 @@ const Component = <
     if (realShowConfirm) {
       setDraftValue(newValues);
     } else {
-      const newOptions = options.filter((opt) => newValues.includes(opt.value));
+      const newOptions = options.filter((opt: MappedOption) =>
+        newValues.includes(opt.value),
+      );
       actions.set(newValues, newOptions);
     }
   };
@@ -184,7 +197,9 @@ const Component = <
     if (realShowConfirm) {
       setDraftValue(newValues);
     } else {
-      const newOptions = options.filter((opt) => newValues.includes(opt.value));
+      const newOptions = options.filter((opt: MappedOption) =>
+        newValues.includes(opt.value),
+      );
       actions.set(newValues, newOptions);
       if (mode === 'single') {
         setOpen(false);
@@ -196,7 +211,9 @@ const Component = <
     handleValueToggle(event.target.value as ValueType);
   };
   const handleConfirm = () => {
-    const newOptions = options.filter((opt) => draftValue.includes(opt.value));
+    const newOptions = options.filter((opt: MappedOption) =>
+      draftValue.includes(opt.value),
+    );
     actions.set(draftValue, newOptions);
     setOpen(false);
   };
@@ -252,10 +269,10 @@ const Component = <
             itemHeight={listItemHeight}
             itemKey="value"
           >
-            {(item) => renderItem(item)}
+            {(item: MappedOption) => renderItem(item)}
           </VirtualList>
         ) : (
-          displayOptions.map((item) => renderItem(item))
+          displayOptions.map((item: MappedOption) => renderItem(item))
         )}
       </div>
     );
@@ -276,12 +293,12 @@ const Component = <
     const actionsBtn = [
       showClearBtn && (
         <Button key="clear" size="small" onClick={handleDraftClear}>
-          {componentLocale['clearAll']}
+          {componentLocale.clearAll}
         </Button>
       ),
       showCancelBtn && (
         <Button key="cancel" size="small" onClick={handleCancel}>
-          {componentLocale['cancel']}
+          {componentLocale.cancel}
         </Button>
       ),
       realShowConfirm && (
@@ -291,7 +308,7 @@ const Component = <
           size="small"
           onClick={handleConfirm}
         >
-          {componentLocale['confirm']}
+          {componentLocale.confirm}
         </Button>
       ),
     ].filter(Boolean);
@@ -302,7 +319,7 @@ const Component = <
           <div className={`${prefixCls}-search`}>
             <Input
               prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
-              placeholder={componentLocale['searchPlaceholder']}
+              placeholder={componentLocale.searchPlaceholder}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               allowClear
@@ -318,7 +335,7 @@ const Component = <
               indeterminate={isPartiallySelected}
               onChange={handleSelectAll}
             >
-              {componentLocale['selectAll']}
+              {componentLocale.selectAll}
             </Checkbox>
           </div>
         )}
@@ -326,7 +343,7 @@ const Component = <
         {displayOptions.length === 0 ? (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={componentLocale['noMatch']}
+            description={componentLocale.noMatch}
             style={{ padding: '16px 0' }}
           />
         ) : (
@@ -351,10 +368,12 @@ const Component = <
 
   const getDisplayText = () => {
     if (internalValue.length === 0) return placeholder;
-    const selectedOptions = options.filter((opt) =>
+    const selectedOptions = options.filter((opt: MappedOption) =>
       internalValue.includes(opt.value),
     );
-    const fullText = selectedOptions.map((opt) => opt.label).join(separator);
+    const fullText = selectedOptions
+      .map((opt: MappedOption) => opt.label)
+      .join(separator);
     if (
       mode === 'multiple' &&
       maxTagCount &&
@@ -363,7 +382,7 @@ const Component = <
       const visibleOptions = selectedOptions.slice(0, maxTagCount);
       const omittedCount = selectedOptions.length - maxTagCount;
       const visibleText = visibleOptions
-        .map((opt) => opt.label)
+        .map((opt: MappedOption) => opt.label)
         .join(separator);
       const displayText = `${visibleText}${separator}... (+${omittedCount})`;
       return (
@@ -372,7 +391,9 @@ const Component = <
         </Tooltip>
       );
     }
-    return selectedOptions.map((opt) => opt.label).join(separator);
+    return selectedOptions
+      .map((opt: MappedOption) => opt.label)
+      .join(separator);
   };
 
   return withNativeProps(

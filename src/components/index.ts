@@ -1,6 +1,8 @@
 export { default as PopoverSelect } from './PopoverSelect';
-export { type PopoverSelectProps } from './PopoverSelect/type';
-export { default as ProButton } from './ProButton';
-export { type ProButtonProps } from './ProButton/type';
-export { default as ProModal } from './ProModal';
-export { type ProModalProps } from './ProModal/type';
+export type { PopoverSelectProps } from './PopoverSelect/type';
+
+export { default as Button } from './Button';
+export type { ButtonProps } from './Button/type';
+
+export { default as Modal } from './Modal';
+export type { ModalProps } from './Modal/type';

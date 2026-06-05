@@ -3,7 +3,7 @@
  * description: 结合 Ant Design 的表单和按钮，实现带 Loading 状态的异步提交。弹窗关闭后会自动重置状态。
  */
 import { Form, Input, message } from 'antd';
-import { ProModal } from 'myui';
+import { Modal } from 'myui';
 import React, { useState } from 'react';
 
 export default () => {
@@ -30,7 +30,7 @@ export default () => {
   return (
     <>
       <a onClick={() => setOpen(true)}>打开基础表单弹窗</a>
-      <ProModal
+      <Modal
         title="新建用户"
         open={open}
         confirmLoading={loading}
@@ -51,7 +51,7 @@ export default () => {
             </Form.Item>
           </Form>
         </div>
-      </ProModal>
+      </Modal>
     </>
   );
 };

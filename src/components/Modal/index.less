@@ -1,6 +1,6 @@
 @import '../../style/variables.less';
 
-.@{custom-prefix}-pro-modal-minimize-dock-container {
+.@{custom-prefix}-modal-minimize-dock-container {
   position: fixed;
   z-index: 1000;
   display: flex;
@@ -8,23 +8,23 @@
   pointer-events: none;
 }
 
-.@{custom-prefix}-pro-modal-minimize-dock-bottom-right {
+.@{custom-prefix}-modal-minimize-dock-bottom-right {
   bottom: 24px;
   right: 24px;
   flex-direction: column-reverse;
 }
-.@{custom-prefix}-pro-modal-minimize-dock-bottom-left {
+.@{custom-prefix}-modal-minimize-dock-bottom-left {
   bottom: 24px;
   left: 24px;
   flex-direction: column-reverse;
 }
-.@{custom-prefix}-pro-modal-minimize-dock-top-right {
+.@{custom-prefix}-modal-minimize-dock-top-right {
   top: 24px;
   right: 24px;
   flex-direction: column;
 }
 
-.@{custom-prefix}-pro-modal {
+.@{custom-prefix}-modal {
   .ant-modal-render {
     .ant-modal-content {
       padding: 0;
@@ -105,14 +105,14 @@
       overflow: auto;
     }
 
-    .@{custom-prefix}-pro-modal-header-wrapper {
+    .@{custom-prefix}-modal-header-wrapper {
       cursor: default;
     }
   }
 }
 
 // 🌟 3. 悬浮窗样式与出场动画
-.@{custom-prefix}-pro-modal-minimized-dock {
+.@{custom-prefix}-modal-minimized-dock {
   pointer-events: auto; // 恢复卡片的鼠标交互
   width: 280px;
   background: #fff;
@@ -125,7 +125,7 @@
   // 最小化出场动画
   animation: myui-dock-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
-  .@{custom-prefix}-pro-modal-minimized-header {
+  .@{custom-prefix}-modal-minimized-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -136,7 +136,7 @@
       cursor: grabbing;
     }
 
-    .@{custom-prefix}-pro-modal-title-text {
+    .@{custom-prefix}-modal-title-text {
       flex: 1;
       overflow: hidden;
       margin-right: 12px;

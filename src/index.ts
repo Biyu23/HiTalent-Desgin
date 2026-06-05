@@ -1,8 +1,19 @@
-export { default as ProButton } from './components/ProButton';
-export type { ProButtonProps } from './components/ProButton/type';
+// Components
+export { default as Button } from './components/Button';
+export type { ButtonProps } from './components/Button/type';
 
-export { default as ProModal } from './components/ProModal';
-export type { ProModalProps } from './components/ProModal/type';
+export { default as Modal } from './components/Modal';
+export type { ModalProps } from './components/Modal/type';
 
 export { default as PopoverSelect } from './components/PopoverSelect';
-export type { BasePopoverSelectProps as PopoverSelectProps } from './components/PopoverSelect/type';
+export type { PopoverSelectProps } from './components/PopoverSelect/type';
+
+// ConfigProvider
+export { ConfigProvider } from './configProvider';
+export type { ConfigProviderProps } from './configProvider';
+
+// Hooks
+export { useDragBounds, useFieldNames, useMergeState } from './hooks';
+
+// Locales
+export { en_Us, localeMap, zh_CN } from './locales';

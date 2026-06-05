@@ -1,11 +1,11 @@
-import { Button } from 'antd';
+import { Button as AntdButton } from 'antd';
 import clsx from 'clsx';
-import { usePrefixCls } from 'myui/configProvider/usePrefixCls';
-import { withNativeProps } from 'myui/util';
 import React, { memo, useEffect, useRef, useState } from 'react';
+import { usePrefixCls } from '../../configProvider/usePrefixCls';
+import { withNativeProps } from '../../util';
 import './index.less';
-import { ProButtonProps } from './type';
-const ProButton: React.FC<ProButtonProps> = (props) => {
+import { ButtonProps } from './type';
+const Button: React.FC<ButtonProps> = (props) => {
   const {
     iconPosition = 'left',
     autoLoading = true,
@@ -17,7 +17,7 @@ const ProButton: React.FC<ProButtonProps> = (props) => {
     ...restProps
   } = props;
 
-  const prefixCls = usePrefixCls('pro-btn');
+  const prefixCls = usePrefixCls('btn');
   const [innerLoading, setInnerLoading] = useState(false);
   const isUnmounted = useRef(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -34,12 +34,9 @@ const ProButton: React.FC<ProButtonProps> = (props) => {
   const handleClick = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
     if (combinedLoading) return;
 
-    if (e.persist) {
-      e.persist();
-    }
     const executeClick = async () => {
       if (!onClick) return;
-      const ret = onClick(e) as any;
+      const ret = onClick(e);
       if (autoLoading && ret && typeof ret.then === 'function') {
         setInnerLoading(true);
         try {
@@ -87,7 +84,7 @@ const ProButton: React.FC<ProButtonProps> = (props) => {
         {!combinedLoading && (
           <span className={`${prefixCls}-icon`}>{icon}</span>
         )}
-        {!!children && <span>{children}</span>}
+        {children !== null && <span>{children}</span>}
       </span>
     );
   };
@@ -96,7 +93,7 @@ const ProButton: React.FC<ProButtonProps> = (props) => {
 
   return withNativeProps(
     props,
-    <Button
+    <AntdButton
       {...restProps}
       icon={nativeButtonIcon}
       loading={combinedLoading}
@@ -107,8 +104,8 @@ const ProButton: React.FC<ProButtonProps> = (props) => {
       })}
     >
       {renderChildren()}
-    </Button>,
+    </AntdButton>,
   );
 };
 
-export default memo(ProButton);
+export default memo(Button);

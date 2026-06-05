@@ -17,6 +17,18 @@ title: PopoverSelect 气泡选择
 
 <code src="./demo/multiple.tsx"></code>
 
+### 字符串提交与全选
+
+<code src="./demo/string-value.tsx"></code>
+
+### 字段映射与虚拟滚动
+
+<code src="./demo/virtual.tsx"></code>
+
+### 高度定制渲染
+
+<code src="./demo/custom.tsx"></code>
+
 ## API
 
-<API src="./type.ts" hideTitle></API>
+<API src="./type.ts" identifier="PopoverSelectProps" hideTitle></API>

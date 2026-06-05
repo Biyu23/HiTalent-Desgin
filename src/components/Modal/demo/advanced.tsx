@@ -3,7 +3,7 @@
  * description: 开启 `minimizable`、`maximizable` 和 `draggable` 后，即可获得桌面级的窗口体验。当点击最小化时，弹窗会被挂起到全局角落，此时你在弹窗内填写的表单数据会完美保留，随时可以点击恢复。
  */
 import { Form, Input, Select, Space } from 'antd';
-import { ProModal } from 'myui';
+import { Modal } from 'myui';
 import React, { useState } from 'react';
 
 export default () => {
@@ -14,7 +14,7 @@ export default () => {
     <>
       <a onClick={() => setOpen(true)}>打开高级任务办理窗口</a>
 
-      <ProModal
+      <Modal
         title="新建复杂业务工单"
         width={600}
         open={open}
@@ -70,7 +70,7 @@ export default () => {
             </Form.Item>
           </Form>
         </div>
-      </ProModal>
+      </Modal>
     </>
   );
 };

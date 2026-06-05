@@ -7,6 +7,7 @@ const en: Record<string, any> = {
     cancel: 'Cancel',
     confirm: 'Confirm',
     noMatch: 'No matching results',
+    searchPlaceholder: 'Search',
   },
 };
 

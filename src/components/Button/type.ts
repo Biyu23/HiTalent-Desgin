@@ -1,5 +1,5 @@
-import { ButtonProps } from 'antd';
-export interface ProButtonProps extends Omit<ButtonProps, 'iconPosition'> {
+import { ButtonProps as AntdButtonProps } from 'antd';
+export interface ButtonProps extends Omit<AntdButtonProps, 'iconPosition'> {
   /**
    * @description 图标展示位置 (这里写属性的中文说明)
    * @default 'left'

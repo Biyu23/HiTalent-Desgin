@@ -1,4 +1,5 @@
 import { defineConfig } from 'dumi';
+import path from 'path';
 
 export default defineConfig({
   outputPath: 'docs-dist',
@@ -6,99 +7,52 @@ export default defineConfig({
     { id: 'zh-CN', name: '中文' },
     { id: 'en-US', name: 'EN' },
   ],
-  apiParser: {},
-  // 解析器配置
+  // dumi 内建 API 解析器依赖 unpkg CDN 拉取 TS 库定义，
+  // 国内网络不可达且存在 URL 构造 bug，故禁用，API 表格手动维护
+  apiParser: false,
+  alias: {
+    myui: path.resolve(__dirname, 'src'),
+  },
   resolve: {
-    // 配置文档解析
-    // docDirs: ['docs', 'src'],
-    // 配置组件文档自动生成
-    // atomDirs: [{ type: 'component', dir: 'src/components' }],
     entryFile: './src/index.ts',
+    atomDirs: [{ type: 'component', dir: 'src/components' }],
   },
   themeConfig: {
     name: 'MyUI',
-    // 替换为你们的 Logo
-    logo: 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg',
-    // 对齐 Antd 的主色调
+    logo: false,
     theme: {
       '@c-primary': '#1677ff',
     },
     nav: [
       { title: '指南', link: '/guide' },
-      { title: '组件', link: '/components/ProButton' }, // 指向你们的组件文档目录
+      { title: '组件', link: '/components/button' },
     ],
-    footer: 'Made with ❤️ by MyUI Team',
+    footer: 'MyUI · 基于 Ant Design 的业务组件库',
     socialLinks: {
-      github: 'https://github.com/biyu23/myui', // 你们的仓库地址
+      github: 'https://github.com/biyu23/myui',
     },
-    // 侧边栏层级配置，让组件列表像 antd 一样折叠展示
     sidebar: {
       '/components': [
         {
           title: '通用组件',
           children: [
-            { title: 'ProButton 高级按钮', link: '/components/ProButton' },
-            { title: 'ProModal 高级弹窗', link: '/components/ProModal' },
+            { title: 'Button 高级按钮', link: '/components/button' },
+            { title: 'Modal 高级弹窗', link: '/components/modal' },
             {
               title: 'PopoverSelect 气泡选择',
-              link: '/components/PopoverSelect',
+              link: '/components/popover-select',
             },
           ],
         },
       ],
     },
+    hero: {
+      title: 'MyUI',
+      description: '基于 Ant Design 的高级业务组件库，简洁、类型安全、开箱即用',
+      actions: [
+        { text: '开始使用', link: '/guide' },
+        { text: '浏览组件', link: '/components/button' },
+      ],
+    },
   },
 });
-
-// import { defineConfig } from 'dumi';
-
-// export default defineConfig({
-//   outputPath: 'docs-dist',
-//   // 开启 apiParser，这是生成 antd 风格 API 属性表格的核心
-//   apiParser: {},
-//   resolve: {
-//     // 配置入口文件，apiParser 会从这里寻找类型导出
-//     entryFile: './src/index.ts',
-//     // 配置文档解析
-//     docDirs: ['docs', 'src'],
-//     // 配置组件文档自动生成
-//     atomDirs: [{ type: 'component', dir: 'src/components' }],
-//   },
-//   locales: [
-//     { id: 'zh-CN', name: '中文' },
-//     { id: 'en-US', name: 'EN' },
-//   ],
-//   themeConfig: {
-//     name: 'MyUI',
-//     // 替换为你们的 Logo
-//     logo: 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg',
-//     // 对齐 Antd 的主色调
-//     theme: {
-//       '@c-primary': '#1677ff',
-//     },
-//     nav: [
-//       { title: '指南', link: '/guide' },
-//       { title: '组件', link: '/components/ProButton' }, // 指向你们的组件文档目录
-//     ],
-//     footer: 'Made with ❤️ by MyUI Team',
-//     socialLinks: {
-//       github: 'https://github.com/biyu23/myui', // 你们的仓库地址
-//     },
-//     // 侧边栏层级配置，让组件列表像 antd 一样折叠展示
-//     sidebar: {
-//       '/components': [
-//         {
-//           title: '通用组件',
-//           children: [
-//             { title: 'ProButton 高级按钮', link: '/components/ProButton' },
-//             { title: 'ProModal 高级弹窗', link: '/components/ProModal' },
-//             {
-//               title: 'PopoverSelect 气泡选择',
-//               link: '/components/PopoverSelect',
-//             },
-//           ],
-//         },
-//       ],
-//     },
-//   },
-// });
