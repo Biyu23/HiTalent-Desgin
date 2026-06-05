@@ -23,40 +23,26 @@
   right: 24px;
   flex-direction: column;
 }
+.@{custom-prefix}-modal-minimize-dock-top-left {
+  top: 24px;
+  left: 24px;
+  flex-direction: column;
+}
 
 .@{custom-prefix}-modal {
-  .ant-modal-render {
-    .ant-modal-content {
-      padding: 0;
-
-      .ant-modal-header,
-      .ant-modal-body,
-      .ant-modal-footer {
-        padding: 12px 24px;
-      }
-
-      .ant-modal-header {
-        border-bottom: 1px solid @border-split-color;
-        margin-bottom: 0;
-      }
-
-      .ant-modal-footer {
-        margin-top: 0;
-        border-top: 1px solid @border-split-color;
-      }
-    }
-  }
-
-  // 🌟 2. 最大化丝滑动画过渡
+  // 最大化丝滑动画过渡
   &-transition-active {
     transition: width 0.3s cubic-bezier(0.645, 0.045, 0.355, 1),
       height 0.3s cubic-bezier(0.645, 0.045, 0.355, 1),
-      top 0.3s cubic-bezier(0.645, 0.045, 0.355, 1),
-      padding 0.3s cubic-bezier(0.645, 0.045, 0.355, 1) !important;
+      top 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
 
     .ant-modal-content {
-      transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1) !important;
+      transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
     }
+  }
+
+  &-draggable-wrapper {
+    // 拖拽容器，无额外样式
   }
 
   &-header-wrapper {
@@ -80,18 +66,13 @@
     flex-shrink: 0;
 
     .ant-btn {
-      color: rgba(0, 0, 0, 45%);
+      color: @modal-action-btn-color;
     }
   }
 
-  //modal最大化
+  // modal 最大化（CSS 仅控制 height/border-radius/flex，top/width/padding/margin 由 JS props 驱动）
   &-maximized {
-    top: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    height: 100vh !important;
+    height: 100vh;
 
     .ant-modal-content {
       height: 100vh;
@@ -111,15 +92,14 @@
   }
 }
 
-// 🌟 3. 悬浮窗样式与出场动画
+// 悬浮窗样式与出场动画
 .@{custom-prefix}-modal-minimized-dock {
-  pointer-events: auto; // 恢复卡片的鼠标交互
+  pointer-events: auto;
   width: 280px;
-  background: #fff;
+  background: @modal-minimized-bg;
   border-radius: 4px;
-  box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 8%), 0 3px 6px -4px rgba(0, 0, 0, 12%),
-    0 9px 28px 8px rgba(0, 0, 0, 5%);
-  border: 1px solid #f0f0f0;
+  box-shadow: @modal-minimized-box-shadow;
+  border: 1px solid @modal-minimized-border;
   overflow: hidden;
 
   // 最小化出场动画
@@ -140,6 +120,14 @@
       flex: 1;
       overflow: hidden;
       margin-right: 12px;
+    }
+  }
+
+  .@{custom-prefix}-modal-minimized-actions {
+    flex-shrink: 0;
+
+    .ant-btn {
+      color: @modal-action-btn-color;
     }
   }
 }

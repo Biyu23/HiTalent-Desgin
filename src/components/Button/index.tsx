@@ -5,6 +5,7 @@ import { usePrefixCls } from '../../configProvider/usePrefixCls';
 import { withNativeProps } from '../../util';
 import './index.less';
 import { ButtonProps } from './type';
+
 const Button: React.FC<ButtonProps> = (props) => {
   const {
     iconPosition = 'left',
@@ -60,42 +61,14 @@ const Button: React.FC<ButtonProps> = (props) => {
     }
   };
 
-  const renderChildren = () => {
-    if (!icon || iconPosition === 'left') {
-      return children;
-    }
-    const placementStyles: React.CSSProperties = {
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '6px',
-      flexDirection:
-        iconPosition === 'top'
-          ? 'column'
-          : iconPosition === 'bottom'
-          ? 'column-reverse'
-          : iconPosition === 'right'
-          ? 'row-reverse'
-          : 'row',
-    };
-
-    return (
-      <span className={`${prefixCls}-content-wrapper`} style={placementStyles}>
-        {!combinedLoading && (
-          <span className={`${prefixCls}-icon`}>{icon}</span>
-        )}
-        {children !== null && <span>{children}</span>}
-      </span>
-    );
-  };
-
-  const nativeButtonIcon = iconPosition === 'left' ? icon : undefined;
+  // icon 不在 'left' 位置时，由自定义 children 渲染而不是 AntdButton.icon
+  const antdIcon = !icon || iconPosition === 'left' ? icon : undefined;
 
   return withNativeProps(
     props,
     <AntdButton
       {...restProps}
-      icon={nativeButtonIcon}
+      icon={antdIcon}
       loading={combinedLoading}
       onClick={handleClick}
       className={clsx(prefixCls, {
@@ -103,7 +76,30 @@ const Button: React.FC<ButtonProps> = (props) => {
           icon && iconPosition !== 'left',
       })}
     >
-      {renderChildren()}
+      {icon && iconPosition !== 'left' ? (
+        <span
+          className={`${prefixCls}-content-wrapper`}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+            flexDirection:
+              iconPosition === 'top'
+                ? 'column'
+                : iconPosition === 'bottom'
+                ? 'column-reverse'
+                : 'row-reverse',
+          }}
+        >
+          {!combinedLoading && (
+            <span className={`${prefixCls}-icon`}>{icon}</span>
+          )}
+          {children !== null && <span>{children}</span>}
+        </span>
+      ) : (
+        children
+      )}
     </AntdButton>,
   );
 };

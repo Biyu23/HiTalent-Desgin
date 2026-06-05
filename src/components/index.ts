@@ -5,4 +5,4 @@ export { default as Button } from './Button';
 export type { ButtonProps } from './Button/type';
 
 export { default as Modal } from './Modal';
-export type { ModalProps } from './Modal/type';
+export type { ModalProps, ModalRef } from './Modal/type';

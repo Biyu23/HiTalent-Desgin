@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ConfigContext, ConfigContextProps, defaultConfig } from './context';
 
 export interface ConfigProviderProps extends ConfigContextProps {
@@ -10,10 +10,13 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({
   locale,
   children,
 }) => {
-  const config = {
-    prefixCls: prefixCls || defaultConfig.prefixCls,
-    locale,
-  };
+  const config = useMemo(
+    () => ({
+      prefixCls: prefixCls || defaultConfig.prefixCls,
+      locale,
+    }),
+    [prefixCls, locale],
+  );
 
   return (
     <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>

@@ -18,11 +18,11 @@
           width: 100%;
           overflow: hidden;
           padding: 5px 18px;
-          color: rgba(0, 0, 0, 65%);
+          color: @popover-select-text-color;
           transition: background-color 0.2s;
 
           &:hover {
-            background-color: #e6f7ff;
+            background-color: @popover-select-active-bg;
           }
 
           > span {
@@ -54,7 +54,7 @@
           transition: background-color 0.2s;
 
           &:hover {
-            background-color: #f5f5f5;
+            background-color: @popover-select-hover-bg;
           }
 
           &-disabled {
@@ -64,8 +64,8 @@
           }
 
           &-active {
-            background-color: #e6f7ff;
-            color: #1677ff;
+            background-color: @popover-select-active-bg;
+            color: @popover-select-active-color;
             font-weight: 600;
           }
 
@@ -86,14 +86,14 @@
         display: flex;
         justify-content: flex-end;
         padding: 8px 12px;
-        border-top: 1px solid #f0f0f0;
+        border-top: 1px solid @popover-select-border-color;
       }
     }
 
     .@{custom-prefix}-popover-select-search {
       .ant-input-affix-wrapper {
         padding: 8px 12px;
-        border-bottom: 1px solid #f0f0f0;
+        border-bottom: 1px solid @popover-select-border-color;
       }
     }
 
@@ -115,13 +115,13 @@
     gap: 8px;
     align-items: center;
     padding: 4px 12px;
-    border-radius: 2px !important;
+    border-radius: 2px;
   }
 
   &-active-btn {
-    background-color: #e6f7ff;
-    border: solid 1px #91d5ff;
-    color: #1890ff !important;
+    background-color: @popover-select-btn-active-bg;
+    border: solid 1px @popover-select-btn-active-border;
+    color: @popover-select-btn-active-color;
   }
 
   &-popover &-text {
@@ -147,7 +147,7 @@
   }
 
   &-open .ant-popover-open {
-    color: rgba(0, 0, 0, 65%) !important;
-    background-color: #fff !important;
+    color: @popover-select-text-color;
+    background-color: @popover-select-important-bg;
   }
 }

@@ -33,7 +33,9 @@ export function useMergeState<TOrigin, TResult = TOrigin>(
     value,
     defaultValue,
     onChange,
-    // 如果没有传转换函数，默认原样返回
+    // 如果没有传转换函数，默认原样返回。
+    // 由于 TOrigin 和 TResult 可能不同，通过 unknown 作为中间桥梁
+    // 绕过 TypeScript 的类型检查（当 TOrigin === TResult 时默认函数才是安全的）
     transformToOrigin = (v) => v as unknown as TOrigin,
     transformToResult = (v) => v as unknown as TResult,
   } = props;

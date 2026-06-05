@@ -7,6 +7,7 @@ import { useMergeState } from '../../hooks';
 import { withNativeProps } from '../../util';
 import './index.less';
 import { SelectorProps } from './type';
+
 const Selector: React.FC<SelectorProps> = (props) => {
   const {
     content,
@@ -31,9 +32,6 @@ const Selector: React.FC<SelectorProps> = (props) => {
   });
 
   const renderChildren = () => {
-    if (typeof children === 'function') {
-      return children();
-    }
     return (
       <Typography.Paragraph className={`${prefixCls}-text`} ellipsis={ellipsis}>
         {children}

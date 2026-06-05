@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { DraggableProps } from 'react-draggable';
 
 const useDragBounds = () => {
@@ -9,7 +9,8 @@ const useDragBounds = () => {
     bottom: 0,
     right: 0,
   });
-  const onStart: DraggableProps['onStart'] = (_event, uiData) => {
+
+  const onStart: DraggableProps['onStart'] = useCallback((_event, uiData) => {
     const { clientWidth, clientHeight } = window.document.documentElement;
     const targetRect = dragRef.current?.getBoundingClientRect();
     if (!targetRect) return;
@@ -20,7 +21,7 @@ const useDragBounds = () => {
       top: -targetRect.top + uiData.y,
       bottom: clientHeight - (targetRect.bottom - uiData.y),
     });
-  };
+  }, []);
 
   return { dragRef, bounds, onStart };
 };

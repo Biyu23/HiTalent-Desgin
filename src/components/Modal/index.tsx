@@ -1,15 +1,23 @@
 import { Modal as AntdModal } from 'antd';
 import clsx from 'clsx';
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, {
+  forwardRef,
+  memo,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import Draggable from 'react-draggable';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
 import useDragBounds from '../../hooks/useDragBounds';
 import './index.less';
 import MinimizedDock from './minimizedDock';
 import ModalHeader from './modalHeader';
-import { ModalProps } from './type';
+import { ModalProps, ModalRef } from './type';
 
-const Modal: React.FC<ModalProps> = (props) => {
+const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   const {
     open,
     title,
@@ -17,20 +25,34 @@ const Modal: React.FC<ModalProps> = (props) => {
     draggable = false,
     minimizable = false,
     maximizable = false,
+    minimized: controlledMinimized,
+    maximized: controlledMaximized,
+    onMinimizeChange,
+    onMaximizedChange,
     minimizePosition = 'bottom-right',
     closable = true,
     onCancel,
     className,
+    style,
     children,
     ...restProps
   } = props;
 
   const prefixCls = usePrefixCls('modal');
-  //最大化
-  const [isMaximized, setIsMaximized] = useState(false);
-  //最小化
-  const [isMinimized, setIsMinimized] = useState(false);
-  //拖拽
+
+  // ---- 受控/非受控状态管理 ----
+  const isControlledMinimized = 'minimized' in props;
+  const isControlledMaximized = 'maximized' in props;
+  const [internalMinimized, setInternalMinimized] = useState(false);
+  const [internalMaximized, setInternalMaximized] = useState(false);
+  const isMinimized = isControlledMinimized
+    ? !!controlledMinimized
+    : internalMinimized;
+  const isMaximized = isControlledMaximized
+    ? !!controlledMaximized
+    : internalMaximized;
+
+  // ---- 拖拽状态 ----
   const [disabledDrag, setDisabledDrag] = useState(!draggable);
 
   useEffect(() => {
@@ -44,26 +66,76 @@ const Modal: React.FC<ModalProps> = (props) => {
     bounds: modalBounds,
     onStart: onModalDragStart,
   } = useDragBounds();
+  const modalBoundsRef = useRef(modalBounds);
+  modalBoundsRef.current = modalBounds;
 
-  const handleClose = (e: React.MouseEvent<HTMLElement>) => {
-    setIsMinimized(false);
-    setIsMaximized(false);
-    onCancel?.(e as React.MouseEvent<HTMLButtonElement>);
-  };
+  // ---- 稳定的状态更新回调 ----
+  const updateMinimized = useCallback(
+    (next: boolean) => {
+      if (!isControlledMinimized) setInternalMinimized(next);
+      onMinimizeChange?.(next);
+    },
+    [isControlledMinimized, onMinimizeChange],
+  );
 
-  const customModalRender = useCallback(
+  const updateMaximized = useCallback(
+    (next: boolean) => {
+      if (!isControlledMaximized) setInternalMaximized(next);
+      onMaximizedChange?.(next);
+    },
+    [isControlledMaximized, onMaximizedChange],
+  );
+
+  const handleClose = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      updateMinimized(false);
+      updateMaximized(false);
+      onCancel?.(e as React.MouseEvent<HTMLButtonElement>);
+    },
+    [onCancel, updateMinimized, updateMaximized],
+  );
+
+  const handleMinimize = useCallback(() => {
+    updateMinimized(true);
+    updateMaximized(false);
+  }, [updateMinimized, updateMaximized]);
+
+  const handleToggleMaximize = useCallback(() => {
+    updateMaximized(!isMaximized);
+  }, [updateMaximized, isMaximized]);
+
+  const handleRestore = useCallback(() => {
+    updateMinimized(false);
+  }, [updateMinimized]);
+
+  // ---- 暴露命令式方法 ----
+  useImperativeHandle(
+    ref,
+    () => ({
+      restore: handleRestore,
+      maximize: () => updateMaximized(true),
+      unmaximize: () => updateMaximized(false),
+      minimize: handleMinimize,
+    }),
+    [handleRestore, updateMaximized, handleMinimize],
+  );
+
+  // ---- modalRender 组装：先让用户自定义渲染，再包裹 Draggable ----
+  const finalModalRender = useCallback(
     (modalNode: React.ReactNode) => {
-      if (!draggable || isMaximized)
-        return modalRender ? modalRender(modalNode) : modalNode;
+      const rendered = modalRender ? modalRender(modalNode) : modalNode;
+
+      if (!draggable || isMaximized) return rendered;
+
       return (
         <Draggable
           disabled={disabledDrag}
-          bounds={modalBounds}
+          bounds={modalBoundsRef.current}
           nodeRef={modalDragRef}
           onStart={onModalDragStart}
         >
           <div ref={modalDragRef} className={`${prefixCls}-draggable-wrapper`}>
-            {modalRender ? modalRender(modalNode) : modalNode}
+            {rendered}
           </div>
         </Draggable>
       );
@@ -72,7 +144,6 @@ const Modal: React.FC<ModalProps> = (props) => {
       draggable,
       isMaximized,
       disabledDrag,
-      modalBounds,
       modalDragRef,
       onModalDragStart,
       modalRender,
@@ -80,14 +151,22 @@ const Modal: React.FC<ModalProps> = (props) => {
     ],
   );
 
+  // ---- 最大化时通过 JS props 控制尺寸，避免 CSS !important ----
+  const maximizedStyle: React.CSSProperties = isMaximized
+    ? { top: 0, padding: 0, margin: 0, maxWidth: '100vw' }
+    : {};
+  const modalWidth = isMaximized ? '100vw' : restProps.width;
+
   return (
     <>
       <AntdModal
         {...restProps}
+        width={modalWidth}
         open={open && !isMinimized}
         closable={false}
-        modalRender={customModalRender}
+        modalRender={finalModalRender}
         onCancel={handleClose}
+        style={{ ...style, ...maximizedStyle }}
         className={clsx(prefixCls, className, {
           [`${prefixCls}-maximized`]: isMaximized,
           [`${prefixCls}-transition-active`]: true,
@@ -103,11 +182,8 @@ const Modal: React.FC<ModalProps> = (props) => {
             minimizable={minimizable}
             maximizable={maximizable}
             closable={closable}
-            onMinimize={() => {
-              setIsMinimized(true);
-              setIsMaximized(false);
-            }}
-            onToggleMaximize={() => setIsMaximized(!isMaximized)}
+            onMinimize={handleMinimize}
+            onToggleMaximize={handleToggleMaximize}
             onClose={handleClose}
           />
         }
@@ -120,10 +196,11 @@ const Modal: React.FC<ModalProps> = (props) => {
         title={title}
         prefixCls={prefixCls}
         minimizePosition={minimizePosition}
-        onRestore={() => setIsMinimized(false)}
+        onRestore={handleRestore}
         onClose={handleClose}
       />
     </>
   );
-};
+});
+
 export default memo(Modal);

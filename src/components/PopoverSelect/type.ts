@@ -18,14 +18,6 @@ export interface PopoverSelectProps<
   OptionType extends Record<string, any> = DefaultOptionType,
 > extends NativeProps {
   /**
-   * @description 样式类名
-   */
-  className?: string;
-  /**
-   * @description 内联样式
-   */
-  style?: React.CSSProperties;
-  /**
    * @description 数据配置选项
    * @default []
    */
@@ -135,7 +127,7 @@ export interface SelectorProps extends NativeProps {
   rootClassName?: string;
   openClassName?: string;
   afterOpenChange?: (open: boolean) => void;
-  children?: React.ReactNode | (() => React.ReactNode);
+  children?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   ellipsis?: boolean | { tooltip?: string };

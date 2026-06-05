@@ -12,7 +12,7 @@ import {
 } from 'antd';
 import clsx from 'clsx';
 import VirtualList from 'rc-virtual-list';
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocale } from '../../configProvider/useLocale';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
 import { useFieldNames, useMergeState } from '../../hooks';
@@ -30,6 +30,7 @@ import {
   PopoverSelectProps,
   RawValueType,
 } from './type';
+
 const Component = <
   ValueType extends RawValueType = RawValueType,
   OptionType extends Record<string, any> = DefaultOptionType,
@@ -113,9 +114,13 @@ const Component = <
     ValueType | ValueType[]
   >(mergeStateConfig);
 
+  // 使用 ref 追踪 internalValue 以避免 useEffect 的依赖问题
+  const internalValueRef = React.useRef(internalValue);
+  internalValueRef.current = internalValue;
+
   useEffect(() => {
     if (open) {
-      setDraftValue(internalValue);
+      setDraftValue(internalValueRef.current);
     } else {
       setSearchValue('');
     }
@@ -221,42 +226,47 @@ const Component = <
   const handleCancel = () => setOpen(false);
   const handleDraftClear = () => setDraftValue([]);
 
-  const renderItem = (item: OptionType) => {
-    const targetValueList = realShowConfirm ? draftValue : internalValue;
-    const isChecked = targetValueList.includes(item.value);
-    const labelNode = optionRender ? (
-      optionRender(item)
-    ) : (
-      <Typography.Text ellipsis={{ tooltip: item.label }}>
-        {item.label}
-      </Typography.Text>
-    );
-    return mode === 'multiple' ? (
-      <Checkbox
-        key={item.value}
-        value={item.value}
-        checked={isChecked}
-        disabled={item?.disabled}
-        onChange={handleChange}
-        className={`${prefixCls}-menu-checkbox`}
-      >
-        {labelNode}
-      </Checkbox>
-    ) : (
-      <div
-        key={item.value}
-        onClick={() => !item?.disabled && handleValueToggle(item.value)}
-        className={clsx({
-          [`${prefixCls}-menu-radio`]: true,
-          [`${prefixCls}-menu-radio-disabled`]: item?.disabled,
-          [`${prefixCls}-menu-radio-active`]: isChecked,
-        })}
-      >
-        {labelNode}
-      </div>
-    );
-  };
-  const renderMenu = () => {
+  const renderItem = useCallback(
+    (item: OptionType) => {
+      const currentTargetList = realShowConfirm ? draftValue : internalValue;
+      const isChecked = currentTargetList.includes(item.value);
+      const labelNode = optionRender ? (
+        optionRender(item)
+      ) : (
+        <Typography.Text ellipsis={{ tooltip: item.label }}>
+          {item.label}
+        </Typography.Text>
+      );
+      return mode === 'multiple' ? (
+        <Checkbox
+          key={item.value}
+          value={item.value}
+          checked={isChecked}
+          disabled={item?.disabled}
+          onChange={handleChange}
+          className={`${prefixCls}-menu-checkbox`}
+        >
+          {labelNode}
+        </Checkbox>
+      ) : (
+        <div
+          key={item.value}
+          onClick={() => !item?.disabled && handleValueToggle(item.value)}
+          className={clsx({
+            [`${prefixCls}-menu-radio`]: true,
+            [`${prefixCls}-menu-radio-disabled`]: item?.disabled,
+            [`${prefixCls}-menu-radio-active`]: isChecked,
+          })}
+        >
+          {labelNode}
+        </div>
+      );
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [realShowConfirm, draftValue, internalValue, optionRender, mode, prefixCls],
+  );
+
+  const renderMenu = useCallback(() => {
     if (displayOptions.length === 0) return null;
     const actualHeight = Math.min(options.length * listItemHeight, listHeight);
     return (
@@ -276,9 +286,17 @@ const Component = <
         )}
       </div>
     );
-  };
+  }, [
+    displayOptions,
+    options,
+    listItemHeight,
+    listHeight,
+    virtual,
+    prefixCls,
+    renderItem,
+  ]);
 
-  const renderContent = () => {
+  const renderContent = useCallback(() => {
     if (!options.length)
       return (
         <Empty
@@ -318,7 +336,13 @@ const Component = <
         {showSearch && (
           <div className={`${prefixCls}-search`}>
             <Input
-              prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
+              prefix={
+                <SearchOutlined
+                  style={{
+                    color: 'var(--popover-select-search-icon, #bfbfbf)',
+                  }}
+                />
+              }
               placeholder={componentLocale.searchPlaceholder}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
@@ -357,7 +381,23 @@ const Component = <
         )}
       </div>
     );
-  };
+  }, [
+    options,
+    renderMenu,
+    dropdownRender,
+    showClearBtn,
+    showCancelBtn,
+    realShowConfirm,
+    showSearch,
+    mode,
+    showSelectAll,
+    displayOptions.length,
+    isAllSelected,
+    isPartiallySelected,
+    searchValue,
+    componentLocale,
+    prefixCls,
+  ]);
 
   const hasValue = internalValue.length > 0;
   const handleClear = (e: React.MouseEvent) => {
