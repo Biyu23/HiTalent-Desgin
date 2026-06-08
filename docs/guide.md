@@ -52,4 +52,19 @@ export default () => (
     <App />
   </ConfigProvider>
 );
+
+// 方式三：与 react-i18next 桥接
+import { useTranslation } from 'react-i18next';
+import { createMyUILocale } from 'myui';
+
+export default () => {
+  const { t } = useTranslation();
+  const locale = useMemo(() => createMyUILocale(t, { keyPrefix: 'myui' }), [t]);
+
+  return (
+    <ConfigProvider locale={locale}>
+      <App />
+    </ConfigProvider>
+  );
+};
 ```

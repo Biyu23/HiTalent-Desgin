@@ -1,11 +1,12 @@
 import { createContext } from 'react';
+import type { LocaleProp } from '../locales';
 import { zh_CN } from '../locales';
 
 export interface ConfigContextProps {
-  //前缀样式名
+  /** 样式类名前缀，默认 'my-ui' */
   prefixCls?: string;
-  //语言包，支持传入 locale 字符串（'zh-CN' | 'en-US'）或自定义语言包对象
-  locale?: string | Record<string, any>;
+  /** 语言包：支持传入 locale 字符串（'zh-CN' | 'en-US'）或自定义 DeepPartial 语言包对象 */
+  locale?: LocaleProp;
 }
 
 export const defaultConfig: ConfigContextProps = {

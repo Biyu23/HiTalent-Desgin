@@ -4,45 +4,74 @@
  */
 import { Space } from 'antd';
 import { PopoverSelect } from 'myui';
+import { useDemoIntl } from 'myui/demoIntl';
 import React from 'react';
 
+const messages = {
+  'zh-CN': {
+    'disabled.standard': '标准字段',
+    'disabled.standardPlaceholder': '部分选项不可选',
+    'disabled.fieldNames': '通过 fieldNames 映射禁用字段',
+    'disabled.fieldNamesPlaceholder': '访客角色不可选',
+    'disabled.regular': '正式员工',
+    'disabled.intern': '实习生',
+    'disabled.outsource': '外包人员',
+    'disabled.resigned': '已离职',
+    'disabled.admin': '管理员',
+    'disabled.user': '普通用户',
+    'disabled.guest': '访客',
+  },
+  'en-US': {
+    'disabled.standard': 'Standard Fields',
+    'disabled.standardPlaceholder': 'Some options are disabled',
+    'disabled.fieldNames': 'Disable field via fieldNames mapping',
+    'disabled.fieldNamesPlaceholder': 'Guest role disabled',
+    'disabled.regular': 'Regular Employee',
+    'disabled.intern': 'Intern',
+    'disabled.outsource': 'Outsourced',
+    'disabled.resigned': 'Resigned',
+    'disabled.admin': 'Admin',
+    'disabled.user': 'Regular User',
+    'disabled.guest': 'Guest',
+  },
+};
+
 export default () => {
-  // 含禁用项的标准数据
+  const { t } = useDemoIntl(messages);
+
   const optionsWithDisabled = [
-    { label: '正式员工', value: 'regular' },
-    { label: '实习生', value: 'intern', disabled: true }, // 此选项不可选
-    { label: '外包人员', value: 'outsource' },
-    { label: '已离职', value: 'resigned', disabled: true },
+    { label: t('disabled.regular'), value: 'regular' },
+    { label: t('disabled.intern'), value: 'intern', disabled: true },
+    { label: t('disabled.outsource'), value: 'outsource' },
+    { label: t('disabled.resigned'), value: 'resigned', disabled: true },
   ];
 
-  // 后端奇葩字段：isFrozen 表示禁用
   const backendData = [
-    { roleName: '管理员', roleId: 1, isFrozen: false },
-    { roleName: '普通用户', roleId: 2, isFrozen: false },
-    { roleName: '访客', roleId: 3, isFrozen: true }, // 禁用
+    { roleName: t('disabled.admin'), roleId: 1, isFrozen: false },
+    { roleName: t('disabled.user'), roleId: 2, isFrozen: false },
+    { roleName: t('disabled.guest'), roleId: 3, isFrozen: true },
   ];
 
   return (
     <Space size="large">
       <div style={{ width: 240 }}>
-        <h4>标准字段</h4>
+        <h4>{t('disabled.standard')}</h4>
         <PopoverSelect
           options={optionsWithDisabled}
-          placeholder="部分选项不可选"
+          placeholder={t('disabled.standardPlaceholder')}
           allowClear
         />
       </div>
-
       <div style={{ width: 240 }}>
-        <h4>通过 fieldNames 映射禁用字段</h4>
+        <h4>{t('disabled.fieldNames')}</h4>
         <PopoverSelect
           options={backendData}
           fieldNames={{
             label: 'roleName',
             value: 'roleId',
-            disabled: 'isFrozen', // 将 isFrozen 映射为 disabled
+            disabled: 'isFrozen',
           }}
-          placeholder="访客角色不可选"
+          placeholder={t('disabled.fieldNamesPlaceholder')}
         />
       </div>
     </Space>

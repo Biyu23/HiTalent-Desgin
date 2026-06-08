@@ -64,6 +64,12 @@ export default defineConfig({
           ],
         },
       ],
+      '/guide': [
+        {
+          title: '指南',
+          children: [{ title: 'Getting Started', link: '/guide' }],
+        },
+      ],
       '/hooks': [
         {
           title: '自定义 Hooks',

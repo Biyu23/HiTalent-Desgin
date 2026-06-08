@@ -4,27 +4,45 @@
  */
 import { Space } from 'antd';
 import { PopoverSelect } from 'myui';
+import { useDemoIntl } from 'myui/demoIntl';
 import React from 'react';
 
+const messages = {
+  'zh-CN': {
+    'empty.noData': '无数据（options=[]）',
+    'empty.noDataPlaceholder': '暂无可用选项',
+    'empty.noMatch': '搜索无匹配',
+    'empty.noMatchPlaceholder': '输入不存在的关键词',
+  },
+  'en-US': {
+    'empty.noData': 'No Data (options = [])',
+    'empty.noDataPlaceholder': 'No options available',
+    'empty.noMatch': 'Search No Match',
+    'empty.noMatchPlaceholder': 'Type a non-existent keyword',
+  },
+};
+
 export default () => {
+  const { t } = useDemoIntl(messages);
+
   return (
     <Space size="large">
-      {/* 空数据场景 */}
       <div style={{ width: 240 }}>
-        <h4>无数据（options=[]）</h4>
-        <PopoverSelect options={[]} placeholder="暂无可用选项" />
+        <h4>{t('empty.noData')}</h4>
+        <PopoverSelect
+          options={[]}
+          placeholder={t('empty.noDataPlaceholder')}
+        />
       </div>
-
-      {/* 搜索无匹配场景 */}
       <div style={{ width: 240 }}>
-        <h4>搜索无匹配</h4>
+        <h4>{t('empty.noMatch')}</h4>
         <PopoverSelect
           options={[
-            { label: '前端工程师', value: 'FE' },
-            { label: '后端工程师', value: 'BE' },
+            { label: 'Frontend Engineer', value: 'FE' },
+            { label: 'Backend Engineer', value: 'BE' },
           ]}
           showSearch
-          placeholder="输入不存在的关键词"
+          placeholder={t('empty.noMatchPlaceholder')}
         />
       </div>
     </Space>

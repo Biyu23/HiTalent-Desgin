@@ -5,22 +5,30 @@
 import { CloudDownloadOutlined } from '@ant-design/icons';
 import { Space } from 'antd';
 import { Button } from 'myui';
+import { useDemoIntl } from 'myui/demoIntl';
 import React from 'react';
 
+const messages = {
+  'zh-CN': { 'icon.download': '下载' },
+  'en-US': { 'icon.download': 'Download' },
+};
+
 export default () => {
+  const { t } = useDemoIntl(messages);
+
   return (
     <Space align="center" size="large">
       <Button icon={<CloudDownloadOutlined />} iconPosition="left">
-        下载
+        {t('icon.download')}
       </Button>
       <Button icon={<CloudDownloadOutlined />} iconPosition="right">
-        下载
+        {t('icon.download')}
       </Button>
       <Button icon={<CloudDownloadOutlined />} iconPosition="top">
-        下载
+        {t('icon.download')}
       </Button>
       <Button icon={<CloudDownloadOutlined />} iconPosition="bottom">
-        下载
+        {t('icon.download')}
       </Button>
     </Space>
   );

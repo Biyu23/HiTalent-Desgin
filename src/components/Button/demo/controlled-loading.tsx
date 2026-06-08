@@ -4,33 +4,51 @@
  */
 import { message, Space } from 'antd';
 import { Button } from 'myui';
+import { useDemoIntl } from 'myui/demoIntl';
 import React, { useState } from 'react';
 
+const messages = {
+  'zh-CN': {
+    'ctrl.processing': '处理中...',
+    'ctrl.manual': '手动控制 Loading',
+    'ctrl.disableAuto': '关闭自动 Loading',
+    'ctrl.success': '操作完成！',
+    'ctrl.info': 'autoLoading 关闭，点击不会自动 loading',
+  },
+  'en-US': {
+    'ctrl.processing': 'Processing...',
+    'ctrl.manual': 'Manual Loading Control',
+    'ctrl.disableAuto': 'Disable Auto Loading',
+    'ctrl.success': 'Operation complete!',
+    'ctrl.info': 'autoLoading is off, click will not trigger auto loading',
+  },
+};
+
 export default () => {
+  const { t } = useDemoIntl(messages);
   const [loading, setLoading] = useState(false);
 
   const handleManualSubmit = () => {
     setLoading(true);
-    // 模拟异步操作，3 秒后由外部手动关闭 loading
     setTimeout(() => {
       setLoading(false);
-      message.success('操作完成！');
+      message.success(t('ctrl.success'));
     }, 3000);
   };
 
   return (
     <Space>
       <Button type="primary" loading={loading} onClick={handleManualSubmit}>
-        {loading ? '处理中...' : '手动控制 Loading'}
+        {loading ? t('ctrl.processing') : t('ctrl.manual')}
       </Button>
 
       <Button
         autoLoading={false}
         onClick={() => {
-          message.info('autoLoading 关闭，点击不会自动 loading');
+          message.info(t('ctrl.info'));
         }}
       >
-        关闭自动 Loading
+        {t('ctrl.disableAuto')}
       </Button>
     </Space>
   );

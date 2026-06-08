@@ -4,33 +4,49 @@
  */
 import { Space } from 'antd';
 import { PopoverSelect } from 'myui';
+import { useDemoIntl } from 'myui/demoIntl';
 import React from 'react';
 import { customFieldData, hugeOptions } from './mock';
 
+const messages = {
+  'zh-CN': {
+    'virtual.departments': '1. 奇葩字段映射',
+    'virtual.departmentsPlaceholder': '选择部门',
+    'virtual.virtualScroll': '2. 10000 条数据虚拟滚动',
+    'virtual.virtualScrollPlaceholder': '体验丝滑滚动',
+  },
+  'en-US': {
+    'virtual.departments': '1. Unconventional Field Mapping',
+    'virtual.departmentsPlaceholder': 'Select Department',
+    'virtual.virtualScroll': '2. Virtual Scroll with 10,000 Items',
+    'virtual.virtualScrollPlaceholder': 'Smooth scrolling experience',
+  },
+};
+
 export default () => {
+  const { t } = useDemoIntl(messages);
+
   return (
     <Space size="large">
       <div style={{ width: 200 }}>
-        <h4>1. 奇葩字段映射</h4>
+        <h4>{t('virtual.departments')}</h4>
         <PopoverSelect
           options={customFieldData}
           fieldNames={{
-            label: 'deptName', // 告诉组件去读 deptName
-            value: 'deptId', // 告诉组件去读 deptId
-            disabled: 'isLock', // 告诉组件禁用状态读 isLock
+            label: 'deptName',
+            value: 'deptId',
+            disabled: 'isLock',
           }}
-          onChange={(val) => console.log('选中的部门ID:', val)}
-          placeholder="选择部门"
+          onChange={(val) => console.log('Selected dept ID:', val)}
+          placeholder={t('virtual.departmentsPlaceholder')}
         />
       </div>
-
       <div style={{ width: 200 }}>
-        <h4>2. 10000 条数据虚拟滚动</h4>
+        <h4>{t('virtual.virtualScroll')}</h4>
         <PopoverSelect
           options={hugeOptions}
-          virtual={true} // 默认已开启虚拟滚动
-          listHeight={300} // 可自定义下拉面板的最大高度
-          placeholder="体验丝滑滚动"
+          listHeight={300}
+          placeholder={t('virtual.virtualScrollPlaceholder')}
         />
       </div>
     </Space>

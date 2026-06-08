@@ -1,5 +1,7 @@
-const en: Record<string, any> = {
-  locale: 'en',
+import type { MyUILocale } from './type';
+
+const en_US = {
+  locale: 'en-US',
   PopoverSelect: {
     placeholder: 'Please select',
     selectAll: 'Select All',
@@ -9,6 +11,6 @@ const en: Record<string, any> = {
     noMatch: 'No matching results',
     searchPlaceholder: 'Search',
   },
-};
+} as const satisfies MyUILocale;
 
-export default en;
+export default en_US;

@@ -5,42 +5,49 @@
 import { PlusOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Divider, Flex, Tag, Typography } from 'antd';
 import { PopoverSelect } from 'myui';
+import { useDemoIntl } from 'myui/demoIntl';
 import React from 'react';
 import { standardOptions } from './mock';
 
+const messages = {
+  'zh-CN': {
+    'custom.placeholder': '自定义列表与选项',
+    'custom.hot': '热门',
+    'custom.create': '新建职位',
+  },
+  'en-US': {
+    'custom.placeholder': 'Custom List & Options',
+    'custom.hot': 'Popular',
+    'custom.create': 'Create Position',
+  },
+};
+
 export default () => {
+  const { t } = useDemoIntl(messages);
+
   return (
     <div style={{ width: 300 }}>
       <PopoverSelect
         options={standardOptions}
-        placeholder="自定义列表与选项"
+        placeholder={t('custom.placeholder')}
         optionRender={(item) => (
           <Flex align="center" gap={6} style={{ width: '100%' }}>
             <UserOutlined style={{ color: '#1677ff' }} />
             <Typography.Text
-              ellipsis={{
-                tooltip: item.label,
-              }}
+              ellipsis={{ tooltip: item.label }}
               style={{ flex: 1 }}
             >
               {item.label}
             </Typography.Text>
             {item.value === 'FE' && (
-              <Tag
-                color="blue"
-                style={{
-                  flexShrink: 0,
-                }}
-              >
-                热门
+              <Tag color="blue" style={{ flexShrink: 0 }}>
+                {t('custom.hot')}
               </Tag>
             )}
           </Flex>
         )}
-        // 2. 接管整个下拉面板
         dropdownRender={(menu) => (
           <div>
-            {/* 必须把原始的 menu 渲染出来 */}
             {menu}
             <Divider style={{ margin: 0 }} />
             <div style={{ padding: '8px' }}>
@@ -48,9 +55,9 @@ export default () => {
                 type="dashed"
                 block
                 icon={<PlusOutlined />}
-                onClick={() => alert('跳转到创建页面！')}
+                onClick={() => alert('Navigate to create page!')}
               >
-                新建职位
+                {t('custom.create')}
               </Button>
             </div>
           </div>

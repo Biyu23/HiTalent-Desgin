@@ -4,9 +4,30 @@
  */
 import { Form, Input, message } from 'antd';
 import { Modal } from 'myui';
+import { useDemoIntl } from 'myui/demoIntl';
 import React, { useState } from 'react';
 
+const messages = {
+  'zh-CN': {
+    'form.open': '打开基础表单弹窗',
+    'form.title': '新建用户',
+    'form.username': '用户名',
+    'form.usernameRequired': '请输入用户名',
+    'form.usernamePlaceholder': '请输入...',
+    'form.success': '用户 {username} 创建成功！',
+  },
+  'en-US': {
+    'form.open': 'Open Form Modal',
+    'form.title': 'Create User',
+    'form.username': 'Username',
+    'form.usernameRequired': 'Please enter a username',
+    'form.usernamePlaceholder': 'Please enter...',
+    'form.success': 'User {username} created successfully!',
+  },
+};
+
 export default () => {
+  const { t } = useDemoIntl(messages);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
@@ -15,23 +36,24 @@ export default () => {
     try {
       const values = await form.validateFields();
       setLoading(true);
-      // 模拟网络请求
       setTimeout(() => {
-        message.success(`用户 ${values.username} 创建成功！`);
+        message.success(
+          t('form.success').replace('{username}', values.username),
+        );
         setLoading(false);
         setOpen(false);
         form.resetFields();
       }, 1500);
     } catch (error) {
-      console.log('校验失败:', error);
+      console.log('validation failed:', error);
     }
   };
 
   return (
     <>
-      <a onClick={() => setOpen(true)}>打开基础表单弹窗</a>
+      <a onClick={() => setOpen(true)}>{t('form.open')}</a>
       <Modal
-        title="新建用户"
+        title={t('form.title')}
         open={open}
         confirmLoading={loading}
         onCancel={() => {
@@ -44,10 +66,10 @@ export default () => {
           <Form form={form} layout="vertical">
             <Form.Item
               name="username"
-              label="用户名"
-              rules={[{ required: true, message: '请输入用户名' }]}
+              label={t('form.username')}
+              rules={[{ required: true, message: t('form.usernameRequired') }]}
             >
-              <Input placeholder="请输入..." />
+              <Input placeholder={t('form.usernamePlaceholder')} />
             </Form.Item>
           </Form>
         </div>

@@ -1,5 +1,7 @@
-const zh_CN: Record<string, any> = {
-  locale: 'zh-cn',
+import type { MyUILocale } from './type';
+
+const zh_CN = {
+  locale: 'zh-CN',
   PopoverSelect: {
     placeholder: '请选择',
     selectAll: '全选',
@@ -9,6 +11,6 @@ const zh_CN: Record<string, any> = {
     noMatch: '无匹配结果',
     searchPlaceholder: '搜索',
   },
-};
+} as const satisfies MyUILocale;
 
 export default zh_CN;

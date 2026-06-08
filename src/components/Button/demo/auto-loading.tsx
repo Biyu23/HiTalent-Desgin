@@ -4,22 +4,34 @@
  */
 import { message } from 'antd';
 import { Button } from 'myui';
+import { useDemoIntl } from 'myui/demoIntl';
 import React from 'react';
 
+const messages = {
+  'zh-CN': {
+    'auto.success': '数据保存成功！',
+    'auto.label': '提交表单 (等待1.5秒)',
+  },
+  'en-US': {
+    'auto.success': 'Data saved successfully!',
+    'auto.label': 'Submit Form (Wait 1.5s)',
+  },
+};
+
 export default () => {
-  // 模拟一个耗时的网络请求
-  const mockApiRequest = () => {
-    return new Promise((resolve) => {
+  const { t } = useDemoIntl(messages);
+
+  const mockApiRequest = () =>
+    new Promise((resolve) => {
       setTimeout(() => {
-        message.success('数据保存成功！');
+        message.success(t('auto.success'));
         resolve(true);
       }, 1500);
     });
-  };
 
   return (
     <Button type="primary" onClick={mockApiRequest}>
-      提交表单 (等待1.5秒)
+      {t('auto.label')}
     </Button>
   );
 };
