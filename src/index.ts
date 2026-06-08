@@ -18,6 +18,7 @@ export { useDragBounds, useFieldNames, useMergeState } from './hooks';
 // Locales
 export { createHtdLocale, en_US, localeMap, zh_CN } from './locales';
 export type {
+  ButtonLocale,
   DeepPartial,
   HtdLocale,
   LocaleComponentMap,

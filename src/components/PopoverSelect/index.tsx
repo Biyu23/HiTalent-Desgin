@@ -31,6 +31,69 @@ import {
   RawValueType,
 } from './type';
 
+// ==================== 子组件 ====================
+
+interface FooterActionsProps {
+  prefixCls: string;
+  actions: React.ReactNode[];
+}
+
+/** 底部操作区：确认/取消/清空按钮 */
+const FooterActions = memo<FooterActionsProps>(({ prefixCls, actions }) => {
+  if (!actions.length) return null;
+  return (
+    <div className={`${prefixCls}-footer`}>
+      <Space>{actions}</Space>
+    </div>
+  );
+});
+
+interface SearchInputProps {
+  prefixCls: string;
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+/** 搜索输入框 */
+const SearchInput = memo<SearchInputProps>(
+  ({ prefixCls, placeholder, value, onChange }) => (
+    <div className={`${prefixCls}-search`}>
+      <Input
+        prefix={<SearchOutlined />}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        allowClear
+        variant="borderless"
+      />
+    </div>
+  ),
+);
+
+interface SelectAllCheckboxProps {
+  prefixCls: string;
+  checked: boolean;
+  indeterminate: boolean;
+  label: string;
+  onChange: (e: CheckboxChangeEvent) => void;
+}
+
+/** 全选复选框 */
+const SelectAllCheckbox = memo<SelectAllCheckboxProps>(
+  ({ prefixCls, checked, indeterminate, label, onChange }) => (
+    <div className={`${prefixCls}-select-all`}>
+      <Checkbox
+        checked={checked}
+        indeterminate={indeterminate}
+        onChange={onChange}
+      >
+        {label}
+      </Checkbox>
+    </div>
+  ),
+);
+
 const Component = <
   ValueType extends RawValueType = RawValueType,
   OptionType extends Record<string, any> = DefaultOptionType,
@@ -197,7 +260,6 @@ const Component = <
       newValues = currentTarget.filter((v) => !enabledValues.includes(v));
     }
     if (realShowConfirmRef.current) {
-      // 使用函数式更新以避免 setState 闭包问题
       setDraftValue(newValues);
     } else {
       const newOptions = optionsRef.current.filter((opt: MappedOption) =>
@@ -294,8 +356,12 @@ const Component = <
     [handleChange, handleValueToggle, optionRender, mode, prefixCls],
   );
 
+  // ---- 菜单渲染部分 ----
+  const hasOptions = options.length > 0;
+  const hasDisplayOptions = displayOptions.length > 0;
+
   const renderMenu = useCallback(() => {
-    if (displayOptions.length === 0) return null;
+    if (!hasDisplayOptions) return null;
     const actualHeight = Math.min(
       displayOptions.length * listItemHeight,
       listHeight,
@@ -318,6 +384,7 @@ const Component = <
       </div>
     );
   }, [
+    hasDisplayOptions,
     displayOptions,
     listItemHeight,
     listHeight,
@@ -326,19 +393,16 @@ const Component = <
     renderItem,
   ]);
 
-  const renderContent = useCallback(() => {
-    if (!options.length)
-      return (
-        <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          style={{ padding: '16px 0' }}
-        />
-      );
+  const finalMenuNode = useMemo(() => {
     const menuNode = renderMenu();
-    const finalMenuNode = dropdownRender
+    return dropdownRender
       ? dropdownRender(menuNode as React.ReactElement)
       : menuNode;
-    const actionsBtn = [
+  }, [dropdownRender, renderMenu]);
+
+  // 底部操作按钮收集（使用子组件 FooterActions 渲染）
+  const footerActions = useMemo(() => {
+    return [
       showClearBtn && (
         <Button key="clear" size="small" onClick={handleDraftClear}>
           {componentLocale.clearAll}
@@ -359,72 +423,71 @@ const Component = <
           {componentLocale.confirm}
         </Button>
       ),
-    ].filter(Boolean);
-
-    return (
-      <div className={`${prefixCls}-dropdown-content`}>
-        {showSearch && (
-          <div className={`${prefixCls}-search`}>
-            <Input
-              prefix={<SearchOutlined />}
-              placeholder={componentLocale.searchPlaceholder}
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              allowClear
-              variant="borderless"
-            />
-          </div>
-        )}
-
-        {mode === 'multiple' && showSelectAll && displayOptions.length > 0 && (
-          <div className={`${prefixCls}-select-all`}>
-            <Checkbox
-              checked={isAllSelected}
-              indeterminate={isPartiallySelected}
-              onChange={handleSelectAll}
-            >
-              {componentLocale.selectAll}
-            </Checkbox>
-          </div>
-        )}
-
-        {displayOptions.length === 0 ? (
-          <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={componentLocale.noMatch}
-            style={{ padding: '16px 0' }}
-          />
-        ) : (
-          finalMenuNode
-        )}
-
-        {realShowConfirm && !!actionsBtn.length && (
-          <div className={`${prefixCls}-footer`}>
-            <Space>{actionsBtn}</Space>
-          </div>
-        )}
-      </div>
-    );
+    ].filter(Boolean) as React.ReactNode[];
   }, [
-    options,
-    renderMenu,
-    dropdownRender,
     showClearBtn,
     showCancelBtn,
     realShowConfirm,
-    showSearch,
-    mode,
-    showSelectAll,
-    displayOptions.length,
-    isAllSelected,
-    isPartiallySelected,
-    searchValue,
     componentLocale,
-    prefixCls,
     handleDraftClear,
     handleCancel,
     handleConfirm,
-    handleSelectAll,
+  ]);
+
+  // ---- 展示文本：纯数据计算与 JSX 渲染分离，避免 useMemo 混合返回类型 ----
+  const { selectedLabels, allLabels, isTruncated, omittedCount } =
+    useMemo(() => {
+      if (internalValue.length === 0) {
+        return {
+          selectedLabels: [],
+          allLabels: [],
+          isTruncated: false,
+          omittedCount: 0,
+        };
+      }
+      const selectedOptions = options.filter((opt: MappedOption) =>
+        internalValue.includes(opt.value),
+      );
+      const labels = selectedOptions.map((opt: MappedOption) => opt.label);
+      if (
+        mode === 'multiple' &&
+        maxTagCount &&
+        selectedOptions.length > maxTagCount
+      ) {
+        return {
+          selectedLabels: labels.slice(0, maxTagCount),
+          allLabels: labels,
+          isTruncated: true,
+          omittedCount: selectedOptions.length - maxTagCount,
+        };
+      }
+      return {
+        selectedLabels: labels,
+        allLabels: labels,
+        isTruncated: false,
+        omittedCount: 0,
+      };
+    }, [internalValue, options, maxTagCount, mode]);
+
+  const displayTextNode = useMemo(() => {
+    if (selectedLabels.length === 0) return <>{placeholder}</>;
+    const visibleText = selectedLabels.join(separator);
+    if (isTruncated) {
+      const fullText = allLabels.join(separator);
+      return (
+        <Tooltip title={fullText} placement="topLeft">
+          <span>{`${visibleText}${separator}... (+${omittedCount})`}</span>
+        </Tooltip>
+      );
+    }
+    return <>{visibleText}</>;
+  }, [
+    selectedLabels,
+    allLabels,
+    isTruncated,
+    omittedCount,
+    separator,
+    placeholder,
   ]);
 
   const hasValue = internalValue.length > 0;
@@ -434,35 +497,69 @@ const Component = <
     setDraftValue([]);
   }, []);
 
-  const getDisplayText = () => {
-    if (internalValue.length === 0) return placeholder;
-    const selectedOptions = options.filter((opt: MappedOption) =>
-      internalValue.includes(opt.value),
-    );
-    const fullText = selectedOptions
-      .map((opt: MappedOption) => opt.label)
-      .join(separator);
-    if (
-      mode === 'multiple' &&
-      maxTagCount &&
-      selectedOptions.length > maxTagCount
-    ) {
-      const visibleOptions = selectedOptions.slice(0, maxTagCount);
-      const omittedCount = selectedOptions.length - maxTagCount;
-      const visibleText = visibleOptions
-        .map((opt: MappedOption) => opt.label)
-        .join(separator);
-      const displayText = `${visibleText}${separator}... (+${omittedCount})`;
+  // ---- 渲染下拉内容：拆分为独立子组件减少单函数复杂度 ----
+  const renderContent = useCallback(() => {
+    // 无 options 的场景（如通过 API 清空）显示空状态
+    if (!hasOptions) {
       return (
-        <Tooltip title={fullText} placement="topLeft">
-          <span>{displayText}</span>
-        </Tooltip>
+        <div className={`${prefixCls}-dropdown-content`}>
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            style={{ padding: '16px 0' }}
+          />
+        </div>
       );
     }
-    return selectedOptions
-      .map((opt: MappedOption) => opt.label)
-      .join(separator);
-  };
+
+    return (
+      <div className={`${prefixCls}-dropdown-content`}>
+        {showSearch && (
+          <SearchInput
+            prefixCls={prefixCls}
+            placeholder={componentLocale.searchPlaceholder}
+            value={searchValue}
+            onChange={setSearchValue}
+          />
+        )}
+
+        {mode === 'multiple' && showSelectAll && hasDisplayOptions && (
+          <SelectAllCheckbox
+            prefixCls={prefixCls}
+            checked={isAllSelected}
+            indeterminate={isPartiallySelected}
+            label={componentLocale.selectAll}
+            onChange={handleSelectAll}
+          />
+        )}
+
+        {hasDisplayOptions ? (
+          finalMenuNode
+        ) : (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={componentLocale.noMatch}
+            style={{ padding: '16px 0' }}
+          />
+        )}
+
+        <FooterActions prefixCls={prefixCls} actions={footerActions} />
+      </div>
+    );
+  }, [
+    hasOptions,
+    hasDisplayOptions,
+    prefixCls,
+    showSearch,
+    componentLocale,
+    searchValue,
+    mode,
+    showSelectAll,
+    isAllSelected,
+    isPartiallySelected,
+    handleSelectAll,
+    finalMenuNode,
+    footerActions,
+  ]);
 
   return withNativeProps(
     props,
@@ -476,12 +573,12 @@ const Component = <
         hasValue={hasValue}
         onClear={handleClear}
       >
-        {getDisplayText()}
+        {displayTextNode}
       </Selector>
     </div>,
   );
 };
 
-const Select = memo(Component);
+const Select = memo(Component) as typeof Component;
 const PopoverSelector = attachPropertiesToComponent(Select, { Selector });
 export default PopoverSelector;

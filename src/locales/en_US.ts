@@ -2,6 +2,10 @@ import type { HtdLocale } from './type';
 
 const en_US = {
   locale: 'en-US',
+  direction: 'ltr' as const,
+  Button: {
+    loading: 'Loading',
+  },
   PopoverSelect: {
     placeholder: 'Please select',
     selectAll: 'Select All',

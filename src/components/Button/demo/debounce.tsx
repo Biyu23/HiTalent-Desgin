@@ -1,6 +1,6 @@
 /**
- * title: 节流
- * description: 默认 `debounce` 为 `0`（不开启节流）。设置为正数毫秒值后，按钮首次点击立即执行，冷却期内忽略后续点击，有效防止重复提交。
+ * title: 防抖
+ * description: 默认 `debounce` 为 `0`（不开启防抖）。设置为正数毫秒值后，连续点击会重置计时器，仅最后一次点击在等待指定时间后触发，有效防止重复提交。
  */
 import { Space, message } from 'antd';
 import { Button } from 'hi-talent-design';
@@ -10,13 +10,13 @@ import React, { useState } from 'react';
 const messages = {
   'zh-CN': {
     'debounce.current': '当前数值',
-    'debounce.clicked': '点击生效！（节流 1000ms）',
-    'debounce.label': '疯狂点击我测试 (节流 1000ms)',
+    'debounce.clicked': '点击生效！（防抖 1000ms）',
+    'debounce.label': '疯狂点击我测试 (防抖 1000ms)',
   },
   'en-US': {
     'debounce.current': 'Current Value',
-    'debounce.clicked': 'Click registered! (throttle 1000ms)',
-    'debounce.label': 'Click me rapidly (throttle 1000ms)',
+    'debounce.clicked': 'Click registered! (debounce 1000ms)',
+    'debounce.label': 'Click me rapidly (debounce 1000ms)',
   },
 };
 

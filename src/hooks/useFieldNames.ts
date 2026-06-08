@@ -29,12 +29,7 @@ export function useFieldNames(customFieldNames?: FieldNames) {
       ...defaultFieldNames,
       ...(customFieldNames || {}),
     };
-  }, [
-    customFieldNames?.label,
-    customFieldNames?.value,
-    customFieldNames?.children,
-    customFieldNames?.disabled,
-  ]);
+  }, [customFieldNames]);
 
   const getFieldValue = useCallback(
     <T extends Record<string, any>>(item: T, field: keyof FieldNames) => {

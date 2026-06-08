@@ -35,6 +35,7 @@ const getExistingContainer = (
   position: MinimizePosition,
   prefixCls: string,
 ): HTMLElement | null => {
+  if (typeof document === 'undefined') return null;
   const containerId = `${prefixCls}-minimize-container-${position}`;
   return document.getElementById(containerId);
 };
@@ -42,7 +43,8 @@ const getExistingContainer = (
 const createContainer = (
   position: MinimizePosition,
   prefixCls: string,
-): HTMLElement => {
+): HTMLElement | null => {
+  if (typeof document === 'undefined') return null;
   const containerId = `${prefixCls}-minimize-container-${position}`;
   const container = document.createElement('div');
   container.id = containerId;
@@ -68,7 +70,8 @@ const MinimizedDockInner = memo((props: MinimizedDockProps) => {
 
   useLayoutEffect(() => {
     if (!containerEl) {
-      setContainerEl(createContainer(minimizePosition, prefixCls!));
+      const el = createContainer(minimizePosition, prefixCls!);
+      if (el) setContainerEl(el);
     }
   }, [containerEl, minimizePosition, prefixCls]);
 

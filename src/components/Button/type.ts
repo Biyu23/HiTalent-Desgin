@@ -1,21 +1,21 @@
 import { ButtonProps as AntdButtonProps } from 'antd';
 export interface ButtonProps extends Omit<AntdButtonProps, 'iconPosition'> {
   /**
-   * @description 图标展示位置 (这里写属性的中文说明)
+   * @description 图标展示位置
    * @default 'left'
    */
   iconPosition?: 'left' | 'right' | 'top' | 'bottom';
 
   /**
-   * @description 是否自动控制 loading 状态
+   * @description 是否自动控制 loading 状态——当 onClick 返回 Promise 时
+   *              自动进入 loading 态，Promise 落定后自动退出
    * @default true
    */
   autoLoading?: boolean;
 
   /**
-   * @description 节流间隔 (单位: 毫秒)。首次点击立即执行，冷却期内忽略后续点击；
-   *              适用场景：防止表单重复提交、限制操作频率。
-   *              注意：此行为是 throttle（节流）而非 debounce（防抖）。
+   * @description 防抖间隔 (单位: 毫秒)。连续点击时重置计时器，最后一次点击后
+   *              等待指定时间才触发 onClick。适用场景：搜索框输入触发、窗口 resize 回调。
    * @default 0
    */
   debounce?: number;

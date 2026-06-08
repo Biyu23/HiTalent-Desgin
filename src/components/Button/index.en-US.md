@@ -31,7 +31,7 @@ Ant Design's Button is feature-rich, but complex business scenarios still requir
 
 ### Debounce Click
 
-<code src="./demo/debounce.tsx" title="Debounce" description="Set `debounce` to a positive millisecond value to limit the button to one click within the specified time window, preventing duplicate submissions."></code>
+<code src="./demo/debounce.tsx" title="Debounce" description="Set `debounce` to a positive millisecond value. Rapid clicks reset the timer — only the last click fires after the specified cooldown, preventing duplicate submissions."></code>
 
 ## API
 

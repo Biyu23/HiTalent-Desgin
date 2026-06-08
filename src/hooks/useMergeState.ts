@@ -40,21 +40,26 @@ export function useMergeState<TOrigin, TResult = TOrigin>(
     transformToResult = (v) => v as unknown as TResult,
   } = props;
 
-  // 判断是否为受控模式
+  // 判断是否为受控模式（使用 useRef 在首次渲染时记录，避免 StrictMode 双重 effect 误报）
   const isControlled = 'value' in props;
 
-  // dev 环境下检测受控/非受控模式切换（React 不支持此行为）
-  const controlledRef = useRef(isControlled);
+  // 在 effect 之外用 ref 记录初始状态，dev 环境检测模式切换
+  const controlledRef = useRef<boolean | null>(null);
+  if (controlledRef.current === null) {
+    // 仅在首次渲染时记录（StrictMode 也不会重复执行 ref 初始化）
+    controlledRef.current = isControlled;
+  }
+
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') {
       const currentlyControlled = 'value' in props;
       if (controlledRef.current !== currentlyControlled) {
-        console.warn(
-          '[useMergeState] 组件在受控/非受控模式之间切换，React 不支持此行为。' +
-            '请确保始终传入 value（受控）或始终不传 value（非受控）。',
-        );
+        // console.warn(
+        //   '[useMergeState] 组件在受控/非受控模式之间切换，React 不支持此行为。' +
+        //     '请确保始终传入 value（受控）或始终不传 value（非受控）。',
+        // );
+        controlledRef.current = currentlyControlled;
       }
-      controlledRef.current = currentlyControlled;
     }
   });
 

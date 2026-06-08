@@ -92,6 +92,10 @@ export function createHtdLocale(
 
   return {
     locale: '',
+    direction: 'ltr',
+    Button: {
+      loading: t(`${pfx}Button.loading`, 'Loading'),
+    },
     PopoverSelect: {
       placeholder: t(`${pfx}PopoverSelect.placeholder`, 'Please select'),
       selectAll: t(`${pfx}PopoverSelect.selectAll`, 'Select All'),

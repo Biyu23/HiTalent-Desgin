@@ -1,7 +1,10 @@
+import { default as en_US } from './en_US';
 import type { DeepPartial, HtdLocale } from './type';
+import { default as zh_CN } from './zh_CN';
 
 export { createHtdLocale } from './adapter';
 export type {
+  ButtonLocale,
   DeepPartial,
   HtdLocale,
   LocaleComponentMap,
@@ -9,10 +12,8 @@ export type {
   PopoverSelectLocale,
 } from './type';
 
-import en_US from './en_US';
-import zh_CN from './zh_CN';
-
-export { en_US, zh_CN };
+export { default as en_US } from './en_US';
+export { default as zh_CN } from './zh_CN';
 
 /** 内置语言包映射表 */
 export const localeMap: Record<string, HtdLocale> = {

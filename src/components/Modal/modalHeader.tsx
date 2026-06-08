@@ -10,6 +10,53 @@ import React, { memo, useEffect, useRef } from 'react';
 import { useLocale } from '../../configProvider/useLocale';
 import { ModalHeaderProps } from './type';
 
+/**
+ * 全局 mouseup 监听器——多实例共享模式。
+ *
+ * 问题：如果每个 ModalHeader 独立注册 `window.addEventListener('mouseup', ...)`，
+ * N 个弹窗实例会产生 N 个无意义的重复监听器。
+ *
+ * 方案：
+ * 1. `GlobalMouseUpManager` 单例管理所有实例的 isMouseDownRef。
+ * 2. `document` 上只维护一个全局 mouseup 处理器，遍历所有 ref 并重置。
+ * 3. 实例挂载时注册 ref，卸载时注销；当 Set 为空时自动移除全局监听器。
+ */
+class GlobalMouseUpManager {
+  private refs = new Set<React.MutableRefObject<boolean>>();
+  private listener: (() => void) | null = null;
+
+  register(ref: React.MutableRefObject<boolean>) {
+    this.refs.add(ref);
+    this.ensureListening();
+  }
+
+  unregister(ref: React.MutableRefObject<boolean>) {
+    this.refs.delete(ref);
+    if (this.refs.size === 0) {
+      this.dispose();
+    }
+  }
+
+  private ensureListening() {
+    if (this.listener) return;
+    this.listener = () => {
+      // 仅重置仍为 true 的 ref，避免无效写入
+      this.refs.forEach((ref) => {
+        if (ref.current) ref.current = false;
+      });
+    };
+    document.addEventListener('mouseup', this.listener);
+  }
+
+  private dispose() {
+    if (!this.listener) return;
+    document.removeEventListener('mouseup', this.listener);
+    this.listener = null;
+  }
+}
+
+const globalMouseUpManager = new GlobalMouseUpManager();
+
 const ModalHeader = memo((props: ModalHeaderProps) => {
   const {
     title,
@@ -32,12 +79,13 @@ const ModalHeader = memo((props: ModalHeaderProps) => {
 
   // 追踪鼠标是否按在标题栏上，防止拖拽过程中 mouseLeave 误禁用拖拽
   const isMouseDownRef = useRef(false);
+
+  // 注册/注销全局 mouseup 监听（引用计数模式）
   useEffect(() => {
-    const handleGlobalMouseUp = () => {
-      isMouseDownRef.current = false;
+    globalMouseUpManager.register(isMouseDownRef);
+    return () => {
+      globalMouseUpManager.unregister(isMouseDownRef);
     };
-    window.addEventListener('mouseup', handleGlobalMouseUp);
-    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
   }, []);
 
   if (!needCustomHeader) return <>{title}</>;

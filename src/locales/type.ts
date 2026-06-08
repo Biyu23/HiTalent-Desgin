@@ -9,6 +9,12 @@ export interface PopoverSelectLocale {
   searchPlaceholder: string;
 }
 
+/** Button 组件的国际化文案 */
+export interface ButtonLocale {
+  /** loading 状态的 aria-label，屏幕阅读器专用 */
+  loading: string;
+}
+
 /** Modal 组件的国际化文案 */
 export interface ModalLocale {
   restore: string;
@@ -25,6 +31,10 @@ export interface ModalLocale {
 export interface HtdLocale {
   /** 语言标识，如 'zh-CN'、'en-US' */
   locale: string;
+  /** 语言方向：'ltr'（左到右）或 'rtl'（右到左），供 RTL 语言（阿拉伯语、希伯来语等）适配 */
+  direction: 'ltr' | 'rtl';
+  /** Button 按钮 */
+  Button: ButtonLocale;
   /** PopoverSelect 气泡选择 */
   PopoverSelect: PopoverSelectLocale;
   /** Modal 弹窗 */
@@ -44,6 +54,7 @@ export type DeepPartial<T> = T extends object
  * componentName → locale interface
  */
 export interface LocaleComponentMap {
+  Button: ButtonLocale;
   PopoverSelect: PopoverSelectLocale;
   Modal: ModalLocale;
 }

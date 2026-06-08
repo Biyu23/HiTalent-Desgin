@@ -2,6 +2,10 @@ import type { HtdLocale } from './type';
 
 const zh_CN = {
   locale: 'zh-CN',
+  direction: 'ltr' as const,
+  Button: {
+    loading: '加载中',
+  },
   PopoverSelect: {
     placeholder: '请选择',
     selectAll: '全选',
