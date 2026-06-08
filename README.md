@@ -1,7 +1,7 @@
-# myui
+# hi-talent-design
 
-[![NPM version](https://img.shields.io/npm/v/myui.svg?style=flat)](https://npmjs.org/package/myui)
-[![NPM downloads](http://img.shields.io/npm/dm/myui.svg?style=flat)](https://npmjs.org/package/myui)
+[![NPM version](https://img.shields.io/npm/v/hi-talent-design.svg?style=flat)](https://npmjs.org/package/hi-talent-design)
+[![NPM downloads](http://img.shields.io/npm/dm/hi-talent-design.svg?style=flat)](https://npmjs.org/package/hi-talent-design)
 
 A react library developed with dumi
 

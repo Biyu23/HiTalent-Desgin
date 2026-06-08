@@ -366,13 +366,7 @@ const Component = <
         {showSearch && (
           <div className={`${prefixCls}-search`}>
             <Input
-              prefix={
-                <SearchOutlined
-                  style={{
-                    color: 'var(--popover-select-search-icon, #bfbfbf)',
-                  }}
-                />
-              }
+              prefix={<SearchOutlined />}
               placeholder={componentLocale.searchPlaceholder}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}

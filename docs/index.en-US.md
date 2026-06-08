@@ -1,6 +1,6 @@
 ---
 hero:
-  title: MyUI
+  title: HiTalent Design
   description: Advanced business component library built on Ant Design — out of the box
   actions:
     - text: Getting Started

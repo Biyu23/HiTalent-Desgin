@@ -3,6 +3,7 @@ import { Button, Flex } from 'antd';
 import React, { memo, useEffect, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Draggable from 'react-draggable';
+import { useLocale } from '../../configProvider/useLocale';
 import useDragBounds from '../../hooks/useDragBounds';
 import { MinimizedDockProps, MinimizePosition } from './type';
 
@@ -60,6 +61,7 @@ const MinimizedDockInner = memo((props: MinimizedDockProps) => {
     onClose,
   } = props;
   const { dragRef, bounds, onStart } = useDragBounds();
+  const modalLocale = useLocale('Modal');
   const [containerEl, setContainerEl] = useState<HTMLElement | null>(() =>
     getExistingContainer(minimizePosition, prefixCls!),
   );
@@ -107,14 +109,14 @@ const MinimizedDockInner = memo((props: MinimizedDockProps) => {
               type="text"
               onClick={onRestore}
               icon={<ExpandOutlined />}
-              aria-label="还原"
+              aria-label={modalLocale.restore}
             />
             <Button
               size="small"
               type="text"
               onClick={onClose}
               icon={<CloseOutlined />}
-              aria-label="关闭"
+              aria-label={modalLocale.close}
             />
           </Flex>
         </div>

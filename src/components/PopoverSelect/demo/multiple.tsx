@@ -2,8 +2,8 @@
  * title: 多选带确认机制
  * description: 开启 `mode="multiple"` 即可切换多选，默认显示确认按钮。可额外开启取消、清空按钮以及自定义分隔符和最大标签数。
  */
-import { PopoverSelect } from 'myui';
-import { useDemoIntl } from 'myui/demoIntl';
+import { PopoverSelect } from 'hi-talent-design';
+import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React, { useState } from 'react';
 import { standardOptions } from './mock';
 

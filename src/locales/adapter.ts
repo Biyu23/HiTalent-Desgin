@@ -1,4 +1,4 @@
-import type { MyUILocale } from './type';
+import type { HtdLocale } from './type';
 
 /**
  * 与 react-i18next 的 `TFunction` 兼容的翻译函数签名。
@@ -11,49 +11,49 @@ import type { MyUILocale } from './type';
  */
 export type TFunctionCompat = (key: string, defaultValue?: string) => string;
 
-export interface CreateMyUILocaleOptions {
+export interface CreateHtdLocaleOptions {
   /**
    * i18next key 前缀（namespace）。
    *
    * @example
    * ```ts
-   * createMyUILocale(t, { keyPrefix: 'myui' })
-   * // 生成 t('myui.PopoverSelect.placeholder', '请选择')
+   * createHtdLocale(t, { keyPrefix: 'htd' })
+   * // 生成 t('htd.PopoverSelect.placeholder', '请选择')
    * ```
    *
-   * 不传则 key 平铺，适用于将 myui 翻译文本直接挂载在顶层 namespace。
+   * 不传则 key 平铺，适用于将翻译文本直接挂载在顶层 namespace。
    */
   keyPrefix?: string;
 }
 
 /**
- * 创建 myui 语言包适配器，桥接 react-i18next 的 `TFunction`。
+ * 创建 Htd 语言包适配器，桥接 react-i18next 的 `TFunction`。
  *
  * —— 零依赖、类型安全、开箱即用。
  *
  * ## 工作原理
  *
- * 返回一个与 `MyUILocale` 结构完全一致的普通对象，但每个叶子节点的值是
+ * 返回一个与 `HtdLocale` 结构完全一致的普通对象，但每个叶子节点的值是
  * 通过 `t(key, fallback)` 动态获取的字符串。
  *
- * 消费方通常配合 `useMemo` 使用，确保 `t` 引用变化时（语言切换）myui locale 同步刷新：
+ * 消费方通常配合 `useMemo` 使用，确保 `t` 引用变化时（语言切换）locale 同步刷新：
  *
  * @example
  * ```tsx
  * import { useTranslation } from 'react-i18next';
- * import { createMyUILocale } from 'myui';
- * import { ConfigProvider } from 'myui';
+ * import { createHtdLocale } from 'hi-talent-design';
+ * import { ConfigProvider } from 'hi-talent-design';
  *
  * function App() {
  *   const { t } = useTranslation();
  *
- *   const myuiLocale = useMemo(
- *     () => createMyUILocale(t, { keyPrefix: 'myui' }),
+ *   const htdLocale = useMemo(
+ *     () => createHtdLocale(t, { keyPrefix: 'htd' }),
  *     [t],
  *   );
  *
  *   return (
- *     <ConfigProvider locale={myuiLocale}>
+ *     <ConfigProvider locale={htdLocale}>
  *       <YourApp />
  *     </ConfigProvider>
  *   );
@@ -66,7 +66,7 @@ export interface CreateMyUILocaleOptions {
  *
  * ```json
  * {
- *   "myui": {
+ *   "htd": {
  *     "PopoverSelect": {
  *       "placeholder": "Please select",
  *       "selectAll": "Select All",
@@ -82,12 +82,12 @@ export interface CreateMyUILocaleOptions {
  *
  * @param t   翻译函数，必须满足 `(key, defaultValue?) => string` 签名
  * @param options 可选配置
- * @returns 完整的 myui locale 对象，可直接传入 `ConfigProvider`
+ * @returns 完整的 locale 对象，可直接传入 `ConfigProvider`
  */
-export function createMyUILocale(
+export function createHtdLocale(
   t: TFunctionCompat,
-  options?: CreateMyUILocaleOptions,
-): MyUILocale {
+  options?: CreateHtdLocaleOptions,
+): HtdLocale {
   const pfx = options?.keyPrefix ? `${options.keyPrefix}.` : '';
 
   return {
@@ -100,6 +100,13 @@ export function createMyUILocale(
       confirm: t(`${pfx}PopoverSelect.confirm`, 'Confirm'),
       noMatch: t(`${pfx}PopoverSelect.noMatch`, 'No matching results'),
       searchPlaceholder: t(`${pfx}PopoverSelect.searchPlaceholder`, 'Search'),
+    },
+    Modal: {
+      restore: t(`${pfx}Modal.restore`, 'Restore'),
+      minimize: t(`${pfx}Modal.minimize`, 'Minimize'),
+      maximize: t(`${pfx}Modal.maximize`, 'Maximize'),
+      unmaximize: t(`${pfx}Modal.unmaximize`, 'Restore'),
+      close: t(`${pfx}Modal.close`, 'Close'),
     },
   };
 }

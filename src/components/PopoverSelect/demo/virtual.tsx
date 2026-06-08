@@ -3,8 +3,8 @@
  * description: 使用 `fieldNames` 免去手动 map 转换数据的烦恼。内置 `rc-virtual-list`，轻松渲染 10,000 条数据不卡顿。
  */
 import { Space } from 'antd';
-import { PopoverSelect } from 'myui';
-import { useDemoIntl } from 'myui/demoIntl';
+import { PopoverSelect } from 'hi-talent-design';
+import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React from 'react';
 import { customFieldData, hugeOptions } from './mock';
 

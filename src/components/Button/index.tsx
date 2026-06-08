@@ -22,7 +22,7 @@ const Button: React.FC<ButtonProps> = (props) => {
   const prefixCls = usePrefixCls('btn');
   const [innerLoading, setInnerLoading] = useState(false);
   const isUnmounted = useRef(false);
-  // 冷却标记：true 表示正在防抖冷却期内，忽略后续点击
+  // 节流冷却标记：true 表示正在冷却期内，忽略后续点击
   const isCoolingDownRef = useRef(false);
 
   useEffect(() => {

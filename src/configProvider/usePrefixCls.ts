@@ -13,8 +13,8 @@ export const usePrefixCls = (
   const { prefixCls: contextPrefix } = useContext(ConfigContext);
 
   // 优先级：组件级自定义 > 全局 Context 配置 > 默认后备配置
-  const prefix = customPrefix || contextPrefix || 'my-ui';
+  const prefix = customPrefix || contextPrefix || 'htd';
 
-  // 如果传了具体组件名，返回拼接结果，比如 'my-ui-btn'
+  // 如果传了具体组件名，返回拼接结果，比如 'htd-btn'
   return componentName ? `${prefix}-${componentName}` : prefix;
 };

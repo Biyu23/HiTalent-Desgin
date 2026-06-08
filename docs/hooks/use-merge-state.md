@@ -6,7 +6,7 @@ nav:
 
 # useMergeState
 
-为组件提供**受控/非受控双模式**的状态管理能力，是 MyUI 内部所有表单组件的基础 Hook。
+为组件提供**受控/非受控双模式**的状态管理能力，是 HiTalent Design 内部所有表单组件的基础 Hook。
 
 ## 为什么需要这个 Hook
 
@@ -15,7 +15,7 @@ React 组件中，"受控"（外部传 `value`）和"非受控"（内部维护 `
 ## 基本用法
 
 ```tsx | pure
-import { useMergeState } from 'myui';
+import { useMergeState } from 'hi-talent-design';
 
 const [value, { set, merge, clear }] = useMergeState<string[]>({
   defaultValue: [],

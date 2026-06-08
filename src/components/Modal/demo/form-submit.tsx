@@ -3,8 +3,8 @@
  * description: 结合 Ant Design 表单验证与 Modal 的 `confirmLoading` 属性，实现带校验的异步表单提交流程。弹窗关闭后自动重置表单状态，避免残留数据。
  */
 import { Form, Input, message } from 'antd';
-import { Modal } from 'myui';
-import { useDemoIntl } from 'myui/demoIntl';
+import { Modal } from 'hi-talent-design';
+import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React, { useState } from 'react';
 
 const messages = {

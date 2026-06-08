@@ -7,6 +7,7 @@ import {
 import { Button, Flex } from 'antd';
 import clsx from 'clsx';
 import React, { memo, useEffect, useRef } from 'react';
+import { useLocale } from '../../configProvider/useLocale';
 import { ModalHeaderProps } from './type';
 
 const ModalHeader = memo((props: ModalHeaderProps) => {
@@ -24,6 +25,8 @@ const ModalHeader = memo((props: ModalHeaderProps) => {
     onToggleMaximize,
     onClose,
   } = props;
+
+  const modalLocale = useLocale('Modal');
 
   const needCustomHeader = draggable || minimizable || maximizable || closable;
 
@@ -47,7 +50,7 @@ const ModalHeader = memo((props: ModalHeaderProps) => {
         type="text"
         onClick={onMinimize}
         icon={<MinusOutlined />}
-        aria-label="最小化"
+        aria-label={modalLocale.minimize}
       />
     ),
     maximizable && (
@@ -57,7 +60,7 @@ const ModalHeader = memo((props: ModalHeaderProps) => {
         type="text"
         onClick={onToggleMaximize}
         icon={isMaximized ? <CompressOutlined /> : <ExpandOutlined />}
-        aria-label={isMaximized ? '还原' : '最大化'}
+        aria-label={isMaximized ? modalLocale.unmaximize : modalLocale.maximize}
       />
     ),
     closable && (
@@ -67,7 +70,7 @@ const ModalHeader = memo((props: ModalHeaderProps) => {
         type="text"
         onClick={onClose}
         icon={<CloseOutlined />}
-        aria-label="关闭"
+        aria-label={modalLocale.close}
       />
     ),
   ].filter(Boolean);

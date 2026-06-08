@@ -87,10 +87,10 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   );
 
   const handleClose = useCallback(
-    (e: React.MouseEvent<HTMLElement>) => {
+    (e: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>) => {
       updateMinimized(false);
       updateMaximized(false);
-      onCancel?.(e as React.MouseEvent<HTMLButtonElement>);
+      onCancel?.(e);
     },
     [onCancel, updateMinimized, updateMaximized],
   );

@@ -13,7 +13,9 @@ export interface ButtonProps extends Omit<AntdButtonProps, 'iconPosition'> {
   autoLoading?: boolean;
 
   /**
-   * @description 防抖时间 (单位: 毫秒)，首次点击立即执行，冷却期内忽略后续点击
+   * @description 节流间隔 (单位: 毫秒)。首次点击立即执行，冷却期内忽略后续点击；
+   *              适用场景：防止表单重复提交、限制操作频率。
+   *              注意：此行为是 throttle（节流）而非 debounce（防抖）。
    * @default 0
    */
   debounce?: number;

@@ -5,11 +5,11 @@ title: Modal
 
 # Modal
 
-Built on top of Ant Design Modal, MyUI Modal adds drag-to-move, maximize for immersive viewing, and minimize-to-dock — delivering a desktop-class window experience.
+Built on top of Ant Design Modal, HiTalent Design Modal adds drag-to-move, maximize for immersive viewing, and minimize-to-dock — delivering a desktop-class window experience.
 
 ## Why this component
 
-Ant Design's Modal falls short in desktop-grade complex interactions: it can't be dragged (blocking critical information behind it), can't go fullscreen for long content, and closing the modal destroys form data requiring re-entry. MyUI Modal upgrades the modal into a true desktop workspace window through built-in drag, maximize, and minimize-to-dock capabilities. The DOM is preserved when minimized, keeping form state intact.
+Ant Design's Modal falls short in desktop-grade complex interactions: it can't be dragged (blocking critical information behind it), can't go fullscreen for long content, and closing the modal destroys form data requiring re-entry. HiTalent Design Modal upgrades the modal into a true desktop workspace window through built-in drag, maximize, and minimize-to-dock capabilities. The DOM is preserved when minimized, keeping form state intact.
 
 ## Demos
 

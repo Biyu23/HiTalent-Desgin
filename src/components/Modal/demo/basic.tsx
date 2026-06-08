@@ -3,8 +3,8 @@
  * description: 最简单的 Modal 使用方式：通过 `open` 控制显隐，`onCancel` 和 `onOk` 分别处理取消与确认操作。
  */
 import { Button } from 'antd';
-import { Modal } from 'myui';
-import { useDemoIntl } from 'myui/demoIntl';
+import { Modal } from 'hi-talent-design';
+import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React, { useState } from 'react';
 
 const messages = {

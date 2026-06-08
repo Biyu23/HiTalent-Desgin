@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import type { LocaleComponentMap, MyUILocale } from '../locales';
+import type { HtdLocale, LocaleComponentMap } from '../locales';
 import { localeMap, zh_CN } from '../locales';
 import { ConfigContext } from './context';
 
@@ -11,7 +11,7 @@ import { ConfigContext } from './context';
  * 2. 内置语言包字符串映射（'zh-CN' → zh_CN 全量对象）
  * 3. 默认中文包 fallback
  *
- * @param componentName 组件名称（如 'PopoverSelect'），必须匹配 MyUILocale 的 key
+ * @param componentName 组件名称（如 'PopoverSelect'），必须匹配 HtdLocale 的 key
  */
 export const useLocale = <K extends keyof LocaleComponentMap>(
   componentName: K,
@@ -21,12 +21,12 @@ export const useLocale = <K extends keyof LocaleComponentMap>(
 
   // 如果是字符串，从内置 map 查找
   if (typeof locale === 'string') {
-    const fullLocale: MyUILocale = localeMap[locale] || zh_CN;
+    const fullLocale: HtdLocale = localeMap[locale] || zh_CN;
     return fullLocale[componentName] || {};
   }
 
   // 用户传入的自定义 DeepPartial 对象：以默认中文包为基础，浅层合并覆盖
-  const defaultLocale = zh_CN as MyUILocale;
+  const defaultLocale = zh_CN as HtdLocale;
   const componentDefaults = defaultLocale[componentName] || {};
   const componentOverrides = locale[componentName] || {};
 

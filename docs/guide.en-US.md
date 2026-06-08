@@ -9,7 +9,7 @@ group:
 
 # Getting Started
 
-MyUI is an advanced business component library built on Ant Design, designed to simplify UI development in complex scenarios.
+HiTalent Design is an advanced business component library built on Ant Design, designed to simplify UI development in complex scenarios.
 
 ## Features
 
@@ -21,13 +21,13 @@ MyUI is an advanced business component library built on Ant Design, designed to 
 ## Quick Start
 
 ```bash
-npm install myui antd
+npm install hi-talent-design antd
 ```
 
 ## Usage Example
 
 ```tsx | pure
-import { Button, PopoverSelect, Modal } from 'myui';
+import { Button, PopoverSelect, Modal } from 'hi-talent-design';
 
 export default () => {
   return (
@@ -43,7 +43,7 @@ export default () => {
 ## Global Configuration
 
 ```tsx | pure
-import { ConfigProvider } from 'myui';
+import { ConfigProvider } from 'hi-talent-design';
 
 // Option 1: Pass a built-in locale string
 export default () => (
@@ -64,11 +64,11 @@ export default () => (
 
 // Option 3: Bridge with react-i18next
 import { useTranslation } from 'react-i18next';
-import { createMyUILocale } from 'myui';
+import { createHiTalent DesignLocale } from 'hi-talent-design';
 
 export default () => {
   const { t } = useTranslation();
-  const locale = useMemo(() => createMyUILocale(t, { keyPrefix: 'myui' }), [t]);
+  const locale = useMemo(() => createHiTalent DesignLocale(t, { keyPrefix: 'hi-talent-design' }), [t]);
 
   return (
     <ConfigProvider locale={locale}>

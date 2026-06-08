@@ -3,8 +3,8 @@
  * description: 通过选项数据中 `disabled` 字段精确控制每个选项的可选状态。结合 `fieldNames` 可映射任意后端字段名作为禁用标记。
  */
 import { Space } from 'antd';
-import { PopoverSelect } from 'myui';
-import { useDemoIntl } from 'myui/demoIntl';
+import { PopoverSelect } from 'hi-talent-design';
+import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React from 'react';
 
 const messages = {

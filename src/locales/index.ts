@@ -1,10 +1,11 @@
-import type { DeepPartial, MyUILocale } from './type';
+import type { DeepPartial, HtdLocale } from './type';
 
-export { createMyUILocale } from './adapter';
+export { createHtdLocale } from './adapter';
 export type {
   DeepPartial,
+  HtdLocale,
   LocaleComponentMap,
-  MyUILocale,
+  ModalLocale,
   PopoverSelectLocale,
 } from './type';
 
@@ -14,7 +15,7 @@ import zh_CN from './zh_CN';
 export { en_US, zh_CN };
 
 /** 内置语言包映射表 */
-export const localeMap: Record<string, MyUILocale> = {
+export const localeMap: Record<string, HtdLocale> = {
   'zh-CN': zh_CN,
   'en-US': en_US,
 };
@@ -30,4 +31,4 @@ export type SupportedLocale = keyof typeof localeMap;
  * - 字符串：内置语言标识符
  * - 对象：自定义 DeepPartial 语言包（只需覆盖需要定制的字段）
  */
-export type LocaleProp = SupportedLocale | DeepPartial<MyUILocale>;
+export type LocaleProp = SupportedLocale | DeepPartial<HtdLocale>;

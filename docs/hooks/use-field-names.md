@@ -15,7 +15,7 @@ nav:
 ## 基本用法
 
 ```tsx | pure
-import { useFieldNames } from 'myui';
+import { useFieldNames } from 'hi-talent-design';
 
 const MySelect = ({ options, fieldNames: customFields }) => {
   const { fieldNames, getFieldValue } = useFieldNames(customFields);

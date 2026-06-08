@@ -1,6 +1,6 @@
 ---
 hero:
-  title: MyUI
+  title: HiTalent Design
   description: 基于 Ant Design 的高级业务组件库，开箱即用
   actions:
     - text: 开始使用

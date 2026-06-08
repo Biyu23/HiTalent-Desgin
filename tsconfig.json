@@ -11,8 +11,8 @@
     "baseUrl": "./",
     "paths": {
       "@@/*": [".dumi/tmp/*"],
-      "myui": ["src"],
-      "myui/*": ["src/*"]
+      "hi-talent-design": ["src"],
+      "hi-talent-design/*": ["src/*"]
     }
   },
   "include": ["src/**/*", ".dumirc.ts", "docs/**/*"]

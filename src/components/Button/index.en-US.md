@@ -9,7 +9,7 @@ Extends Ant Design Button with enhanced icon positioning, automatic async loadin
 
 ## Why this component
 
-Ant Design's Button is feature-rich, but complex business scenarios still require manual state management: toggling `loading` for async submissions, building debounce logic for rapid clicks, and icon position limited to `left`. MyUI Button bakes these high-frequency needs into component props, letting developers focus on business logic instead of state management.
+Ant Design's Button is feature-rich, but complex business scenarios still require manual state management: toggling `loading` for async submissions, building debounce logic for rapid clicks, and icon position limited to `left`. HiTalent Design Button bakes these high-frequency needs into component props, letting developers focus on business logic instead of state management.
 
 ## Demos
 

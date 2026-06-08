@@ -5,11 +5,11 @@ title: ConfigProvider
 
 # ConfigProvider
 
-Provides unified CSS class prefix (`prefixCls`) and internationalization (`locale`) support for all MyUI components. Built on React Context with zero intrusion to wrapped child components.
+Provides unified CSS class prefix (`prefixCls`) and internationalization (`locale`) support for all HiTalent Design components. Built on React Context with zero intrusion to wrapped child components.
 
 ## Why this component
 
-When the default `my-ui` class prefix conflicts with other UI libraries in your project, or you need to globally switch between Chinese and English language packs, ConfigProvider is the single entry point. No per-component configuration needed — simply wrap your root component.
+When the default `htd` class prefix conflicts with other UI libraries in your project, or you need to globally switch between Chinese and English language packs, ConfigProvider is the single entry point. No per-component configuration needed — simply wrap your root component.
 
 ## Demos
 

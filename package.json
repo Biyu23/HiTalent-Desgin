@@ -1,7 +1,7 @@
 {
-  "name": "myui",
+  "name": "hi-talent-design",
   "version": "0.0.1",
-  "description": "A react library developed with dumi",
+  "description": "HiTalent Design — 基于 Ant Design 的高级业务组件库",
   "license": "MIT",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",

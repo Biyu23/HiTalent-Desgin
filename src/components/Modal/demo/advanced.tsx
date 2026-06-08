@@ -3,8 +3,8 @@
  * description: 开启 `minimizable`、`maximizable` 和 `draggable` 后，即可获得桌面级的窗口体验。当点击最小化时，弹窗会被挂起到全局角落，此时你在弹窗内填写的表单数据会完美保留，随时可以点击恢复。
  */
 import { Form, Input, Select, Space } from 'antd';
-import { Modal } from 'myui';
-import { useDemoIntl } from 'myui/demoIntl';
+import { Modal } from 'hi-talent-design';
+import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React, { useState } from 'react';
 
 const messages = {

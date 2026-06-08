@@ -17,7 +17,7 @@ export default defineConfig({
   apiParser: false,
 
   alias: {
-    myui: path.resolve(__dirname, 'src'),
+    'hi-talent-design': path.resolve(__dirname, 'src'),
   },
   resolve: {
     entryFile: './src/index.ts',
@@ -27,7 +27,7 @@ export default defineConfig({
     ],
   },
   themeConfig: {
-    name: 'MyUI',
+    name: 'HiTalent Design',
     logo: false,
     theme: {
       '@c-primary': '#1677ff',
@@ -37,9 +37,9 @@ export default defineConfig({
       { title: '组件', link: '/components/button' },
       { title: 'Hooks', link: '/hooks/use-merge-state' },
     ],
-    footer: 'MyUI · 基于 Ant Design 的业务组件库',
+    footer: 'HiTalent Design · 基于 Ant Design 的业务组件库',
     socialLinks: {
-      github: 'https://github.com/biyu23/myui',
+      github: 'https://github.com/biyu23/hi-talent-design',
     },
     sidebar: {
       '/components': [
@@ -91,7 +91,7 @@ export default defineConfig({
       ],
     },
     hero: {
-      title: 'MyUI',
+      title: 'HiTalent Design',
       description: '基于 Ant Design 的高级业务组件库，简洁、类型安全、开箱即用',
       actions: [
         { text: '开始使用', link: '/guide' },

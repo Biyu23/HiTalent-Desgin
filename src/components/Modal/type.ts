@@ -21,7 +21,8 @@ export interface ModalRef {
   minimize: () => void;
 }
 
-export interface ModalProps extends Omit<AntdModalProps, 'closable' | 'title'> {
+export interface ModalProps
+  extends Omit<AntdModalProps, 'closable' | 'title' | 'onCancel'> {
   /**
    * @description 是否显示关闭按钮
    * @default true
@@ -31,6 +32,12 @@ export interface ModalProps extends Omit<AntdModalProps, 'closable' | 'title'> {
    * @description 弹窗标题
    */
   title?: React.ReactNode;
+  /**
+   * @description 关闭回调。注意：事件可能来自按钮点击（MouseEvent）或 ESC 按键（KeyboardEvent）
+   */
+  onCancel?: (
+    e: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
+  ) => void;
   /**
    * @description 是否允许拖拽（把手为标题栏）
    * @default false
@@ -76,7 +83,9 @@ export interface MinimizedDockProps {
   prefixCls?: string;
   minimizePosition?: MinimizePosition;
   onRestore?: () => void;
-  onClose?: (e: React.MouseEvent<HTMLElement>) => void;
+  onClose?: (
+    e: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
+  ) => void;
 }
 
 export interface ModalHeaderProps {
@@ -91,5 +100,7 @@ export interface ModalHeaderProps {
   closable?: boolean;
   onMinimize?: () => void;
   onToggleMaximize?: () => void;
-  onClose?: (e: React.MouseEvent<HTMLElement>) => void;
+  onClose?: (
+    e: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
+  ) => void;
 }

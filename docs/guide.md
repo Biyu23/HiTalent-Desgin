@@ -1,6 +1,6 @@
-# MyUI 使用指南
+# HiTalent Design 使用指南
 
-MyUI 是一套基于 Ant Design 深度封装的高级业务组件库，旨在简化复杂场景下的 UI 开发。
+HiTalent Design 是一套基于 Ant Design 深度封装的高级业务组件库，旨在简化复杂场景下的 UI 开发。
 
 ## 特性
 
@@ -12,13 +12,13 @@ MyUI 是一套基于 Ant Design 深度封装的高级业务组件库，旨在简
 ## 快速开始
 
 ```bash
-npm install myui antd
+npm install hi-talent-design antd
 ```
 
 ## 使用示例
 
 ```tsx | pure
-import { Button, PopoverSelect, Modal } from 'myui';
+import { Button, PopoverSelect, Modal } from 'hi-talent-design';
 
 export default () => {
   return (
@@ -34,7 +34,7 @@ export default () => {
 ## 全局配置
 
 ```tsx | pure
-import { ConfigProvider } from 'myui';
+import { ConfigProvider } from 'hi-talent-design';
 
 // 方式一：直接传入语言包字符串
 export default () => (
@@ -55,11 +55,11 @@ export default () => (
 
 // 方式三：与 react-i18next 桥接
 import { useTranslation } from 'react-i18next';
-import { createMyUILocale } from 'myui';
+import { createHiTalent DesignLocale } from 'hi-talent-design';
 
 export default () => {
   const { t } = useTranslation();
-  const locale = useMemo(() => createMyUILocale(t, { keyPrefix: 'myui' }), [t]);
+  const locale = useMemo(() => createHiTalent DesignLocale(t, { keyPrefix: 'hi-talent-design' }), [t]);
 
   return (
     <ConfigProvider locale={locale}>

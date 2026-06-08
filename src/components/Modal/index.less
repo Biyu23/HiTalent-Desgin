@@ -103,7 +103,7 @@
   overflow: hidden;
 
   // 最小化出场动画
-  animation: myui-dock-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: dock-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
   .@{custom-prefix}-modal-minimized-header {
     display: flex;
@@ -132,7 +132,7 @@
   }
 }
 
-@keyframes myui-dock-in {
+@keyframes dock-in {
   from {
     opacity: 0;
     transform: translateY(20px) scale(0.95);

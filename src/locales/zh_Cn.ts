@@ -1,4 +1,4 @@
-import type { MyUILocale } from './type';
+import type { HtdLocale } from './type';
 
 const zh_CN = {
   locale: 'zh-CN',
@@ -11,6 +11,13 @@ const zh_CN = {
     noMatch: '无匹配结果',
     searchPlaceholder: '搜索',
   },
-} as const satisfies MyUILocale;
+  Modal: {
+    restore: '还原',
+    minimize: '最小化',
+    maximize: '最大化',
+    unmaximize: '还原',
+    close: '关闭',
+  },
+} as const satisfies HtdLocale;
 
 export default zh_CN;

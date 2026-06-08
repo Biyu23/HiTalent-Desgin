@@ -15,7 +15,7 @@ nav:
 ## 基本用法
 
 ```tsx | pure
-import { useDragBounds } from 'myui';
+import { useDragBounds } from 'hi-talent-design';
 import Draggable from 'react-draggable';
 
 const MyComponent = () => {

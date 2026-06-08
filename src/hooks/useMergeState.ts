@@ -43,6 +43,21 @@ export function useMergeState<TOrigin, TResult = TOrigin>(
   // 判断是否为受控模式
   const isControlled = 'value' in props;
 
+  // dev 环境下检测受控/非受控模式切换（React 不支持此行为）
+  const controlledRef = useRef(isControlled);
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      const currentlyControlled = 'value' in props;
+      if (controlledRef.current !== currentlyControlled) {
+        console.warn(
+          '[useMergeState] 组件在受控/非受控模式之间切换，React 不支持此行为。' +
+            '请确保始终传入 value（受控）或始终不传 value（非受控）。',
+        );
+      }
+      controlledRef.current = currentlyControlled;
+    }
+  });
+
   // 使用 useRef 缓存转换函数，防止外部传入内联函数导致无意义的重渲染
   const transformOriginRef = useRef(transformToOrigin);
   const transformResultRef = useRef(transformToResult);

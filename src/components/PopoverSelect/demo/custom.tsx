@@ -4,8 +4,8 @@
  */
 import { PlusOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Divider, Flex, Tag, Typography } from 'antd';
-import { PopoverSelect } from 'myui';
-import { useDemoIntl } from 'myui/demoIntl';
+import { PopoverSelect } from 'hi-talent-design';
+import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React from 'react';
 import { standardOptions } from './mock';
 

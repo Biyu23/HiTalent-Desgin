@@ -2,8 +2,8 @@
  * title: 基础单选与搜索
  * description: 默认模式为单选，点击后立即选中并关闭弹窗。配置 `showSearch` 可开启本地关键字过滤。
  */
-import { PopoverSelect } from 'myui';
-import { useDemoIntl } from 'myui/demoIntl';
+import { PopoverSelect } from 'hi-talent-design';
+import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React, { useState } from 'react';
 import { standardOptions } from './mock';
 

@@ -4,8 +4,8 @@
  */
 import { DownloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { Flex, Space } from 'antd';
-import { Button } from 'myui';
-import { useDemoIntl } from 'myui/demoIntl';
+import { Button } from 'hi-talent-design';
+import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React from 'react';
 
 const messages = {

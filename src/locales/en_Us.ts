@@ -1,4 +1,4 @@
-import type { MyUILocale } from './type';
+import type { HtdLocale } from './type';
 
 const en_US = {
   locale: 'en-US',
@@ -11,6 +11,13 @@ const en_US = {
     noMatch: 'No matching results',
     searchPlaceholder: 'Search',
   },
-} as const satisfies MyUILocale;
+  Modal: {
+    restore: 'Restore',
+    minimize: 'Minimize',
+    maximize: 'Maximize',
+    unmaximize: 'Restore',
+    close: 'Close',
+  },
+} as const satisfies HtdLocale;
 
 export default en_US;

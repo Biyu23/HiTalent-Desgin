@@ -3,7 +3,7 @@
  * description: `locale` 支持传入内置语言字符串（`zh-CN` / `en-US`）或自定义语言包对象，实现国际化文本的灵活覆盖。
  */
 import { Space } from 'antd';
-import { ConfigProvider, PopoverSelect } from 'myui';
+import { ConfigProvider, PopoverSelect } from 'hi-talent-design';
 import React from 'react';
 
 // 自定义语言包：仅覆盖 PopoverSelect 的占位文字
