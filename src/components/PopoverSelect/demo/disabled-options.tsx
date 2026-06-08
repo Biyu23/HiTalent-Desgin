@@ -1,5 +1,4 @@
 /**
- * title: 禁用选项
  * description: 通过选项数据中 `disabled` 字段精确控制每个选项的可选状态。结合 `fieldNames` 可映射任意后端字段名作为禁用标记。
  */
 import { Space } from 'antd';

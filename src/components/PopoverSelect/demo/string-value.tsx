@@ -1,5 +1,4 @@
 /**
- * title: 字符串提交与全选
  * description: 极其适合老旧后端的 `varchar` 字段。配置 `valueType="string"` 后，组件的内外数据交互将自动转换为按逗号拼接的字符串。全选按钮会智能匹配当前的搜索结果。
  */
 import { PopoverSelect } from 'hi-talent-design';

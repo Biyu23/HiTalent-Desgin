@@ -1,5 +1,4 @@
 /**
- * title: 多开与自动排列测试
  * description: 连续打开多个弹窗并全部最小化。底层基于 Flex 布局的单例容器会自动将悬浮窗整齐排布，绝不重叠。同时也支持把悬浮窗单独拖拽出来。
  */
 import { Button, Space } from 'antd';

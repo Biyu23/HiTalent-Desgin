@@ -1,5 +1,4 @@
 /**
- * title: 基础用法
  * description: 通过 `prefixCls` 为组件指定自定义 CSS 类名前缀，避免与项目中其他 UI 库的样式冲突。
  */
 import { Button, ConfigProvider } from 'hi-talent-design';

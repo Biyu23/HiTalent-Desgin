@@ -1,5 +1,4 @@
 /**
- * title: 高度定制渲染
  * description: 使用 `optionRender` 自定义每一项的长相，使用 `dropdownRender` 在列表外部追加自定义 DOM（如：新增按钮）。
  */
 import { PlusOutlined, UserOutlined } from '@ant-design/icons';

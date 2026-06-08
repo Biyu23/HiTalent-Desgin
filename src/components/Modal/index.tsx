@@ -113,11 +113,14 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     ref,
     () => ({
       restore: handleRestore,
-      maximize: () => updateMaximized(true),
+      maximize: () => {
+        updateMinimized(false);
+        updateMaximized(true);
+      },
       unmaximize: () => updateMaximized(false),
       minimize: handleMinimize,
     }),
-    [handleRestore, updateMaximized, handleMinimize],
+    [handleRestore, updateMaximized, handleMinimize, updateMinimized],
   );
 
   // ---- modalRender 组装：先让用户自定义渲染，再包裹 Draggable ----

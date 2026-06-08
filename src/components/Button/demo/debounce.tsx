@@ -1,5 +1,4 @@
 /**
- * title: 防抖
  * description: 默认 `debounce` 为 `0`（不开启防抖）。设置为正数毫秒值后，连续点击会重置计时器，仅最后一次点击在等待指定时间后触发，有效防止重复提交。
  */
 import { Space, message } from 'antd';

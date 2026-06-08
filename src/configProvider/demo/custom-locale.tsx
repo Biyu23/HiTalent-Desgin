@@ -1,5 +1,4 @@
 /**
- * title: 自定义语言包
  * description: `locale` 支持传入内置语言字符串（`zh-CN` / `en-US`）或自定义语言包对象，实现国际化文本的灵活覆盖。
  */
 import { Space } from 'antd';

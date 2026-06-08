@@ -1,5 +1,4 @@
 /**
- * title: 基础用法
  * description: 继承 Ant Design Button 全部原生属性，支持多种类型（primary、dashed、text、link）、状态（danger、disabled）和尺寸（small、middle、large），可搭配图标使用。
  */
 import { DownloadOutlined, SearchOutlined } from '@ant-design/icons';

@@ -1,5 +1,4 @@
 /**
- * title: 空状态与无匹配
  * description: 当选项列表为空或搜索关键词无匹配项时，组件自动展示 Empty 占位图，为用户提供清晰的视觉反馈。
  */
 import { Space } from 'antd';

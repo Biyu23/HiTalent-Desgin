@@ -1,5 +1,4 @@
 /**
- * title: 受控 Loading
  * description: 关闭 `autoLoading` 后，通过外部 `loading` 属性手动控制加载状态。适用于需要外部条件判断（如表单校验失败时不显示 loading）的场景。
  */
 import { message, Space } from 'antd';

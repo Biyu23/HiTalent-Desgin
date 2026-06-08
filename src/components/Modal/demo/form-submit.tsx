@@ -1,5 +1,4 @@
 /**
- * title: 表单提交
  * description: 结合 Ant Design 表单验证与 Modal 的 `confirmLoading` 属性，实现带校验的异步表单提交流程。弹窗关闭后自动重置表单状态，避免残留数据。
  */
 import { Form, Input, message } from 'antd';

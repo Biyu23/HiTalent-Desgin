@@ -1,5 +1,4 @@
 /**
- * title: 命令式控制（Ref API）
  * description: 通过 `useRef<ModalRef>` 获取 Modal 实例，在组件外部调用 `minimize()`、`restore()`、`maximize()`、`unmaximize()` 方法，实现灵活的程序化窗口管理。
  */
 import { Button, Space } from 'antd';

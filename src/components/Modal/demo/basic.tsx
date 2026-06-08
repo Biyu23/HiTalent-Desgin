@@ -1,5 +1,4 @@
 /**
- * title: 基础用法
  * description: 最简单的 Modal 使用方式：通过 `open` 控制显隐，`onCancel` 和 `onOk` 分别处理取消与确认操作。
  */
 import { Button } from 'antd';

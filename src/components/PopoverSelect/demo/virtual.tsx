@@ -1,5 +1,4 @@
 /**
- * title: 字段映射与虚拟滚动
  * description: 使用 `fieldNames` 免去手动 map 转换数据的烦恼。内置 `rc-virtual-list`，轻松渲染 10,000 条数据不卡顿。
  */
 import { Space } from 'antd';
