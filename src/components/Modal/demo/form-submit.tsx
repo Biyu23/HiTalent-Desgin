@@ -1,6 +1,6 @@
 /**
- * title: 基础用法与异步提交
- * description: 结合 Ant Design 的表单和按钮，实现带 Loading 状态的异步提交。弹窗关闭后会自动重置状态。
+ * title: 表单提交
+ * description: 结合 Ant Design 表单验证与 Modal 的 `confirmLoading` 属性，实现带校验的异步表单提交流程。弹窗关闭后自动重置表单状态，避免残留数据。
  */
 import { Form, Input, message } from 'antd';
 import { Modal } from 'myui';

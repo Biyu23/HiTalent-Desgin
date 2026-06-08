@@ -122,7 +122,8 @@ export interface PopoverSelectProps<
 }
 
 export interface SelectorProps extends NativeProps {
-  content: React.ReactNode;
+  /** 下拉内容渲染函数，传递函数引用以配合 memo 优化 */
+  content: () => React.ReactNode;
   autoAdjustOverflow?: boolean;
   rootClassName?: string;
   openClassName?: string;

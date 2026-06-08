@@ -6,7 +6,7 @@ import {
 } from '@ant-design/icons';
 import { Button, Flex } from 'antd';
 import clsx from 'clsx';
-import React, { memo } from 'react';
+import React, { memo, useEffect, useRef } from 'react';
 import { ModalHeaderProps } from './type';
 
 const ModalHeader = memo((props: ModalHeaderProps) => {
@@ -26,6 +26,16 @@ const ModalHeader = memo((props: ModalHeaderProps) => {
   } = props;
 
   const needCustomHeader = draggable || minimizable || maximizable || closable;
+
+  // 追踪鼠标是否按在标题栏上，防止拖拽过程中 mouseLeave 误禁用拖拽
+  const isMouseDownRef = useRef(false);
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      isMouseDownRef.current = false;
+    };
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+  }, []);
 
   if (!needCustomHeader) return <>{title}</>;
 
@@ -70,10 +80,19 @@ const ModalHeader = memo((props: ModalHeaderProps) => {
       })}
       role="button"
       aria-pressed={draggable && !disabledDrag}
-      onMouseOver={() =>
+      onMouseDown={() => {
+        isMouseDownRef.current = true;
+      }}
+      onMouseEnter={() =>
         draggable && !isMaximized && disabledDrag && setDisabledDrag?.(false)
       }
-      onMouseOut={() => draggable && !disabledDrag && setDisabledDrag?.(true)}
+      onMouseLeave={() =>
+        draggable &&
+        !isMaximized &&
+        !disabledDrag &&
+        !isMouseDownRef.current &&
+        setDisabledDrag?.(true)
+      }
     >
       <div className={`${prefixCls}-title-text`}>{title}</div>
       <Flex

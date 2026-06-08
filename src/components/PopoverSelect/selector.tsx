@@ -70,7 +70,7 @@ const Selector: React.FC<SelectorProps> = (props) => {
       openClassName={openClassName}
       afterOpenChange={afterOpenChange}
       open={open}
-      content={content}
+      content={content()}
       onOpenChange={onOpenChange}
     >
       <Button

@@ -7,10 +7,29 @@ import useDragBounds from '../../hooks/useDragBounds';
 import { MinimizedDockProps, MinimizePosition } from './type';
 
 /**
- * 获取或创建最小化容器 DOM 节点。
- * 使用惰性初始化（仅读取）保证在并发模式下安全；
- * 实际的 DOM 写入在 useLayoutEffect 中完成。
+ * 容器引用计数表：追踪每个容器中挂载的 dock 实例数量。
+ * 当计数归零时才真正移除 DOM 节点，避免 React 并发模式下
+ * 多个实例同时卸载时的竞态条件。
  */
+const containerRefCount = new Map<string, number>();
+
+const incrementRefCount = (containerId: string): void => {
+  containerRefCount.set(
+    containerId,
+    (containerRefCount.get(containerId) || 0) + 1,
+  );
+};
+
+const decrementRefCount = (containerId: string): number => {
+  const next = (containerRefCount.get(containerId) || 1) - 1;
+  if (next <= 0) {
+    containerRefCount.delete(containerId);
+    return 0;
+  }
+  containerRefCount.set(containerId, next);
+  return next;
+};
+
 const getExistingContainer = (
   position: MinimizePosition,
   prefixCls: string,
@@ -50,6 +69,21 @@ const MinimizedDockInner = memo((props: MinimizedDockProps) => {
       setContainerEl(createContainer(minimizePosition, prefixCls!));
     }
   }, [containerEl, minimizePosition, prefixCls]);
+
+  // 挂载时增加引用计数，卸载时减少
+  useEffect(() => {
+    const containerId = `${prefixCls}-minimize-container-${minimizePosition}`;
+    incrementRefCount(containerId);
+    return () => {
+      const remaining = decrementRefCount(containerId);
+      if (remaining <= 0) {
+        const container = document.getElementById(containerId);
+        if (container) {
+          container.remove();
+        }
+      }
+    };
+  }, [prefixCls, minimizePosition]);
 
   if (!containerEl) return null;
 
@@ -93,18 +127,6 @@ const MinimizedDockInner = memo((props: MinimizedDockProps) => {
 /** 外层：条件渲染，避免在不需要时运行 hooks */
 const MinimizedDock = memo((props: MinimizedDockProps) => {
   const { open, isMinimized } = props;
-
-  // 组件卸载时清理空容器
-  const { prefixCls, minimizePosition = 'bottom-right' } = props;
-  useEffect(() => {
-    return () => {
-      const containerId = `${prefixCls}-minimize-container-${minimizePosition}`;
-      const container = document.getElementById(containerId);
-      if (container && container.childElementCount === 0) {
-        container.remove();
-      }
-    };
-  }, [prefixCls, minimizePosition]);
 
   if (!open || !isMinimized) return null;
   return <MinimizedDockInner {...props} />;

@@ -1,6 +1,6 @@
 /**
  * title: 防抖
- * description: 默认不开启 `debounce`等于0
+ * description: 默认 `debounce` 为 `0`（不开启防抖）。设置为正数毫秒值后，按钮在指定时间窗口内只响应一次点击，有效防止重复提交。
  */
 import { Space, message } from 'antd';
 import { Button } from 'myui';

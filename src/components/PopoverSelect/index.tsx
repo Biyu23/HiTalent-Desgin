@@ -114,9 +114,15 @@ const Component = <
     ValueType | ValueType[]
   >(mergeStateConfig);
 
-  // 使用 ref 追踪 internalValue 以避免 useEffect 的依赖问题
+  // 使用 ref 追踪可变状态以避免 callback 闭包陷阱
   const internalValueRef = React.useRef(internalValue);
   internalValueRef.current = internalValue;
+  const draftValueRef = React.useRef(draftValue);
+  draftValueRef.current = draftValue;
+  const realShowConfirmRef = React.useRef(realShowConfirm);
+  realShowConfirmRef.current = realShowConfirm;
+  const modeRef = React.useRef(mode);
+  modeRef.current = mode;
 
   useEffect(() => {
     if (open) {
@@ -167,30 +173,47 @@ const Component = <
       targetValueList.includes(o.value),
     ) && !isAllSelected;
 
-  const handleSelectAll = (e: CheckboxChangeEvent) => {
+  // 使用 ref 缓存 options 和 actions，保证回调引用稳定
+  const optionsRef = React.useRef(options);
+  optionsRef.current = options;
+  const actionsRef = React.useRef(actions);
+  actionsRef.current = actions;
+  const setOpenRef = React.useRef(setOpen);
+  setOpenRef.current = setOpen;
+
+  const handleSelectAll = useCallback((e: CheckboxChangeEvent) => {
     const checked = e.target.checked;
+    const enabledOptions = optionsRef.current.filter(
+      (o: MappedOption) => !o.disabled,
+    );
     const enabledValues = enabledOptions.map((o: MappedOption) => o.value);
+    const currentTarget = realShowConfirmRef.current
+      ? draftValueRef.current
+      : internalValueRef.current;
     let newValues: ValueType[];
     if (checked) {
-      newValues = Array.from(new Set([...targetValueList, ...enabledValues]));
+      newValues = Array.from(new Set([...currentTarget, ...enabledValues]));
     } else {
-      newValues = targetValueList.filter((v) => !enabledValues.includes(v));
+      newValues = currentTarget.filter((v) => !enabledValues.includes(v));
     }
-    if (realShowConfirm) {
+    if (realShowConfirmRef.current) {
+      // 使用函数式更新以避免 setState 闭包问题
       setDraftValue(newValues);
     } else {
-      const newOptions = options.filter((opt: MappedOption) =>
+      const newOptions = optionsRef.current.filter((opt: MappedOption) =>
         newValues.includes(opt.value),
       );
-      actions.set(newValues, newOptions);
+      actionsRef.current.set(newValues, newOptions);
     }
-  };
+  }, []);
 
-  const handleValueToggle = (itemValue: ValueType) => {
-    const currentTargetList = realShowConfirm ? draftValue : internalValue;
+  const handleValueToggle = useCallback((itemValue: ValueType) => {
+    const currentTargetList = realShowConfirmRef.current
+      ? draftValueRef.current
+      : internalValueRef.current;
     let newValues: ValueType[];
 
-    if (mode === 'multiple') {
+    if (modeRef.current === 'multiple') {
       const isSelected = currentTargetList.includes(itemValue);
       newValues = isSelected
         ? currentTargetList.filter((v) => v !== itemValue)
@@ -199,36 +222,42 @@ const Component = <
       newValues = [itemValue];
     }
 
-    if (realShowConfirm) {
+    if (realShowConfirmRef.current) {
       setDraftValue(newValues);
     } else {
-      const newOptions = options.filter((opt: MappedOption) =>
+      const newOptions = optionsRef.current.filter((opt: MappedOption) =>
         newValues.includes(opt.value),
       );
-      actions.set(newValues, newOptions);
-      if (mode === 'single') {
-        setOpen(false);
+      actionsRef.current.set(newValues, newOptions);
+      if (modeRef.current === 'single') {
+        setOpenRef.current(false);
       }
     }
-  };
+  }, []);
 
-  const handleChange: CheckboxProps['onChange'] = (event) => {
-    handleValueToggle(event.target.value as ValueType);
-  };
-  const handleConfirm = () => {
-    const newOptions = options.filter((opt: MappedOption) =>
-      draftValue.includes(opt.value),
+  const handleChange: CheckboxProps['onChange'] = useCallback(
+    (event) => {
+      handleValueToggle(event.target.value as ValueType);
+    },
+    [handleValueToggle],
+  );
+
+  const handleConfirm = useCallback(() => {
+    const newOptions = optionsRef.current.filter((opt: MappedOption) =>
+      draftValueRef.current.includes(opt.value),
     );
-    actions.set(draftValue, newOptions);
-    setOpen(false);
-  };
+    actionsRef.current.set(draftValueRef.current, newOptions);
+    setOpenRef.current(false);
+  }, []);
 
-  const handleCancel = () => setOpen(false);
-  const handleDraftClear = () => setDraftValue([]);
+  const handleCancel = useCallback(() => setOpenRef.current(false), []);
+  const handleDraftClear = useCallback(() => setDraftValue([]), []);
 
   const renderItem = useCallback(
     (item: OptionType) => {
-      const currentTargetList = realShowConfirm ? draftValue : internalValue;
+      const currentTargetList = realShowConfirmRef.current
+        ? draftValueRef.current
+        : internalValueRef.current;
       const isChecked = currentTargetList.includes(item.value);
       const labelNode = optionRender ? (
         optionRender(item)
@@ -262,13 +291,15 @@ const Component = <
         </div>
       );
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [realShowConfirm, draftValue, internalValue, optionRender, mode, prefixCls],
+    [handleChange, handleValueToggle, optionRender, mode, prefixCls],
   );
 
   const renderMenu = useCallback(() => {
     if (displayOptions.length === 0) return null;
-    const actualHeight = Math.min(options.length * listItemHeight, listHeight);
+    const actualHeight = Math.min(
+      displayOptions.length * listItemHeight,
+      listHeight,
+    );
     return (
       <div className={`${prefixCls}-menu`}>
         {virtual ? (
@@ -288,7 +319,6 @@ const Component = <
     );
   }, [
     displayOptions,
-    options,
     listItemHeight,
     listHeight,
     virtual,
@@ -397,14 +427,18 @@ const Component = <
     searchValue,
     componentLocale,
     prefixCls,
+    handleDraftClear,
+    handleCancel,
+    handleConfirm,
+    handleSelectAll,
   ]);
 
   const hasValue = internalValue.length > 0;
-  const handleClear = (e: React.MouseEvent) => {
+  const handleClear = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    actions.clear([]);
+    actionsRef.current.clear([]);
     setDraftValue([]);
-  };
+  }, []);
 
   const getDisplayText = () => {
     if (internalValue.length === 0) return placeholder;
@@ -440,7 +474,7 @@ const Component = <
     props,
     <div className={clsx(prefixCls, className)} style={style}>
       <Selector
-        content={renderContent()}
+        content={renderContent}
         open={open}
         rootClassName={`${prefixCls}-selector`}
         onOpenChange={setOpen}

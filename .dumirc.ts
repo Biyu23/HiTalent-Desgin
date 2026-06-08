@@ -21,7 +21,10 @@ export default defineConfig({
   },
   resolve: {
     entryFile: './src/index.ts',
-    atomDirs: [{ type: 'component', dir: 'src/components' }],
+    atomDirs: [
+      { type: 'component', dir: 'src/components' },
+      { type: 'component', dir: 'src/configProvider' },
+    ],
   },
   themeConfig: {
     name: 'MyUI',
@@ -32,6 +35,7 @@ export default defineConfig({
     nav: [
       { title: '指南', link: '/guide' },
       { title: '组件', link: '/components/button' },
+      { title: 'Hooks', link: '/hooks/use-merge-state' },
     ],
     footer: 'MyUI · 基于 Ant Design 的业务组件库',
     socialLinks: {
@@ -47,6 +51,34 @@ export default defineConfig({
             {
               title: 'PopoverSelect 气泡选择',
               link: '/components/popover-select',
+            },
+          ],
+        },
+        {
+          title: '全局配置',
+          children: [
+            {
+              title: 'ConfigProvider 全局配置',
+              link: '/components/config-provider',
+            },
+          ],
+        },
+      ],
+      '/hooks': [
+        {
+          title: '自定义 Hooks',
+          children: [
+            {
+              title: 'useMergeState 合并状态',
+              link: '/hooks/use-merge-state',
+            },
+            {
+              title: 'useDragBounds 拖拽边界',
+              link: '/hooks/use-drag-bounds',
+            },
+            {
+              title: 'useFieldNames 字段映射',
+              link: '/hooks/use-field-names',
             },
           ],
         },

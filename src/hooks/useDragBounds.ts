@@ -1,9 +1,15 @@
 import { useCallback, useRef, useState } from 'react';
-import { DraggableProps } from 'react-draggable';
+import type { DraggableBounds, DraggableProps } from 'react-draggable';
 
-const useDragBounds = () => {
+interface UseDragBoundsReturn {
+  dragRef: React.RefObject<HTMLDivElement>;
+  bounds: DraggableBounds;
+  onStart: DraggableProps['onStart'];
+}
+
+const useDragBounds = (): UseDragBoundsReturn => {
   const dragRef = useRef<HTMLDivElement>(null);
-  const [bounds, setBounds] = useState({
+  const [bounds, setBounds] = useState<DraggableBounds>({
     left: 0,
     top: 0,
     bottom: 0,

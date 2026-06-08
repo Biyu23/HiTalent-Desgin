@@ -45,6 +45,8 @@
     ]
   },
   "dependencies": {
+    "clsx": "^2.1.1",
+    "rc-virtual-list": "^3.0.0",
     "react-draggable": "^4.5.0"
   },
   "devDependencies": {
@@ -54,7 +56,6 @@
     "@types/react-dom": "^17.0.2",
     "@umijs/lint": "^4.0.0",
     "antd": "^5.0.0",
-    "clsx": "^2.1.1",
     "dumi": "^2.4.21",
     "eslint": "^8.23.0",
     "father": "^4.1.0",

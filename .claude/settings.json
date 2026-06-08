@@ -1,5 +1,5 @@
 {
   "permissions": {
-    "allow": ["mcp__filesystem__edit_file"]
+    "allow": ["mcp__filesystem__edit_file", "mcp__filesystem__create_directory"]
   }
 }

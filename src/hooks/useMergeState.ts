@@ -126,6 +126,15 @@ export function useMergeState<TOrigin, TResult = TOrigin>(
     [triggerChange],
   );
 
+  // 4. 刷新：不改变值的情况下重新触发 onChange 回调
+  // 典型场景：表单重新验证、强制同步数据到外部
+  const refresh = useCallback(
+    (...args: any[]) => {
+      triggerChange(internalValueRef.current, ...args);
+    },
+    [triggerChange],
+  );
+
   // 返回元组：[当前内部值, 操作方法集合]
-  return [internalValue, { set, merge, clear }] as const;
+  return [internalValue, { set, merge, clear, refresh }] as const;
 }
