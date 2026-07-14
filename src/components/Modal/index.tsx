@@ -4,18 +4,17 @@ import React, {
   forwardRef,
   memo,
   useCallback,
-  useEffect,
   useImperativeHandle,
-  useRef,
-  useState,
+  useMemo,
 } from 'react';
-import Draggable from 'react-draggable';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
-import useDragBounds from '../../hooks/useDragBounds';
+import DraggableWrapper from './DraggableWrapper';
 import './index.less';
 import MinimizedDock from './minimizedDock';
+import ModalContext, { ModalContextValue } from './ModalContext';
 import ModalHeader from './modalHeader';
 import { ModalProps, ModalRef } from './type';
+import { useModalState } from './useModalState';
 
 const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   const {
@@ -25,6 +24,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     draggable = false,
     minimizable = false,
     maximizable = false,
+    destroyOnClose,
     minimized: controlledMinimized,
     maximized: controlledMaximized,
     onMinimizeChange,
@@ -40,73 +40,52 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
 
   const prefixCls = usePrefixCls('modal');
 
-  // ---- 受控/非受控状态管理 ----
-  const isControlledMinimized = 'minimized' in props;
-  const isControlledMaximized = 'maximized' in props;
-  const [internalMinimized, setInternalMinimized] = useState(false);
-  const [internalMaximized, setInternalMaximized] = useState(false);
-  const isMinimized = isControlledMinimized
-    ? !!controlledMinimized
-    : internalMinimized;
-  const isMaximized = isControlledMaximized
-    ? !!controlledMaximized
-    : internalMaximized;
-
-  // ---- 拖拽状态 ----
-  const [disabledDrag, setDisabledDrag] = useState(!draggable);
-
-  useEffect(() => {
-    if (!isMaximized) {
-      setDisabledDrag(!draggable);
-    }
-  }, [draggable, isMaximized]);
-
+  // ---- 统一状态管理（useReducer 替代散落的 useState） ----
   const {
-    dragRef: modalDragRef,
-    bounds: modalBounds,
-    onStart: onModalDragStart,
-  } = useDragBounds();
-  const modalBoundsRef = useRef(modalBounds);
-  modalBoundsRef.current = modalBounds;
+    isMinimized,
+    isMaximized,
+    dragDisabled,
+    setDisabledDrag,
+    handleMinimize,
+    handleRestore,
+    handleToggleMaximize,
+    handleReset,
+  } = useModalState({
+    draggable,
+    minimized: controlledMinimized,
+    maximized: controlledMaximized,
+    onMinimizeChange,
+    onMaximizedChange,
+  });
 
-  // ---- 稳定的状态更新回调 ----
-  const updateMinimized = useCallback(
-    (next: boolean) => {
-      if (!isControlledMinimized) setInternalMinimized(next);
-      onMinimizeChange?.(next);
-    },
-    [isControlledMinimized, onMinimizeChange],
-  );
-
-  const updateMaximized = useCallback(
-    (next: boolean) => {
-      if (!isControlledMaximized) setInternalMaximized(next);
-      onMaximizedChange?.(next);
-    },
-    [isControlledMaximized, onMaximizedChange],
-  );
+  // ---- destroyOnClose 与 minimizable 互斥 ----
+  const resolvedDestroyOnClose = minimizable ? false : destroyOnClose;
+  if (process.env.NODE_ENV !== 'production' && minimizable && destroyOnClose) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      '[HiTalent Design] Modal: `destroyOnClose` 与 `minimizable` 互斥。' +
+        '当开启 minimizable 时，最小化操作会使 AntdModal 收到 open=false，' +
+        '若同时开启 destroyOnClose 会导致弹窗 DOM 被销毁，表单数据丢失。' +
+        '组件已自动将 destroyOnClose 覆盖为 false。',
+    );
+  }
 
   const handleClose = useCallback(
     (e: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>) => {
-      updateMinimized(false);
-      updateMaximized(false);
+      if (isMinimized) handleRestore();
+      if (isMaximized) onMaximizedChange?.(false);
+      handleReset();
       onCancel?.(e);
     },
-    [onCancel, updateMinimized, updateMaximized],
+    [
+      onCancel,
+      isMinimized,
+      isMaximized,
+      handleRestore,
+      handleReset,
+      onMaximizedChange,
+    ],
   );
-
-  const handleMinimize = useCallback(() => {
-    updateMinimized(true);
-    updateMaximized(false);
-  }, [updateMinimized, updateMaximized]);
-
-  const handleToggleMaximize = useCallback(() => {
-    updateMaximized(!isMaximized);
-  }, [updateMaximized, isMaximized]);
-
-  const handleRestore = useCallback(() => {
-    updateMinimized(false);
-  }, [updateMinimized]);
 
   // ---- 暴露命令式方法 ----
   useImperativeHandle(
@@ -114,44 +93,22 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     () => ({
       restore: handleRestore,
       maximize: () => {
-        updateMinimized(false);
-        updateMaximized(true);
+        handleRestore();
+        onMaximizedChange?.(true);
       },
-      unmaximize: () => updateMaximized(false),
+      unmaximize: () => onMaximizedChange?.(false),
       minimize: handleMinimize,
     }),
-    [handleRestore, updateMaximized, handleMinimize, updateMinimized],
+    [handleRestore, handleMinimize, onMaximizedChange],
   );
 
-  // ---- modalRender 组装：先让用户自定义渲染，再包裹 Draggable ----
+  // ---- modalRender：先让用户自定义渲染，再包裹 DraggableWrapper ----
   const finalModalRender = useCallback(
     (modalNode: React.ReactNode) => {
       const rendered = modalRender ? modalRender(modalNode) : modalNode;
-
-      if (!draggable || isMaximized) return rendered;
-
-      return (
-        <Draggable
-          disabled={disabledDrag}
-          bounds={modalBoundsRef.current}
-          nodeRef={modalDragRef}
-          onStart={onModalDragStart}
-        >
-          <div ref={modalDragRef} className={`${prefixCls}-draggable-wrapper`}>
-            {rendered}
-          </div>
-        </Draggable>
-      );
+      return <DraggableWrapper>{rendered}</DraggableWrapper>;
     },
-    [
-      draggable,
-      isMaximized,
-      disabledDrag,
-      modalDragRef,
-      onModalDragStart,
-      modalRender,
-      prefixCls,
-    ],
+    [modalRender],
   );
 
   // ---- 最大化时通过 JS props 控制尺寸，避免 CSS !important ----
@@ -160,10 +117,51 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     : {};
   const modalWidth = isMaximized ? '100vw' : restProps.width;
 
+  // ---- 构建 Context Value（useMemo 稳定引用，避免子组件无谓重渲染） ----
+  const contextValue: ModalContextValue = useMemo(
+    () => ({
+      prefixCls,
+      draggable,
+      minimizable,
+      maximizable,
+      closable,
+      minimizePosition,
+      open,
+      isMaximized,
+      isMinimized,
+      disabledDrag: dragDisabled,
+      title,
+      onMinimize: handleMinimize,
+      onRestore: handleRestore,
+      onToggleMaximize: handleToggleMaximize,
+      onClose: handleClose,
+      setDisabledDrag,
+    }),
+    [
+      prefixCls,
+      draggable,
+      minimizable,
+      maximizable,
+      closable,
+      minimizePosition,
+      open,
+      isMaximized,
+      isMinimized,
+      dragDisabled,
+      title,
+      handleMinimize,
+      handleRestore,
+      handleToggleMaximize,
+      handleClose,
+      setDisabledDrag,
+    ],
+  );
+
   return (
-    <>
+    <ModalContext.Provider value={contextValue}>
       <AntdModal
         {...restProps}
+        destroyOnClose={resolvedDestroyOnClose}
         width={modalWidth}
         open={open && !isMinimized}
         closable={false}
@@ -174,35 +172,12 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
           [`${prefixCls}-maximized`]: isMaximized,
           [`${prefixCls}-transition-active`]: true,
         })}
-        title={
-          <ModalHeader
-            title={title}
-            prefixCls={prefixCls}
-            draggable={draggable}
-            isMaximized={isMaximized}
-            disabledDrag={disabledDrag}
-            setDisabledDrag={setDisabledDrag}
-            minimizable={minimizable}
-            maximizable={maximizable}
-            closable={closable}
-            onMinimize={handleMinimize}
-            onToggleMaximize={handleToggleMaximize}
-            onClose={handleClose}
-          />
-        }
+        title={<ModalHeader title={title} />}
       >
         {children}
       </AntdModal>
-      <MinimizedDock
-        open={open}
-        isMinimized={isMinimized}
-        title={title}
-        prefixCls={prefixCls}
-        minimizePosition={minimizePosition}
-        onRestore={handleRestore}
-        onClose={handleClose}
-      />
-    </>
+      <MinimizedDock />
+    </ModalContext.Provider>
   );
 });
 

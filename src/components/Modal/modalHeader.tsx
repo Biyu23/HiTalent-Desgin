@@ -8,7 +8,14 @@ import { Button, Flex } from 'antd';
 import clsx from 'clsx';
 import React, { memo, useEffect, useRef } from 'react';
 import { useLocale } from '../../configProvider/useLocale';
-import { ModalHeaderProps } from './type';
+import { useModalContext } from './ModalContext';
+
+export interface ModalHeaderProps {
+  /** 弹窗标题（ReactNode 以支持富文本标题） */
+  title?: React.ReactNode;
+  /** 自定义额外 className，用于覆盖或扩展默认样式 */
+  className?: string;
+}
 
 /**
  * 全局 mouseup 监听器——多实例共享模式。
@@ -40,7 +47,6 @@ class GlobalMouseUpManager {
   private ensureListening() {
     if (this.listener) return;
     this.listener = () => {
-      // 仅重置仍为 true 的 ref，避免无效写入
       this.refs.forEach((ref) => {
         if (ref.current) ref.current = false;
       });
@@ -57,21 +63,26 @@ class GlobalMouseUpManager {
 
 const globalMouseUpManager = new GlobalMouseUpManager();
 
-const ModalHeader = memo((props: ModalHeaderProps) => {
+/**
+ * Modal 标题栏组件。
+ *
+ * 通过 useModalContext 自动获取父级 Modal 的所有共享状态与操作，
+ * 无需手动传递 props，彻底消除 Props Drilling（props 从 10 个减至 2 个）。
+ */
+const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
   const {
-    title,
     prefixCls,
-    draggable,
     isMaximized,
     disabledDrag,
-    setDisabledDrag,
+    draggable,
     minimizable,
     maximizable,
     closable,
     onMinimize,
     onToggleMaximize,
     onClose,
-  } = props;
+    setDisabledDrag,
+  } = useModalContext();
 
   const modalLocale = useLocale('Modal');
 
@@ -80,7 +91,6 @@ const ModalHeader = memo((props: ModalHeaderProps) => {
   // 追踪鼠标是否按在标题栏上，防止拖拽过程中 mouseLeave 误禁用拖拽
   const isMouseDownRef = useRef(false);
 
-  // 注册/注销全局 mouseup 监听（引用计数模式）
   useEffect(() => {
     globalMouseUpManager.register(isMouseDownRef);
     return () => {
@@ -125,24 +135,24 @@ const ModalHeader = memo((props: ModalHeaderProps) => {
 
   return (
     <div
-      className={clsx({
-        [`${prefixCls}-header-wrapper`]: true,
+      className={clsx(`${prefixCls}-header-wrapper`, className, {
         [`${prefixCls}-header-wrapper-draggable`]: draggable,
       })}
       role="button"
+      aria-label={draggable ? modalLocale.dragHandle : undefined}
       aria-pressed={draggable && !disabledDrag}
       onMouseDown={() => {
         isMouseDownRef.current = true;
       }}
       onMouseEnter={() =>
-        draggable && !isMaximized && disabledDrag && setDisabledDrag?.(false)
+        draggable && !isMaximized && disabledDrag && setDisabledDrag(false)
       }
       onMouseLeave={() =>
         draggable &&
         !isMaximized &&
         !disabledDrag &&
         !isMouseDownRef.current &&
-        setDisabledDrag?.(true)
+        setDisabledDrag(true)
       }
     >
       <div className={`${prefixCls}-title-text`}>{title}</div>

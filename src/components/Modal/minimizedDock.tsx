@@ -5,7 +5,8 @@ import { createPortal } from 'react-dom';
 import Draggable from 'react-draggable';
 import { useLocale } from '../../configProvider/useLocale';
 import useDragBounds from '../../hooks/useDragBounds';
-import { MinimizedDockProps, MinimizePosition } from './type';
+import { useModalContext } from './ModalContext';
+import type { MinimizePosition, MinimizedDockProps } from './type';
 
 /**
  * 容器引用计数表：追踪每个容器中挂载的 dock 实例数量。
@@ -54,28 +55,23 @@ const createContainer = (
 };
 
 /** 内层实现：仅在 open && isMinimized 时渲染，可安全使用 hooks */
-const MinimizedDockInner = memo((props: MinimizedDockProps) => {
-  const {
-    title,
-    prefixCls,
-    minimizePosition = 'bottom-right',
-    onRestore,
-    onClose,
-  } = props;
+const MinimizedDockInner = memo(() => {
+  const { title, prefixCls, minimizePosition, onRestore, onClose } =
+    useModalContext();
+
   const { dragRef, bounds, onStart } = useDragBounds();
   const modalLocale = useLocale('Modal');
   const [containerEl, setContainerEl] = useState<HTMLElement | null>(() =>
-    getExistingContainer(minimizePosition, prefixCls!),
+    getExistingContainer(minimizePosition, prefixCls),
   );
 
   useLayoutEffect(() => {
     if (!containerEl) {
-      const el = createContainer(minimizePosition, prefixCls!);
+      const el = createContainer(minimizePosition, prefixCls);
       if (el) setContainerEl(el);
     }
   }, [containerEl, minimizePosition, prefixCls]);
 
-  // 挂载时增加引用计数，卸载时减少
   useEffect(() => {
     const containerId = `${prefixCls}-minimize-container-${minimizePosition}`;
     incrementRefCount(containerId);
@@ -83,7 +79,7 @@ const MinimizedDockInner = memo((props: MinimizedDockProps) => {
       const remaining = decrementRefCount(containerId);
       if (remaining <= 0) {
         const container = document.getElementById(containerId);
-        if (container) {
+        if (container && container.childNodes.length === 0) {
           container.remove();
         }
       }
@@ -131,7 +127,7 @@ const MinimizedDockInner = memo((props: MinimizedDockProps) => {
 
 /** 外层：条件渲染，避免在不需要时运行 hooks */
 const MinimizedDock = memo((props: MinimizedDockProps) => {
-  const { open, isMinimized } = props;
+  const { open, isMinimized } = useModalContext();
 
   if (!open || !isMinimized) return null;
   return <MinimizedDockInner {...props} />;

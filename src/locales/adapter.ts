@@ -1,3 +1,4 @@
+import { en_US } from './index';
 import type { HtdLocale } from './type';
 
 /**
@@ -24,6 +25,25 @@ export interface CreateHtdLocaleOptions {
    * 不传则 key 平铺，适用于将翻译文本直接挂载在顶层 namespace。
    */
   keyPrefix?: string;
+
+  /**
+   * 当前语言标识符，用于 RTL 检测和日志记录。
+   * @default 'custom'
+   */
+  locale?: string;
+
+  /**
+   * 文字方向。
+   * @default 'ltr'
+   */
+  direction?: 'ltr' | 'rtl';
+
+  /**
+   * t() 查不到对应 key 时的后备语言包。
+   * 默认使用 en_US，避免中文环境下出现英文 fallback。
+   * @default en_US
+   */
+  fallbackLocale?: HtdLocale;
 }
 
 /**
@@ -89,28 +109,51 @@ export function createHtdLocale(
   options?: CreateHtdLocaleOptions,
 ): HtdLocale {
   const pfx = options?.keyPrefix ? `${options.keyPrefix}.` : '';
+  const fallback = options?.fallbackLocale || en_US;
 
   return {
-    locale: '',
-    direction: 'ltr',
+    locale: options?.locale || 'custom',
+    direction: options?.direction || 'ltr',
     Button: {
-      loading: t(`${pfx}Button.loading`, 'Loading'),
+      loading: t(`${pfx}Button.loading`, fallback.Button.loading),
     },
     PopoverSelect: {
-      placeholder: t(`${pfx}PopoverSelect.placeholder`, 'Please select'),
-      selectAll: t(`${pfx}PopoverSelect.selectAll`, 'Select All'),
-      clearAll: t(`${pfx}PopoverSelect.clearAll`, 'Clear'),
-      cancel: t(`${pfx}PopoverSelect.cancel`, 'Cancel'),
-      confirm: t(`${pfx}PopoverSelect.confirm`, 'Confirm'),
-      noMatch: t(`${pfx}PopoverSelect.noMatch`, 'No matching results'),
-      searchPlaceholder: t(`${pfx}PopoverSelect.searchPlaceholder`, 'Search'),
+      placeholder: t(
+        `${pfx}PopoverSelect.placeholder`,
+        fallback.PopoverSelect.placeholder,
+      ),
+      selectAll: t(
+        `${pfx}PopoverSelect.selectAll`,
+        fallback.PopoverSelect.selectAll,
+      ),
+      clearAll: t(
+        `${pfx}PopoverSelect.clearAll`,
+        fallback.PopoverSelect.clearAll,
+      ),
+      cancel: t(`${pfx}PopoverSelect.cancel`, fallback.PopoverSelect.cancel),
+      confirm: t(`${pfx}PopoverSelect.confirm`, fallback.PopoverSelect.confirm),
+      noMatch: t(`${pfx}PopoverSelect.noMatch`, fallback.PopoverSelect.noMatch),
+      searchPlaceholder: t(
+        `${pfx}PopoverSelect.searchPlaceholder`,
+        fallback.PopoverSelect.searchPlaceholder,
+      ),
     },
     Modal: {
-      restore: t(`${pfx}Modal.restore`, 'Restore'),
-      minimize: t(`${pfx}Modal.minimize`, 'Minimize'),
-      maximize: t(`${pfx}Modal.maximize`, 'Maximize'),
-      unmaximize: t(`${pfx}Modal.unmaximize`, 'Restore'),
-      close: t(`${pfx}Modal.close`, 'Close'),
+      restore: t(`${pfx}Modal.restore`, fallback.Modal.restore),
+      minimize: t(`${pfx}Modal.minimize`, fallback.Modal.minimize),
+      maximize: t(`${pfx}Modal.maximize`, fallback.Modal.maximize),
+      unmaximize: t(`${pfx}Modal.unmaximize`, fallback.Modal.unmaximize),
+      close: t(`${pfx}Modal.close`, fallback.Modal.close),
+      dragHandle: t(`${pfx}Modal.dragHandle`, fallback.Modal.dragHandle),
+      headerTitle: t(`${pfx}Modal.headerTitle`, fallback.Modal.headerTitle),
+      minimizedDockLabel: t(
+        `${pfx}Modal.minimizedDockLabel`,
+        fallback.Modal.minimizedDockLabel,
+      ),
+      minimizedDockDragHandle: t(
+        `${pfx}Modal.minimizedDockDragHandle`,
+        fallback.Modal.minimizedDockDragHandle,
+      ),
     },
   };
 }

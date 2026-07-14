@@ -77,30 +77,13 @@ export interface ModalProps
 }
 
 export interface MinimizedDockProps {
-  open?: boolean;
-  isMinimized?: boolean;
-  title?: React.ReactNode;
-  prefixCls?: string;
-  minimizePosition?: MinimizePosition;
-  onRestore?: () => void;
-  onClose?: (
-    e: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
-  ) => void;
+  /** 自定义额外 className */
+  className?: string;
 }
 
 export interface ModalHeaderProps {
+  /** 弹窗标题（ReactNode 以支持富文本标题） */
   title?: React.ReactNode;
-  prefixCls?: string;
-  draggable?: boolean;
-  isMaximized?: boolean;
-  disabledDrag?: boolean;
-  setDisabledDrag?: (disabled: boolean) => void;
-  minimizable?: boolean;
-  maximizable?: boolean;
-  closable?: boolean;
-  onMinimize?: () => void;
-  onToggleMaximize?: () => void;
-  onClose?: (
-    e: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
-  ) => void;
+  /** 自定义额外 className */
+  className?: string;
 }

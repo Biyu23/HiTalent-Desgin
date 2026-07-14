@@ -22,6 +22,14 @@ export interface ModalLocale {
   maximize: string;
   unmaximize: string;
   close: string;
+  /** 拖拽把手（屏幕阅读器 aria-label） */
+  dragHandle: string;
+  /** 标题栏（屏幕阅读器 aria-label，role="button" 时的描述） */
+  headerTitle: string;
+  /** 最小化悬浮窗容器（屏幕阅读器 aria-label） */
+  minimizedDockLabel: string;
+  /** 最小化悬浮窗拖拽把手（屏幕阅读器 aria-label） */
+  minimizedDockDragHandle: string;
 }
 
 /**

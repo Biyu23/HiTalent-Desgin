@@ -21,6 +21,10 @@ const en_US = {
     maximize: 'Maximize',
     unmaximize: 'Restore',
     close: 'Close',
+    dragHandle: 'Drag',
+    headerTitle: 'Dialog header',
+    minimizedDockLabel: 'Minimized dialog dock',
+    minimizedDockDragHandle: 'Drag to reposition',
   },
 } as const satisfies HtdLocale;
 

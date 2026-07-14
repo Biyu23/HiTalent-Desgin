@@ -7,15 +7,6 @@ export default defineConfig({
     { id: 'zh-CN', name: '中文' },
     { id: 'en-US', name: 'EN' },
   ],
-
-  // ⚠️ 请勿开启 apiParser。
-  // 原因：dumi 内建解析器通过 unpkg 动态加载 TypeScript 标准库定义文件
-  //（固定路径 /lib/lib.esnext.d.ts），该 CDN 在国内网络环境不可达（已实测
-  // unpkg.com、registry.npmmirror.com 均无效），会直接导致 docs:build 失败。
-  // 当前 API 表格通过各组件 index.md 中的
-  // <API src="./type.ts" identifier="XxxProps" hideTitle></API> 手动维护。
-  apiParser: false,
-
   alias: {
     'hi-talent-design': path.resolve(__dirname, 'src'),
   },

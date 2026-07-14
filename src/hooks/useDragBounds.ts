@@ -15,7 +15,6 @@ const useDragBounds = (): UseDragBoundsReturn => {
     bottom: 0,
     right: 0,
   });
-
   const onStart: DraggableProps['onStart'] = useCallback((_event, uiData) => {
     const { clientWidth, clientHeight } = window.document.documentElement;
     const targetRect = dragRef.current?.getBoundingClientRect();
