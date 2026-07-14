@@ -1,45 +1,64 @@
-import { LoadingOutlined } from '@ant-design/icons';
-import { Button as AntdButton } from 'antd';
-import clsx from 'clsx';
+import type { TooltipProps } from 'antd';
+import { Button as AntdButton, Tooltip } from 'antd';
 import React, { memo, useEffect, useRef, useState } from 'react';
-import { useLocale } from '../../configProvider/useLocale';
-import { usePrefixCls } from '../../configProvider/usePrefixCls';
 import { withNativeProps } from '../../util';
-import './index.less';
 import { ButtonProps } from './type';
+
+/**
+ * 类型守卫：判断 tooltip 值是否为 TooltipProps 配置对象，
+ * 以区分「传配置对象」与「传 ReactNode 作为提示文案」两种用法。
+ */
+function isTooltipProps(
+  value: unknown,
+): value is Omit<TooltipProps, 'children'> {
+  return (
+    typeof value === 'object' && value !== null && !React.isValidElement(value)
+  );
+}
 
 const Button: React.FC<ButtonProps> = (props) => {
   const {
-    iconPosition = 'left',
     autoLoading = true,
-    debounce = 0,
+    throttle = 0,
     onClick,
-    icon,
     children,
+    disabled,
+    tooltip,
     loading: propsLoading,
     ...restProps
   } = props;
 
-  const prefixCls = usePrefixCls('btn');
-  const buttonLocale = useLocale('Button');
+  // const prefixCls = usePrefixCls('btn');
   const [innerLoading, setInnerLoading] = useState(false);
   const isUnmounted = useRef(false);
-  // 防抖定时器 ref：每次点击重置，最后一次点击后等待 debounce ms 才执行
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout>>();
-  // 缓存最近一次事件对象，供防抖回调使用
-  const lastEventRef = useRef<React.MouseEvent<HTMLElement, MouseEvent>>();
+  // 节流状态 ref：记录是否处于冷却期
+  const isThrottling = useRef(false);
+  // 节流定时器 ref：冷却期结束后重置标记
+  const throttleTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     return () => {
       isUnmounted.current = true;
-      // 清理未完成的防抖定时器，避免卸载后副作用
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
+      // 清理未完成的节流定时器，避免卸载后副作用
+      if (throttleTimerRef.current) {
+        clearTimeout(throttleTimerRef.current);
       }
     };
   }, []);
 
   const combinedLoading = propsLoading || innerLoading;
+  const needTooltip = !!tooltip;
+
+  let tooltipTitle: React.ReactNode = undefined;
+  let tooltipProps: Omit<TooltipProps, 'children' | 'title'> = {};
+
+  if (needTooltip && isTooltipProps(tooltip)) {
+    const { title, ...rest } = tooltip;
+    tooltipTitle = title;
+    tooltipProps = rest;
+  } else if (needTooltip) {
+    tooltipTitle = tooltip;
+  }
 
   const executeClick = async (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
     if (!onClick) return;
@@ -59,52 +78,38 @@ const Button: React.FC<ButtonProps> = (props) => {
   const handleClick = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
     if (combinedLoading) return;
 
-    lastEventRef.current = e;
-
-    if (debounce > 0) {
-      // 防抖模式：每次点击清除上一个定时器，重新计时；最后一次点击后才触发
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-      debounceTimerRef.current = setTimeout(() => {
-        executeClick(lastEventRef.current!);
-      }, debounce);
-    } else {
-      executeClick(e);
+    if (throttle > 0) {
+      // 节流模式：第一次点击立即触发，冷却期内后续点击被忽略
+      if (isThrottling.current) return;
+      isThrottling.current = true;
+      throttleTimerRef.current = setTimeout(() => {
+        isThrottling.current = false;
+      }, throttle);
     }
+
+    executeClick(e);
   };
 
-  // icon 不在 'left' 位置时，由自定义 children 渲染而不是 AntdButton.icon
-  const antdIcon = !icon || iconPosition === 'left' ? icon : undefined;
+  const buttonElement = (
+    <AntdButton
+      {...restProps}
+      disabled={disabled}
+      loading={combinedLoading}
+      onClick={handleClick}
+    >
+      {children}
+    </AntdButton>
+  );
 
   return withNativeProps(
     props,
-    <AntdButton
-      {...restProps}
-      icon={antdIcon}
-      loading={combinedLoading}
-      onClick={handleClick}
-      className={clsx(prefixCls, {
-        [`${prefixCls}-placement-${iconPosition}`]:
-          icon && iconPosition !== 'left',
-      })}
-    >
-      {icon && iconPosition !== 'left' ? (
-        <span className={`${prefixCls}-content-wrapper`}>
-          {combinedLoading ? (
-            <LoadingOutlined
-              className={`${prefixCls}-icon`}
-              aria-label={buttonLocale.loading}
-            />
-          ) : (
-            <span className={`${prefixCls}-icon`}>{icon}</span>
-          )}
-          {children !== null && <span>{children}</span>}
-        </span>
-      ) : (
-        children
-      )}
-    </AntdButton>,
+    needTooltip ? (
+      <Tooltip title={tooltipTitle} {...tooltipProps}>
+        {buttonElement}
+      </Tooltip>
+    ) : (
+      buttonElement
+    ),
   );
 };
 

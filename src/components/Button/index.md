@@ -5,21 +5,13 @@ title: Button 按钮
 
 # Button 按钮
 
-扩展自 Ant Design Button，在保留其全部原生能力的基础上，提供更丰富的图标位置支持、异步操作自动 Loading 以及内置防抖能力。
+基于 Ant Design Button 封装，新增 `autoLoading`、`throttle`、`tooltip` 能力，保留全部原生 API。
 
 ## 为什么需要这个组件
 
-Ant Design 的 Button 功能完备，但在复杂业务场景下仍需手动维护状态——异步提交时要手写 `loading` 开关、高频点击时需要自建防抖逻辑、图标位置也仅支持 `left`。HiTalent Design Button 将这些高频需求内建为组件属性，让开发者专注于业务逻辑而非状态管理。
+在业务开发中，按钮常常需要处理异步提交的 loading 状态、防止重复点击、以及禁用时给用户解释原因。这些逻辑分散在各处，Button 把它们内建为组件属性，使用更直接。
 
 ## 代码演示
-
-### 基础用法
-
-<code src="./demo/basic.tsx"></code>
-
-### 图标位置
-
-<code src="./demo/icon-position.tsx"></code>
 
 ### 自动 Loading
 
@@ -29,9 +21,13 @@ Ant Design 的 Button 功能完备，但在复杂业务场景下仍需手动维�
 
 <code src="./demo/controlled-loading.tsx"></code>
 
-### 防抖点击
+### 节流点击
 
-<code src="./demo/debounce.tsx"></code>
+<code src="./demo/throttle.tsx"></code>
+
+### 禁用提示
+
+<code src="./demo/tooltip.tsx"></code>
 
 ## API
 

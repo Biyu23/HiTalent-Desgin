@@ -1,36 +1,41 @@
 /**
- * description: 默认开启 `autoLoading`。当 `onClick` 返回一个 `Promise` 时，按钮会自动进入 `loading` 状态，并拦截点击操作，直到 Promise 决议后恢复。解决手动维护 `loading` 的烦恼。
+ * description: 默认开启 `autoLoading`。当 `onClick` 返回一个 `Promise` 时，按钮自动进入 `loading` 状态，并拦截重复点击，直到 Promise 决议后恢复。
  */
-import { message } from 'antd';
 import { Button } from 'hi-talent-design';
 import { useDemoIntl } from 'hi-talent-design/demoIntl';
-import React from 'react';
+import React, { useState } from 'react';
 
 const messages = {
   'zh-CN': {
-    'auto.success': '数据保存成功！',
     'auto.label': '提交表单 (等待1.5秒)',
+    'auto.result': '保存成功',
   },
   'en-US': {
-    'auto.success': 'Data saved successfully!',
     'auto.label': 'Submit Form (Wait 1.5s)',
+    'auto.result': 'Saved successfully',
   },
 };
 
 export default () => {
   const { t } = useDemoIntl(messages);
+  const [result, setResult] = useState('');
 
   const mockApiRequest = () =>
-    new Promise((resolve) => {
+    new Promise<void>((resolve) => {
       setTimeout(() => {
-        message.success(t('auto.success'));
-        resolve(true);
+        setResult(t('auto.result'));
+        resolve();
       }, 1500);
     });
 
   return (
-    <Button type="primary" onClick={mockApiRequest}>
-      {t('auto.label')}
-    </Button>
+    <div>
+      <Button type="primary" onClick={mockApiRequest}>
+        {t('auto.label')}
+      </Button>
+      {result && (
+        <span style={{ marginLeft: 12, color: '#52c41a' }}>{result}</span>
+      )}
+    </div>
   );
 };
