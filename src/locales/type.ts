@@ -33,6 +33,32 @@ export interface ModalLocale {
   minimizedDockDragHandle: string;
 }
 
+/** Table 组件的国际化文案 */
+export interface TableLocale {
+  /** 列设置标题 */
+  columnSetting: string;
+  /** 保存 */
+  save: string;
+  /** 取消 */
+  cancel: string;
+  /** 搜索占位 */
+  searchPlaceholder: string;
+  /** 拖拽手柄 aria-label */
+  dragHandle: string;
+  /** 列宽调整手柄 aria-label */
+  resizeHandle: string;
+  /** 空值占位文本 */
+  emptyText: string;
+  /** 是 */
+  yes: string;
+  /** 否 */
+  no: string;
+  /** 正在编辑 */
+  editing: string;
+  /** 点击编辑 */
+  clickToEdit: string;
+}
+
 /**
  * HiTalent Design 完整语言包接口
  * 每新增一个有国际化需求的组件，在此追加对应的 locale 子接口
@@ -48,6 +74,8 @@ export interface HtdLocale {
   PopoverSelect: PopoverSelectLocale;
   /** Modal 弹窗 */
   Modal: ModalLocale;
+  /** Table 表格 */
+  Table: TableLocale;
 }
 
 /**
@@ -66,4 +94,5 @@ export interface LocaleComponentMap {
   Button: ButtonLocale;
   PopoverSelect: PopoverSelectLocale;
   Modal: ModalLocale;
+  Table: TableLocale;
 }

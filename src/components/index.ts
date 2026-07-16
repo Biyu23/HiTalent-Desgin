@@ -6,3 +6,6 @@ export type { ButtonProps } from './Button/type';
 
 export { default as Modal } from './Modal';
 export type { ModalProps, ModalRef, ModalStaticMethods } from './Modal/type';
+
+export { default as Table } from './Table';
+export type { EnhancedColumnType, TableProps, TableRef } from './Table/type';

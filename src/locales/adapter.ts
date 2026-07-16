@@ -156,5 +156,24 @@ export function createHtdLocale(
         fallback.Modal.minimizedDockDragHandle,
       ),
     },
+    Table: {
+      columnSetting: t(
+        `${pfx}Table.columnSetting`,
+        fallback.Table.columnSetting,
+      ),
+      save: t(`${pfx}Table.save`, fallback.Table.save),
+      cancel: t(`${pfx}Table.cancel`, fallback.Table.cancel),
+      searchPlaceholder: t(
+        `${pfx}Table.searchPlaceholder`,
+        fallback.Table.searchPlaceholder,
+      ),
+      dragHandle: t(`${pfx}Table.dragHandle`, fallback.Table.dragHandle),
+      resizeHandle: t(`${pfx}Table.resizeHandle`, fallback.Table.resizeHandle),
+      emptyText: t(`${pfx}Table.emptyText`, fallback.Table.emptyText),
+      yes: t(`${pfx}Table.yes`, fallback.Table.yes),
+      no: t(`${pfx}Table.no`, fallback.Table.no),
+      editing: t(`${pfx}Table.editing`, fallback.Table.editing),
+      clickToEdit: t(`${pfx}Table.clickToEdit`, fallback.Table.clickToEdit),
+    },
   };
 }

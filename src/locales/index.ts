@@ -10,6 +10,7 @@ export type {
   LocaleComponentMap,
   ModalLocale,
   PopoverSelectLocale,
+  TableLocale,
 } from './type';
 
 export { default as en_US } from './en_US';

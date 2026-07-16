@@ -27,6 +27,19 @@ const zh_CN = {
     minimizedDockLabel: '最小化弹窗悬浮窗',
     minimizedDockDragHandle: '拖拽悬浮窗',
   },
+  Table: {
+    columnSetting: '列设置',
+    save: '保存',
+    cancel: '取消',
+    searchPlaceholder: '搜索',
+    dragHandle: '拖拽排序列',
+    resizeHandle: '调整列宽',
+    emptyText: '-',
+    yes: '是',
+    no: '否',
+    editing: '正在编辑',
+    clickToEdit: '双击编辑',
+  },
 } as const satisfies HtdLocale;
 
 export default zh_CN;

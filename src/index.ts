@@ -13,6 +13,18 @@ export type {
 export { default as PopoverSelect } from './components/PopoverSelect';
 export type { PopoverSelectProps } from './components/PopoverSelect/type';
 
+export { default as Table } from './components/Table';
+export type {
+  CellPresetType,
+  EditComponentProps,
+  EnhancedColumnType,
+  ProgressPresetProps,
+  RowDragResult,
+  TableProps,
+  TableRef,
+  TagPresetProps,
+} from './components/Table/type';
+
 // ConfigProvider
 export { ConfigProvider } from './configProvider';
 export type { ConfigProviderProps } from './configProvider';
@@ -30,4 +42,5 @@ export type {
   ModalLocale,
   PopoverSelectLocale,
   SupportedLocale,
+  TableLocale,
 } from './locales';

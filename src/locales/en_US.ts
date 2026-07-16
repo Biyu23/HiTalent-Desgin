@@ -27,6 +27,19 @@ const en_US = {
     minimizedDockLabel: 'Minimized dialog dock',
     minimizedDockDragHandle: 'Drag to reposition',
   },
+  Table: {
+    columnSetting: 'Column Setting',
+    save: 'Save',
+    cancel: 'Cancel',
+    searchPlaceholder: 'Search',
+    dragHandle: 'Drag to reorder column',
+    resizeHandle: 'Resize column',
+    emptyText: '-',
+    yes: 'Yes',
+    no: 'No',
+    editing: 'Editing',
+    clickToEdit: 'Double click to edit',
+  },
 } as const satisfies HtdLocale;
 
 export default en_US;
