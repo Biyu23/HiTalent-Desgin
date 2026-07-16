@@ -43,6 +43,7 @@ export default defineConfig({
               title: 'PopoverSelect 气泡选择',
               link: '/components/popover-select',
             },
+            { title: 'Table 增强表格', link: '/components/table' },
           ],
         },
         {
