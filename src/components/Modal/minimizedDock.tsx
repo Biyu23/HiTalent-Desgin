@@ -6,7 +6,7 @@ import Draggable from 'react-draggable';
 import { useLocale } from '../../configProvider/useLocale';
 import useDragBounds from '../../hooks/useDragBounds';
 import { useModalContext } from './ModalContext';
-import type { MinimizePosition, MinimizedDockProps } from './type';
+import type { MinimizePosition } from './type';
 
 /**
  * 容器引用计数表：追踪每个容器中挂载的 dock 实例数量。
@@ -32,26 +32,53 @@ const decrementRefCount = (containerId: string): number => {
   return next;
 };
 
-const getExistingContainer = (
+/**
+ * 获取已存在的 scroll wrapper 元素。
+ * 每个容器内部包含一个 scroll wrapper 用于溢出滚动，
+ * 所有 dock 通过 portal 渲染进 scroll wrapper 而非直接渲染进容器。
+ */
+const getExistingScrollWrapper = (
   position: MinimizePosition,
   prefixCls: string,
 ): HTMLElement | null => {
   if (typeof document === 'undefined') return null;
   const containerId = `${prefixCls}-minimize-container-${position}`;
-  return document.getElementById(containerId);
+  const container = document.getElementById(containerId);
+  if (!container) return null;
+  return container.querySelector(
+    `.${prefixCls}-minimize-scroll-wrapper`,
+  ) as HTMLElement | null;
 };
 
-const createContainer = (
+/**
+ * 确保容器及其 scroll wrapper 存在，返回 scroll wrapper。
+ *
+ * DOM 结构：
+ *   container (position:fixed, pointer-events:none)
+ *     └── scroll-wrapper (overflow-y:auto, pointer-events:auto)
+ *           ├── dock-1  ← portal target
+ *           ├── dock-2
+ *           └── dock-N
+ */
+const ensureScrollWrapper = (
   position: MinimizePosition,
   prefixCls: string,
 ): HTMLElement | null => {
   if (typeof document === 'undefined') return null;
+  const existing = getExistingScrollWrapper(position, prefixCls);
+  if (existing) return existing;
+
   const containerId = `${prefixCls}-minimize-container-${position}`;
   const container = document.createElement('div');
   container.id = containerId;
   container.className = `${prefixCls}-minimize-dock-container ${prefixCls}-minimize-dock-${position}`;
+
+  const scrollWrapper = document.createElement('div');
+  scrollWrapper.className = `${prefixCls}-minimize-scroll-wrapper`;
+  container.appendChild(scrollWrapper);
+
   document.body.appendChild(container);
-  return container;
+  return scrollWrapper;
 };
 
 /** 内层实现：仅在 open && isMinimized 时渲染，可安全使用 hooks */
@@ -61,16 +88,16 @@ const MinimizedDockInner = memo(() => {
 
   const { dragRef, bounds, onStart } = useDragBounds();
   const modalLocale = useLocale('Modal');
-  const [containerEl, setContainerEl] = useState<HTMLElement | null>(() =>
-    getExistingContainer(minimizePosition, prefixCls),
+  const [scrollWrapperEl, setScrollWrapperEl] = useState<HTMLElement | null>(
+    () => getExistingScrollWrapper(minimizePosition, prefixCls),
   );
 
   useLayoutEffect(() => {
-    if (!containerEl) {
-      const el = createContainer(minimizePosition, prefixCls);
-      if (el) setContainerEl(el);
+    if (!scrollWrapperEl) {
+      const el = ensureScrollWrapper(minimizePosition, prefixCls);
+      if (el) setScrollWrapperEl(el);
     }
-  }, [containerEl, minimizePosition, prefixCls]);
+  }, [scrollWrapperEl, minimizePosition, prefixCls]);
 
   useEffect(() => {
     const containerId = `${prefixCls}-minimize-container-${minimizePosition}`;
@@ -79,14 +106,12 @@ const MinimizedDockInner = memo(() => {
       const remaining = decrementRefCount(containerId);
       if (remaining <= 0) {
         const container = document.getElementById(containerId);
-        if (container && container.childNodes.length === 0) {
-          container.remove();
-        }
+        container?.remove();
       }
     };
   }, [prefixCls, minimizePosition]);
 
-  if (!containerEl) return null;
+  if (!scrollWrapperEl) return null;
 
   return createPortal(
     <Draggable
@@ -121,16 +146,15 @@ const MinimizedDockInner = memo(() => {
         </div>
       </div>
     </Draggable>,
-    containerEl,
+    scrollWrapperEl,
   );
 });
 
-/** 外层：条件渲染，避免在不需要时运行 hooks */
-const MinimizedDock = memo((props: MinimizedDockProps) => {
+const MinimizedDock = memo(() => {
   const { open, isMinimized } = useModalContext();
 
   if (!open || !isMinimized) return null;
-  return <MinimizedDockInner {...props} />;
+  return <MinimizedDockInner />;
 });
 
 export default MinimizedDock;

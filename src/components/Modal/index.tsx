@@ -20,27 +20,26 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   const {
     open,
     title,
-    modalRender,
     draggable = false,
     minimizable = false,
     maximizable = false,
-    destroyOnClose,
+    destroyOnHidden,
     minimized: controlledMinimized,
     maximized: controlledMaximized,
-    onMinimizeChange,
-    onMaximizedChange,
     minimizePosition = 'bottom-right',
     closable = true,
-    onCancel,
     className,
     style,
     children,
+    onCancel,
+    modalRender,
+    onMinimizeChange,
+    onMaximizedChange,
     ...restProps
   } = props;
 
   const prefixCls = usePrefixCls('modal');
 
-  // ---- 统一状态管理（useReducer 替代散落的 useState） ----
   const {
     isMinimized,
     isMaximized,
@@ -49,6 +48,8 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     handleMinimize,
     handleRestore,
     handleToggleMaximize,
+    handleMaximize,
+    handleUnmaximize,
     handleReset,
   } = useModalState({
     draggable,
@@ -58,17 +59,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     onMaximizedChange,
   });
 
-  // ---- destroyOnClose 与 minimizable 互斥 ----
-  const resolvedDestroyOnClose = minimizable ? false : destroyOnClose;
-  if (process.env.NODE_ENV !== 'production' && minimizable && destroyOnClose) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      '[HiTalent Design] Modal: `destroyOnClose` 与 `minimizable` 互斥。' +
-        '当开启 minimizable 时，最小化操作会使 AntdModal 收到 open=false，' +
-        '若同时开启 destroyOnClose 会导致弹窗 DOM 被销毁，表单数据丢失。' +
-        '组件已自动将 destroyOnClose 覆盖为 false。',
-    );
-  }
+  const resolvedDestroyOnHidden = minimizable ? false : destroyOnHidden;
 
   const handleClose = useCallback(
     (e: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>) => {
@@ -87,22 +78,20 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     ],
   );
 
-  // ---- 暴露命令式方法 ----
   useImperativeHandle(
     ref,
     () => ({
       restore: handleRestore,
       maximize: () => {
         handleRestore();
-        onMaximizedChange?.(true);
+        handleMaximize();
       },
-      unmaximize: () => onMaximizedChange?.(false),
+      unmaximize: handleUnmaximize,
       minimize: handleMinimize,
     }),
-    [handleRestore, handleMinimize, onMaximizedChange],
+    [handleRestore, handleMinimize, handleMaximize, handleUnmaximize],
   );
 
-  // ---- modalRender：先让用户自定义渲染，再包裹 DraggableWrapper ----
   const finalModalRender = useCallback(
     (modalNode: React.ReactNode) => {
       const rendered = modalRender ? modalRender(modalNode) : modalNode;
@@ -111,13 +100,26 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     [modalRender],
   );
 
-  // ---- 最大化时通过 JS props 控制尺寸，避免 CSS !important ----
-  const maximizedStyle: React.CSSProperties = isMaximized
-    ? { top: 0, padding: 0, margin: 0, maxWidth: '100vw' }
-    : {};
-  const modalWidth = isMaximized ? '100vw' : restProps.width;
+  // 最大化时强制全宽，非最大化时透传用户配置的 width
+  const modalWidth = isMaximized ? '100%' : restProps.width;
 
-  // ---- 构建 Context Value（useMemo 稳定引用，避免子组件无谓重渲染） ----
+  // 最大化时覆盖 antd 默认定位样式（top/max-width/margin/paddingBottom），
+  // 确保弹窗完全撑满视口
+  const mergedStyle: React.CSSProperties = useMemo(
+    () => ({
+      ...style,
+      ...(isMaximized
+        ? {
+            top: 0,
+            maxWidth: '100vw',
+            margin: 0,
+            paddingBottom: 0,
+          }
+        : {}),
+    }),
+    [style, isMaximized],
+  );
+
   const contextValue: ModalContextValue = useMemo(
     () => ({
       prefixCls,
@@ -161,13 +163,13 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     <ModalContext.Provider value={contextValue}>
       <AntdModal
         {...restProps}
-        destroyOnClose={resolvedDestroyOnClose}
+        destroyOnHidden={resolvedDestroyOnHidden}
         width={modalWidth}
         open={open && !isMinimized}
         closable={false}
         modalRender={finalModalRender}
         onCancel={handleClose}
-        style={{ ...style, ...maximizedStyle }}
+        style={mergedStyle}
         className={clsx(prefixCls, className, {
           [`${prefixCls}-maximized`]: isMaximized,
           [`${prefixCls}-transition-active`]: true,

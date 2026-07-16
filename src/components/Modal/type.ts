@@ -5,7 +5,11 @@ export type MinimizePosition =
   | 'top-left'
   | 'top-right'
   | 'bottom-left'
-  | 'bottom-right';
+  | 'bottom-right'
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right';
 
 /**
  * Modal 组件暴露的命令式方法
@@ -74,16 +78,4 @@ export interface ModalProps
    * @description 最大化状态变化回调
    */
   onMaximizedChange?: (maximized: boolean) => void;
-}
-
-export interface MinimizedDockProps {
-  /** 自定义额外 className */
-  className?: string;
-}
-
-export interface ModalHeaderProps {
-  /** 弹窗标题（ReactNode 以支持富文本标题） */
-  title?: React.ReactNode;
-  /** 自定义额外 className */
-  className?: string;
 }

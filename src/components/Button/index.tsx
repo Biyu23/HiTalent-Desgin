@@ -77,9 +77,7 @@ const Button: React.FC<ButtonProps> = (props) => {
 
   const handleClick = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
     if (combinedLoading) return;
-
     if (throttle > 0) {
-      // 节流模式：第一次点击立即触发，冷却期内后续点击被忽略
       if (isThrottling.current) return;
       isThrottling.current = true;
       throttleTimerRef.current = setTimeout(() => {

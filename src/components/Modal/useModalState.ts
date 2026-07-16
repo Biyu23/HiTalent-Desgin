@@ -23,7 +23,7 @@ type ModalAction =
  * 状态机 reducer。
  *
  * 关键规则：
- * 1. 最小化 → 自动退出最大化
+ * 1. 最小化 → 保持最大化状态（恢复时还原到之前的尺寸）
  * 2. 最大化 → 自动退出最小化
  * 3. RESET_ALL → 关闭弹窗时重置所有状态
  *
@@ -35,8 +35,7 @@ function modalReducer(state: ModalState, action: ModalAction): ModalState {
       return {
         ...state,
         internalMinimized: action.payload,
-        // 最小化时自动退出最大化
-        internalMaximized: action.payload ? false : state.internalMaximized,
+        // 最小化/恢复时保持最大化状态不变
       };
     case 'SET_MAXIMIZED':
       return {
@@ -84,6 +83,10 @@ interface UseModalStateReturn {
   handleRestore: () => void;
   /** 切换最大化 */
   handleToggleMaximize: () => void;
+  /** 最大化 */
+  handleMaximize: () => void;
+  /** 取消最大化 */
+  handleUnmaximize: () => void;
   /** 关闭时重置状态 */
   handleReset: () => void;
 }
@@ -161,6 +164,18 @@ export const useModalState = (
     onMaximizedChangeRef.current?.(next);
   }, [isControlledMaximized, controlledMaximized]);
 
+  const handleMaximize = useCallback(() => {
+    if (!isControlledMaximized)
+      dispatch({ type: 'SET_MAXIMIZED', payload: true });
+    onMaximizedChangeRef.current?.(true);
+  }, [isControlledMaximized]);
+
+  const handleUnmaximize = useCallback(() => {
+    if (!isControlledMaximized)
+      dispatch({ type: 'SET_MAXIMIZED', payload: false });
+    onMaximizedChangeRef.current?.(false);
+  }, [isControlledMaximized]);
+
   const handleReset = useCallback(() => {
     dispatch({ type: 'RESET_ALL' });
   }, []);
@@ -173,6 +188,8 @@ export const useModalState = (
     handleMinimize,
     handleRestore,
     handleToggleMaximize,
+    handleMaximize,
+    handleUnmaximize,
     handleReset,
   };
 };
