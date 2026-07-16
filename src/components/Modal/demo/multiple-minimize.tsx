@@ -2,9 +2,8 @@
  * description: 支持 8 个方位的多弹窗最小化。点击"打开单个"正常展示一个弹窗，手动最小化收起；点击"批量最小化"直接以最小化态挂入角落，不会叠加多层遮罩。同位置个数超限时自动滚动且隐藏滚动条。
  */
 import { Button, Radio, Space, Tag } from 'antd';
-import { Modal } from 'hi-talent-design';
+import { MinimizePosition, Modal } from 'hi-talent-design';
 import { useDemoIntl } from 'hi-talent-design/demoIntl';
-import type { MinimizePosition } from 'hi-talent-design/es/components/Modal/type';
 import React, { useCallback, useState } from 'react';
 
 const POSITIONS: MinimizePosition[] = [

@@ -4,6 +4,7 @@ export type { ButtonProps } from './components/Button/type';
 
 export { default as Modal } from './components/Modal';
 export type {
+  MinimizePosition,
   ModalProps,
   ModalRef,
   ModalStaticMethods,

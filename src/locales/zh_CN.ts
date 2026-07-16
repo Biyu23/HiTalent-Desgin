@@ -13,6 +13,7 @@ const zh_CN = {
     cancel: '取消',
     confirm: '确定',
     noMatch: '无匹配结果',
+    noData: '暂无数据',
     searchPlaceholder: '搜索',
   },
   Modal: {

@@ -4,21 +4,30 @@ import React, {
   forwardRef,
   memo,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
-  useRef,
 } from 'react';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
-import destroyFns from './destroyFns';
-import DraggableWrapper from './DraggableWrapper';
+import DraggableWrapper from './components/DraggableWrapper';
+import MinimizedDock from './components/MinimizedDock';
+import ModalHeader from './components/ModalHeader';
+import { useDestroyRegister } from './hooks/useDestroyRegister';
+import { useModalState } from './hooks/useModalState';
 import './index.less';
-import MinimizedDock from './minimizedDock';
 import ModalContext, { ModalContextValue } from './ModalContext';
-import ModalHeader from './modalHeader';
 import { ModalProps, ModalRef, ModalStaticMethods } from './type';
-import { useModalState } from './useModalState';
+import destroyFns from './utils/destroyFns';
 
+/**
+ * Modal 组件
+ *
+ * 在 Ant Design Modal 基础上增强：
+ * - 拖拽移动（draggable）
+ * - 最小化至全局角落悬浮窗（minimizable）
+ * - 最大化全屏（maximizable）
+ * - 命令式 ref 控制（ModalRef）
+ * - 静态方法 destroyAll 一键销毁所有实例
+ */
 const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   const {
     open,
@@ -43,6 +52,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
 
   const prefixCls = usePrefixCls('modal');
 
+  // ---- 状态管理 ----
   const {
     isMinimized,
     isMaximized,
@@ -62,8 +72,10 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     onMaximizedChange,
   });
 
+  // minimizable 模式下关闭不销毁 DOM，保留表单数据
   const resolvedDestroyOnHidden = minimizable ? false : destroyOnHidden;
 
+  // ---- 关闭处理 ----
   const handleClose = useCallback(
     (e: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>) => {
       if (isMinimized) handleRestore();
@@ -81,30 +93,10 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     ],
   );
 
-  // ✅ 维护最新的 handleClose 引用，供 destroyAll 闭包读取，
-  // 避免 React 18 自动批处理下的闭包陷阱。
-  const handleCloseRef = useRef(handleClose);
-  handleCloseRef.current = handleClose;
+  // 注册销毁回调，供 destroyAll 使用
+  useDestroyRegister(!!open, handleClose);
 
-  // 注册/注销销毁回调：open 变为 true 时推入 destroyFns，
-  // 组件卸载或 open 变为 false 时从 destroyFns 中移除。
-  useEffect(() => {
-    if (!open) return;
-
-    const destroyFn = () => {
-      handleCloseRef.current?.(
-        undefined as unknown as React.MouseEvent<HTMLElement>,
-      );
-    };
-
-    destroyFns.push(destroyFn);
-
-    return () => {
-      const idx = destroyFns.indexOf(destroyFn);
-      if (idx >= 0) destroyFns.splice(idx, 1);
-    };
-  }, [open]);
-
+  // ---- 命令式 API ----
   useImperativeHandle(
     ref,
     () => ({
@@ -119,6 +111,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     [handleRestore, handleMinimize, handleMaximize, handleUnmaximize],
   );
 
+  // ---- 渲染相关 ----
   const finalModalRender = useCallback(
     (modalNode: React.ReactNode) => {
       const rendered = modalRender ? modalRender(modalNode) : modalNode;
@@ -127,26 +120,19 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     [modalRender],
   );
 
-  // 最大化时强制全宽，非最大化时透传用户配置的 width
   const modalWidth = isMaximized ? '100%' : restProps.width;
 
-  // 最大化时覆盖 antd 默认定位样式（top/max-width/margin/paddingBottom），
-  // 确保弹窗完全撑满视口
   const mergedStyle: React.CSSProperties = useMemo(
     () => ({
       ...style,
       ...(isMaximized
-        ? {
-            top: 0,
-            maxWidth: '100vw',
-            margin: 0,
-            paddingBottom: 0,
-          }
+        ? { top: 0, maxWidth: '100vw', margin: 0, paddingBottom: 0 }
         : {}),
     }),
     [style, isMaximized],
   );
 
+  // ---- Context 值 ----
   const contextValue: ModalContextValue = useMemo(
     () => ({
       prefixCls,
@@ -211,15 +197,9 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
 });
 
 /**
- * 销毁所有已打开的 Modal 实例（包括最小化悬浮窗）。
- *
- * 内部依次调用每个实例的 handleClose，触发完整关闭流程：
- * 恢复最小化 → 退出最大化 → 重置状态 → 调用 onCancel。
- * 调用完成后 destroyFns 数组会被清空。
- *
- * @example
- * // 在路由切换、页面跳转等场景中一键清理所有弹窗
- * Modal.destroyAll();
+ * 组装静态方法到 memo 包装后的组件上。
+ * destroyAll() 依次调用每个活跃实例的 handleClose，
+ * 适用于路由切换、页面跳转等一键清理场景。
  */
 const ModalWithStatics: React.MemoExoticComponent<
   React.ForwardRefExoticComponent<ModalProps & React.RefAttributes<ModalRef>>
@@ -227,8 +207,6 @@ const ModalWithStatics: React.MemoExoticComponent<
   ModalStaticMethods = memo(Modal) as any;
 
 ModalWithStatics.destroyAll = () => {
-  // 先 splice(0) 取出所有 callback 再同步调用，清空原数组，
-  // 防止每个 callback 在 clean-up 中 splice 自身时产生索引错乱。
   const fns = destroyFns.splice(0);
   fns.forEach((fn) => fn());
 };

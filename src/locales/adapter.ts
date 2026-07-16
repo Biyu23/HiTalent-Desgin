@@ -133,6 +133,7 @@ export function createHtdLocale(
       cancel: t(`${pfx}PopoverSelect.cancel`, fallback.PopoverSelect.cancel),
       confirm: t(`${pfx}PopoverSelect.confirm`, fallback.PopoverSelect.confirm),
       noMatch: t(`${pfx}PopoverSelect.noMatch`, fallback.PopoverSelect.noMatch),
+      noData: t(`${pfx}PopoverSelect.noData`, fallback.PopoverSelect.noData),
       searchPlaceholder: t(
         `${pfx}PopoverSelect.searchPlaceholder`,
         fallback.PopoverSelect.searchPlaceholder,

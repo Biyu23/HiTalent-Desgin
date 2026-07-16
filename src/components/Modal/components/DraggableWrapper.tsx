@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import Draggable from 'react-draggable';
-import useDragBounds from '../../hooks/useDragBounds';
-import { useModalContext } from './ModalContext';
+import useDragBounds from '../../../hooks/useDragBounds';
+import { useModalContext } from '../ModalContext';
 
 export interface DraggableWrapperProps {
   children: React.ReactNode;

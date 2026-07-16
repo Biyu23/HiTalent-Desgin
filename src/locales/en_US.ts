@@ -13,6 +13,7 @@ const en_US = {
     cancel: 'Cancel',
     confirm: 'Confirm',
     noMatch: 'No matching results',
+    noData: 'No data',
     searchPlaceholder: 'Search',
   },
   Modal: {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react';
-import type { ModalProps } from './type';
+import type { ModalProps } from '../type';
 
 // ======== State & Action 定义 ========
 

@@ -6,6 +6,7 @@ export interface PopoverSelectLocale {
   cancel: string;
   confirm: string;
   noMatch: string;
+  noData: string;
   searchPlaceholder: string;
 }
 
