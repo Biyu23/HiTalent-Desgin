@@ -33,6 +33,10 @@ Ant Design's Modal falls short in desktop-grade complex interactions: it can't b
 
 <code src="./demo/multiple-minimize.tsx" title="Multi-Window & Auto Arrange" description="Open multiple modals, minimize them all, and watch them auto-arrange in the dock corner — no overlapping. Each minimized card can also be dragged independently."></code>
 
+### Destroy All Modals
+
+<code src="./demo/destroy-all.tsx" title="Destroy All Modals" description="Use `Modal.destroyAll()` to destroy all open modal instances at once — including normal, maximized, and minimized modals. Ideal for route transitions and page navigation cleanup."></code>
+
 ## API
 
 <API src="./type.ts" identifier="ModalProps" hideTitle></API>
@@ -40,3 +44,7 @@ Ant Design's Modal falls short in desktop-grade complex interactions: it can't b
 ## ModalRef
 
 <API src="./type.ts" identifier="ModalRef" hideTitle></API>
+
+## ModalStaticMethods
+
+<API src="./type.ts" identifier="ModalStaticMethods" hideTitle></API>

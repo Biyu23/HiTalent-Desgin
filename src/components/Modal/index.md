@@ -33,6 +33,10 @@ Ant Design 的 Modal 在桌面级复杂交互中存在不足：无法拖拽移�
 
 <code src="./demo/multiple-minimize.tsx"></code>
 
+### 销毁所有弹窗
+
+<code src="./demo/destroy-all.tsx"></code>
+
 ## API
 
 <API src="./type.ts" identifier="ModalProps" hideTitle></API>
@@ -40,3 +44,7 @@ Ant Design 的 Modal 在桌面级复杂交互中存在不足：无法拖拽移�
 ## ModalRef
 
 <API src="./type.ts" identifier="ModalRef" hideTitle></API>
+
+## ModalStaticMethods
+
+<API src="./type.ts" identifier="ModalStaticMethods" hideTitle></API>

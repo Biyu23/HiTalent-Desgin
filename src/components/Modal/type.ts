@@ -25,6 +25,14 @@ export interface ModalRef {
   minimize: () => void;
 }
 
+/**
+ * Modal 组件暴露的静态方法
+ */
+export interface ModalStaticMethods {
+  /** 销毁所有已打开的 Modal 实例（包括最小化状态的弹窗） */
+  destroyAll: () => void;
+}
+
 export interface ModalProps
   extends Omit<AntdModalProps, 'closable' | 'title' | 'onCancel'> {
   /**
@@ -37,10 +45,11 @@ export interface ModalProps
    */
   title?: React.ReactNode;
   /**
-   * @description 关闭回调。注意：事件可能来自按钮点击（MouseEvent）或 ESC 按键（KeyboardEvent）
+   * @description 关闭回调。注意：事件可能来自按钮点击（MouseEvent）或 ESC 按键（KeyboardEvent）。
+   * 通过 Modal.destroyAll() 程序化关闭时，event 为 undefined。
    */
   onCancel?: (
-    e: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
+    e?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
   ) => void;
   /**
    * @description 是否允许拖拽（把手为标题栏）

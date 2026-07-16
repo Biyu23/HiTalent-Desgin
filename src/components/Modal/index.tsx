@@ -4,16 +4,19 @@ import React, {
   forwardRef,
   memo,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
 } from 'react';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
+import destroyFns from './destroyFns';
 import DraggableWrapper from './DraggableWrapper';
 import './index.less';
 import MinimizedDock from './minimizedDock';
 import ModalContext, { ModalContextValue } from './ModalContext';
 import ModalHeader from './modalHeader';
-import { ModalProps, ModalRef } from './type';
+import { ModalProps, ModalRef, ModalStaticMethods } from './type';
 import { useModalState } from './useModalState';
 
 const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
@@ -77,6 +80,30 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       onMaximizedChange,
     ],
   );
+
+  // ✅ 维护最新的 handleClose 引用，供 destroyAll 闭包读取，
+  // 避免 React 18 自动批处理下的闭包陷阱。
+  const handleCloseRef = useRef(handleClose);
+  handleCloseRef.current = handleClose;
+
+  // 注册/注销销毁回调：open 变为 true 时推入 destroyFns，
+  // 组件卸载或 open 变为 false 时从 destroyFns 中移除。
+  useEffect(() => {
+    if (!open) return;
+
+    const destroyFn = () => {
+      handleCloseRef.current?.(
+        undefined as unknown as React.MouseEvent<HTMLElement>,
+      );
+    };
+
+    destroyFns.push(destroyFn);
+
+    return () => {
+      const idx = destroyFns.indexOf(destroyFn);
+      if (idx >= 0) destroyFns.splice(idx, 1);
+    };
+  }, [open]);
 
   useImperativeHandle(
     ref,
@@ -183,4 +210,27 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   );
 });
 
-export default memo(Modal);
+/**
+ * 销毁所有已打开的 Modal 实例（包括最小化悬浮窗）。
+ *
+ * 内部依次调用每个实例的 handleClose，触发完整关闭流程：
+ * 恢复最小化 → 退出最大化 → 重置状态 → 调用 onCancel。
+ * 调用完成后 destroyFns 数组会被清空。
+ *
+ * @example
+ * // 在路由切换、页面跳转等场景中一键清理所有弹窗
+ * Modal.destroyAll();
+ */
+const ModalWithStatics: React.MemoExoticComponent<
+  React.ForwardRefExoticComponent<ModalProps & React.RefAttributes<ModalRef>>
+> &
+  ModalStaticMethods = memo(Modal) as any;
+
+ModalWithStatics.destroyAll = () => {
+  // 先 splice(0) 取出所有 callback 再同步调用，清空原数组，
+  // 防止每个 callback 在 clean-up 中 splice 自身时产生索引错乱。
+  const fns = destroyFns.splice(0);
+  fns.forEach((fn) => fn());
+};
+
+export default ModalWithStatics;
