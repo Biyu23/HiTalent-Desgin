@@ -31,9 +31,7 @@ const Button: React.FC<ButtonProps> = (props) => {
   // const prefixCls = usePrefixCls('btn');
   const [innerLoading, setInnerLoading] = useState(false);
   const isUnmounted = useRef(false);
-  // 节流状态 ref：记录是否处于冷却期
   const isThrottling = useRef(false);
-  // 节流定时器 ref：冷却期结束后重置标记
   const throttleTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
