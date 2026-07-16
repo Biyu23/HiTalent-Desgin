@@ -93,9 +93,9 @@ const MinimizedDockInner = memo(() => {
   );
 
   useLayoutEffect(() => {
-    if (!scrollWrapperEl) {
-      const el = ensureScrollWrapper(minimizePosition, prefixCls);
-      if (el) setScrollWrapperEl(el);
+    const el = ensureScrollWrapper(minimizePosition, prefixCls);
+    if (el !== scrollWrapperEl) {
+      setScrollWrapperEl(el);
     }
   }, [scrollWrapperEl, minimizePosition, prefixCls]);
 
