@@ -14,6 +14,8 @@ interface ToolbarProps<RecordType = any> {
   showColumnSetting: boolean;
   /** 额外工具栏内容 */
   toolbarExtra?: React.ReactNode;
+  /** 列设置加载/保存中 */
+  columnSettingLoading?: boolean;
 }
 
 /**
@@ -28,6 +30,7 @@ function Toolbar<RecordType = any>(props: ToolbarProps<RecordType>) {
     onVisibleKeysChange,
     showColumnSetting,
     toolbarExtra,
+    columnSettingLoading,
   } = props;
 
   const prefixCls = usePrefixCls('table-toolbar');
@@ -43,6 +46,7 @@ function Toolbar<RecordType = any>(props: ToolbarProps<RecordType>) {
             columns={columns}
             visibleKeys={visibleKeys}
             onVisibleKeysChange={onVisibleKeysChange}
+            loading={columnSettingLoading}
           />
         </div>
       )}

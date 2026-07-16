@@ -1,5 +1,5 @@
 import { LoadingOutlined, SettingOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Empty, Popover, Space, Spin } from 'antd';
+import { Button, Checkbox, Empty, Popover, Spin } from 'antd';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { useLocale } from '../../../configProvider/useLocale';
 import { usePrefixCls } from '../../../configProvider/usePrefixCls';
@@ -13,7 +13,7 @@ interface ColumnSettingPopoverProps<RecordType = any> {
   visibleKeys: string[];
   /** 可见列变更 */
   onVisibleKeysChange: (keys: string[]) => void;
-  /** 加载状态 */
+  /** 加载/保存中 */
   loading?: boolean;
   /** 自定义标题 */
   title?: React.ReactNode;
@@ -102,14 +102,17 @@ function ColumnSettingPopover<RecordType = any>(
 
     const footer = (
       <div className={`${prefixCls}-footer`}>
-        <Space>
-          <Button size="small" onClick={handleCancel}>
-            {locale.cancel}
-          </Button>
-          <Button type="primary" size="small" onClick={handleConfirm}>
-            {locale.save}
-          </Button>
-        </Space>
+        <Button size="small" onClick={handleCancel}>
+          {locale.cancel}
+        </Button>
+        <Button
+          type="primary"
+          size="small"
+          onClick={handleConfirm}
+          loading={loading}
+        >
+          {locale.save}
+        </Button>
       </div>
     );
 
@@ -138,7 +141,10 @@ function ColumnSettingPopover<RecordType = any>(
       onOpenChange={setOpen}
       content={renderContent()}
       title={title}
-      overlayClassName={`${prefixCls}-popover`}
+      classNames={{
+        root: `${prefixCls}-popover`,
+        body: `${prefixCls}-popover-body`,
+      }}
     >
       <Button type="text" icon={<SettingOutlined />} />
     </Popover>

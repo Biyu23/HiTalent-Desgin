@@ -76,6 +76,7 @@ function Table<RecordType extends Record<string, any> = any>(
     hoverHighlight = DEFAULT_TABLE_PROPS.hoverHighlight,
     toolbarRender,
     toolbarExtra,
+    columnSettingLoading,
     className,
     style,
     rowKey: rowKeyProp,
@@ -317,9 +318,17 @@ function Table<RecordType extends Record<string, any> = any>(
         onVisibleKeysChange={setVisibleKeys}
         showColumnSetting={showColumnSetting}
         toolbarExtra={toolbarExtra}
+        columnSettingLoading={columnSettingLoading}
       />
     ),
-    [columnsProp, visibleKeys, setVisibleKeys, showColumnSetting, toolbarExtra],
+    [
+      columnsProp,
+      visibleKeys,
+      setVisibleKeys,
+      showColumnSetting,
+      toolbarExtra,
+      columnSettingLoading,
+    ],
   );
 
   const finalToolbar = toolbarRender

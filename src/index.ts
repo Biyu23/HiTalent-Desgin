@@ -14,6 +14,12 @@ export { default as PopoverSelect } from './components/PopoverSelect';
 export type { PopoverSelectProps } from './components/PopoverSelect/type';
 
 export { default as Table } from './components/Table';
+export {
+  useTableColumns,
+  type ColumnConfigItem,
+  type UseTableColumnsOptions,
+  type UseTableColumnsResult,
+} from './components/Table/hooks/useTableColumns';
 export type {
   CellPresetType,
   EditComponentProps,

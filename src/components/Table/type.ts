@@ -154,6 +154,8 @@ export interface TableProps<RecordType = any>
   showColumnSetting?: boolean;
   /** 列设置标题 */
   columnSettingTitle?: React.ReactNode;
+  /** 列配置加载/保存中 */
+  columnSettingLoading?: boolean;
   /** 默认可见列 keys（非受控） */
   defaultVisibleKeys?: string[];
   /** 可见列 keys（受控） */

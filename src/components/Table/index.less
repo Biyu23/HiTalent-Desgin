@@ -22,28 +22,58 @@
   }
 }
 
-// ==================== Column Setting Popover ====================
-
 .@{custom-prefix}-table-column-setting {
   &-popover {
-    .ant-popover-inner-content {
+    &-body.ant-popover-inner {
       padding: 0;
+
+      .ant-popover-title {
+        font-weight: 400;
+        margin-bottom: 0;
+        font-size: 14px;
+        color: rgba(0, 0, 0, 65%);
+        padding: 8px 16px;
+        border-bottom: 1px solid rgba(0, 0, 0, 6%);
+      }
     }
   }
 
   &-list {
-    max-height: 320px;
+    width: 100%;
+    max-height: 300px;
+    overflow-x: hidden;
     overflow-y: auto;
+    border-bottom: 1px solid rgba(0, 0, 0, 6%);
     padding: 4px 0;
+    display: flex;
+    flex-direction: column;
+
+    :global {
+      .ant-checkbox-group {
+        padding: 5px 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .ant-checkbox-wrapper {
+        width: 100%;
+        padding: 5px 18px;
+        color: rgba(0, 0, 0, 65%);
+
+        &:hover {
+          background-color: #e6f7ff;
+        }
+      }
+    }
   }
 
   &-item {
-    display: flex;
-    align-items: center;
-    min-height: 36px;
-    padding: 4px 16px;
+    width: 100%;
+    padding: 6px 16px;
+    color: rgba(0, 0, 0, 65%);
     cursor: pointer;
     transition: background-color 0.2s;
+    overflow: hidden;
 
     &:hover {
       background-color: var(
@@ -63,15 +93,13 @@
   &-footer {
     display: flex;
     justify-content: flex-end;
+    gap: 16px;
     padding: 8px 16px;
     border-top: 1px solid var(--htd-table-column-setting-border, #f0f0f0);
   }
 }
 
-// ==================== Table Base ====================
-
 .@{custom-prefix}-table {
-  // ---- 斑马纹 ----
   &-zebra {
     .ant-table-tbody > tr.ant-table-row:nth-child(even) > td {
       background-color: var(--htd-table-zebra-bg, #fafafa);
