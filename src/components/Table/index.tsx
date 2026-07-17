@@ -122,15 +122,16 @@ function Table<RecordType extends Record<string, any> = any>(
   });
 
   // ---- 列拖拽 Hook ----
-  const { HeaderWrapper, HeaderCellWrapper } = useColumnDrag({
-    orderedKeys,
-    onReorder: setOrderedKeys,
-    columns: columnsProp,
-    enabled: enableColumnDrag,
-  });
+  const { HeaderWrapper, HeaderCellWrapper, ColumnDragContextWrapper } =
+    useColumnDrag({
+      orderedKeys,
+      onReorder: setOrderedKeys,
+      columns: columnsProp,
+      enabled: enableColumnDrag,
+    });
 
   // ---- 行拖拽 Hook ----
-  const { BodyWrapper, RowWrapper } = useRowDrag({
+  const { BodyWrapper, RowWrapper, RowDragContextWrapper } = useRowDrag({
     dataSource: (dataSource || []) as any[],
     rowKey: (rowKeyProp as any) || 'key',
     enabled: enableRowDrag,
@@ -156,14 +157,40 @@ function Table<RecordType extends Record<string, any> = any>(
     // 3. 按 order 排序
     sanitized = sortColumnsByOrder(sanitized, orderedKeys);
 
-    // 4. 注入列宽
+    // 4. 注入列宽、onHeaderCell 和 onCell 以传递 column 和 record 给自定义组件
     return sanitized.map((col, index) => {
       const key = getColumnKey(col, index);
       const width = columnWidths[key];
+
+      const enhancedCol = { ...col };
       if (width !== undefined) {
-        return { ...col, width };
+        enhancedCol.width = width;
       }
-      return col;
+
+      const originalOnHeaderCell = col.onHeaderCell;
+      enhancedCol.onHeaderCell = (columnType) => {
+        const originalProps = originalOnHeaderCell
+          ? originalOnHeaderCell(columnType)
+          : {};
+        return {
+          ...originalProps,
+          column: enhancedCol,
+        };
+      };
+
+      const originalOnCell = col.onCell;
+      enhancedCol.onCell = (record, rowIndex) => {
+        const originalProps = originalOnCell
+          ? originalOnCell(record, rowIndex)
+          : {};
+        return {
+          ...originalProps,
+          column: enhancedCol,
+          record,
+        };
+      };
+
+      return enhancedCol;
     });
   }, [columnsProp, visibleKeys, orderedKeys, columnWidths]);
 
@@ -361,15 +388,20 @@ function Table<RecordType extends Record<string, any> = any>(
         {/* 操作栏 */}
         {finalToolbar}
         {/* antd Table */}
-        <AntdTable<RecordType>
-          {...restProps}
-          className={mergedClassName}
-          style={style}
-          columns={processedColumns}
-          rowKey={rowKey}
-          dataSource={dataSource}
-          components={tableComponents}
-        />
+        <ColumnDragContextWrapper>
+          <RowDragContextWrapper>
+            <AntdTable<RecordType>
+              {...restProps}
+              className={mergedClassName}
+              style={style}
+              columns={processedColumns}
+              rowKey={rowKey}
+              dataSource={dataSource}
+              components={tableComponents}
+              tableLayout={enableColumnResize ? 'fixed' : restProps.tableLayout}
+            />
+          </RowDragContextWrapper>
+        </ColumnDragContextWrapper>
       </div>
     </TableContext.Provider>
   );

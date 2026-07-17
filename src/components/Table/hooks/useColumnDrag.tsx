@@ -134,7 +134,7 @@ export function useColumnDrag(options: UseColumnDragOptions) {
     return col?.title as React.ReactNode;
   }, [activeId, columns]);
 
-  // Header wrapper: injects DndContext + SortableContext
+  // Header wrapper: injects DndContext and SortableContext
   const HeaderWrapper: React.FC<{ children: React.ReactNode }> = useCallback(
     (wrapperProps: { children: React.ReactNode }) => {
       const { children, ...restProps } = wrapperProps as any;
@@ -144,6 +144,7 @@ export function useColumnDrag(options: UseColumnDragOptions) {
 
       return (
         <DndContext
+          id="column-drag-context"
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragStart={handleDragStart}
@@ -177,16 +178,21 @@ export function useColumnDrag(options: UseColumnDragOptions) {
     },
     [
       enabled,
+      orderedKeys,
       sensors,
       handleDragStart,
       handleDragEnd,
       handleDragCancel,
-      orderedKeys,
       activeId,
       activeTitle,
       prefixCls,
     ],
   );
+
+  const ColumnDragContextWrapper: React.FC<{ children: React.ReactNode }> =
+    useCallback(({ children }) => {
+      return <React.Fragment>{children}</React.Fragment>;
+    }, []);
 
   // Cell wrapper: injects SortableHeaderItem per th
   const HeaderCellWrapper: React.FC<{
@@ -215,5 +221,6 @@ export function useColumnDrag(options: UseColumnDragOptions) {
     activeId,
     HeaderWrapper,
     HeaderCellWrapper,
+    ColumnDragContextWrapper,
   };
 }

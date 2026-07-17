@@ -29,6 +29,7 @@ interface SortableRowProps {
   children: React.ReactNode;
   prefixCls: string;
   dragHandleLabel: string;
+  rowProps: any;
 }
 
 const SortableRow: React.FC<SortableRowProps> = ({
@@ -36,6 +37,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
   children,
   prefixCls,
   dragHandleLabel,
+  rowProps,
 }) => {
   const {
     attributes,
@@ -47,6 +49,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
   } = useSortable({ id });
 
   const style: React.CSSProperties = {
+    ...rowProps.style,
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.4 : 1,
@@ -74,7 +77,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
 
   return React.createElement(
     'tr',
-    { ref: setNodeRef, style, ...attributes },
+    { ...rowProps, ref: setNodeRef, style, ...attributes },
     enhancedChildren,
   );
 };
@@ -145,7 +148,7 @@ export function useRowDrag(options: UseRowDragOptions) {
     setActiveId(null);
   }, []);
 
-  // Body wrapper: injects DndContext + SortableContext
+  // Body wrapper: injects DndContext and SortableContext
   const BodyWrapper: React.FC<{ children: React.ReactNode }> = useCallback(
     (wrapperProps: { children: React.ReactNode }) => {
       const { children, ...restProps } = wrapperProps as any;
@@ -155,6 +158,7 @@ export function useRowDrag(options: UseRowDragOptions) {
 
       return (
         <DndContext
+          id="row-drag-context"
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragStart={handleDragStart}
@@ -188,15 +192,20 @@ export function useRowDrag(options: UseRowDragOptions) {
     },
     [
       enabled,
+      rowKeys,
       sensors,
       handleDragStart,
       handleDragEnd,
       handleDragCancel,
-      rowKeys,
       activeId,
       prefixCls,
     ],
   );
+
+  const RowDragContextWrapper: React.FC<{ children: React.ReactNode }> =
+    useCallback(({ children }) => {
+      return <React.Fragment>{children}</React.Fragment>;
+    }, []);
 
   // Row wrapper: injects SortableRow per tr
   const RowWrapper: React.FC<{
@@ -217,6 +226,7 @@ export function useRowDrag(options: UseRowDragOptions) {
           id: String(recordKey),
           prefixCls,
           dragHandleLabel: locale.dragHandle,
+          rowProps,
         },
         rowProps.children,
       );
@@ -228,5 +238,6 @@ export function useRowDrag(options: UseRowDragOptions) {
     activeId,
     BodyWrapper,
     RowWrapper,
+    RowDragContextWrapper,
   };
 }
