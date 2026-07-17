@@ -17,6 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import React, { useCallback, useMemo, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { useLocale } from '../../../configProvider/useLocale';
 import { usePrefixCls } from '../../../configProvider/usePrefixCls';
 import type { RowDragResult } from '../type';
@@ -147,46 +148,42 @@ export function useRowDrag(options: UseRowDragOptions) {
   // Body wrapper: injects DndContext + SortableContext
   const BodyWrapper: React.FC<{ children: React.ReactNode }> = useCallback(
     (wrapperProps: { children: React.ReactNode }) => {
-      if (!enabled)
-        return React.createElement(React.Fragment, null, wrapperProps.children);
+      const { children, ...restProps } = wrapperProps as any;
+      if (!enabled) {
+        return <tbody {...restProps}>{children}</tbody>;
+      }
 
-      return React.createElement(
-        DndContext,
-        {
-          sensors,
-          collisionDetection: closestCenter,
-          onDragStart: handleDragStart,
-          onDragEnd: handleDragEnd,
-          onDragCancel: handleDragCancel,
-        },
-        React.createElement(
-          SortableContext,
-          { items: rowKeys, strategy: verticalListSortingStrategy } as any,
-          React.createElement('tbody', null, wrapperProps.children),
-        ),
-        activeId
-          ? React.createElement(
-              DragOverlay,
-              { dropAnimation: null },
-              React.createElement(
-                'div',
-                { className: `${prefixCls}-drag-overlay` },
-                React.createElement(
-                  'table',
-                  null,
-                  React.createElement(
-                    'tbody',
-                    null,
-                    React.createElement(
-                      'tr',
-                      null,
-                      React.createElement('td', null, `行 ${activeId}`),
-                    ),
-                  ),
-                ),
-              ),
-            )
-          : null,
+      return (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
+          <SortableContext
+            items={rowKeys}
+            strategy={verticalListSortingStrategy}
+          >
+            <tbody {...restProps}>{children}</tbody>
+          </SortableContext>
+          {activeId
+            ? ReactDOM.createPortal(
+                <DragOverlay dropAnimation={null}>
+                  <div className={`${prefixCls}-drag-overlay`}>
+                    <table>
+                      <tbody>
+                        <tr>
+                          <td>行 {activeId}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </DragOverlay>,
+                document.body,
+              )
+            : null}
+        </DndContext>
       );
     },
     [

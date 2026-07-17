@@ -17,6 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import React, { useCallback, useMemo, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { useLocale } from '../../../configProvider/useLocale';
 import { usePrefixCls } from '../../../configProvider/usePrefixCls';
 import type { EnhancedColumnType } from '../type';
@@ -136,49 +137,42 @@ export function useColumnDrag(options: UseColumnDragOptions) {
   // Header wrapper: injects DndContext + SortableContext
   const HeaderWrapper: React.FC<{ children: React.ReactNode }> = useCallback(
     (wrapperProps: { children: React.ReactNode }) => {
-      if (!enabled)
-        return React.createElement(React.Fragment, null, wrapperProps.children);
+      const { children, ...restProps } = wrapperProps as any;
+      if (!enabled) {
+        return <thead {...restProps}>{children}</thead>;
+      }
 
-      return React.createElement(
-        DndContext,
-        {
-          sensors,
-          collisionDetection: closestCenter,
-          onDragStart: handleDragStart,
-          onDragEnd: handleDragEnd,
-          onDragCancel: handleDragCancel,
-        },
-        React.createElement(
-          SortableContext,
-          {
-            items: orderedKeys,
-            strategy: horizontalListSortingStrategy,
-          } as any,
-          wrapperProps.children,
-        ),
-        activeId
-          ? React.createElement(
-              DragOverlay,
-              { dropAnimation: null },
-              React.createElement(
-                'div',
-                { className: `${prefixCls}-drag-overlay` },
-                React.createElement(
-                  'table',
-                  null,
-                  React.createElement(
-                    'thead',
-                    null,
-                    React.createElement(
-                      'tr',
-                      null,
-                      React.createElement('th', null, activeTitle),
-                    ),
-                  ),
-                ),
-              ),
-            )
-          : null,
+      return (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
+          <SortableContext
+            items={orderedKeys}
+            strategy={horizontalListSortingStrategy}
+          >
+            <thead {...restProps}>{children}</thead>
+          </SortableContext>
+          {activeId
+            ? ReactDOM.createPortal(
+                <DragOverlay dropAnimation={null}>
+                  <div className={`${prefixCls}-drag-overlay`}>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>{activeTitle}</th>
+                        </tr>
+                      </thead>
+                    </table>
+                  </div>
+                </DragOverlay>,
+                document.body,
+              )
+            : null}
+        </DndContext>
       );
     },
     [
