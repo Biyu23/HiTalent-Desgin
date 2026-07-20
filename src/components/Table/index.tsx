@@ -53,7 +53,6 @@ function Table<RecordType extends Record<string, any> = any>(
   ref: React.Ref<TableRef>,
 ) {
   const {
-    // ---- 解构自定义属性 ----
     columns: columnsProp,
     showColumnSetting = DEFAULT_TABLE_PROPS.showColumnSetting,
     defaultVisibleKeys,
@@ -86,7 +85,6 @@ function Table<RecordType extends Record<string, any> = any>(
 
   const prefixCls = usePrefixCls('table');
 
-  // ---- 原始列定义（用于 component 注入时查找配置） ----
   const columnConfigMap = useMemo(() => {
     const map = new Map<string, EnhancedColumnType<RecordType>>();
     columnsProp.forEach((col, index) => {
@@ -95,7 +93,6 @@ function Table<RecordType extends Record<string, any> = any>(
     return map;
   }, [columnsProp]);
 
-  // ---- 列配置 Hook ----
   const {
     visibleKeys,
     columnWidths,
@@ -381,6 +378,10 @@ function Table<RecordType extends Record<string, any> = any>(
     [`${prefixCls}-zebra`]: zebraStripe,
     [`${prefixCls}-no-hover`]: !hoverHighlight,
   });
+
+  console.log('====================================');
+  console.log(tableComponents, 'tableComponentstableComponents');
+  console.log('====================================');
 
   return (
     <TableContext.Provider value={contextValue}>

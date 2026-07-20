@@ -6,8 +6,6 @@ interface ResizeHandleProps {
   isResizing: boolean;
   /** mousedown */
   onMouseDown: (e: React.MouseEvent) => void;
-  /** 双击 */
-  onDoubleClick?: (e: React.MouseEvent) => void;
 }
 
 /**
@@ -18,7 +16,6 @@ interface ResizeHandleProps {
 const ResizeHandle: React.FC<ResizeHandleProps> = ({
   isResizing,
   onMouseDown,
-  onDoubleClick,
 }) => {
   const prefixCls = usePrefixCls('table-resize-handle');
 
@@ -26,7 +23,6 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({
     <div
       className={`${prefixCls}${isResizing ? ` ${prefixCls}-active` : ''}`}
       onMouseDown={onMouseDown}
-      onDoubleClick={onDoubleClick}
       role="separator"
       aria-orientation="vertical"
       aria-label="调整列宽"

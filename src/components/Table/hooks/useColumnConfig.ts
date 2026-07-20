@@ -156,11 +156,16 @@ export function useColumnConfig<RecordType>(
 
   const setColumnWidth = useCallback(
     (columnKey: string, width: number) => {
-      const nextValue = { ...columnWidths, [columnKey]: width };
       if (!isWidthControlled) {
-        setInternalColumnWidths(nextValue);
+        setInternalColumnWidths((prev) => {
+          const nextValue = { ...prev, [columnKey]: width };
+          onColumnWidthChange?.(nextValue);
+          return nextValue;
+        });
+      } else {
+        const nextValue = { ...columnWidths, [columnKey]: width };
+        onColumnWidthChange?.(nextValue);
       }
-      onColumnWidthChange?.(nextValue);
     },
     [columnWidths, isWidthControlled, onColumnWidthChange],
   );
@@ -171,11 +176,17 @@ export function useColumnConfig<RecordType>(
         | Record<string, number>
         | ((prev: Record<string, number>) => Record<string, number>),
     ) => {
-      const nextValue = typeof next === 'function' ? next(columnWidths) : next;
       if (!isWidthControlled) {
-        setInternalColumnWidths(nextValue);
+        setInternalColumnWidths((prev) => {
+          const nextValue = typeof next === 'function' ? next(prev) : next;
+          onColumnWidthChange?.(nextValue);
+          return nextValue;
+        });
+      } else {
+        const nextValue =
+          typeof next === 'function' ? next(columnWidths) : next;
+        onColumnWidthChange?.(nextValue);
       }
-      onColumnWidthChange?.(nextValue);
     },
     [columnWidths, isWidthControlled, onColumnWidthChange],
   );

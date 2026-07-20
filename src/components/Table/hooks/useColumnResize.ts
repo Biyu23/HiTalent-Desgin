@@ -7,8 +7,6 @@ interface UseColumnResizeOptions {
   minWidth?: number;
   /** 列宽变更回调 */
   onResize: (columnKey: string, width: number) => void;
-  /** 双击回调（可用于自适应列宽） */
-  onDoubleClick?: (columnKey: string) => void;
 }
 
 interface ResizeState {
@@ -26,7 +24,7 @@ interface ResizeState {
  * 参考 Modal 的 mouseUpManager 单例模式管理全局 mouseup。
  */
 export function useColumnResize(options: UseColumnResizeOptions) {
-  const { columnKey, minWidth = 80, onResize, onDoubleClick } = options;
+  const { columnKey, minWidth = 80, onResize } = options;
 
   const resizeStateRef = useRef<ResizeState | null>(null);
   const [isResizing, setIsResizing] = useState(false);
@@ -60,16 +58,6 @@ export function useColumnResize(options: UseColumnResizeOptions) {
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'col-resize';
   }, []);
-
-  // ---- 双击: 自适应列宽 ----
-  const handleDoubleClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      onDoubleClick?.(columnKeyRef.current);
-    },
-    [onDoubleClick],
-  );
 
   // ---- mousemove: 全局监听 ----
   useEffect(() => {
@@ -114,6 +102,5 @@ export function useColumnResize(options: UseColumnResizeOptions) {
     isResizing,
     headerRef,
     handleMouseDown,
-    handleDoubleClick,
   };
 }

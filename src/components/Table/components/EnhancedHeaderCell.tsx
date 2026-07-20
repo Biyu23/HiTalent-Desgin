@@ -29,7 +29,7 @@ function EnhancedHeaderCell<RecordType = any>(
   const context = useContext(TableContext);
 
   // 列宽调整
-  const { isResizing, handleMouseDown, handleDoubleClick } = useColumnResize({
+  const { isResizing, handleMouseDown } = useColumnResize({
     columnKey,
     minWidth: column.minWidth ?? 80,
     onResize: context.onColumnWidthChange,
@@ -63,11 +63,7 @@ function EnhancedHeaderCell<RecordType = any>(
 
       {/* 列宽调整手柄（右边） */}
       {showResizeHandle && (
-        <ResizeHandle
-          isResizing={isResizing}
-          onMouseDown={handleMouseDown}
-          onDoubleClick={handleDoubleClick}
-        />
+        <ResizeHandle isResizing={isResizing} onMouseDown={handleMouseDown} />
       )}
     </div>
   );
