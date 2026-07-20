@@ -109,6 +109,22 @@ const InternalBodyWrapper: React.FC<{
     setActiveId(event.active.id as string);
   }, []);
 
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const { rowKeys, onDragEnd } = optionsRef.current;
+    const oldIndex = rowKeys.indexOf(active.id as string);
+    const newIndex = rowKeys.indexOf(over.id as string);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    onDragEnd({
+      dragKey: active.id as string,
+      targetKey: over.id as string,
+      position: oldIndex < newIndex ? 'after' : 'before',
+    });
+  }, []);
+
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       setActiveId(null);
@@ -147,6 +163,7 @@ const InternalBodyWrapper: React.FC<{
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >

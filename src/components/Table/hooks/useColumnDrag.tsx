@@ -94,6 +94,21 @@ const InternalColumnDragContext: React.FC<{
     setActiveId(event.active.id as string);
   }, []);
 
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const { orderedKeys, onReorder } = optionsRef.current;
+    const oldIndex = orderedKeys.indexOf(active.id as string);
+    const newIndex = orderedKeys.indexOf(over.id as string);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newOrder = [...orderedKeys];
+    newOrder.splice(oldIndex, 1);
+    newOrder.splice(newIndex, 0, active.id as string);
+    onReorder(newOrder);
+  }, []);
+
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       setActiveId(null);
@@ -135,6 +150,7 @@ const InternalColumnDragContext: React.FC<{
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
