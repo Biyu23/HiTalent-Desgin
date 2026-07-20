@@ -16,13 +16,11 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useLocale } from '../../../configProvider/useLocale';
 import { usePrefixCls } from '../../../configProvider/usePrefixCls';
 import type { EnhancedColumnType } from '../type';
-
-// ==================== SortableHeaderItem ====================
 
 interface SortableHeaderItemProps {
   id: string;
@@ -50,28 +48,26 @@ const SortableHeaderItem: React.FC<SortableHeaderItemProps> = ({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    position: 'relative' as const,
-    display: 'inline-flex',
-    alignItems: 'center',
-    width: '100%',
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes}>
-      <span
-        className={`${prefixCls}-drag-handle`}
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      className={`${prefixCls}-drag-handle`}
+      style={style}
+    >
+      <div
+        className={`${prefixCls}-drag-handle-wrapper`}
         {...listeners}
         aria-label={dragHandleLabel}
       >
         <HolderOutlined />
-      </span>
+      </div>
       {children}
     </div>
   );
 };
-
-// Workaround for tsx parser: declare SortableHeaderItem as any when passed to createElement
-const SortableHeaderItemAny = SortableHeaderItem as any;
 
 // ==================== useColumnDrag ====================
 
@@ -82,22 +78,16 @@ interface UseColumnDragOptions {
   enabled: boolean;
 }
 
-export function useColumnDrag(options: UseColumnDragOptions) {
-  const { orderedKeys, onReorder, columns, enabled } = options;
-  const prefixCls = usePrefixCls('table');
-  const locale = useLocale('Table');
-
+const InternalHeaderWrapper: React.FC<{
+  wrapperProps: any;
+  optionsRef: React.MutableRefObject<UseColumnDragOptions>;
+  contextRef: React.MutableRefObject<{
+    prefixCls: string;
+    dragHandleLabel: string;
+  }>;
+  sensors: any;
+}> = ({ wrapperProps, optionsRef, contextRef, sensors }) => {
   const [activeId, setActiveId] = useState<string | null>(null);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
-    }),
-    useSensor(KeyboardSensor),
-    useSensor(TouchSensor, {
-      activationConstraint: { distance: 8 },
-    }),
-  );
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(event.active.id as string);
@@ -109,6 +99,7 @@ export function useColumnDrag(options: UseColumnDragOptions) {
       const { active, over } = event;
       if (!over || active.id === over.id) return;
 
+      const { orderedKeys, onReorder } = optionsRef.current;
       const oldIndex = orderedKeys.indexOf(active.id as string);
       const newIndex = orderedKeys.indexOf(over.id as string);
       if (oldIndex === -1 || newIndex === -1) return;
@@ -118,12 +109,15 @@ export function useColumnDrag(options: UseColumnDragOptions) {
       newOrder.splice(newIndex, 0, active.id as string);
       onReorder(newOrder);
     },
-    [orderedKeys, onReorder],
+    [optionsRef],
   );
 
   const handleDragCancel = useCallback(() => {
     setActiveId(null);
   }, []);
+
+  const { enabled, orderedKeys, columns } = optionsRef.current;
+  const { prefixCls } = contextRef.current;
 
   const activeTitle = useMemo(() => {
     if (!activeId) return null;
@@ -134,59 +128,78 @@ export function useColumnDrag(options: UseColumnDragOptions) {
     return col?.title as React.ReactNode;
   }, [activeId, columns]);
 
-  // Header wrapper: injects DndContext and SortableContext
-  const HeaderWrapper: React.FC<{ children: React.ReactNode }> = useCallback(
-    (wrapperProps: { children: React.ReactNode }) => {
-      const { children, ...restProps } = wrapperProps as any;
-      if (!enabled) {
-        return <thead {...restProps}>{children}</thead>;
-      }
+  const { children, ...restProps } = wrapperProps as any;
+  if (!enabled) {
+    return <thead {...restProps}>{children}</thead>;
+  }
 
+  return (
+    <DndContext
+      id="column-drag-context"
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+    >
+      <SortableContext
+        items={orderedKeys}
+        strategy={horizontalListSortingStrategy}
+      >
+        <thead {...restProps}>{children}</thead>
+      </SortableContext>
+      {activeId
+        ? ReactDOM.createPortal(
+            <DragOverlay dropAnimation={null}>
+              <div className={`${prefixCls}-drag-overlay`}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>{activeTitle}</th>
+                    </tr>
+                  </thead>
+                </table>
+              </div>
+            </DragOverlay>,
+            document.body,
+          )
+        : null}
+    </DndContext>
+  );
+};
+
+export function useColumnDrag(options: UseColumnDragOptions) {
+  const prefixCls = usePrefixCls('table');
+  const locale = useLocale('Table');
+
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+
+  const contextRef = useRef({ prefixCls, dragHandleLabel: locale.dragHandle });
+  contextRef.current = { prefixCls, dragHandleLabel: locale.dragHandle };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 1 },
+    }),
+    useSensor(KeyboardSensor),
+    useSensor(TouchSensor, {
+      activationConstraint: { distance: 1 },
+    }),
+  );
+
+  const HeaderWrapper = useCallback(
+    (wrapperProps: { children: React.ReactNode }) => {
       return (
-        <DndContext
-          id="column-drag-context"
+        <InternalHeaderWrapper
+          wrapperProps={wrapperProps}
+          optionsRef={optionsRef}
+          contextRef={contextRef}
           sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onDragCancel={handleDragCancel}
-        >
-          <SortableContext
-            items={orderedKeys}
-            strategy={horizontalListSortingStrategy}
-          >
-            <thead {...restProps}>{children}</thead>
-          </SortableContext>
-          {activeId
-            ? ReactDOM.createPortal(
-                <DragOverlay dropAnimation={null}>
-                  <div className={`${prefixCls}-drag-overlay`}>
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>{activeTitle}</th>
-                        </tr>
-                      </thead>
-                    </table>
-                  </div>
-                </DragOverlay>,
-                document.body,
-              )
-            : null}
-        </DndContext>
+        />
       );
     },
-    [
-      enabled,
-      orderedKeys,
-      sensors,
-      handleDragStart,
-      handleDragEnd,
-      handleDragCancel,
-      activeId,
-      activeTitle,
-      prefixCls,
-    ],
+    [sensors],
   );
 
   const ColumnDragContextWrapper: React.FC<{ children: React.ReactNode }> =
@@ -194,31 +207,32 @@ export function useColumnDrag(options: UseColumnDragOptions) {
       return <React.Fragment>{children}</React.Fragment>;
     }, []);
 
-  // Cell wrapper: injects SortableHeaderItem per th
   const HeaderCellWrapper: React.FC<{
     children: React.ReactNode;
     columnKey: string;
   }> = useCallback(
     (cellProps: { children: React.ReactNode; columnKey: string }) => {
+      const { enabled, orderedKeys } = optionsRef.current;
+      const { prefixCls, dragHandleLabel } = contextRef.current;
+
       if (!enabled || !orderedKeys.includes(cellProps.columnKey)) {
         return React.createElement(React.Fragment, null, cellProps.children);
       }
 
       return React.createElement(
-        SortableHeaderItemAny,
+        SortableHeaderItem as any,
         {
           id: cellProps.columnKey,
           prefixCls,
-          dragHandleLabel: locale.dragHandle,
+          dragHandleLabel,
         },
         cellProps.children,
       );
     },
-    [enabled, orderedKeys, prefixCls, locale.dragHandle],
+    [],
   );
 
   return {
-    activeId,
     HeaderWrapper,
     HeaderCellWrapper,
     ColumnDragContextWrapper,

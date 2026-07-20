@@ -126,7 +126,6 @@ const AdvancedDemo: React.FC = () => {
       key: 'name',
       defaultWidth: 140,
       editable: true,
-      searchable: true,
     },
     {
       title: '状态',

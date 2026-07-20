@@ -173,21 +173,29 @@
 
   // ---- 拖拽列头 ----
   &-drag-handle {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    margin-right: 4px;
-    cursor: grab;
-    color: var(--htd-table-drag-handle-color, rgba(0, 0, 0, 25%));
-    font-size: 12px;
-    visibility: hidden;
-    transition: color 0.2s, visibility 0.2s;
+    gap: 4px;
 
-    &:active {
-      cursor: grabbing;
+    &-wrapper {
+      flex-shrink: 0;
+      cursor: grab;
+      color: var(--htd-table-drag-handle-color, rgba(0, 0, 0, 25%));
+      font-size: 12px;
+      visibility: hidden;
+      transition: color 0.2s, visibility 0.2s;
+
+      &:active {
+        cursor: grabbing;
+      }
+    }
+
+    &:hover &-wrapper {
+      visibility: visible;
     }
   }
 
-  .ant-table-thead > tr > th:hover &-drag-handle {
+  .ant-table-thead > tr > th:hover &-drag-handle-wrapper {
     visibility: visible;
   }
 

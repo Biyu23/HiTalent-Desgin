@@ -1,10 +1,9 @@
-import React, { memo, useCallback, useContext } from 'react';
+import React, { memo, useContext } from 'react';
 import { usePrefixCls } from '../../../configProvider/usePrefixCls';
 import { useColumnResize } from '../hooks/useColumnResize';
 import TableContext from '../TableContext';
 import type { EnhancedColumnType } from '../type';
 import ResizeHandle from './ResizeHandle';
-import SearchIcon from './SearchIcon';
 
 interface EnhancedHeaderCellProps<RecordType = any> {
   children: React.ReactNode;
@@ -37,30 +36,10 @@ function EnhancedHeaderCell<RecordType = any>(
 
   const showResizeHandle = enableColumnResize && column.resizable !== false;
 
-  const showSearch = column.searchable === true;
-
-  // 搜索回调：从 context 获取 onColumnSearch
-  const handleSearch = useCallback(
-    (_colKey: string, _searchText: string) => {
-      context.onColumnSearch?.(_colKey, _searchText);
-    },
-    [context.onColumnSearch],
-  );
-
   return (
     <div className={prefixCls}>
-      {/* 搜索图标（左边） */}
-      {showSearch && (
-        <SearchIcon
-          columnKey={columnKey}
-          placeholder={column.searchPlaceholder}
-          onSearch={handleSearch}
-        />
-      )}
-
       {/* 列头文字区域 */}
       <span className={`${prefixCls}-title`}>{children}</span>
-
       {/* 列宽调整手柄（右边） */}
       {showResizeHandle && (
         <ResizeHandle isResizing={isResizing} onMouseDown={handleMouseDown} />

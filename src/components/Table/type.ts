@@ -73,12 +73,6 @@ export interface EnhancedColumnType<RecordType = any>
   /** 最小列宽，默认 80 */
   minWidth?: number;
 
-  // ---- 搜索 ----
-  /** 是否显示搜索图标 */
-  searchable?: boolean;
-  /** 搜索占位文本 */
-  searchPlaceholder?: string;
-
   // ---- Cell 预设 ----
   /** 预设渲染类型 */
   cellPreset?: CellPresetType;

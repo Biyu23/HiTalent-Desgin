@@ -16,7 +16,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useLocale } from '../../../configProvider/useLocale';
 import { usePrefixCls } from '../../../configProvider/usePrefixCls';
@@ -97,29 +97,16 @@ interface UseRowDragOptions {
   onDragEnd: (result: RowDragResult) => void;
 }
 
-export function useRowDrag(options: UseRowDragOptions) {
-  const { dataSource, rowKey, enabled, onDragEnd } = options;
-  const prefixCls = usePrefixCls('table');
-  const locale = useLocale('Table');
-
+const InternalBodyWrapper: React.FC<{
+  wrapperProps: any;
+  optionsRef: React.MutableRefObject<UseRowDragOptions & { rowKeys: string[] }>;
+  contextRef: React.MutableRefObject<{
+    prefixCls: string;
+    dragHandleLabel: string;
+  }>;
+  sensors: any;
+}> = ({ wrapperProps, optionsRef, contextRef, sensors }) => {
   const [activeId, setActiveId] = useState<string | null>(null);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
-    }),
-    useSensor(KeyboardSensor),
-    useSensor(TouchSensor, {
-      activationConstraint: { distance: 8 },
-    }),
-  );
-
-  // 数据源的 key 列表
-  const rowKeys = useMemo(() => {
-    const getKey =
-      typeof rowKey === 'function' ? rowKey : (r: any) => r[rowKey];
-    return dataSource.map((record) => String(getKey(record)));
-  }, [dataSource, rowKey]);
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(event.active.id as string);
@@ -131,75 +118,104 @@ export function useRowDrag(options: UseRowDragOptions) {
       const { active, over } = event;
       if (!over || active.id === over.id) return;
 
+      const { rowKeys, onDragEnd } = optionsRef.current;
       const oldIndex = rowKeys.indexOf(active.id as string);
       const newIndex = rowKeys.indexOf(over.id as string);
       if (oldIndex === -1 || newIndex === -1) return;
 
       onDragEnd({
-        dragKey: active.id,
+        dragKey: active.id as string,
         targetKey: over.id as string,
         position: oldIndex < newIndex ? 'after' : 'before',
       });
     },
-    [rowKeys, onDragEnd],
+    [optionsRef],
   );
 
   const handleDragCancel = useCallback(() => {
     setActiveId(null);
   }, []);
 
-  // Body wrapper: injects DndContext and SortableContext
-  const BodyWrapper: React.FC<{ children: React.ReactNode }> = useCallback(
-    (wrapperProps: { children: React.ReactNode }) => {
-      const { children, ...restProps } = wrapperProps as any;
-      if (!enabled) {
-        return <tbody {...restProps}>{children}</tbody>;
-      }
+  const { enabled, rowKeys } = optionsRef.current;
+  const { prefixCls } = contextRef.current;
+  const { children, ...restProps } = wrapperProps as any;
 
+  if (!enabled) {
+    return <tbody {...restProps}>{children}</tbody>;
+  }
+
+  return (
+    <DndContext
+      id="row-drag-context"
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+    >
+      <SortableContext items={rowKeys} strategy={verticalListSortingStrategy}>
+        <tbody {...restProps}>{children}</tbody>
+      </SortableContext>
+      {activeId
+        ? ReactDOM.createPortal(
+            <DragOverlay dropAnimation={null}>
+              <div className={`${prefixCls}-drag-overlay`}>
+                <table>
+                  <tbody>
+                    <tr>
+                      <td>行 {activeId}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </DragOverlay>,
+            document.body,
+          )
+        : null}
+    </DndContext>
+  );
+};
+
+export function useRowDrag(options: UseRowDragOptions) {
+  const { dataSource, rowKey } = options;
+  const prefixCls = usePrefixCls('table');
+  const locale = useLocale('Table');
+
+  // 数据源的 key 列表
+  const rowKeys = useMemo(() => {
+    const getKey =
+      typeof rowKey === 'function' ? rowKey : (r: any) => r[rowKey];
+    return dataSource.map((record) => String(getKey(record)));
+  }, [dataSource, rowKey]);
+
+  const optionsRef = useRef({ ...options, rowKeys });
+  optionsRef.current = { ...options, rowKeys };
+
+  const contextRef = useRef({ prefixCls, dragHandleLabel: locale.dragHandle });
+  contextRef.current = { prefixCls, dragHandleLabel: locale.dragHandle };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 1 },
+    }),
+    useSensor(KeyboardSensor),
+    useSensor(TouchSensor, {
+      activationConstraint: { distance: 1 },
+    }),
+  );
+
+  const BodyWrapper = useCallback(
+    (wrapperProps: { children: React.ReactNode }) => {
       return (
-        <DndContext
-          id="row-drag-context"
+        <InternalBodyWrapper
+          wrapperProps={wrapperProps}
+          optionsRef={optionsRef}
+          contextRef={contextRef}
           sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onDragCancel={handleDragCancel}
-        >
-          <SortableContext
-            items={rowKeys}
-            strategy={verticalListSortingStrategy}
-          >
-            <tbody {...restProps}>{children}</tbody>
-          </SortableContext>
-          {activeId
-            ? ReactDOM.createPortal(
-                <DragOverlay dropAnimation={null}>
-                  <div className={`${prefixCls}-drag-overlay`}>
-                    <table>
-                      <tbody>
-                        <tr>
-                          <td>行 {activeId}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </DragOverlay>,
-                document.body,
-              )
-            : null}
-        </DndContext>
+        />
       );
     },
-    [
-      enabled,
-      rowKeys,
-      sensors,
-      handleDragStart,
-      handleDragEnd,
-      handleDragCancel,
-      activeId,
-      prefixCls,
-    ],
+    [sensors],
   );
 
   const RowDragContextWrapper: React.FC<{ children: React.ReactNode }> =
@@ -207,35 +223,33 @@ export function useRowDrag(options: UseRowDragOptions) {
       return <React.Fragment>{children}</React.Fragment>;
     }, []);
 
-  // Row wrapper: injects SortableRow per tr
   const RowWrapper: React.FC<{
     children: React.ReactNode;
     [key: string]: any;
-  }> = useCallback(
-    (rowProps: any) => {
-      if (!enabled) return React.createElement('tr', rowProps);
+  }> = useCallback((rowProps: any) => {
+    const { enabled, rowKeys } = optionsRef.current;
+    const { prefixCls, dragHandleLabel } = contextRef.current;
 
-      const recordKey = rowProps['data-row-key'];
-      if (!recordKey || !rowKeys.includes(String(recordKey))) {
-        return React.createElement('tr', rowProps);
-      }
+    if (!enabled) return React.createElement('tr', rowProps);
 
-      return React.createElement(
-        SortableRowAny,
-        {
-          id: String(recordKey),
-          prefixCls,
-          dragHandleLabel: locale.dragHandle,
-          rowProps,
-        },
-        rowProps.children,
-      );
-    },
-    [enabled, rowKeys, prefixCls, locale.dragHandle],
-  );
+    const recordKey = rowProps['data-row-key'];
+    if (!recordKey || !rowKeys.includes(String(recordKey))) {
+      return React.createElement('tr', rowProps);
+    }
+
+    return React.createElement(
+      SortableRowAny,
+      {
+        id: String(recordKey),
+        prefixCls,
+        dragHandleLabel,
+        rowProps,
+      },
+      rowProps.children,
+    );
+  }, []);
 
   return {
-    activeId,
     BodyWrapper,
     RowWrapper,
     RowDragContextWrapper,
