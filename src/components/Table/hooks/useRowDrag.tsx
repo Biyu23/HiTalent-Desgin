@@ -22,8 +22,6 @@ import { useLocale } from '../../../configProvider/useLocale';
 import { usePrefixCls } from '../../../configProvider/usePrefixCls';
 import type { RowDragResult } from '../type';
 
-// ==================== SortableRow ====================
-
 interface SortableRowProps {
   id: string;
   children: React.ReactNode;
@@ -55,7 +53,6 @@ const SortableRow: React.FC<SortableRowProps> = ({
     opacity: isDragging ? 0.4 : 1,
   };
 
-  // Clone children and add drag handle to the first cell
   const enhancedChildren = React.Children.map(children, (child, index) => {
     if (index === 0 && React.isValidElement(child)) {
       return React.cloneElement(child as React.ReactElement<any>, {}, [

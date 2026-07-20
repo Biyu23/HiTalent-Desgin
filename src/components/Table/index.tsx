@@ -13,7 +13,7 @@ import EnhancedHeaderCell from './components/EnhancedHeaderCell';
 import PresetBodyCell from './components/PresetBodyCell';
 import Toolbar from './components/Toolbar';
 import { useColumnConfig } from './hooks/useColumnConfig';
-import { useColumnDrag } from './hooks/useColumnDrag';
+import { SortableBodyCell, useColumnDrag } from './hooks/useColumnDrag';
 import { useRowDrag } from './hooks/useRowDrag';
 import './index.less';
 import TableContext from './TableContext';
@@ -254,22 +254,28 @@ function Table<RecordType extends Record<string, any> = any>(
       const originalCol = columnConfigMap.get(colKey);
       const rowKeyValue = record?.[(rest as any)['data-row-key']];
 
+      let cellContent = children;
       if (originalCol?.cellPreset || originalCol?.editable) {
-        return (
-          <td {...rest}>
-            <PresetBodyCell
-              record={record}
-              column={originalCol}
-              rowKey={rowKeyValue}
-              columnKey={colKey}
-            >
-              {children}
-            </PresetBodyCell>
-          </td>
+        cellContent = (
+          <PresetBodyCell
+            record={record}
+            column={originalCol}
+            rowKey={rowKeyValue}
+            columnKey={colKey}
+          >
+            {children}
+          </PresetBodyCell>
         );
       }
 
-      return <td {...rest}>{children}</td>;
+      if (enableColumnDrag && orderedKeys.includes(colKey)) {
+        return (
+          <SortableBodyCell id={colKey} {...rest}>
+            {cellContent}
+          </SortableBodyCell>
+        );
+      }
+      return <td {...rest}>{cellContent}</td>;
     };
 
     comps.body = bodyComps;

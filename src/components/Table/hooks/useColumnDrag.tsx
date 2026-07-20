@@ -47,7 +47,8 @@ const SortableHeaderItem: React.FC<SortableHeaderItemProps> = ({
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    // Add relative position and zIndex to ensure it overlays correctly during drag
+    ...(isDragging ? { position: 'relative', zIndex: 999 } : {}),
   };
 
   return (
@@ -78,15 +79,15 @@ interface UseColumnDragOptions {
   enabled: boolean;
 }
 
-const InternalHeaderWrapper: React.FC<{
-  wrapperProps: any;
+const InternalColumnDragContext: React.FC<{
+  children: React.ReactNode;
   optionsRef: React.MutableRefObject<UseColumnDragOptions>;
   contextRef: React.MutableRefObject<{
     prefixCls: string;
     dragHandleLabel: string;
   }>;
   sensors: any;
-}> = ({ wrapperProps, optionsRef, contextRef, sensors }) => {
+}> = ({ children, optionsRef, contextRef, sensors }) => {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -116,7 +117,7 @@ const InternalHeaderWrapper: React.FC<{
     setActiveId(null);
   }, []);
 
-  const { enabled, orderedKeys, columns } = optionsRef.current;
+  const { orderedKeys, columns } = optionsRef.current;
   const { prefixCls } = contextRef.current;
 
   const activeTitle = useMemo(() => {
@@ -127,11 +128,6 @@ const InternalHeaderWrapper: React.FC<{
     });
     return col?.title as React.ReactNode;
   }, [activeId, columns]);
-
-  const { children, ...restProps } = wrapperProps as any;
-  if (!enabled) {
-    return <thead {...restProps}>{children}</thead>;
-  }
 
   return (
     <DndContext
@@ -146,7 +142,7 @@ const InternalHeaderWrapper: React.FC<{
         items={orderedKeys}
         strategy={horizontalListSortingStrategy}
       >
-        <thead {...restProps}>{children}</thead>
+        {children}
       </SortableContext>
       {activeId
         ? ReactDOM.createPortal(
@@ -165,6 +161,34 @@ const InternalHeaderWrapper: React.FC<{
           )
         : null}
     </DndContext>
+  );
+};
+
+export const SortableBodyCell: React.FC<{
+  id: string;
+  children: React.ReactNode;
+  [key: string]: any;
+}> = ({ id, children, ...restProps }) => {
+  const { transform, transition, isDragging } = useSortable({ id });
+
+  const style: React.CSSProperties = {
+    ...restProps.style,
+    transform: CSS.Transform.toString(transform),
+    transition,
+    ...(isDragging
+      ? {
+          position: 'relative',
+          zIndex: 1,
+          backgroundColor: 'var(--htd-table-drag-overlay-bg, #e6f4ff)',
+        }
+      : {}),
+  };
+
+  // Note: We intentionally do NOT use setNodeRef here because the header is the primary drag source and measurement node.
+  return (
+    <td {...restProps} style={style}>
+      {children}
+    </td>
   );
 };
 
@@ -188,24 +212,33 @@ export function useColumnDrag(options: UseColumnDragOptions) {
     }),
   );
 
-  const HeaderWrapper = useCallback(
-    (wrapperProps: { children: React.ReactNode }) => {
-      return (
-        <InternalHeaderWrapper
-          wrapperProps={wrapperProps}
-          optionsRef={optionsRef}
-          contextRef={contextRef}
-          sensors={sensors}
-        />
-      );
-    },
-    [sensors],
-  );
-
   const ColumnDragContextWrapper: React.FC<{ children: React.ReactNode }> =
-    useCallback(({ children }) => {
-      return <React.Fragment>{children}</React.Fragment>;
-    }, []);
+    useCallback(
+      ({ children }) => {
+        const { enabled } = optionsRef.current;
+        if (!enabled) {
+          return <React.Fragment>{children}</React.Fragment>;
+        }
+        return (
+          <InternalColumnDragContext
+            optionsRef={optionsRef}
+            contextRef={contextRef}
+            sensors={sensors}
+          >
+            {children}
+          </InternalColumnDragContext>
+        );
+      },
+      [sensors],
+    );
+
+  const HeaderWrapper: React.FC<{ children: React.ReactNode }> = useCallback(
+    (wrapperProps: { children: React.ReactNode }) => {
+      const { children, ...restProps } = wrapperProps as any;
+      return <thead {...restProps}>{children}</thead>;
+    },
+    [],
+  );
 
   const HeaderCellWrapper: React.FC<{
     children: React.ReactNode;
