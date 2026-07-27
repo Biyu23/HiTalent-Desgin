@@ -3,7 +3,9 @@ import { usePrefixCls } from '../../../configProvider/usePrefixCls';
 import type { EnhancedColumnType } from '../type';
 import ColumnSettingPopover from './ColumnSettingPopover';
 
-interface ToolbarProps<RecordType = any> {
+interface ToolbarProps<
+  RecordType extends Record<string, unknown> = Record<string, unknown>,
+> {
   /** 原始列定义 */
   columns: EnhancedColumnType<RecordType>[];
   /** 当前可见列 keys */
@@ -23,7 +25,9 @@ interface ToolbarProps<RecordType = any> {
  *
  * 渲染列设置按钮和用户自定义的额外操作
  */
-function Toolbar<RecordType = any>(props: ToolbarProps<RecordType>) {
+function Toolbar<
+  RecordType extends Record<string, unknown> = Record<string, unknown>,
+>(props: ToolbarProps<RecordType>) {
   const {
     columns,
     visibleKeys,

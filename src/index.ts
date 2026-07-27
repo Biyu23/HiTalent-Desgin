@@ -24,11 +24,9 @@ export type {
   CellPresetType,
   EditComponentProps,
   EnhancedColumnType,
-  ProgressPresetProps,
   RowDragResult,
   TableProps,
   TableRef,
-  TagPresetProps,
 } from './components/Table/type';
 
 // ConfigProvider

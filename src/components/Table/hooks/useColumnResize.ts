@@ -5,8 +5,12 @@ interface UseColumnResizeOptions {
   columnKey: string;
   /** 最小宽度 */
   minWidth?: number;
-  /** 列宽变更回调 */
+  /** 当前的受控设定宽度 */
+  currentWidth?: number;
+  /** 列宽变更回调（mousemove 实时触发） */
   onResize: (columnKey: string, width: number) => void;
+  /** 列宽拖拽结束回调（mouseup 触发，用于通知 onColumnsChange） */
+  onResizeEnd?: (columnKey: string, width: number) => void;
 }
 
 interface ResizeState {
@@ -15,92 +19,89 @@ interface ResizeState {
   startWidth: number;
 }
 
-/**
- * useColumnResize — 列宽拖拽调整 Hook
- *
- * 在 mousedown 时开始监听全局 mousemove/mouseup，
- * mouseup 或组件卸载时自动清理，避免泄漏。
- *
- * 参考 Modal 的 mouseUpManager 单例模式管理全局 mouseup。
- */
 export function useColumnResize(options: UseColumnResizeOptions) {
-  const { columnKey, minWidth = 80, onResize } = options;
+  const {
+    columnKey,
+    minWidth = 80,
+    currentWidth,
+    onResize,
+    onResizeEnd,
+  } = options;
 
   const resizeStateRef = useRef<ResizeState | null>(null);
   const [isResizing, setIsResizing] = useState(false);
   const headerRef = useRef<HTMLTableCellElement | null>(null);
+
   const columnKeyRef = useRef(columnKey);
   columnKeyRef.current = columnKey;
   const minWidthRef = useRef(minWidth);
   minWidthRef.current = minWidth;
+  const currentWidthRef = useRef(currentWidth);
+  currentWidthRef.current = currentWidth;
   const onResizeRef = useRef(onResize);
   onResizeRef.current = onResize;
+  const onResizeEndRef = useRef(onResizeEnd);
+  onResizeEndRef.current = onResizeEnd;
+  const lastWidthRef = useRef<number>(0);
 
-  // ---- mousedown: 开始调整 ----
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      // 阻止事件冒泡到 dnd-kit 的 Sortable 容器以及默认选中行为
+      e.preventDefault();
+      e.stopPropagation();
 
-    const th = (e.target as HTMLElement).closest('th');
-    if (!th) return;
+      const th = (e.target as HTMLElement).closest('th');
+      if (!th) return;
 
-    const currentWidth = th.getBoundingClientRect().width;
+      const startWidth =
+        currentWidthRef.current ?? th.getBoundingClientRect().width;
+      lastWidthRef.current = startWidth;
 
-    resizeStateRef.current = {
-      isResizing: true,
-      startX: e.clientX,
-      startWidth: currentWidth,
-    };
+      resizeStateRef.current = {
+        isResizing: true,
+        startX: e.clientX,
+        startWidth,
+      };
+      setIsResizing(true);
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor = 'col-resize';
+    },
+    [],
+  );
 
-    setIsResizing(true);
-
-    // 给 body 添加全局样式防止文本选择
-    document.body.style.userSelect = 'none';
-    document.body.style.cursor = 'col-resize';
-  }, []);
-
-  // ---- mousemove: 全局监听 ----
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handlePointerMove = (e: PointerEvent) => {
       const state = resizeStateRef.current;
       if (!state || !state.isResizing) return;
-
       const diff = e.clientX - state.startX;
       const newWidth = Math.max(minWidthRef.current, state.startWidth + diff);
+      lastWidthRef.current = newWidth;
       onResizeRef.current(columnKeyRef.current, newWidth);
     };
 
-    const handleMouseUp = () => {
+    const handlePointerUp = () => {
       const state = resizeStateRef.current;
       if (!state || !state.isResizing) return;
 
+      onResizeEndRef.current?.(columnKeyRef.current, lastWidthRef.current);
       resizeStateRef.current = null;
       setIsResizing(false);
-
       document.body.style.userSelect = '';
       document.body.style.cursor = '';
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('pointermove', handlePointerMove);
+    document.addEventListener('pointerup', handlePointerUp);
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-
-      // 清理全局状态
-      if (resizeStateRef.current) {
-        resizeStateRef.current = null;
-        setIsResizing(false);
-        document.body.style.userSelect = '';
-        document.body.style.cursor = '';
-      }
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
     };
   }, []);
 
   return {
     isResizing,
     headerRef,
-    handleMouseDown,
+    handlePointerDown,
   };
 }

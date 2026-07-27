@@ -1,219 +1,210 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { EnhancedColumnType } from '../type';
 import { getColumnKey } from '../utils/columnHelpers';
 
 interface UseColumnConfigOptions<RecordType> {
-  /** 原始 columns */
-  columns: EnhancedColumnType<RecordType>[];
-  /** 受控：可见列 keys */
-  visibleKeys?: string[];
-  /** 非受控：默认可见列 keys */
-  defaultVisibleKeys?: string[];
-  /** 可见列变更回调 */
-  onVisibleKeysChange?: (visibleKeys: string[]) => void;
-  /** 受控：列宽 */
-  columnWidths?: Record<string, number>;
-  /** 非受控：默认列宽 */
-  defaultColumnWidths?: Record<string, number>;
-  /** 列宽变更回调 */
-  onColumnWidthChange?: (widths: Record<string, number>) => void;
-  /** 受控：列顺序 */
-  orderedKeys?: string[];
-  /** 非受控：默认列顺序 */
-  defaultOrderedKeys?: string[];
-  /** 列顺序变更回调 */
-  onColumnOrderChange?: (columnKeys: string[]) => void;
-  /** 列设置是否显示 */
+  columns: readonly EnhancedColumnType<RecordType>[];
+  onColumnsChange?: (columns: EnhancedColumnType<RecordType>[]) => void;
   showColumnSetting: boolean;
-  /** 列宽调整是否启用 */
   enableColumnResize: boolean;
-  /** 列拖拽是否启用 */
   enableColumnDrag: boolean;
 }
 
-/**
- * useColumnConfig — 管理 Table 列配置的核心 hook
- *
- * 统一管理：
- * - 列显隐（visibleKeys）
- * - 列宽（columnWidths）
- * - 列顺序（orderedKeys）
- *
- * 全部基于 useMergeState 的受控/非受控双模式
- */
-export function useColumnConfig<RecordType>(
+function buildEnrichedColumns<RecordType extends Record<string, unknown>>(
+  columns: readonly EnhancedColumnType<RecordType>[],
+  visibleKeys: string[],
+  columnWidths: Record<string, number>,
+  orderedKeys: string[],
+): EnhancedColumnType<RecordType>[] {
+  const keyToCol = new Map<string, EnhancedColumnType<RecordType>>();
+  columns.forEach((col, i) => keyToCol.set(getColumnKey(col, i), col));
+
+  return orderedKeys
+    .map((key) => {
+      const col = keyToCol.get(key);
+      if (!col) return null;
+      return {
+        ...col,
+        hidden: !visibleKeys.includes(key),
+        width: columnWidths[key] ?? col.width ?? col.defaultWidth,
+      };
+    })
+    .filter(Boolean) as EnhancedColumnType<RecordType>[];
+}
+
+function deriveFromColumns<RecordType extends Record<string, unknown>>(
+  columns: readonly EnhancedColumnType<RecordType>[],
+): {
+  visibleKeys: string[];
+  columnWidths: Record<string, number>;
+  orderedKeys: string[];
+} {
+  const visibleKeys: string[] = [];
+  const columnWidths: Record<string, number> = {};
+  const orderedKeys: string[] = [];
+
+  columns.forEach((col, i) => {
+    const key = getColumnKey(col, i);
+    orderedKeys.push(key);
+    if (!col.hidden) {
+      visibleKeys.push(key);
+    }
+    const w = col.width ?? col.defaultWidth;
+    if (w !== undefined) {
+      columnWidths[key] = w as number;
+    }
+  });
+
+  return { visibleKeys, columnWidths, orderedKeys };
+}
+
+export function useColumnConfig<RecordType extends Record<string, unknown>>(
   options: UseColumnConfigOptions<RecordType>,
 ) {
   const {
     columns,
-    visibleKeys: visibleKeysProp,
-    defaultVisibleKeys: defaultVisibleKeysProp,
-    onVisibleKeysChange,
-    columnWidths: columnWidthsProp,
-    defaultColumnWidths: defaultColumnWidthsProp,
-    onColumnWidthChange,
-    orderedKeys: orderedKeysProp,
-    defaultOrderedKeys: defaultOrderedKeysProp,
-    onColumnOrderChange,
+    onColumnsChange,
     showColumnSetting,
     enableColumnResize,
     enableColumnDrag,
   } = options;
 
-  // ---- 列 key 列表（稳定引用） ----
+  const [initialSnapshot] = useState(() => {
+    const derived = deriveFromColumns(columns);
+    return { columns, ...derived };
+  });
+
   const columnKeys = useMemo(
     () => columns.map((col, i) => getColumnKey(col, i)),
     [columns],
   );
 
-  // ---- 默认可见列 keys ----
-  const fallbackVisibleKeys = useMemo(() => {
-    if (defaultVisibleKeysProp) return defaultVisibleKeysProp;
-    return columns
-      .filter((col) => {
-        if (col.hideable === false) return true;
-        return !col.hidden;
-      })
-      .map((col, i) => getColumnKey(col, i));
-  }, [columns, defaultVisibleKeysProp]);
-
-  // ---- 默认列宽 ----
-  const fallbackColumnWidths = useMemo(() => {
-    if (defaultColumnWidthsProp) return defaultColumnWidthsProp;
-    const widths: Record<string, number> = {};
-    columns.forEach((col, i) => {
-      if (col.defaultWidth !== undefined) {
-        widths[getColumnKey(col, i)] = col.defaultWidth;
-      }
-    });
-    return widths;
-  }, [columns, defaultColumnWidthsProp]);
-
-  // ---- 默认列顺序 ----
-  const fallbackOrderedKeys = useMemo(() => {
-    if (defaultOrderedKeysProp) return defaultOrderedKeysProp;
-    return columnKeys;
-  }, [columnKeys, defaultOrderedKeysProp]);
-
-  // ---- 受控/非受控状态 ----
-  const [internalVisibleKeys, setInternalVisibleKeys] = useState<string[]>(() =>
-    visibleKeysProp !== undefined ? visibleKeysProp : fallbackVisibleKeys,
+  const [internalVisibleKeys, setInternalVisibleKeys] = useState<string[]>(
+    () => deriveFromColumns(columns).visibleKeys,
   );
   const [internalColumnWidths, setInternalColumnWidths] = useState<
     Record<string, number>
-  >(() =>
-    columnWidthsProp !== undefined ? columnWidthsProp : fallbackColumnWidths,
-  );
-  const [internalOrderedKeys, setInternalOrderedKeys] = useState<string[]>(() =>
-    orderedKeysProp !== undefined ? orderedKeysProp : fallbackOrderedKeys,
+  >(() => deriveFromColumns(columns).columnWidths);
+  const [internalOrderedKeys, setInternalOrderedKeys] = useState<string[]>(
+    () => deriveFromColumns(columns).orderedKeys,
   );
 
-  // 同步受控值
-  const isVisibleControlled = visibleKeysProp !== undefined;
-  const isWidthControlled = columnWidthsProp !== undefined;
-  const isOrderControlled = orderedKeysProp !== undefined;
+  const stateRef = useRef({
+    visibleKeys: internalVisibleKeys,
+    columnWidths: internalColumnWidths,
+    orderedKeys: internalOrderedKeys,
+  });
+  stateRef.current = {
+    visibleKeys: internalVisibleKeys,
+    columnWidths: internalColumnWidths,
+    orderedKeys: internalOrderedKeys,
+  };
+
+  const syncVersionRef = useRef(0);
+  const localVersionRef = useRef(0);
 
   useEffect(() => {
-    if (isVisibleControlled) {
-      setInternalVisibleKeys(visibleKeysProp!);
-    }
-  }, [isVisibleControlled, visibleKeysProp]);
+    syncVersionRef.current += 1;
+    const currentSyncVer = syncVersionRef.current;
+    const derived = deriveFromColumns(columns);
 
-  useEffect(() => {
-    if (isWidthControlled) {
-      setInternalColumnWidths(columnWidthsProp!);
-    }
-  }, [isWidthControlled, columnWidthsProp]);
+    queueMicrotask(() => {
+      if (
+        syncVersionRef.current === currentSyncVer &&
+        localVersionRef.current < currentSyncVer
+      ) {
+        setInternalVisibleKeys(derived.visibleKeys);
+        setInternalColumnWidths(derived.columnWidths);
+        setInternalOrderedKeys(derived.orderedKeys);
+        localVersionRef.current = currentSyncVer;
+      }
+    });
+  }, [columns]);
 
-  useEffect(() => {
-    if (isOrderControlled) {
-      setInternalOrderedKeys(orderedKeysProp!);
-    }
-  }, [isOrderControlled, orderedKeysProp]);
+  const visibleKeys = internalVisibleKeys;
+  const columnWidths = internalColumnWidths;
+  const orderedKeys = internalOrderedKeys;
 
-  // 导出当前值
-  const visibleKeys = isVisibleControlled
-    ? visibleKeysProp!
-    : internalVisibleKeys;
-  const columnWidths = isWidthControlled
-    ? columnWidthsProp!
-    : internalColumnWidths;
-  const orderedKeys = isOrderControlled
-    ? orderedKeysProp!
-    : internalOrderedKeys;
+  const onColumnsChangeRef = useRef(onColumnsChange);
+  onColumnsChangeRef.current = onColumnsChange;
 
-  // ---- Actions ----
+  const triggerColumnsChange = useCallback(
+    (vKeys: string[], widths: Record<string, number>, oKeys: string[]) => {
+      localVersionRef.current = syncVersionRef.current + 1;
+      onColumnsChangeRef.current?.(
+        buildEnrichedColumns(columns, vKeys, widths, oKeys),
+      );
+    },
+    [columns],
+  );
+
   const setVisibleKeys = useCallback(
     (next: string[] | ((prev: string[]) => string[])) => {
-      const nextValue = typeof next === 'function' ? next(visibleKeys) : next;
-      if (!isVisibleControlled) {
-        setInternalVisibleKeys(nextValue);
-      }
-      onVisibleKeysChange?.(nextValue);
+      const prevKeys = stateRef.current.visibleKeys;
+      const nextValue = typeof next === 'function' ? next(prevKeys) : next;
+
+      setInternalVisibleKeys(nextValue);
+      triggerColumnsChange(
+        nextValue,
+        stateRef.current.columnWidths,
+        stateRef.current.orderedKeys,
+      );
     },
-    [visibleKeys, isVisibleControlled, onVisibleKeysChange],
+    [triggerColumnsChange],
   );
 
-  const setColumnWidth = useCallback(
-    (columnKey: string, width: number) => {
-      if (!isWidthControlled) {
-        setInternalColumnWidths((prev) => {
-          const nextValue = { ...prev, [columnKey]: width };
-          onColumnWidthChange?.(nextValue);
-          return nextValue;
-        });
-      } else {
-        const nextValue = { ...columnWidths, [columnKey]: width };
-        onColumnWidthChange?.(nextValue);
-      }
-    },
-    [columnWidths, isWidthControlled, onColumnWidthChange],
-  );
-
-  const setColumnWidths = useCallback(
-    (
-      next:
-        | Record<string, number>
-        | ((prev: Record<string, number>) => Record<string, number>),
-    ) => {
-      if (!isWidthControlled) {
-        setInternalColumnWidths((prev) => {
-          const nextValue = typeof next === 'function' ? next(prev) : next;
-          onColumnWidthChange?.(nextValue);
-          return nextValue;
-        });
-      } else {
-        const nextValue =
-          typeof next === 'function' ? next(columnWidths) : next;
-        onColumnWidthChange?.(nextValue);
-      }
-    },
-    [columnWidths, isWidthControlled, onColumnWidthChange],
-  );
+  const setColumnWidth = useCallback((columnKey: string, width: number) => {
+    setInternalColumnWidths((prev) => ({ ...prev, [columnKey]: width }));
+  }, []);
 
   const setOrderedKeys = useCallback(
-    (next: string[] | ((prev: string[]) => string[])) => {
-      const nextValue = typeof next === 'function' ? next(orderedKeys) : next;
-      if (!isOrderControlled) {
-        setInternalOrderedKeys(nextValue);
+    (
+      next: string[] | ((prev: string[]) => string[]),
+      opts?: { silent?: boolean },
+    ) => {
+      const prevKeys = stateRef.current.orderedKeys;
+      const nextValue = typeof next === 'function' ? next(prevKeys) : next;
+
+      setInternalOrderedKeys(nextValue);
+      if (!opts?.silent) {
+        triggerColumnsChange(
+          stateRef.current.visibleKeys,
+          stateRef.current.columnWidths,
+          nextValue,
+        );
       }
-      onColumnOrderChange?.(nextValue);
     },
-    [orderedKeys, isOrderControlled, onColumnOrderChange],
+    [triggerColumnsChange],
+  );
+
+  const commitResize = useCallback(
+    (columnKey: string, finalWidth: number) => {
+      const nextWidths = {
+        ...stateRef.current.columnWidths,
+        [columnKey]: finalWidth,
+      };
+
+      setInternalColumnWidths(nextWidths);
+      triggerColumnsChange(
+        stateRef.current.visibleKeys,
+        nextWidths,
+        stateRef.current.orderedKeys,
+      );
+    },
+    [triggerColumnsChange],
   );
 
   const resetAll = useCallback(() => {
-    setVisibleKeys(fallbackVisibleKeys);
-    setColumnWidths(fallbackColumnWidths);
-    setOrderedKeys(fallbackOrderedKeys);
-  }, [fallbackVisibleKeys, fallbackColumnWidths, fallbackOrderedKeys]);
-
-  // ---- tooltipRender 默认内容 ----
-  const defaultToolbarContent = useMemo(() => {
-    if (!showColumnSetting) return null;
-    // Toolbar 返回占位，实际渲染在 Toolbar 组件中
-    return null;
-  }, [showColumnSetting]);
+    const reset = deriveFromColumns(initialSnapshot.columns);
+    setInternalVisibleKeys(reset.visibleKeys);
+    setInternalColumnWidths(reset.columnWidths);
+    setInternalOrderedKeys(reset.orderedKeys);
+    triggerColumnsChange(
+      reset.visibleKeys,
+      reset.columnWidths,
+      reset.orderedKeys,
+    );
+  }, [initialSnapshot.columns, triggerColumnsChange]);
 
   return {
     columnKeys,
@@ -222,12 +213,11 @@ export function useColumnConfig<RecordType>(
     orderedKeys,
     setVisibleKeys,
     setColumnWidth,
-    setColumnWidths,
     setOrderedKeys,
+    commitResize,
     resetAll,
     showColumnSetting,
     enableColumnResize,
     enableColumnDrag,
-    defaultToolbarContent,
   };
 }

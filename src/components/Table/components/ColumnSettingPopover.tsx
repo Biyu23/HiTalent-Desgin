@@ -6,7 +6,9 @@ import { usePrefixCls } from '../../../configProvider/usePrefixCls';
 import type { EnhancedColumnType } from '../type';
 import { getColumnKey } from '../utils/columnHelpers';
 
-interface ColumnSettingPopoverProps<RecordType = any> {
+interface ColumnSettingPopoverProps<
+  RecordType extends Record<string, unknown> = Record<string, unknown>,
+> {
   /** 原始列定义 */
   columns: EnhancedColumnType<RecordType>[];
   /** 当前可见列 keys */
@@ -25,9 +27,9 @@ interface ColumnSettingPopoverProps<RecordType = any> {
  * 参考用户提供的 TableColumnSetting 组件设计，
  * 使用项目现有的 ConfigProvider locale 替代 react-i18next。
  */
-function ColumnSettingPopover<RecordType = any>(
-  props: ColumnSettingPopoverProps<RecordType>,
-) {
+function ColumnSettingPopover<
+  RecordType extends Record<string, unknown> = Record<string, unknown>,
+>(props: ColumnSettingPopoverProps<RecordType>) {
   const {
     columns,
     visibleKeys,

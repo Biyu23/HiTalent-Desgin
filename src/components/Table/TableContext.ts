@@ -7,8 +7,7 @@ import type { TableContextValue } from './type';
 const TableContext = React.createContext<TableContextValue>({
   columnWidths: {},
   onColumnWidthChange: () => {},
-  visibleKeys: [],
-  orderedKeys: [],
+  onColumnResizeEnd: undefined,
   editingCell: null,
   onStartEdit: () => {},
   onEndEdit: () => {},

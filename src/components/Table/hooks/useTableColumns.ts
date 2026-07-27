@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { EnhancedColumnType } from '../type';
 
 // ==================== 列配置数据项 ====================
 
@@ -10,7 +11,7 @@ export interface ColumnConfigItem {
   /** 列标识（对应 EnhancedColumnType.key / dataIndex） */
   key: string;
   /** 是否可见 */
-  visible: boolean;
+  hidden: boolean;
   /** 排序序号 */
   order: number;
   /** 列宽（px），可选 */
@@ -41,24 +42,18 @@ export interface UseTableColumnsOptions {
 
 // ==================== Hook 返回值 ====================
 
-export interface UseTableColumnsResult {
+export interface UseTableColumnsResult<RecordType = any> {
   /**
-   * 直接解构传给 <HiTable> 的受控 props
+   * 合并了后端配置的 columns（已注入 hidden/width/顺序）
+   * 直接传给 <HiTable> 的 columns prop
    *
    * @example
    * ```tsx
-   * const { tableProps } = useTableColumns({ request, updateRequest });
-   * return <HiTable columns={columns} dataSource={data} {...tableProps} />;
+   * const { columns, loading } = useTableColumns({ request, updateRequest });
+   * return <HiTable columns={columns} dataSource={data} onColumnsChange={handleChange} />;
    * ```
    */
-  tableProps: {
-    visibleKeys: string[];
-    orderedKeys: string[];
-    columnWidths: Record<string, number>;
-    onVisibleKeysChange: (keys: string[]) => void;
-    onColumnOrderChange: (keys: string[]) => void;
-    onColumnWidthChange: (widths: Record<string, number>) => void;
-  };
+  columns: EnhancedColumnType<RecordType>[];
 
   /** 加载/保存中 */
   loading: boolean;
@@ -69,97 +64,49 @@ export interface UseTableColumnsResult {
 // ==================== 工具函数 ====================
 
 /**
- * 从 ColumnConfigItem[] 提取 visibleKeys（按 order 排序）
+ * 将后端 ColumnConfigItem[] 合并到 EnhancedColumnType[] 上
+ * 按照后端配置的顺序排序，注入 hidden 和 width
  */
-function deriveVisibleKeys(configs: ColumnConfigItem[]): string[] {
-  return configs
-    .filter((c) => c.visible)
-    .sort((a, b) => a.order - b.order)
-    .map((c) => c.key);
-}
-
-/**
- * 从 ColumnConfigItem[] 提取 orderedKeys（按 order 排序）
- */
-function deriveOrderedKeys(configs: ColumnConfigItem[]): string[] {
-  return [...configs].sort((a, b) => a.order - b.order).map((c) => c.key);
-}
-
-/**
- * 从 ColumnConfigItem[] 提取 columnWidths
- */
-function deriveColumnWidths(
+export function mergeConfigToColumns<RecordType>(
+  columns: EnhancedColumnType<RecordType>[],
   configs: ColumnConfigItem[],
-): Record<string, number> {
-  const widths: Record<string, number> = {};
-  configs.forEach((c) => {
-    if (c.width !== undefined) {
-      widths[c.key] = c.width;
-    }
-  });
-  return widths;
-}
+): EnhancedColumnType<RecordType>[] {
+  // 构建后端配置索引
+  const configMap = new Map<string, ColumnConfigItem>();
+  configs.forEach((c) => configMap.set(c.key, c));
 
-/**
- * 根据新的 visibleKeys 更新 configs（保持已有 order，新增项追加到末尾）
- */
-function applyVisibleKeys(
-  configs: ColumnConfigItem[],
-  visibleKeys: string[],
-): ColumnConfigItem[] {
-  const visibleSet = new Set(visibleKeys);
+  // 按 configs 的顺序生成 columns
+  const ordered = configs
+    .map((cfg) => {
+      // 尝试通过 key 匹配，也尝试 dataIndex
+      const col =
+        columns.find(
+          (c, i) =>
+            (c.key as string) === cfg.key ||
+            c.dataIndex?.toString() === cfg.key ||
+            `col_${i}` === cfg.key,
+        ) || columns.find((c) => c.dataIndex?.toString() === cfg.key);
 
-  // 现有的 keys
-  const existingKeys = new Set(configs.map((c) => c.key));
+      if (!col) return null;
 
-  // 之前不存在的 key 需要追加
-  const newKeys = visibleKeys.filter((k) => !existingKeys.has(k));
-  const maxOrder =
-    configs.length > 0 ? Math.max(...configs.map((c) => c.order ?? 0)) : -1;
+      return {
+        ...col,
+        hidden: cfg.hidden,
+        width: cfg.width ?? col.width ?? col.defaultWidth,
+      };
+    })
+    .filter(Boolean) as EnhancedColumnType<RecordType>[];
 
-  const updated = configs.map((c) => ({
-    ...c,
-    visible: visibleSet.has(c.key),
-  }));
+  // 补充后端配置中不存在的列（追加到末尾）
+  const configuredKeys = new Set(configs.map((c) => c.key));
+  const unconfigured = columns.filter(
+    (col, i) =>
+      !configuredKeys.has(
+        (col.key as string) || col.dataIndex?.toString() || `col_${i}`,
+      ),
+  );
 
-  // 追加全新的列
-  newKeys.forEach((key, i) => {
-    updated.push({
-      key,
-      visible: true,
-      order: maxOrder + 1 + i,
-    });
-  });
-
-  return updated;
-}
-
-/**
- * 根据新的 orderedKeys 更新 configs 的 order 值
- */
-function applyOrderedKeys(
-  configs: ColumnConfigItem[],
-  orderedKeys: string[],
-): ColumnConfigItem[] {
-  return configs.map((c) => {
-    const idx = orderedKeys.indexOf(c.key);
-    return idx === -1 ? c : { ...c, order: idx };
-  });
-}
-
-/**
- * 根据新的 columnWidths 更新 configs 的 width 值
- */
-function applyColumnWidths(
-  configs: ColumnConfigItem[],
-  columnWidths: Record<string, number>,
-): ColumnConfigItem[] {
-  return configs.map((c) => {
-    if (c.key in columnWidths) {
-      return { ...c, width: columnWidths[c.key] };
-    }
-    return c;
-  });
+  return [...ordered, ...unconfigured];
 }
 
 // ==================== Hook 实现 ====================
@@ -167,47 +114,37 @@ function applyColumnWidths(
 /**
  * useTableColumns — 将后端列配置与 Table 组件桥接的 Hook
  *
- * 封装完整的异步 fetch/save 生命周期，返回可直接解构给 `<HiTable>` 的受控 props。
+ * 封装完整的异步 fetch/save 生命周期，返回合并后的 columns 直接传给 `<HiTable>`。
  *
  * @example
  * ```tsx
  * const MyPage = () => {
- *   const { tableProps, loading } = useTableColumns({
- *     request: () => getReportColumns('myModule').then(parseResponse),
- *     updateRequest: (configs) => editReportColumns({
- *       itemSortAll: JSON.stringify(configs),
- *       module: 'myModule',
- *     }),
+ *   const { columns, loading } = useTableColumns({
+ *     request: () => getReportColumns('myModule'),
+ *     updateRequest: (configs) => editReportColumns(configs),
  *   });
  *
  *   return (
  *     <HiTable
  *       columns={columns}
  *       dataSource={data}
- *       {...tableProps}
+ *       onColumnsChange={(updated) => setColumns(updated)}
  *       columnSettingLoading={loading}
  *     />
  *   );
  * };
  * ```
  */
-export function useTableColumns(
+export function useTableColumns<RecordType = any>(
   options: UseTableColumnsOptions,
-): UseTableColumnsResult {
-  const { request, updateRequest, fetchOnMount = true } = options;
+): UseTableColumnsResult<RecordType> {
+  const { request, fetchOnMount = true } = options;
 
   // ---- 状态 ----
   const [columnConfigs, setColumnConfigs] = useState<ColumnConfigItem[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // 保存防抖 ref
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
-
-  // ---- 派生状态 ----
-  const visibleKeys = deriveVisibleKeys(columnConfigs);
-  const orderedKeys = deriveOrderedKeys(columnConfigs);
-  const columnWidths = deriveColumnWidths(columnConfigs);
 
   // ---- 加载（错误直接 throw，由业务层处理） ----
   const fetchColumns = useCallback(async () => {
@@ -234,84 +171,15 @@ export function useTableColumns(
     };
   }, [fetchOnMount, fetchColumns]);
 
-  // ---- 保存（防抖） ----
-  const save = useCallback(
-    (configs: ColumnConfigItem[]) => {
-      if (!updateRequest) return;
-
-      // 清除前一次防抖
-      if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current);
-      }
-
-      saveTimerRef.current = setTimeout(async () => {
-        setLoading(true);
-        try {
-          await updateRequest(configs);
-        } finally {
-          if (mountedRef.current) {
-            setLoading(false);
-          }
-        }
-      }, 300);
-    },
-    [updateRequest],
-  );
-
-  // ---- 变更处理器 ----
-
-  const handleVisibleKeysChange = useCallback(
-    (keys: string[]) => {
-      setColumnConfigs((prev) => {
-        const next = applyVisibleKeys(prev, keys);
-        save(next);
-        return next;
-      });
-    },
-    [save],
-  );
-
-  const handleColumnOrderChange = useCallback(
-    (keys: string[]) => {
-      setColumnConfigs((prev) => {
-        const next = applyOrderedKeys(prev, keys);
-        save(next);
-        return next;
-      });
-    },
-    [save],
-  );
-
-  const handleColumnWidthChange = useCallback(
-    (widths: Record<string, number>) => {
-      setColumnConfigs((prev) => {
-        const next = applyColumnWidths(prev, widths);
-        save(next);
-        return next;
-      });
-    },
-    [save],
-  );
-
   // ---- 清理 ----
   useEffect(() => {
     return () => {
       mountedRef.current = false;
-      if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current);
-      }
     };
   }, []);
 
   return {
-    tableProps: {
-      visibleKeys,
-      orderedKeys,
-      columnWidths,
-      onVisibleKeysChange: handleVisibleKeysChange,
-      onColumnOrderChange: handleColumnOrderChange,
-      onColumnWidthChange: handleColumnWidthChange,
-    },
+    columns: columnConfigs as unknown as EnhancedColumnType<RecordType>[],
     loading,
     columnConfigs,
   };

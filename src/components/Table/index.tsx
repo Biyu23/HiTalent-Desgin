@@ -1,3 +1,4 @@
+import type { TableProps as AntdTableProps } from 'antd';
 import { Table as AntdTable } from 'antd';
 import clsx from 'clsx';
 import React, {
@@ -6,6 +7,7 @@ import React, {
   useCallback,
   useImperativeHandle,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
@@ -14,16 +16,24 @@ import PresetBodyCell from './components/PresetBodyCell';
 import Toolbar from './components/Toolbar';
 import { useColumnConfig } from './hooks/useColumnConfig';
 import { SortableBodyCell, useColumnDrag } from './hooks/useColumnDrag';
-import { useRowDrag } from './hooks/useRowDrag';
+import { RowDragHandle, useRowDrag } from './hooks/useRowDrag';
 import './index.less';
 import TableContext from './TableContext';
-import type { EnhancedColumnType, TableProps, TableRef } from './type';
+import type {
+  EnhancedColumnType,
+  RowDragConfig,
+  TableProps,
+  TableRef,
+} from './type';
 import {
   filterVisibleColumns,
   getColumnKey,
   sanitizeColumn,
   sortColumnsByOrder,
 } from './utils/columnHelpers';
+
+// 暴露手柄给外部，实现终极灵活性
+export { RowDragHandle };
 
 const DEFAULT_TABLE_PROPS = {
   showColumnSetting: true,
@@ -35,38 +45,16 @@ const DEFAULT_TABLE_PROPS = {
   hoverHighlight: true,
 } as const;
 
-/**
- * Table 组件
- *
- * 在 Ant Design Table 基础上增强：
- * - 列显示/隐藏设置（操作栏右上角齿轮按钮）
- * - 列宽拖拽调整（resize handle）
- * - 列拖拽排序（@dnd-kit）
- * - 树结构行拖拽（@dnd-kit）
- * - 表头搜索图标
- * - Cell 预设渲染（tag / progress / date / number / boolean / empty）
- * - 斑马纹 / 行悬停高亮
- * - 行内编辑
- */
-function Table<RecordType extends Record<string, any> = any>(
-  props: TableProps<RecordType>,
-  ref: React.Ref<TableRef>,
-) {
+function InternalTable<
+  RecordType extends Record<string, unknown> = Record<string, unknown>,
+>(props: TableProps<RecordType>, ref: React.Ref<TableRef>) {
   const {
     columns: columnsProp,
     showColumnSetting = DEFAULT_TABLE_PROPS.showColumnSetting,
-    defaultVisibleKeys,
-    visibleKeys: visibleKeysProp,
-    onVisibleKeysChange,
     enableColumnResize = DEFAULT_TABLE_PROPS.enableColumnResize,
-    defaultColumnWidths,
-    columnWidths: columnWidthsProp,
-    onColumnWidthChange,
     enableColumnDrag = DEFAULT_TABLE_PROPS.enableColumnDrag,
-    defaultOrderedKeys,
-    orderedKeys: orderedKeysProp,
-    onColumnOrderChange,
-    enableRowDrag = DEFAULT_TABLE_PROPS.enableRowDrag,
+    onColumnsChange,
+    enableRowDrag: enableRowDragProp = DEFAULT_TABLE_PROPS.enableRowDrag,
     onRowDragEnd,
     enableInlineEdit = DEFAULT_TABLE_PROPS.enableInlineEdit,
     onCellEdit,
@@ -99,67 +87,56 @@ function Table<RecordType extends Record<string, any> = any>(
     orderedKeys,
     setVisibleKeys,
     setColumnWidth,
-    setColumnWidths,
     setOrderedKeys,
+    commitResize,
     resetAll,
   } = useColumnConfig<RecordType>({
     columns: columnsProp,
-    visibleKeys: visibleKeysProp,
-    defaultVisibleKeys,
-    onVisibleKeysChange,
-    columnWidths: columnWidthsProp,
-    defaultColumnWidths,
-    onColumnWidthChange,
-    orderedKeys: orderedKeysProp,
-    defaultOrderedKeys,
-    onColumnOrderChange,
+    onColumnsChange,
     showColumnSetting,
     enableColumnResize,
     enableColumnDrag,
   });
 
-  // ---- 列拖拽 Hook ----
   const { HeaderWrapper, HeaderCellWrapper, ColumnDragContextWrapper } =
-    useColumnDrag({
+    useColumnDrag<RecordType>({
       orderedKeys,
       onReorder: setOrderedKeys,
       columns: columnsProp,
       enabled: enableColumnDrag,
     });
 
-  // ---- 行拖拽 Hook ----
-  const { BodyWrapper, RowWrapper, RowDragContextWrapper } = useRowDrag({
-    dataSource: (dataSource || []) as any[],
-    rowKey: (rowKeyProp as any) || 'key',
-    enabled: enableRowDrag,
-    onDragEnd: (result) => {
-      onRowDragEnd?.(result);
-    },
-  });
+  const rowDragConfig: RowDragConfig<RecordType> = useMemo(() => {
+    if (typeof enableRowDragProp === 'object') return enableRowDragProp;
+    return { treeMode: false };
+  }, [enableRowDragProp]);
 
-  // ---- 行级唯一标识 ----
-  const rowKey = useMemo(() => {
-    if (rowKeyProp) return rowKeyProp;
-    return 'key';
-  }, [rowKeyProp]);
+  const isRowDragEnabled =
+    typeof enableRowDragProp === 'object' ? true : !!enableRowDragProp;
 
-  // ---- 处理后的列数据 ----
+  const { BodyWrapper, RowWrapper, RowDragContextWrapper } =
+    useRowDrag<RecordType>({
+      dataSource: dataSource || [],
+      rowKey: rowKeyProp || 'key',
+      enabled: isRowDragEnabled,
+      config: rowDragConfig,
+      onDragEnd: (result) => {
+        onRowDragEnd?.(result);
+      },
+    });
+
+  const rowKey = useMemo(() => rowKeyProp || 'key', [rowKeyProp]);
+
   const processedColumns = useMemo(() => {
-    // 1. 剥离扩展属性 → antd 兼容格式
     let sanitized = columnsProp.map((col) => sanitizeColumn(col));
-
-    // 2. 过滤可见列
     sanitized = filterVisibleColumns(sanitized, visibleKeys);
-
-    // 3. 按 order 排序
     sanitized = sortColumnsByOrder(sanitized, orderedKeys);
 
-    // 4. 注入列宽、onHeaderCell 和 onCell 以传递 column 和 record 给自定义组件
-    return sanitized.map((col, index) => {
+    const mapped = sanitized.map((col, index) => {
       const key = getColumnKey(col, index);
       const width = columnWidths[key];
-
       const enhancedCol = { ...col };
+
       if (width !== undefined) {
         enhancedCol.width = width;
       }
@@ -169,10 +146,7 @@ function Table<RecordType extends Record<string, any> = any>(
         const originalProps = originalOnHeaderCell
           ? originalOnHeaderCell(columnType)
           : {};
-        return {
-          ...originalProps,
-          column: enhancedCol,
-        };
+        return { ...originalProps, column: enhancedCol };
       };
 
       const originalOnCell = col.onCell;
@@ -180,97 +154,124 @@ function Table<RecordType extends Record<string, any> = any>(
         const originalProps = originalOnCell
           ? originalOnCell(record, rowIndex)
           : {};
-        return {
-          ...originalProps,
-          column: enhancedCol,
-          record,
-        };
+        return { ...originalProps, column: enhancedCol, record };
       };
 
       return enhancedCol;
     });
-  }, [columnsProp, visibleKeys, orderedKeys, columnWidths]);
 
-  // ---- antd Table components 注入 ----
+    // ---- 注入拖拽手柄列 ----
+    if (isRowDragEnabled && rowDragConfig.handleColumn !== false) {
+      const handleCfg = rowDragConfig.handleColumn || {};
+      mapped.unshift({
+        key: '__drag_handle__',
+        dataIndex: '__drag_handle__',
+        title: handleCfg.title || '',
+        width: handleCfg.width || 46,
+        align: handleCfg.align || 'center',
+        fixed: handleCfg.fixed !== undefined ? handleCfg.fixed : 'left',
+        render: () => <RowDragHandle />,
+      } as EnhancedColumnType<RecordType>);
+    }
+
+    return mapped;
+  }, [
+    columnsProp,
+    visibleKeys,
+    orderedKeys,
+    columnWidths,
+    isRowDragEnabled,
+    rowDragConfig,
+  ]);
+
+  const columnConfigMapRef = useRef(columnConfigMap);
+  columnConfigMapRef.current = columnConfigMap;
+
+  type TableComponentsType = NonNullable<
+    AntdTableProps<RecordType>['components']
+  >;
   const tableComponents = useMemo(() => {
-    const comps: Record<string, any> = {};
+    const comps: TableComponentsType = {};
+    const headerComps: NonNullable<TableComponentsType['header']> = {};
 
-    // ---- header ----
-    const headerComps: Record<string, any> = {};
-
-    // header.wrapper: 列拖拽的 DndContext + SortableContext
     if (enableColumnDrag) {
       headerComps.wrapper = HeaderWrapper;
     }
 
-    // header.cell: 注入 ResizeHandle + SearchIcon + 列拖拽手柄
-    headerComps.cell = (cellProps: any) => {
+    headerComps.cell = (
+      cellProps: React.ThHTMLAttributes<HTMLTableCellElement> & {
+        column?: EnhancedColumnType<RecordType>;
+      },
+    ) => {
       const { children, column: antdColumn, ...rest } = cellProps;
       const colKey = antdColumn?.key || antdColumn?.dataIndex?.toString() || '';
-      const originalCol = columnConfigMap.get(colKey);
+      const originalCol = columnConfigMapRef.current.get(colKey as string);
 
-      // 构建表头 cell 内容
-      const cellContent = originalCol ? (
+      if (!originalCol) {
+        const wrappedContent =
+          enableColumnDrag && colKey !== '__drag_handle__' ? (
+            <HeaderCellWrapper columnKey={colKey as string}>
+              {children}
+            </HeaderCellWrapper>
+          ) : (
+            children
+          );
+        return <th {...rest}>{wrappedContent}</th>;
+      }
+
+      return (
         <EnhancedHeaderCell
+          {...rest}
           column={originalCol}
-          columnKey={colKey}
+          columnKey={colKey as string}
           enableColumnResize={enableColumnResize}
+          enableColumnDrag={enableColumnDrag}
+          HeaderCellWrapper={HeaderCellWrapper}
         >
           {children}
         </EnhancedHeaderCell>
-      ) : (
-        children
       );
-
-      // 列拖拽包裹（必须在 EnhancedHeaderCell 外层，因为 drag handle 需要占位）
-      const wrappedContent = enableColumnDrag ? (
-        <HeaderCellWrapper columnKey={colKey}>{cellContent}</HeaderCellWrapper>
-      ) : (
-        cellContent
-      );
-
-      return <th {...rest}>{wrappedContent}</th>;
     };
 
     comps.header = headerComps;
 
-    // ---- body ----
-    const bodyComps: Record<string, any> = {};
+    const bodyComps: NonNullable<TableComponentsType['body']> = {};
 
-    // body.wrapper: 行拖拽的 DndContext + SortableContext
-    if (enableRowDrag) {
+    if (isRowDragEnabled) {
       bodyComps.wrapper = BodyWrapper;
-    }
-
-    // body.row: 行拖拽 SortableRow
-    if (enableRowDrag) {
       bodyComps.row = RowWrapper;
     }
 
-    // body.cell: 注入 PresetBodyCell（Cell 预设渲染 + 行内编辑）
-    bodyComps.cell = (cellProps: any) => {
+    bodyComps.cell = (
+      cellProps: React.TdHTMLAttributes<HTMLTableCellElement> & {
+        column?: EnhancedColumnType<RecordType>;
+        record?: RecordType;
+        'data-row-key'?: React.Key;
+      },
+    ) => {
       const { children, column: antdColumn, record, ...rest } = cellProps;
       const colKey = antdColumn?.key || antdColumn?.dataIndex?.toString() || '';
-      const originalCol = columnConfigMap.get(colKey);
-      const rowKeyValue = record?.[(rest as any)['data-row-key']];
+      const originalCol = columnConfigMapRef.current.get(colKey as string);
+      const rowKeyValue = rest['data-row-key'];
 
       let cellContent = children;
+
       if (originalCol?.cellPreset || originalCol?.editable) {
         cellContent = (
           <PresetBodyCell
-            record={record}
+            record={record as RecordType}
             column={originalCol}
-            rowKey={rowKeyValue}
-            columnKey={colKey}
+            rowKey={rowKeyValue!}
+            columnKey={colKey as string}
           >
             {children}
           </PresetBodyCell>
         );
       }
 
-      if (enableColumnDrag && orderedKeys.includes(colKey)) {
+      if (enableColumnDrag && colKey && colKey !== '__drag_handle__') {
         return (
-          <SortableBodyCell id={colKey} {...rest}>
+          <SortableBodyCell id={colKey as string} {...rest}>
             {cellContent}
           </SortableBodyCell>
         );
@@ -279,20 +280,17 @@ function Table<RecordType extends Record<string, any> = any>(
     };
 
     comps.body = bodyComps;
-
     return comps;
   }, [
     enableColumnResize,
     enableColumnDrag,
-    enableRowDrag,
-    columnConfigMap,
+    isRowDragEnabled,
     HeaderWrapper,
     HeaderCellWrapper,
     BodyWrapper,
     RowWrapper,
   ]);
 
-  // ---- 行内编辑状态 ----
   const [editingCell, setEditingCell] = useState<{
     recordKey: React.Key;
     columnKey: string;
@@ -307,17 +305,13 @@ function Table<RecordType extends Record<string, any> = any>(
     [enableInlineEdit],
   );
 
-  const handleEndEdit = useCallback(() => {
-    setEditingCell(null);
-  }, []);
+  const handleEndEdit = useCallback(() => setEditingCell(null), []);
 
-  // ---- Context 值 ----
   const contextValue = useMemo(
     () => ({
       columnWidths,
       onColumnWidthChange: setColumnWidth,
-      visibleKeys,
-      orderedKeys,
+      onColumnResizeEnd: commitResize,
       editingCell,
       onStartEdit: handleStartEdit,
       onEndEdit: handleEndEdit,
@@ -328,8 +322,7 @@ function Table<RecordType extends Record<string, any> = any>(
     [
       columnWidths,
       setColumnWidth,
-      visibleKeys,
-      orderedKeys,
+      commitResize,
       editingCell,
       handleStartEdit,
       handleEndEdit,
@@ -339,11 +332,10 @@ function Table<RecordType extends Record<string, any> = any>(
     ],
   );
 
-  // ---- 操作栏渲染 ----
   const defaultToolbar = useMemo(
     () => (
       <Toolbar
-        columns={columnsProp}
+        columns={columnsProp as EnhancedColumnType<RecordType>[]}
         visibleKeys={visibleKeys}
         onVisibleKeysChange={setVisibleKeys}
         showColumnSetting={showColumnSetting}
@@ -365,36 +357,17 @@ function Table<RecordType extends Record<string, any> = any>(
     ? toolbarRender(defaultToolbar)
     : defaultToolbar;
 
-  // ---- 命令式 API ----
-  useImperativeHandle(
-    ref,
-    () => ({
-      getVisibleColumns: () => visibleKeys,
-      setVisibleColumns: (keys: string[]) => setVisibleKeys(keys),
-      getColumnWidths: () => columnWidths,
-      setColumnWidths: (widths: Record<string, number>) =>
-        setColumnWidths(widths),
-      resetAll,
-    }),
-    [visibleKeys, columnWidths, setVisibleKeys, setColumnWidths, resetAll],
-  );
+  useImperativeHandle(ref, () => ({ resetAll }), [resetAll]);
 
-  // ---- 类名 ----
   const mergedClassName = clsx(prefixCls, className, {
     [`${prefixCls}-zebra`]: zebraStripe,
     [`${prefixCls}-no-hover`]: !hoverHighlight,
   });
 
-  console.log('====================================');
-  console.log(tableComponents, 'tableComponentstableComponents');
-  console.log('====================================');
-
   return (
     <TableContext.Provider value={contextValue}>
       <div className={`${prefixCls}-wrapper`}>
-        {/* 操作栏 */}
         {finalToolbar}
-        {/* antd Table */}
         <ColumnDragContextWrapper>
           <RowDragContextWrapper>
             <AntdTable<RecordType>
@@ -414,8 +387,8 @@ function Table<RecordType extends Record<string, any> = any>(
   );
 }
 
-const TableWithRef = forwardRef(Table) as <
-  RecordType extends Record<string, any> = any,
+const TableWithRef = forwardRef(InternalTable) as <
+  RecordType extends Record<string, unknown> = Record<string, unknown>,
 >(
   props: TableProps<RecordType> & { ref?: React.Ref<TableRef> },
 ) => React.ReactElement;

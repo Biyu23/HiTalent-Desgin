@@ -5,46 +5,82 @@ import TableContext from '../TableContext';
 import type { EnhancedColumnType } from '../type';
 import ResizeHandle from './ResizeHandle';
 
-interface EnhancedHeaderCellProps<RecordType = any> {
+interface EnhancedHeaderCellProps<RecordType = unknown>
+  extends React.ThHTMLAttributes<HTMLTableCellElement> {
   children: React.ReactNode;
   column: EnhancedColumnType<RecordType>;
   columnKey: string;
   enableColumnResize: boolean;
+  enableColumnDrag: boolean;
+  HeaderCellWrapper: React.FC<{
+    children: React.ReactNode;
+    columnKey: string;
+  }>;
 }
 
-/**
- * EnhancedHeaderCell — 增强表头 Cell
- *
- * 在 antd 原生 th 基础上叠加：
- * - 列宽拖拽手柄（ResizeHandle）
- * - 搜索图标（SearchIcon）
- * - 列拖拽手柄 handle 渲染（由 useColumnDrag HeaderCellWrapper 注入）
- */
-function EnhancedHeaderCell<RecordType = any>(
+function EnhancedHeaderCell<RecordType = unknown>(
   props: EnhancedHeaderCellProps<RecordType>,
 ) {
-  const { children, column, columnKey, enableColumnResize } = props;
-  const prefixCls = usePrefixCls('table-header-cell');
+  const {
+    children,
+    column,
+    columnKey,
+    enableColumnResize,
+    enableColumnDrag,
+    HeaderCellWrapper,
+    className,
+    ...restThProps
+  } = props;
+
+  const tablePrefixCls = usePrefixCls('table');
+  const prefixCls = `${tablePrefixCls}-header-cell`;
   const context = useContext(TableContext);
+  const currentControlledWidth =
+    context.columnWidths[columnKey] ?? (column.width as number);
 
   // 列宽调整
-  const { isResizing, handleMouseDown } = useColumnResize({
+  const { isResizing, handlePointerDown } = useColumnResize({
     columnKey,
     minWidth: column.minWidth ?? 80,
+    currentWidth: currentControlledWidth,
     onResize: context.onColumnWidthChange,
+    onResizeEnd: context.onColumnResizeEnd,
   });
 
   const showResizeHandle = enableColumnResize && column.resizable !== false;
 
-  return (
+  // 内部文字区域
+  const cellContent = (
     <div className={prefixCls}>
-      {/* 列头文字区域 */}
       <span className={`${prefixCls}-title`}>{children}</span>
-      {/* 列宽调整手柄（右边） */}
-      {showResizeHandle && (
-        <ResizeHandle isResizing={isResizing} onMouseDown={handleMouseDown} />
-      )}
     </div>
+  );
+
+  // 拖拽包裹区域
+  const wrappedContent = enableColumnDrag ? (
+    <HeaderCellWrapper columnKey={columnKey}>{cellContent}</HeaderCellWrapper>
+  ) : (
+    cellContent
+  );
+
+  // 注入特定的样式类以控制 Antd 的分割线
+  const mergedClassName = [
+    className,
+    showResizeHandle ? `${tablePrefixCls}-resizable-th` : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    <th className={mergedClassName} {...restThProps}>
+      {wrappedContent}
+      {showResizeHandle && (
+        <ResizeHandle
+          isResizing={isResizing}
+          onPointerDown={handlePointerDown}
+        />
+      )}
+    </th>
   );
 }
 
