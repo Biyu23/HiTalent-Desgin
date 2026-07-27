@@ -1,4 +1,3 @@
-import type { FormRule } from 'antd';
 import type { ColumnType } from 'antd/es/table';
 import React from 'react';
 import type { NativeProps } from '../../types';
@@ -12,13 +11,6 @@ export type CellPresetType =
   | 'boolean'
   | 'empty';
 
-export interface EditComponentProps<RecordType = Record<string, unknown>> {
-  value: unknown;
-  record: RecordType;
-  onChange: (value: unknown) => void;
-  onBlur: () => void;
-}
-
 export interface EnhancedColumnType<RecordType = Record<string, unknown>>
   extends ColumnType<RecordType> {
   hideable?: boolean;
@@ -28,9 +20,6 @@ export interface EnhancedColumnType<RecordType = Record<string, unknown>>
   minWidth?: number;
   cellPreset?: CellPresetType;
   cellPresetProps?: Record<string, unknown>;
-  editable?: boolean;
-  editComponent?: (props: EditComponentProps<RecordType>) => React.ReactNode;
-  editRules?: FormRule[];
   searchable?: boolean;
   searchPlaceholder?: string;
 }
@@ -74,15 +63,6 @@ export interface TableContextValue {
   columnWidths: Record<string, number>;
   onColumnWidthChange: (columnKey: string, width: number) => void;
   onColumnResizeEnd?: (columnKey: string, width: number) => void;
-  editingCell: { recordKey: React.Key; columnKey: string } | null;
-  onStartEdit: (recordKey: React.Key, columnKey: string) => void;
-  onEndEdit: () => void;
-  enableInlineEdit: boolean;
-  onCellEdit?: (
-    record: any, // 内部 Context 兜底类型，组件使用时已通过泛型约束
-    field: string,
-    value: unknown,
-  ) => Promise<void> | void;
   onColumnSearch?: (columnKey: string, searchText: string) => void;
 }
 
@@ -102,12 +82,6 @@ export interface TableProps<RecordType = Record<string, unknown>>
   onColumnsChange?: (columns: EnhancedColumnType<RecordType>[]) => void;
   enableRowDrag?: boolean | RowDragConfig<RecordType>;
   onRowDragEnd?: (result: RowDragResult<RecordType>) => void;
-  enableInlineEdit?: boolean;
-  onCellEdit?: (
-    record: RecordType,
-    field: string,
-    value: unknown,
-  ) => Promise<void> | void;
   onColumnSearch?: (columnKey: string, searchText: string) => void;
   zebraStripe?: boolean;
   hoverHighlight?: boolean;

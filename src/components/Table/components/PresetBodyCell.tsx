@@ -1,10 +1,8 @@
-import { Input, InputRef, Progress, Tag } from 'antd';
-import clsx from 'clsx';
+import { Progress, Tag } from 'antd';
 import dayjs from 'dayjs';
-import React, { memo, useCallback, useContext, useMemo, useRef } from 'react';
+import React, { memo, useMemo } from 'react';
 import { useLocale } from '../../../configProvider/useLocale';
 import { usePrefixCls } from '../../../configProvider/usePrefixCls';
-import TableContext from '../TableContext';
 import type { EnhancedColumnType } from '../type';
 
 interface PresetBodyCellProps<RecordType = Record<string, unknown>> {
@@ -26,7 +24,6 @@ function PresetBodyCell<
   const { record, column } = props;
   const prefixCls = usePrefixCls('table-cell');
   const locale = useLocale('Table');
-  const context = useContext(TableContext);
 
   const dataIndex = column.dataIndex as string;
   const value = record[dataIndex] as
@@ -38,58 +35,7 @@ function PresetBodyCell<
   const preset = column.cellPreset || 'text';
   const presetProps = (column.cellPresetProps || {}) as Record<string, unknown>;
 
-  // ---- 行内编辑 ----
-  const isEditing =
-    context.enableInlineEdit &&
-    context.editingCell?.recordKey === record.key &&
-    context.editingCell?.columnKey === column.key;
-
-  const inputRef = useRef<InputRef>(null);
-
-  const handleDoubleClick = useCallback(() => {
-    if (column.editable && context.enableInlineEdit && record.key) {
-      context.onStartEdit(record.key as React.Key, column.key as string);
-    }
-  }, [column.editable, column.key, context, record.key]);
-
-  const handleSave = useCallback(
-    async (newValue: string) => {
-      context.onEndEdit();
-      await context.onCellEdit?.(record, dataIndex, newValue);
-    },
-    [context, record, dataIndex],
-  );
-
-  const handleCancel = useCallback(() => {
-    context.onEndEdit();
-  }, [context]);
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        handleSave(inputRef.current?.input?.value ?? String(value ?? ''));
-      } else if (e.key === 'Escape') {
-        handleCancel();
-      }
-    },
-    [handleSave, handleCancel, value],
-  );
-
   const rendered = useMemo(() => {
-    if (isEditing) {
-      return (
-        <Input
-          ref={inputRef}
-          className={`${prefixCls}-edit-input`}
-          size="small"
-          defaultValue={String(value ?? '')}
-          onBlur={(e) => handleSave(e.target.value)}
-          onKeyDown={handleKeyDown}
-          autoFocus
-        />
-      );
-    }
-
     switch (preset) {
       case 'tag': {
         const val = String(value ?? '');
@@ -166,28 +112,7 @@ function PresetBodyCell<
         }
         return String(value);
     }
-  }, [
-    preset,
-    value,
-    presetProps,
-    locale,
-    prefixCls,
-    isEditing,
-    handleSave,
-    handleKeyDown,
-  ]);
-
-  if (column.editable && !isEditing) {
-    return (
-      <div
-        className={clsx(`${prefixCls}-editable`)}
-        onDoubleClick={handleDoubleClick}
-        title={locale.clickToEdit}
-      >
-        {rendered}
-      </div>
-    );
-  }
+  }, [preset, value, presetProps, locale, prefixCls]);
 
   return <>{rendered}</>;
 }

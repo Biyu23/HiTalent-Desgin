@@ -4,11 +4,9 @@ import clsx from 'clsx';
 import React, {
   forwardRef,
   memo,
-  useCallback,
   useImperativeHandle,
   useMemo,
   useRef,
-  useState,
 } from 'react';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
 import EnhancedHeaderCell from './components/EnhancedHeaderCell';
@@ -40,7 +38,6 @@ const DEFAULT_TABLE_PROPS = {
   enableColumnResize: true,
   enableColumnDrag: false,
   enableRowDrag: false,
-  enableInlineEdit: false,
   zebraStripe: true,
   hoverHighlight: true,
 } as const;
@@ -56,8 +53,6 @@ function InternalTable<
     onColumnsChange,
     enableRowDrag: enableRowDragProp = DEFAULT_TABLE_PROPS.enableRowDrag,
     onRowDragEnd,
-    enableInlineEdit = DEFAULT_TABLE_PROPS.enableInlineEdit,
-    onCellEdit,
     onColumnSearch,
     zebraStripe = DEFAULT_TABLE_PROPS.zebraStripe,
     hoverHighlight = DEFAULT_TABLE_PROPS.hoverHighlight,
@@ -256,7 +251,7 @@ function InternalTable<
 
       let cellContent = children;
 
-      if (originalCol?.cellPreset || originalCol?.editable) {
+      if (originalCol?.cellPreset) {
         cellContent = (
           <PresetBodyCell
             record={record as RecordType}
@@ -291,45 +286,14 @@ function InternalTable<
     RowWrapper,
   ]);
 
-  const [editingCell, setEditingCell] = useState<{
-    recordKey: React.Key;
-    columnKey: string;
-  } | null>(null);
-
-  const handleStartEdit = useCallback(
-    (recordKey: React.Key, columnKey: string) => {
-      if (enableInlineEdit) {
-        setEditingCell({ recordKey, columnKey });
-      }
-    },
-    [enableInlineEdit],
-  );
-
-  const handleEndEdit = useCallback(() => setEditingCell(null), []);
-
   const contextValue = useMemo(
     () => ({
       columnWidths,
       onColumnWidthChange: setColumnWidth,
       onColumnResizeEnd: commitResize,
-      editingCell,
-      onStartEdit: handleStartEdit,
-      onEndEdit: handleEndEdit,
-      enableInlineEdit,
-      onCellEdit,
       onColumnSearch,
     }),
-    [
-      columnWidths,
-      setColumnWidth,
-      commitResize,
-      editingCell,
-      handleStartEdit,
-      handleEndEdit,
-      enableInlineEdit,
-      onCellEdit,
-      onColumnSearch,
-    ],
+    [columnWidths, setColumnWidth, commitResize, onColumnSearch],
   );
 
   const defaultToolbar = useMemo(

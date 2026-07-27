@@ -10,9 +10,6 @@ const EXTENDED_PROPS = new Set([
   'searchPlaceholder',
   'cellPreset',
   'cellPresetProps',
-  'editable',
-  'editComponent',
-  'editRules',
 ]);
 
 export function sanitizeColumn<RecordType extends Record<string, unknown>>(
