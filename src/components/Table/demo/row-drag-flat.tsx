@@ -3,7 +3,16 @@ import React, { useCallback, useRef, useState } from 'react';
 import HiTable from '../index';
 import type { EnhancedColumnType, RowDragResult, TableRef } from '../type';
 
-async function mockSaveRowOrder(dataSource: any[]) {
+interface FlatRow {
+  key: string;
+  name: string;
+  owner: string;
+  priority: string;
+  status: string;
+  deadline: string;
+}
+
+async function mockSaveRowOrder(dataSource: FlatRow[]) {
   console.log(
     '%c[Mock API] 保存行顺序到后端...',
     'color: #1677ff; font-weight: bold',
@@ -16,7 +25,7 @@ async function mockSaveRowOrder(dataSource: any[]) {
   return { code: 0 };
 }
 
-const initialFlatData = [
+const initialFlatData: FlatRow[] = [
   {
     key: '1',
     name: '用户登录页重构',
@@ -73,14 +82,14 @@ const RowDragFlatDemo: React.FC = () => {
   const [dragCount, setDragCount] = useState(0);
   const [flatData, setFlatData] = useState(initialFlatData);
 
-  const columns: EnhancedColumnType<(typeof initialFlatData)[0]>[] = [
-    { title: '任务名称', dataIndex: 'name', key: 'name', defaultWidth: 220 },
-    { title: '负责人', dataIndex: 'owner', key: 'owner', defaultWidth: 100 },
+  const columns: EnhancedColumnType<FlatRow>[] = [
+    { title: '任务名称', dataIndex: 'name', key: 'name', width: 220 },
+    { title: '负责人', dataIndex: 'owner', key: 'owner', width: 100 },
     {
       title: '优先级',
       dataIndex: 'priority',
       key: 'priority',
-      defaultWidth: 90,
+      width: 90,
       cellPreset: 'tag',
       cellPresetProps: { colorMap: { 高: 'red', 中: 'orange', 低: 'default' } },
     },
@@ -88,7 +97,7 @@ const RowDragFlatDemo: React.FC = () => {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
-      defaultWidth: 100,
+      width: 100,
       cellPreset: 'tag',
       cellPresetProps: {
         colorMap: {
@@ -103,34 +112,29 @@ const RowDragFlatDemo: React.FC = () => {
       title: '截止日期',
       dataIndex: 'deadline',
       key: 'deadline',
-      defaultWidth: 130,
+      width: 130,
       cellPreset: 'date',
       cellPresetProps: { format: 'YYYY-MM-DD' },
     },
   ];
 
   const handleFlatRowDragEnd = useCallback(
-    async (result: RowDragResult) => {
+    async (result: RowDragResult<FlatRow>) => {
       const { dragKey, targetKey, position } = result;
-      setFlatData((prev) => {
-        const dragIndex = prev.findIndex((item) => item.key === dragKey);
-        const targetIndex = prev.findIndex((item) => item.key === targetKey);
-        if (dragIndex === -1 || targetIndex === -1) return prev;
+      const dragIndex = flatData.findIndex((item) => item.key === dragKey);
+      const targetIndex = flatData.findIndex((item) => item.key === targetKey);
+      if (dragIndex < 0 || targetIndex < 0) return;
 
-        const newData = [...prev];
-        const [draggedItem] = newData.splice(dragIndex, 1);
-        let insertIndex = targetIndex;
-        if (position === 'after') insertIndex = targetIndex + 1;
-        if (dragIndex < insertIndex) insertIndex -= 1;
-
-        newData.splice(insertIndex, 0, draggedItem);
-        return newData;
-      });
-
-      setDragCount((c) => c + 1);
+      const nextData = [...flatData];
+      const [draggedItem] = nextData.splice(dragIndex, 1);
+      let insertIndex = targetIndex + (position === 'after' ? 1 : 0);
+      if (dragIndex < insertIndex) insertIndex -= 1;
+      nextData.splice(insertIndex, 0, draggedItem);
+      setFlatData(nextData);
+      setDragCount((count) => count + 1);
       setSaving(true);
       try {
-        await mockSaveRowOrder(flatData);
+        await mockSaveRowOrder(nextData);
         message.success(
           `拖拽完成: 将 "${dragKey}" 移至 "${targetKey}" ${
             position === 'after' ? '之后' : '之前'
@@ -151,7 +155,7 @@ const RowDragFlatDemo: React.FC = () => {
         <Button
           onClick={() => {
             setFlatData(initialFlatData);
-            tableRef.current?.resetAll();
+            tableRef.current?.resetColumnState();
             setDragCount(0);
           }}
         >

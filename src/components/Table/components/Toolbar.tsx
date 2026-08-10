@@ -1,42 +1,30 @@
 import React, { memo } from 'react';
 import { usePrefixCls } from '../../../configProvider/usePrefixCls';
-import type { EnhancedColumnType } from '../type';
+import type { ColumnId, EnhancedColumnType } from '../type';
 import ColumnSettingPopover from './ColumnSettingPopover';
 
-interface ToolbarProps<
-  RecordType extends Record<string, unknown> = Record<string, unknown>,
-> {
-  /** 原始列定义 */
-  columns: EnhancedColumnType<RecordType>[];
-  /** 当前可见列 keys */
-  visibleKeys: string[];
-  /** 可见列变更 */
-  onVisibleKeysChange: (keys: string[]) => void;
-  /** 是否显示列设置 */
+interface ToolbarProps<RecordType = Record<string, unknown>> {
+  columns: readonly EnhancedColumnType<RecordType>[];
+  visibleIds: readonly ColumnId[];
+  onVisibleIdsChange: (ids: ColumnId[]) => void;
   showColumnSetting: boolean;
-  /** 额外工具栏内容 */
+  columnSettingTitle?: React.ReactNode;
   toolbarExtra?: React.ReactNode;
-  /** 列设置加载/保存中 */
   columnSettingLoading?: boolean;
 }
 
-/**
- * Toolbar — Table 右上角操作栏
- *
- * 渲染列设置按钮和用户自定义的额外操作
- */
-function Toolbar<
-  RecordType extends Record<string, unknown> = Record<string, unknown>,
->(props: ToolbarProps<RecordType>) {
+function Toolbar<RecordType = Record<string, unknown>>(
+  props: ToolbarProps<RecordType>,
+) {
   const {
     columns,
-    visibleKeys,
-    onVisibleKeysChange,
+    visibleIds,
+    onVisibleIdsChange,
     showColumnSetting,
+    columnSettingTitle,
     toolbarExtra,
     columnSettingLoading,
   } = props;
-
   const prefixCls = usePrefixCls('table-toolbar');
 
   if (!showColumnSetting && !toolbarExtra) return null;
@@ -48,9 +36,10 @@ function Toolbar<
         <div className={`${prefixCls}-setting`}>
           <ColumnSettingPopover
             columns={columns}
-            visibleKeys={visibleKeys}
-            onVisibleKeysChange={onVisibleKeysChange}
+            visibleIds={visibleIds}
+            onVisibleIdsChange={onVisibleIdsChange}
             loading={columnSettingLoading}
+            title={columnSettingTitle}
           />
         </div>
       )}

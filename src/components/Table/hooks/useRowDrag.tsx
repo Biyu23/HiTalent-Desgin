@@ -1,6 +1,9 @@
 import { HolderOutlined } from '@ant-design/icons';
 import type {
   DragEndEvent,
+  DraggableAttributes,
+  DraggableSyntheticListeners,
+  DragMoveEvent,
   DragStartEvent,
   SensorDescriptor,
   SensorOptions,
@@ -18,6 +21,7 @@ import {
 } from '@dnd-kit/core';
 import {
   SortableContext,
+  sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
@@ -32,22 +36,23 @@ import React, {
 import ReactDOM from 'react-dom';
 import { useLocale } from '../../../configProvider/useLocale';
 import { usePrefixCls } from '../../../configProvider/usePrefixCls';
-import type { RowDragConfig, RowDragResult } from '../type';
+import type { RowDragConfig, RowDragResult, RowDropInfo } from '../type';
 
-// ---- 提供拖拽属性给外部解耦的 RowDragHandle 组件 ----
-const RowDragHandleContext = React.createContext<{
-  attributes: any;
-  listeners: any;
+interface RowDragHandleContextValue {
+  attributes: DraggableAttributes;
+  listeners: DraggableSyntheticListeners;
   setActivatorNodeRef: (node: HTMLElement | null) => void;
   dragHandleLabel: string;
   draggable: boolean;
   prefixCls: string;
-} | null>(null);
+}
+
+const RowDragHandleContext =
+  React.createContext<RowDragHandleContextValue | null>(null);
 
 export const RowDragHandle: React.FC = () => {
   const context = useContext(RowDragHandleContext);
   if (!context) return null;
-
   const {
     attributes,
     listeners,
@@ -58,22 +63,15 @@ export const RowDragHandle: React.FC = () => {
   } = context;
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        cursor: draggable ? 'grab' : 'not-allowed',
-      }}
-    >
+    <div className={`${prefixCls}-row-drag-handle-wrapper`}>
       <span
         ref={draggable ? setActivatorNodeRef : undefined}
-        className={`${prefixCls}-row-drag-handle ${
-          !draggable ? `${prefixCls}-row-drag-handle-disabled` : ''
+        className={`${prefixCls}-row-drag-handle${
+          draggable ? '' : ` ${prefixCls}-row-drag-handle-disabled`
         }`}
         aria-label={dragHandleLabel}
-        {...(draggable ? listeners : {})}
-        {...(draggable ? attributes : {})}
+        {...(draggable ? listeners : undefined)}
+        {...(draggable ? attributes : undefined)}
       >
         <HolderOutlined />
       </span>
@@ -81,30 +79,121 @@ export const RowDragHandle: React.FC = () => {
   );
 };
 
-// =========================================================
-
-function findRecordByKey<T extends Record<string, unknown>>(
-  data: readonly T[],
-  targetKey: string,
-  getKey: (record: T, index?: number) => string,
-  childrenKey: keyof T,
-): T | null {
-  for (let i = 0; i < data.length; i++) {
-    const item = data[i];
-    if (!item) continue;
-    if (String(getKey(item, i)) === targetKey) return item;
-    const children = item[childrenKey] as readonly T[] | undefined;
-    if (Array.isArray(children) && children.length > 0) {
-      const found = findRecordByKey(children, targetKey, getKey, childrenKey);
-      if (found) return found;
-    }
-  }
-  return null;
+interface RowMeta<RecordType> {
+  record: RecordType;
+  path: readonly React.Key[];
 }
 
+interface RowRegistry<RecordType> {
+  ids: React.Key[];
+  metaMap: Map<React.Key, RowMeta<RecordType>>;
+  duplicateKeys: Set<React.Key>;
+}
+
+type RowKeyGetter<RecordType> = (
+  record: RecordType,
+  index?: number,
+) => React.Key;
+
+function getChildren<RecordType>(
+  record: RecordType,
+  childrenColumnName: string,
+): readonly RecordType[] | undefined {
+  if (!record || typeof record !== 'object') return undefined;
+  const value = (record as Record<string, unknown>)[childrenColumnName];
+  return Array.isArray(value) ? (value as readonly RecordType[]) : undefined;
+}
+
+function buildRowRegistry<RecordType>(
+  dataSource: readonly RecordType[],
+  getKey: RowKeyGetter<RecordType>,
+  childrenColumnName: string,
+  treeMode: boolean,
+): RowRegistry<RecordType> {
+  const ids: React.Key[] = [];
+  const metaMap = new Map<React.Key, RowMeta<RecordType>>();
+  const duplicateKeys = new Set<React.Key>();
+
+  const visit = (
+    records: readonly RecordType[],
+    parentPath: readonly React.Key[],
+  ) => {
+    records.forEach((record, index) => {
+      const key = getKey(record, index);
+      if (key === null || key === undefined) return;
+      const path = [...parentPath, key];
+      if (metaMap.has(key)) duplicateKeys.add(key);
+      else {
+        ids.push(key);
+        metaMap.set(key, { record, path });
+      }
+      if (treeMode) {
+        const children = getChildren(record, childrenColumnName);
+        if (children?.length) visit(children, path);
+      }
+    });
+  };
+
+  visit(dataSource, []);
+  duplicateKeys.forEach((key) => {
+    metaMap.delete(key);
+    const index = ids.indexOf(key);
+    if (index >= 0) ids.splice(index, 1);
+  });
+  return { ids, metaMap, duplicateKeys };
+}
+
+function toDropInfo<RecordType>(
+  dragMeta: RowMeta<RecordType>,
+  targetMeta: RowMeta<RecordType>,
+  position: 'before' | 'inside' | 'after',
+): RowDropInfo<RecordType> {
+  const common = {
+    dragRecord: dragMeta.record,
+    targetRecord: targetMeta.record,
+    dragPath: dragMeta.path,
+    targetPath: targetMeta.path,
+  };
+  if (position === 'inside') {
+    return { ...common, position: 'inside', dropPosition: 0 };
+  }
+  return position === 'before'
+    ? { ...common, position: 'before', dropPosition: -1 }
+    : { ...common, position: 'after', dropPosition: 1 };
+}
+
+function resolveDropCandidate<RecordType>(
+  registry: RowRegistry<RecordType>,
+  activeKey: React.Key,
+  targetKey: React.Key,
+  position: 'before' | 'inside' | 'after',
+  allowDrop?: (info: RowDropInfo<RecordType>) => boolean,
+): RowDragResult<RecordType> | null {
+  if (activeKey === targetKey) return null;
+  const dragMeta = registry.metaMap.get(activeKey);
+  const targetMeta = registry.metaMap.get(targetKey);
+  if (!dragMeta || !targetMeta) return null;
+
+  const targetIsDescendant = targetMeta.path
+    .slice(0, -1)
+    .some((key) => key === activeKey);
+  if (targetIsDescendant) return null;
+
+  const info = toDropInfo(dragMeta, targetMeta, position);
+  if (allowDrop && !allowDrop(info)) return null;
+  return { ...info, dragKey: activeKey, targetKey };
+}
+
+interface RowDragStateValue {
+  candidate: RowDragResult<unknown> | null;
+}
+
+const RowDragStateContext = React.createContext<RowDragStateValue>({
+  candidate: null,
+});
+
 interface SortableRowProps {
-  id: string;
-  children: React.ReactNode;
+  id: React.Key;
   prefixCls: string;
   dragHandleLabel: string;
   rowProps: React.HTMLAttributes<HTMLTableRowElement> & {
@@ -115,7 +204,6 @@ interface SortableRowProps {
 
 const SortableRow: React.FC<SortableRowProps> = ({
   id,
-  children,
   prefixCls,
   dragHandleLabel,
   rowProps,
@@ -130,15 +218,12 @@ const SortableRow: React.FC<SortableRowProps> = ({
     transition,
     isDragging,
   } = useSortable({ id, disabled: !draggable });
-
-  const style: React.CSSProperties = {
-    ...rowProps.style,
-    transform: CSS.Transform.toString(transform),
-    transition,
-    ...(isDragging
-      ? { opacity: 0.3, zIndex: 9999, background: '#fafafa' }
-      : {}),
-  };
+  const dragState = useContext(RowDragStateContext);
+  const candidate = dragState.candidate;
+  const isTarget = candidate?.targetKey === id;
+  const dropClass = isTarget
+    ? `${prefixCls}-row-drag-over-${candidate.position}`
+    : undefined;
 
   return (
     <RowDragHandleContext.Provider
@@ -154,110 +239,132 @@ const SortableRow: React.FC<SortableRowProps> = ({
       <tr
         {...rowProps}
         ref={setNodeRef}
-        style={style}
-        className={rowProps.className}
+        style={{
+          ...rowProps.style,
+          transform: CSS.Transform.toString(transform),
+          transition,
+          ...(isDragging ? { opacity: 0.3, zIndex: 9999 } : {}),
+        }}
+        className={[rowProps.className, dropClass].filter(Boolean).join(' ')}
       >
-        {children}
+        {rowProps.children}
       </tr>
     </RowDragHandleContext.Provider>
   );
 };
 
-interface InternalBodyWrapperProps<T> {
+interface UseRowDragOptions<RecordType> {
+  dataSource: readonly RecordType[];
+  rowKey: NonNullable<import('antd').TableProps<RecordType>['rowKey']>;
+  enabled: boolean;
+  config: RowDragConfig<RecordType>;
+  onDragEnd: (result: RowDragResult<RecordType>) => void;
+}
+
+type InternalOptions<RecordType> = UseRowDragOptions<RecordType> & {
+  registry: RowRegistry<RecordType>;
+};
+
+interface InternalBodyWrapperProps<RecordType> {
   wrapperProps: React.HTMLAttributes<HTMLTableSectionElement>;
-  optionsRef: React.MutableRefObject<
-    UseRowDragOptions<T> & {
-      rowKeys: string[];
-      recordMap: Map<string, T>;
-      getKey: (record: T, index?: number) => string;
-    }
-  >;
-  contextRef: React.MutableRefObject<{
-    prefixCls: string;
-    dragHandleLabel: string;
-  }>;
+  optionsRef: React.MutableRefObject<InternalOptions<RecordType>>;
+  prefixCls: string;
   sensors: SensorDescriptor<SensorOptions>[];
 }
 
-const InternalBodyWrapper = <T extends Record<string, unknown>>({
+function getDropPosition(
+  event: DragMoveEvent,
+  treeMode: boolean,
+): 'before' | 'inside' | 'after' | null {
+  if (!event.over) return null;
+  const activeRect = event.active.rect.current.translated;
+  if (!activeRect || event.over.rect.height <= 0) return null;
+  const centerY = activeRect.top + activeRect.height / 2;
+  const ratio = (centerY - event.over.rect.top) / event.over.rect.height;
+  if (!treeMode) return ratio < 0.5 ? 'before' : 'after';
+  if (ratio < 0.25) return 'before';
+  if (ratio > 0.75) return 'after';
+  return 'inside';
+}
+
+function getDragTitle(
+  record: unknown,
+  fallback: React.Key | null,
+): React.ReactNode {
+  if (record && typeof record === 'object') {
+    const objectRecord = record as Record<string, unknown>;
+    const title = objectRecord.name ?? objectRecord.title;
+    if (
+      React.isValidElement(title) ||
+      ['string', 'number'].includes(typeof title)
+    ) {
+      return title as React.ReactNode;
+    }
+  }
+  return fallback;
+}
+
+const InternalBodyWrapper = <RecordType,>({
   wrapperProps,
   optionsRef,
-  contextRef,
+  prefixCls,
   sensors,
-}: InternalBodyWrapperProps<T>) => {
-  const [activeId, setActiveId] = useState<string | null>(null);
+}: InternalBodyWrapperProps<RecordType>) => {
+  const [activeKey, setActiveKey] = useState<React.Key | null>(null);
+  const [candidate, setCandidate] = useState<RowDragResult<RecordType> | null>(
+    null,
+  );
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
-  }, []);
-
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      setActiveId(null);
-      const { active, over } = event;
-
-      if (!over || active.id === over.id) return;
-
-      const { dataSource, onDragEnd, recordMap, getKey, rowKeys } =
-        optionsRef.current;
-      const { treeMode, childrenColumnName } = optionsRef.current.config;
-      const childrenKey = (childrenColumnName || 'children') as keyof T;
-
-      const dragKey = active.id as string;
-      const targetKey = over.id as string;
-
-      const activeIndex = rowKeys.indexOf(dragKey);
-      const overIndex = rowKeys.indexOf(targetKey);
-
-      const dropPosition = activeIndex < overIndex ? 1 : -1;
-      const positionLabel = dropPosition === 1 ? 'after' : 'before';
-
-      const dragRecord =
-        recordMap.get(dragKey) ||
-        (treeMode
-          ? findRecordByKey(dataSource, dragKey, getKey, childrenKey)
-          : null) ||
-        ({} as T);
-      const targetRecord =
-        recordMap.get(targetKey) ||
-        (treeMode
-          ? findRecordByKey(dataSource, targetKey, getKey, childrenKey)
-          : null) ||
-        ({} as T);
-
-      onDragEnd({
-        dragKey,
-        targetKey,
-        position: positionLabel,
-        dragRecord,
-        targetRecord,
-        dragPath: [],
-        targetPath: [],
-        dropPosition,
-      });
+  const updateCandidate = useCallback(
+    (event: DragMoveEvent) => {
+      const position = getDropPosition(
+        event,
+        Boolean(optionsRef.current.config.treeMode),
+      );
+      setCandidate(
+        event.over && position
+          ? resolveDropCandidate(
+              optionsRef.current.registry,
+              event.active.id,
+              event.over.id,
+              position,
+              optionsRef.current.config.allowDrop,
+            )
+          : null,
+      );
     },
     [optionsRef],
   );
 
-  const handleDragCancel = useCallback(() => {
-    setActiveId(null);
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveKey(event.active.id);
+    setCandidate(null);
   }, []);
 
-  const { enabled, rowKeys } = optionsRef.current;
-  const { prefixCls } = contextRef.current;
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const finalCandidate =
+        candidate && event.over?.id === candidate.targetKey ? candidate : null;
+      setActiveKey(null);
+      setCandidate(null);
+      if (finalCandidate) optionsRef.current.onDragEnd(finalCandidate);
+    },
+    [candidate, optionsRef],
+  );
+
+  const handleDragCancel = useCallback(() => {
+    setActiveKey(null);
+    setCandidate(null);
+  }, []);
+
   const { children, ...restProps } = wrapperProps;
+  if (!optionsRef.current.enabled)
+    return <tbody {...restProps}>{children}</tbody>;
 
-  if (!enabled) return <tbody {...restProps}>{children}</tbody>;
-
-  const activeRecord = activeId
-    ? optionsRef.current.recordMap.get(activeId)
-    : null;
-  const activeRecordAny = activeRecord as Record<string, unknown>;
-  const dragTitle = activeRecordAny
-    ? (activeRecordAny.name as string) ||
-      (activeRecordAny.title as string) ||
-      activeId
-    : activeId;
+  const activeRecord =
+    activeKey === null
+      ? undefined
+      : optionsRef.current.registry.metaMap.get(activeKey)?.record;
 
   return (
     <DndContext
@@ -265,13 +372,25 @@ const InternalBodyWrapper = <T extends Record<string, unknown>>({
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
+      onDragMove={updateCandidate}
+      onDragOver={updateCandidate}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <SortableContext items={rowKeys} strategy={verticalListSortingStrategy}>
-        <tbody {...restProps}>{children}</tbody>
+      <SortableContext
+        items={optionsRef.current.registry.ids}
+        strategy={verticalListSortingStrategy}
+      >
+        <RowDragStateContext.Provider
+          value={{
+            candidate: candidate as RowDragResult<unknown> | null,
+          }}
+        >
+          <tbody {...restProps}>{children}</tbody>
+        </RowDragStateContext.Provider>
       </SortableContext>
-      {activeId &&
+      {activeKey !== null &&
+        typeof document !== 'undefined' &&
         ReactDOM.createPortal(
           <DragOverlay
             dropAnimation={{
@@ -281,12 +400,10 @@ const InternalBodyWrapper = <T extends Record<string, unknown>>({
             }}
           >
             <div className={`${prefixCls}-drag-overlay`}>
-              <table style={{ width: '100%' }}>
+              <table>
                 <tbody>
                   <tr>
-                    <td style={{ padding: '8px 16px', background: '#fff' }}>
-                      {dragTitle as string}
-                    </td>
+                    <td>{getDragTitle(activeRecord, activeKey)}</td>
                   </tr>
                 </tbody>
               </table>
@@ -298,62 +415,51 @@ const InternalBodyWrapper = <T extends Record<string, unknown>>({
   );
 };
 
-interface UseRowDragOptions<T> {
-  dataSource: readonly T[];
-  rowKey: string | number | symbol | any;
-  enabled: boolean;
-  config: RowDragConfig<T>;
-  onDragEnd: (result: RowDragResult<T>) => void;
-}
-
-export function useRowDrag<
-  RecordType extends Record<string, unknown> = Record<string, unknown>,
->(options: UseRowDragOptions<RecordType>) {
-  const { dataSource, rowKey } = options;
+export function useRowDrag<RecordType>(options: UseRowDragOptions<RecordType>) {
+  const { dataSource, rowKey, config } = options;
   const prefixCls = usePrefixCls('table');
   const locale = useLocale('Table');
-
-  const getKey = useMemo(() => {
-    if (typeof rowKey === 'function') {
-      return (record: RecordType, index?: number) =>
-        String(rowKey(record, index));
-    }
-    return (record: RecordType) => String(record[rowKey as keyof RecordType]);
+  const getKey = useMemo<RowKeyGetter<RecordType>>(() => {
+    if (typeof rowKey === 'function') return rowKey;
+    return (record) => {
+      if (!record || typeof record !== 'object') return '';
+      return (record as Record<PropertyKey, React.Key>)[rowKey as PropertyKey];
+    };
   }, [rowKey]);
-
-  // 使用平级重排的 key 提取机制
-  const rowKeys = useMemo(
-    () => dataSource.map((record, index) => String(getKey(record, index))),
-    [dataSource, getKey],
+  const registry = useMemo(
+    () =>
+      buildRowRegistry(
+        dataSource,
+        getKey,
+        config.childrenColumnName || 'children',
+        Boolean(config.treeMode),
+      ),
+    [config.childrenColumnName, config.treeMode, dataSource, getKey],
   );
 
-  const recordMap = useMemo(() => {
-    const map = new Map<string, RecordType>();
-    dataSource.forEach((item, index) =>
-      map.set(String(getKey(item, index)), item),
-    );
-    return map;
-  }, [dataSource, getKey]);
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    registry.duplicateKeys.size > 0
+  ) {
+    console.warn('[Table] 行拖拽已禁用重复 rowKey：', [
+      ...registry.duplicateKeys,
+    ]);
+  }
 
-  const optionsRef = useRef({ ...options, rowKeys, recordMap, getKey });
-  optionsRef.current = { ...options, rowKeys, recordMap, getKey };
-
-  const contextRef = useRef({ prefixCls, dragHandleLabel: locale.dragHandle });
-  contextRef.current = { prefixCls, dragHandleLabel: locale.dragHandle };
-
-  const pointerSensorOptions = useMemo(
-    () => ({ activationConstraint: { distance: 1 } }),
-    [],
-  );
-  const touchSensorOptions = useMemo(
-    () => ({ activationConstraint: { distance: 1 } }),
-    [],
-  );
+  const optionsRef = useRef<InternalOptions<RecordType>>({
+    ...options,
+    registry,
+  });
+  optionsRef.current = { ...options, registry };
 
   const sensors = useSensors(
-    useSensor(PointerSensor, pointerSensorOptions),
-    useSensor(KeyboardSensor),
-    useSensor(TouchSensor, touchSensorOptions),
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 150, tolerance: 5 },
+    }),
   );
 
   const BodyWrapper = useCallback(
@@ -361,18 +467,12 @@ export function useRowDrag<
       <InternalBodyWrapper
         wrapperProps={wrapperProps}
         optionsRef={optionsRef}
-        contextRef={contextRef}
+        prefixCls={prefixCls}
         sensors={sensors}
       />
     ),
-    [sensors],
+    [prefixCls, sensors],
   );
-
-  const RowDragContextWrapper: React.FC<{ children: React.ReactNode }> =
-    useCallback(
-      ({ children }) => <React.Fragment>{children}</React.Fragment>,
-      [],
-    );
 
   const RowWrapper = useCallback(
     (
@@ -380,43 +480,33 @@ export function useRowDrag<
         'data-row-key'?: React.Key;
       },
     ) => {
-      const {
-        enabled: isEnabled,
-        rowKeys: keys,
-        config: currentConfig,
-      } = optionsRef.current;
-      const { prefixCls: cls, dragHandleLabel } = contextRef.current;
-
-      if (!isEnabled) return <tr {...rowProps} />;
-
+      if (!optionsRef.current.enabled) return <tr {...rowProps} />;
       const recordKey = rowProps['data-row-key'];
-      if (!recordKey || !keys.includes(String(recordKey))) {
+      if (recordKey === null || recordKey === undefined) {
         return <tr {...rowProps} />;
       }
-
-      const { draggable } = currentConfig;
-      const record = optionsRef.current.recordMap.get(String(recordKey));
-      let isDraggable = true;
-      if (typeof draggable === 'function') {
-        isDraggable = record ? draggable(record) : false;
-      } else if (typeof draggable === 'boolean') {
-        isDraggable = draggable;
-      }
-
+      const meta = optionsRef.current.registry.metaMap.get(recordKey);
+      if (!meta) return <tr {...rowProps} />;
+      const draggableOption = optionsRef.current.config.draggable;
+      const draggable =
+        typeof draggableOption === 'function'
+          ? draggableOption(meta.record)
+          : draggableOption !== false;
       return (
         <SortableRow
-          id={String(recordKey)}
-          prefixCls={cls}
-          dragHandleLabel={dragHandleLabel}
+          id={recordKey}
+          prefixCls={prefixCls}
+          dragHandleLabel={locale.dragHandle}
           rowProps={rowProps}
-          draggable={isDraggable}
-        >
-          {rowProps.children}
-        </SortableRow>
+          draggable={draggable}
+        />
       );
     },
-    [],
+    [locale.dragHandle, prefixCls],
   );
+
+  const RowDragContextWrapper: React.FC<{ children: React.ReactNode }> =
+    useCallback(({ children }) => <>{children}</>, []);
 
   return { BodyWrapper, RowWrapper, RowDragContextWrapper };
 }

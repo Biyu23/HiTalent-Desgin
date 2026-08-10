@@ -5,13 +5,34 @@ export { default as Button } from './Button';
 export type { ButtonProps } from './Button/type';
 
 export { default as Modal } from './Modal';
-export type { ModalProps, ModalRef, ModalStaticMethods } from './Modal/type';
+export type {
+  MinimizePosition,
+  ModalProps,
+  ModalRef,
+  ModalStaticMethods,
+} from './Modal/type';
 
-export { default as Table } from './Table';
-export {
-  useTableColumns,
-  type ColumnConfigItem,
-  type UseTableColumnsOptions,
-  type UseTableColumnsResult,
-} from './Table/hooks/useTableColumns';
-export type { EnhancedColumnType, TableProps, TableRef } from './Table/type';
+export { RowDragHandle, default as Table } from './Table';
+export type {
+  CellPresetType,
+  ColumnId,
+  ColumnState,
+  ColumnStateChangeInfo,
+  ColumnStateChangeReason,
+  ColumnStateItem,
+  ColumnStateProps,
+  DatePresetProps,
+  DropPosition,
+  DropPositionLabel,
+  EnhancedColumnGroupType,
+  EnhancedColumnType,
+  EnhancedLeafColumnType,
+  NumberPresetProps,
+  ProgressPresetProps,
+  RowDragConfig,
+  RowDragResult,
+  RowDropInfo,
+  TableProps,
+  TableRef,
+  TagPresetProps,
+} from './Table/type';

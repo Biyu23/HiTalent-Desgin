@@ -41,8 +41,6 @@ export interface TableLocale {
   save: string;
   /** 取消 */
   cancel: string;
-  /** 搜索占位 */
-  searchPlaceholder: string;
   /** 拖拽手柄 aria-label */
   dragHandle: string;
   /** 列宽调整手柄 aria-label */
@@ -53,10 +51,6 @@ export interface TableLocale {
   yes: string;
   /** 否 */
   no: string;
-  /** 正在编辑 */
-  editing: string;
-  /** 点击编辑 */
-  clickToEdit: string;
 }
 
 /**

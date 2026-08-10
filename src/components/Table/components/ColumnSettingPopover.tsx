@@ -3,76 +3,58 @@ import { Button, Checkbox, Empty, Popover, Spin } from 'antd';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { useLocale } from '../../../configProvider/useLocale';
 import { usePrefixCls } from '../../../configProvider/usePrefixCls';
-import type { EnhancedColumnType } from '../type';
-import { getColumnKey } from '../utils/columnHelpers';
+import type { ColumnId, EnhancedColumnType } from '../type';
+import { collectColumnMeta } from '../utils/columnHelpers';
 
-interface ColumnSettingPopoverProps<
-  RecordType extends Record<string, unknown> = Record<string, unknown>,
-> {
-  /** 原始列定义 */
-  columns: EnhancedColumnType<RecordType>[];
-  /** 当前可见列 keys */
-  visibleKeys: string[];
-  /** 可见列变更 */
-  onVisibleKeysChange: (keys: string[]) => void;
-  /** 加载/保存中 */
+interface ColumnSettingPopoverProps<RecordType = Record<string, unknown>> {
+  columns: readonly EnhancedColumnType<RecordType>[];
+  visibleIds: readonly ColumnId[];
+  onVisibleIdsChange: (ids: ColumnId[]) => void;
   loading?: boolean;
-  /** 自定义标题 */
   title?: React.ReactNode;
 }
 
-/**
- * ColumnSettingPopover — 列显示/隐藏设置的 Popover 面板
- *
- * 参考用户提供的 TableColumnSetting 组件设计，
- * 使用项目现有的 ConfigProvider locale 替代 react-i18next。
- */
-function ColumnSettingPopover<
-  RecordType extends Record<string, unknown> = Record<string, unknown>,
->(props: ColumnSettingPopoverProps<RecordType>) {
+function ColumnSettingPopover<RecordType = Record<string, unknown>>(
+  props: ColumnSettingPopoverProps<RecordType>,
+) {
   const {
     columns,
-    visibleKeys,
-    onVisibleKeysChange,
+    visibleIds,
+    onVisibleIdsChange,
     loading = false,
     title: titleProp,
   } = props;
-
   const prefixCls = usePrefixCls('table-column-setting');
   const locale = useLocale('Table');
   const [open, setOpen] = useState(false);
-  const [checkValue, setCheckValue] = useState<string[]>(visibleKeys);
+  const [checkValue, setCheckValue] = useState<ColumnId[]>([...visibleIds]);
 
-  // 同步外部变化
   useEffect(() => {
-    if (open) {
-      setCheckValue(visibleKeys);
-    }
-  }, [visibleKeys, open]);
+    if (open) setCheckValue([...visibleIds]);
+  }, [visibleIds, open]);
 
-  // 构建 checkbox 选项列表
-  const optionsList = useMemo(() => {
-    if (!columns.length) return [];
-    return columns.map((col, index) => {
-      const key = getColumnKey(col, index);
-      return {
-        key,
-        label: (col.title as React.ReactNode) || key,
-        disabled: col.hideable === false,
-        hidden: col.hidden,
-      };
-    });
-  }, [columns]);
+  const optionsList = useMemo(
+    () =>
+      collectColumnMeta(columns).map((item) => ({
+        id: item.id,
+        label: item.column.title || item.id,
+        disabled: item.column.hideable === false,
+      })),
+    [columns],
+  );
 
+  const requiredIds = optionsList
+    .filter((item) => item.disabled)
+    .map((item) => item.id);
   const title = titleProp || locale.columnSetting;
 
   const handleConfirm = () => {
-    onVisibleKeysChange(checkValue);
+    onVisibleIdsChange([...new Set([...checkValue, ...requiredIds])]);
     setOpen(false);
   };
 
   const handleCancel = () => {
-    setCheckValue(visibleKeys);
+    setCheckValue([...visibleIds]);
     setOpen(false);
   };
 
@@ -82,17 +64,16 @@ function ColumnSettingPopover<
     const listContent = (
       <div className={`${prefixCls}-list`}>
         {optionsList.map((item) => (
-          <div key={item.key} className={`${prefixCls}-item`}>
+          <div key={item.id} className={`${prefixCls}-item`}>
             <Checkbox
-              checked={checkValue.includes(item.key)}
+              checked={item.disabled || checkValue.includes(item.id)}
               disabled={item.disabled}
-              onChange={(e) => {
-                setCheckValue((prev) => {
-                  if (e.target.checked) {
-                    return [...prev, item.key];
-                  }
-                  return prev.filter((k) => k !== item.key);
-                });
+              onChange={(event) => {
+                setCheckValue((previous) =>
+                  event.target.checked
+                    ? [...new Set([...previous, item.id])]
+                    : previous.filter((id) => id !== item.id),
+                );
               }}
             >
               {item.label}
@@ -118,16 +99,12 @@ function ColumnSettingPopover<
       </div>
     );
 
-    if (loading) {
-      return (
-        <Spin indicator={<LoadingOutlined spin />}>
-          {listContent}
-          {footer}
-        </Spin>
-      );
-    }
-
-    return (
+    return loading ? (
+      <Spin indicator={<LoadingOutlined spin />}>
+        {listContent}
+        {footer}
+      </Spin>
+    ) : (
       <>
         {listContent}
         {footer}
@@ -148,7 +125,11 @@ function ColumnSettingPopover<
         body: `${prefixCls}-popover-body`,
       }}
     >
-      <Button type="text" icon={<SettingOutlined />} />
+      <Button
+        type="text"
+        icon={<SettingOutlined />}
+        aria-label={String(locale.columnSetting)}
+      />
     </Popover>
   );
 }

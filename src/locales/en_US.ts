@@ -31,14 +31,11 @@ const en_US = {
     columnSetting: 'Column Setting',
     save: 'Save',
     cancel: 'Cancel',
-    searchPlaceholder: 'Search',
-    dragHandle: 'Drag to reorder column',
+    dragHandle: 'Drag to reorder',
     resizeHandle: 'Resize column',
     emptyText: '-',
     yes: 'Yes',
     no: 'No',
-    editing: 'Editing',
-    clickToEdit: 'Double click to edit',
   },
 } as const satisfies HtdLocale;
 

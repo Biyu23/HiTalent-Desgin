@@ -152,26 +152,6 @@
     }
   }
 
-  // ---- 搜索图标 ----
-  &-search-icon {
-    margin-left: 4px;
-    cursor: pointer;
-    color: var(--htd-table-search-icon, rgba(0, 0, 0, 45%));
-    font-size: 14px;
-    transition: color 0.2s;
-
-    &:hover,
-    &-active {
-      color: var(--htd-table-search-icon-active, #1677ff);
-    }
-  }
-
-  &-search-popover {
-    .ant-popover-inner-content {
-      padding: 8px;
-    }
-  }
-
   // ---- 拖拽列头 ----
   &-drag-handle {
     display: flex;
@@ -218,6 +198,12 @@
   }
 
   // ---- 行单独列拖拽手柄样式 ----
+  &-row-drag-handle-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   &-row-drag-handle {
     cursor: grab;
     color: var(--htd-table-row-drag-color, rgba(0, 0, 0, 45%));
@@ -237,13 +223,43 @@
       color: var(--htd-table-row-drag-disabled-color, rgba(0, 0, 0, 15%));
     }
   }
+
+  // ---- 树形/扁平行拖拽 Drop 位置高亮样式 ----
+  &-row-drag-over-before > td {
+    border-top: 2px solid var(--htd-table-drag-line-color, #1677ff) !important;
+  }
+
+  &-row-drag-over-after > td {
+    border-bottom: 2px solid var(--htd-table-drag-line-color, #1677ff) !important;
+  }
+
+  &-row-drag-over-inside > td {
+    background-color: var(--htd-table-drag-inside-bg, #e6f4ff) !important;
+    border-top: 1px dashed var(--htd-table-drag-inside-border, #1677ff) !important;
+    border-bottom: 1px dashed var(--htd-table-drag-inside-border, #1677ff) !important;
+
+    &:first-child {
+      border-left: 1px dashed var(--htd-table-drag-inside-border, #1677ff);
+    }
+
+    &:last-child {
+      border-right: 1px dashed var(--htd-table-drag-inside-border, #1677ff);
+    }
+  }
 }
 
 .@{custom-prefix}-table-drag-overlay {
-  .ant-table-cell {
-    background: var(--htd-table-drag-overlay-bg, #e6f4ff);
+  table {
+    border-collapse: collapse;
+    background: var(--htd-table-drag-overlay-bg, #fff);
     border: 1px dashed var(--htd-table-drag-overlay-border, #1677ff);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 15%);
+  }
+
+  th,
+  td {
+    padding: 8px 16px;
+    background: var(--htd-table-drag-overlay-bg, #fff);
   }
 }
 

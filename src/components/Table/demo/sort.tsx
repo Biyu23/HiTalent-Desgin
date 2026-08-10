@@ -1,10 +1,10 @@
+import type { TableProps as AntdTableProps } from 'antd';
 import { Button, message, Space, Tag } from 'antd';
-import type { SorterResult } from 'antd/es/table/interface';
 import React, { useCallback, useRef, useState } from 'react';
 import HiTable from '../index';
 import type { EnhancedColumnType, TableRef } from '../type';
 
-interface EmployeeRecord extends Record<string, unknown> {
+interface EmployeeRecord {
   key: string;
   name: string;
   age: number;
@@ -202,14 +202,14 @@ const TableSortDemo: React.FC = () => {
       title: '姓名',
       dataIndex: 'name',
       key: 'name',
-      defaultWidth: 120,
+      width: 120,
       sorter: (a, b) => a.name.localeCompare(b.name, 'zh-CN'),
     },
     {
       title: '年龄',
       dataIndex: 'age',
       key: 'age',
-      defaultWidth: 80,
+      width: 80,
       sorter: (a, b) => a.age - b.age,
       defaultSortOrder: 'descend',
     },
@@ -217,21 +217,21 @@ const TableSortDemo: React.FC = () => {
       title: '部门',
       dataIndex: 'department',
       key: 'department',
-      defaultWidth: 110,
+      width: 110,
       sorter: (a, b) => a.department.localeCompare(b.department, 'zh-CN'),
     },
     {
       title: '职位',
       dataIndex: 'position',
       key: 'position',
-      defaultWidth: 130,
+      width: 130,
       sorter: (a, b) => a.position.localeCompare(b.position, 'zh-CN'),
     },
     {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
-      defaultWidth: 90,
+      width: 90,
       cellPreset: 'tag',
       cellPresetProps: {
         colorMap: {
@@ -246,7 +246,7 @@ const TableSortDemo: React.FC = () => {
       title: '入职日期',
       dataIndex: 'joinDate',
       key: 'joinDate',
-      defaultWidth: 130,
+      width: 130,
       cellPreset: 'date',
       cellPresetProps: { format: 'YYYY-MM-DD' },
       sorter: (a, b) =>
@@ -256,7 +256,7 @@ const TableSortDemo: React.FC = () => {
       title: '薪资',
       dataIndex: 'salary',
       key: 'salary',
-      defaultWidth: 120,
+      width: 120,
       cellPreset: 'number',
       cellPresetProps: {
         decimals: 0,
@@ -272,35 +272,35 @@ const TableSortDemo: React.FC = () => {
       title: '姓名',
       dataIndex: 'name',
       key: 'name',
-      defaultWidth: 120,
+      width: 120,
       sorter: true,
     },
     {
       title: '年龄',
       dataIndex: 'age',
       key: 'age',
-      defaultWidth: 80,
+      width: 80,
       sorter: true,
     },
     {
       title: '部门',
       dataIndex: 'department',
       key: 'department',
-      defaultWidth: 110,
+      width: 110,
       sorter: true,
     },
     {
       title: '职位',
       dataIndex: 'position',
       key: 'position',
-      defaultWidth: 130,
+      width: 130,
       sorter: true,
     },
     {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
-      defaultWidth: 90,
+      width: 90,
       cellPreset: 'tag',
       cellPresetProps: {
         colorMap: {
@@ -315,7 +315,7 @@ const TableSortDemo: React.FC = () => {
       title: '薪资',
       dataIndex: 'salary',
       key: 'salary',
-      defaultWidth: 120,
+      width: 120,
       cellPreset: 'number',
       cellPresetProps: {
         decimals: 0,
@@ -327,7 +327,7 @@ const TableSortDemo: React.FC = () => {
       title: '入职日期',
       dataIndex: 'joinDate',
       key: 'joinDate',
-      defaultWidth: 130,
+      width: 130,
       cellPreset: 'date',
       cellPresetProps: { format: 'YYYY-MM-DD' },
       sorter: true,
@@ -454,51 +454,46 @@ const TableSortDemo: React.FC = () => {
    * antd Table 的 onChange 会在分页、排序、筛选变化时触发。
    * 通过 sorter 参数可以获取当前的排序字段和方向。
    */
-  const handleRemoteTableChange = useCallback(
-    async (
-      pagination: any,
-      _filters: any,
-      sorter: SorterResult<EmployeeRecord> | SorterResult<EmployeeRecord>[],
-    ) => {
-      // 多列排序时 sorter 是数组，单列排序是对象
-      const singleSorter = Array.isArray(sorter) ? sorter[0] : sorter;
+  const handleRemoteTableChange: NonNullable<
+    AntdTableProps<EmployeeRecord>['onChange']
+  > = useCallback(async (pagination, _filters, sorter) => {
+    // 多列排序时 sorter 是数组，单列排序是对象
+    const singleSorter = Array.isArray(sorter) ? sorter[0] : sorter;
 
-      setSortInfo({
-        columnKey: singleSorter?.columnKey?.toString(),
-        order: singleSorter?.order?.toString(),
-      });
+    setSortInfo({
+      columnKey: singleSorter?.columnKey?.toString(),
+      order: singleSorter?.order?.toString(),
+    });
 
-      setLoading(true);
-      try {
-        const result = await mockFetchSortedData(
-          {
-            current: pagination.current || 1,
-            pageSize: pagination.pageSize || 10,
-          },
-          {
-            field: singleSorter?.field as string | undefined,
-            order: singleSorter?.order as string | undefined,
-          },
-        );
-        setDataSource(result.data);
-        setTotal(result.total);
-        message.success(
-          `数据加载成功${
-            singleSorter?.order
-              ? `（排序: ${singleSorter.columnKey} ${
-                  singleSorter.order === 'descend' ? '降序' : '升序'
-                }）`
-              : ''
-          }`,
-        );
-      } catch {
-        message.error('数据加载失败');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+    setLoading(true);
+    try {
+      const result = await mockFetchSortedData(
+        {
+          current: pagination.current || 1,
+          pageSize: pagination.pageSize || 10,
+        },
+        {
+          field: singleSorter?.field as string | undefined,
+          order: singleSorter?.order as string | undefined,
+        },
+      );
+      setDataSource(result.data);
+      setTotal(result.total);
+      message.success(
+        `数据加载成功${
+          singleSorter?.order
+            ? `（排序: ${singleSorter.columnKey} ${
+                singleSorter.order === 'descend' ? '降序' : '升序'
+              }）`
+            : ''
+        }`,
+      );
+    } catch {
+      message.error('数据加载失败');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // 初始加载远程数据
   const [remoteInitialized, setRemoteInitialized] = useState(false);

@@ -8,7 +8,6 @@ const TableContext = React.createContext<TableContextValue>({
   columnWidths: {},
   onColumnWidthChange: () => {},
   onColumnResizeEnd: undefined,
-  onColumnSearch: undefined,
 });
 
 export default TableContext;

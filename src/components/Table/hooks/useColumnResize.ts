@@ -1,107 +1,111 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface UseColumnResizeOptions {
-  /** 列 key */
-  columnKey: string;
-  /** 最小宽度 */
+  columnId: string;
   minWidth?: number;
-  /** 当前的受控设定宽度 */
   currentWidth?: number;
-  /** 列宽变更回调（mousemove 实时触发） */
-  onResize: (columnKey: string, width: number) => void;
-  /** 列宽拖拽结束回调（mouseup 触发，用于通知 onColumnsChange） */
-  onResizeEnd?: (columnKey: string, width: number) => void;
+  onResize: (columnId: string, width: number) => void;
+  onResizeEnd?: (columnId: string, width: number) => void;
 }
 
 interface ResizeState {
-  isResizing: boolean;
   startX: number;
   startWidth: number;
+  lastWidth: number;
+  bodyUserSelect: string;
+  bodyCursor: string;
 }
 
 export function useColumnResize(options: UseColumnResizeOptions) {
-  const {
-    columnKey,
-    minWidth = 80,
-    currentWidth,
-    onResize,
-    onResizeEnd,
-  } = options;
-
   const resizeStateRef = useRef<ResizeState | null>(null);
   const [isResizing, setIsResizing] = useState(false);
-  const headerRef = useRef<HTMLTableCellElement | null>(null);
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
 
-  const columnKeyRef = useRef(columnKey);
-  columnKeyRef.current = columnKey;
-  const minWidthRef = useRef(minWidth);
-  minWidthRef.current = minWidth;
-  const currentWidthRef = useRef(currentWidth);
-  currentWidthRef.current = currentWidth;
-  const onResizeRef = useRef(onResize);
-  onResizeRef.current = onResize;
-  const onResizeEndRef = useRef(onResizeEnd);
-  onResizeEndRef.current = onResizeEnd;
-  const lastWidthRef = useRef<number>(0);
+  const restoreBodyStyle = useCallback((state: ResizeState) => {
+    document.body.style.userSelect = state.bodyUserSelect;
+    document.body.style.cursor = state.bodyCursor;
+  }, []);
+
+  const finishResize = useCallback(
+    (commit: boolean) => {
+      const state = resizeStateRef.current;
+      if (!state) return;
+      if (commit && Number.isFinite(state.lastWidth)) {
+        optionsRef.current.onResizeEnd?.(
+          optionsRef.current.columnId,
+          state.lastWidth,
+        );
+      }
+      resizeStateRef.current = null;
+      setIsResizing(false);
+      restoreBodyStyle(state);
+    },
+    [restoreBodyStyle],
+  );
 
   const handlePointerDown = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      // 阻止事件冒泡到 dnd-kit 的 Sortable 容器以及默认选中行为
-      e.preventDefault();
-      e.stopPropagation();
-
-      const th = (e.target as HTMLElement).closest('th');
-      if (!th) return;
-
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const header = event.currentTarget.closest('th');
+      if (!header) return;
+      const configuredWidth = optionsRef.current.currentWidth;
+      const measuredWidth = header.getBoundingClientRect().width;
       const startWidth =
-        currentWidthRef.current ?? th.getBoundingClientRect().width;
-      lastWidthRef.current = startWidth;
+        typeof configuredWidth === 'number' && Number.isFinite(configuredWidth)
+          ? configuredWidth
+          : measuredWidth;
+      if (!Number.isFinite(startWidth)) return;
 
       resizeStateRef.current = {
-        isResizing: true,
-        startX: e.clientX,
+        startX: event.clientX,
         startWidth,
+        lastWidth: startWidth,
+        bodyUserSelect: document.body.style.userSelect,
+        bodyCursor: document.body.style.cursor,
       };
       setIsResizing(true);
       document.body.style.userSelect = 'none';
       document.body.style.cursor = 'col-resize';
+      event.currentTarget.setPointerCapture?.(event.pointerId);
     },
     [],
   );
 
   useEffect(() => {
-    const handlePointerMove = (e: PointerEvent) => {
+    const handlePointerMove = (event: PointerEvent) => {
       const state = resizeStateRef.current;
-      if (!state || !state.isResizing) return;
-      const diff = e.clientX - state.startX;
-      const newWidth = Math.max(minWidthRef.current, state.startWidth + diff);
-      lastWidthRef.current = newWidth;
-      onResizeRef.current(columnKeyRef.current, newWidth);
+      if (!state) return;
+      const configuredMin = optionsRef.current.minWidth;
+      const safeMin =
+        typeof configuredMin === 'number' && Number.isFinite(configuredMin)
+          ? Math.max(0, configuredMin)
+          : 80;
+      const width = Math.max(
+        safeMin,
+        state.startWidth + event.clientX - state.startX,
+      );
+      if (!Number.isFinite(width)) return;
+      state.lastWidth = width;
+      optionsRef.current.onResize(optionsRef.current.columnId, width);
     };
-
-    const handlePointerUp = () => {
-      const state = resizeStateRef.current;
-      if (!state || !state.isResizing) return;
-
-      onResizeEndRef.current?.(columnKeyRef.current, lastWidthRef.current);
-      resizeStateRef.current = null;
-      setIsResizing(false);
-      document.body.style.userSelect = '';
-      document.body.style.cursor = '';
-    };
+    const handlePointerUp = () => finishResize(true);
+    const handlePointerCancel = () => finishResize(false);
 
     document.addEventListener('pointermove', handlePointerMove);
     document.addEventListener('pointerup', handlePointerUp);
-
+    document.addEventListener('pointercancel', handlePointerCancel);
+    window.addEventListener('blur', handlePointerCancel);
     return () => {
       document.removeEventListener('pointermove', handlePointerMove);
       document.removeEventListener('pointerup', handlePointerUp);
+      document.removeEventListener('pointercancel', handlePointerCancel);
+      window.removeEventListener('blur', handlePointerCancel);
+      const state = resizeStateRef.current;
+      if (state) restoreBodyStyle(state);
     };
-  }, []);
+  }, [finishResize, restoreBodyStyle]);
 
-  return {
-    isResizing,
-    headerRef,
-    handlePointerDown,
-  };
+  return { isResizing, handlePointerDown };
 }

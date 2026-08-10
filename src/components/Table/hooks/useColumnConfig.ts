@@ -1,223 +1,173 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { EnhancedColumnType } from '../type';
-import { getColumnKey } from '../utils/columnHelpers';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import type {
+  ColumnId,
+  ColumnState,
+  ColumnStateChangeInfo,
+  ColumnStateItem,
+  EnhancedColumnType,
+} from '../type';
+import { collectColumnMeta, createColumnState } from '../utils/columnHelpers';
 
 interface UseColumnConfigOptions<RecordType> {
   columns: readonly EnhancedColumnType<RecordType>[];
-  onColumnsChange?: (columns: EnhancedColumnType<RecordType>[]) => void;
-  showColumnSetting: boolean;
-  enableColumnResize: boolean;
-  enableColumnDrag: boolean;
+  columnState?: ColumnState;
+  defaultColumnState?: ColumnState;
+  controlled: boolean;
+  onColumnStateChange?: (
+    next: ColumnState,
+    info: ColumnStateChangeInfo,
+  ) => void;
 }
 
-function buildEnrichedColumns<RecordType extends Record<string, unknown>>(
-  columns: readonly EnhancedColumnType<RecordType>[],
-  visibleKeys: string[],
-  columnWidths: Record<string, number>,
-  orderedKeys: string[],
-): EnhancedColumnType<RecordType>[] {
-  const keyToCol = new Map<string, EnhancedColumnType<RecordType>>();
-  columns.forEach((col, i) => keyToCol.set(getColumnKey(col, i), col));
-
-  return orderedKeys
-    .map((key) => {
-      const col = keyToCol.get(key);
-      if (!col) return null;
-      return {
-        ...col,
-        hidden: !visibleKeys.includes(key),
-        width: columnWidths[key] ?? col.width ?? col.defaultWidth,
-      };
-    })
-    .filter(Boolean) as EnhancedColumnType<RecordType>[];
+function withOrder(
+  state: readonly ColumnStateItem[],
+  orderedIds: readonly ColumnId[],
+): ColumnStateItem[] {
+  const itemMap = new Map(state.map((item) => [item.id, item]));
+  return orderedIds
+    .map((id) => itemMap.get(id))
+    .filter((item): item is ColumnStateItem => Boolean(item));
 }
 
-function deriveFromColumns<RecordType extends Record<string, unknown>>(
-  columns: readonly EnhancedColumnType<RecordType>[],
-): {
-  visibleKeys: string[];
-  columnWidths: Record<string, number>;
-  orderedKeys: string[];
-} {
-  const visibleKeys: string[] = [];
-  const columnWidths: Record<string, number> = {};
-  const orderedKeys: string[] = [];
-
-  columns.forEach((col, i) => {
-    const key = getColumnKey(col, i);
-    orderedKeys.push(key);
-    if (!col.hidden) {
-      visibleKeys.push(key);
-    }
-    const w = col.width ?? col.defaultWidth;
-    if (w !== undefined) {
-      columnWidths[key] = w as number;
-    }
-  });
-
-  return { visibleKeys, columnWidths, orderedKeys };
-}
-
-export function useColumnConfig<RecordType extends Record<string, unknown>>(
+export function useColumnConfig<RecordType>(
   options: UseColumnConfigOptions<RecordType>,
 ) {
   const {
     columns,
-    onColumnsChange,
-    showColumnSetting,
-    enableColumnResize,
-    enableColumnDrag,
+    columnState,
+    defaultColumnState,
+    controlled,
+    onColumnStateChange,
   } = options;
 
-  const [initialSnapshot] = useState(() => {
-    const derived = deriveFromColumns(columns);
-    return { columns, ...derived };
-  });
+  const [internalState, setInternalState] = useState<ColumnStateItem[]>(() =>
+    createColumnState(columns, defaultColumnState),
+  );
+  const [previewOrder, setPreviewOrder] = useState<ColumnId[] | null>(null);
+  const [previewWidths, setPreviewWidths] = useState<
+    Readonly<Record<ColumnId, number>>
+  >({});
 
-  const columnKeys = useMemo(
-    () => columns.map((col, i) => getColumnKey(col, i)),
-    [columns],
+  const schemaState = useMemo(
+    () => createColumnState(columns, controlled ? columnState : internalState),
+    [columns, controlled, columnState, internalState],
   );
 
-  const [internalVisibleKeys, setInternalVisibleKeys] = useState<string[]>(
-    () => deriveFromColumns(columns).visibleKeys,
+  const currentState = useMemo(() => {
+    const ordered = previewOrder
+      ? withOrder(schemaState, previewOrder)
+      : schemaState;
+    if (!Object.keys(previewWidths).length) return ordered;
+    return ordered.map((item) => {
+      const width = previewWidths[item.id];
+      return width === undefined ? item : { ...item, width };
+    });
+  }, [previewOrder, previewWidths, schemaState]);
+
+  const stateRef = useRef(currentState);
+  stateRef.current = currentState;
+  const onChangeRef = useRef(onColumnStateChange);
+  onChangeRef.current = onColumnStateChange;
+
+  const emitChange = useCallback(
+    (next: ColumnStateItem[], info: ColumnStateChangeInfo) => {
+      const normalized = createColumnState(columns, next);
+      if (!controlled) setInternalState(normalized);
+      stateRef.current = normalized;
+      onChangeRef.current?.(normalized, info);
+    },
+    [columns, controlled],
   );
-  const [internalColumnWidths, setInternalColumnWidths] = useState<
-    Record<string, number>
-  >(() => deriveFromColumns(columns).columnWidths);
-  const [internalOrderedKeys, setInternalOrderedKeys] = useState<string[]>(
-    () => deriveFromColumns(columns).orderedKeys,
+
+  const columnMeta = useMemo(() => collectColumnMeta(columns), [columns]);
+  const orderedIds = useMemo(
+    () => currentState.map((item) => item.id),
+    [currentState],
   );
-
-  const stateRef = useRef({
-    visibleKeys: internalVisibleKeys,
-    columnWidths: internalColumnWidths,
-    orderedKeys: internalOrderedKeys,
-  });
-  stateRef.current = {
-    visibleKeys: internalVisibleKeys,
-    columnWidths: internalColumnWidths,
-    orderedKeys: internalOrderedKeys,
-  };
-
-  const syncVersionRef = useRef(0);
-  const localVersionRef = useRef(0);
-
-  useEffect(() => {
-    syncVersionRef.current += 1;
-    const currentSyncVer = syncVersionRef.current;
-    const derived = deriveFromColumns(columns);
-
-    queueMicrotask(() => {
-      if (
-        syncVersionRef.current === currentSyncVer &&
-        localVersionRef.current < currentSyncVer
-      ) {
-        setInternalVisibleKeys(derived.visibleKeys);
-        setInternalColumnWidths(derived.columnWidths);
-        setInternalOrderedKeys(derived.orderedKeys);
-        localVersionRef.current = currentSyncVer;
+  const visibleIds = useMemo(
+    () => currentState.filter((item) => !item.hidden).map((item) => item.id),
+    [currentState],
+  );
+  const columnWidths = useMemo(() => {
+    const result: Record<ColumnId, number> = {};
+    currentState.forEach((item) => {
+      if (typeof item.width === 'number' && Number.isFinite(item.width)) {
+        result[item.id] = item.width;
       }
     });
-  }, [columns]);
+    return result;
+  }, [currentState]);
 
-  const visibleKeys = internalVisibleKeys;
-  const columnWidths = internalColumnWidths;
-  const orderedKeys = internalOrderedKeys;
-
-  const onColumnsChangeRef = useRef(onColumnsChange);
-  onColumnsChangeRef.current = onColumnsChange;
-
-  const triggerColumnsChange = useCallback(
-    (vKeys: string[], widths: Record<string, number>, oKeys: string[]) => {
-      localVersionRef.current = syncVersionRef.current + 1;
-      onColumnsChangeRef.current?.(
-        buildEnrichedColumns(columns, vKeys, widths, oKeys),
-      );
+  const setVisibleIds = useCallback(
+    (nextVisibleIds: readonly ColumnId[]) => {
+      const visibleSet = new Set(nextVisibleIds);
+      const metaMap = new Map(columnMeta.map((item) => [item.id, item]));
+      const next = stateRef.current.map((item) => ({
+        ...item,
+        hidden:
+          metaMap.get(item.id)?.column.hideable === false
+            ? false
+            : !visibleSet.has(item.id),
+      }));
+      emitChange(next, { reason: 'visibility' });
     },
-    [columns],
+    [columnMeta, emitChange],
   );
 
-  const setVisibleKeys = useCallback(
-    (next: string[] | ((prev: string[]) => string[])) => {
-      const prevKeys = stateRef.current.visibleKeys;
-      const nextValue = typeof next === 'function' ? next(prevKeys) : next;
-
-      setInternalVisibleKeys(nextValue);
-      triggerColumnsChange(
-        nextValue,
-        stateRef.current.columnWidths,
-        stateRef.current.orderedKeys,
-      );
+  const previewColumnWidth = useCallback(
+    (columnId: ColumnId, width: number) => {
+      if (!Number.isFinite(width)) return;
+      setPreviewWidths((previous) => ({ ...previous, [columnId]: width }));
     },
-    [triggerColumnsChange],
+    [],
   );
 
-  const setColumnWidth = useCallback((columnKey: string, width: number) => {
-    setInternalColumnWidths((prev) => ({ ...prev, [columnKey]: width }));
+  const commitColumnWidth = useCallback(
+    (columnId: ColumnId, width: number) => {
+      if (!Number.isFinite(width)) return;
+      const next = stateRef.current.map((item) =>
+        item.id === columnId ? { ...item, width } : item,
+      );
+      setPreviewWidths({});
+      emitChange(next, { reason: 'resize', columnId });
+    },
+    [emitChange],
+  );
+
+  const previewColumnOrder = useCallback((next: readonly ColumnId[]) => {
+    setPreviewOrder([...next]);
   }, []);
 
-  const setOrderedKeys = useCallback(
-    (
-      next: string[] | ((prev: string[]) => string[]),
-      opts?: { silent?: boolean },
-    ) => {
-      const prevKeys = stateRef.current.orderedKeys;
-      const nextValue = typeof next === 'function' ? next(prevKeys) : next;
-
-      setInternalOrderedKeys(nextValue);
-      if (!opts?.silent) {
-        triggerColumnsChange(
-          stateRef.current.visibleKeys,
-          stateRef.current.columnWidths,
-          nextValue,
-        );
-      }
+  const commitColumnOrder = useCallback(
+    (next: readonly ColumnId[]) => {
+      const nextState = withOrder(stateRef.current, next);
+      setPreviewOrder(null);
+      emitChange(nextState, { reason: 'reorder' });
     },
-    [triggerColumnsChange],
+    [emitChange],
   );
 
-  const commitResize = useCallback(
-    (columnKey: string, finalWidth: number) => {
-      const nextWidths = {
-        ...stateRef.current.columnWidths,
-        [columnKey]: finalWidth,
-      };
+  const cancelColumnOrder = useCallback(() => setPreviewOrder(null), []);
 
-      setInternalColumnWidths(nextWidths);
-      triggerColumnsChange(
-        stateRef.current.visibleKeys,
-        nextWidths,
-        stateRef.current.orderedKeys,
-      );
-    },
-    [triggerColumnsChange],
-  );
-
-  const resetAll = useCallback(() => {
-    const reset = deriveFromColumns(initialSnapshot.columns);
-    setInternalVisibleKeys(reset.visibleKeys);
-    setInternalColumnWidths(reset.columnWidths);
-    setInternalOrderedKeys(reset.orderedKeys);
-    triggerColumnsChange(
-      reset.visibleKeys,
-      reset.columnWidths,
-      reset.orderedKeys,
-    );
-  }, [initialSnapshot.columns, triggerColumnsChange]);
+  const resetColumnState = useCallback(() => {
+    setPreviewOrder(null);
+    setPreviewWidths({});
+    emitChange([...(defaultColumnState ?? [])], {
+      reason: 'reset',
+    });
+  }, [defaultColumnState, emitChange]);
 
   return {
-    columnKeys,
-    visibleKeys,
+    columnMeta,
+    visibleIds,
     columnWidths,
-    orderedKeys,
-    setVisibleKeys,
-    setColumnWidth,
-    setOrderedKeys,
-    commitResize,
-    resetAll,
-    showColumnSetting,
-    enableColumnResize,
-    enableColumnDrag,
+    orderedIds,
+    setVisibleIds,
+    previewColumnWidth,
+    commitColumnWidth,
+    previewColumnOrder,
+    commitColumnOrder,
+    cancelColumnOrder,
+    resetColumnState,
   };
 }

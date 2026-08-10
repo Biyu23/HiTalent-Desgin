@@ -2,19 +2,19 @@ import React, { memo, useContext } from 'react';
 import { usePrefixCls } from '../../../configProvider/usePrefixCls';
 import { useColumnResize } from '../hooks/useColumnResize';
 import TableContext from '../TableContext';
-import type { EnhancedColumnType } from '../type';
+import type { EnhancedLeafColumnType } from '../type';
 import ResizeHandle from './ResizeHandle';
 
 interface EnhancedHeaderCellProps<RecordType = unknown>
   extends React.ThHTMLAttributes<HTMLTableCellElement> {
   children: React.ReactNode;
-  column: EnhancedColumnType<RecordType>;
-  columnKey: string;
+  column: EnhancedLeafColumnType<RecordType>;
+  columnId: string;
   enableColumnResize: boolean;
   enableColumnDrag: boolean;
   HeaderCellWrapper: React.FC<{
     children: React.ReactNode;
-    columnKey: string;
+    columnId: string;
   }>;
 }
 
@@ -24,7 +24,7 @@ function EnhancedHeaderCell<RecordType = unknown>(
   const {
     children,
     column,
-    columnKey,
+    columnId,
     enableColumnResize,
     enableColumnDrag,
     HeaderCellWrapper,
@@ -36,11 +36,14 @@ function EnhancedHeaderCell<RecordType = unknown>(
   const prefixCls = `${tablePrefixCls}-header-cell`;
   const context = useContext(TableContext);
   const currentControlledWidth =
-    context.columnWidths[columnKey] ?? (column.width as number);
+    context.columnWidths[columnId] ??
+    (typeof column.width === 'number' && Number.isFinite(column.width)
+      ? column.width
+      : undefined);
 
   // 列宽调整
   const { isResizing, handlePointerDown } = useColumnResize({
-    columnKey,
+    columnId,
     minWidth: column.minWidth ?? 80,
     currentWidth: currentControlledWidth,
     onResize: context.onColumnWidthChange,
@@ -58,7 +61,7 @@ function EnhancedHeaderCell<RecordType = unknown>(
 
   // 拖拽包裹区域
   const wrappedContent = enableColumnDrag ? (
-    <HeaderCellWrapper columnKey={columnKey}>{cellContent}</HeaderCellWrapper>
+    <HeaderCellWrapper columnId={columnId}>{cellContent}</HeaderCellWrapper>
   ) : (
     cellContent
   );

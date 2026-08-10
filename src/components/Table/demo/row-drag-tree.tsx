@@ -3,7 +3,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import HiTable from '../index';
 import type { EnhancedColumnType, RowDragResult, TableRef } from '../type';
 
-async function mockSaveTreeRowOrder(dataSource: any[]) {
+async function mockSaveTreeRowOrder(dataSource: TreeNode[]) {
   console.log(
     '%c[Mock API] 保存树形行顺序到后端...',
     'color: #1677ff; font-weight: bold',
@@ -11,7 +11,11 @@ async function mockSaveTreeRowOrder(dataSource: any[]) {
   await new Promise((resolve) => {
     setTimeout(resolve, 300);
   });
-  const flattenTree = (items: any[], parent?: string, depth = 0): any[] =>
+  const flattenTree = (
+    items: TreeNode[],
+    parent?: string,
+    depth = 0,
+  ): Array<{ key: string; name: string; parent: string; depth: number }> =>
     items.flatMap((item) => [
       { key: item.key, name: item.name, parent: parent || '—', depth },
       ...(item.children ? flattenTree(item.children, item.key, depth + 1) : []),
@@ -29,7 +33,6 @@ interface TreeNode {
   status: string;
   deadline: string;
   children?: TreeNode[];
-  [x: string]: unknown;
 }
 
 const initialTreeData: TreeNode[] = [
@@ -154,28 +157,6 @@ function insertIntoTree(
   });
 }
 
-function isDescendantOf(
-  items: TreeNode[],
-  targetKey: string,
-  ancestorKey: string,
-): boolean {
-  for (const item of items) {
-    if (item.key === ancestorKey) {
-      const find = (children: TreeNode[]): boolean => {
-        for (const child of children) {
-          if (child.key === targetKey) return true;
-          if (child.children && find(child.children)) return true;
-        }
-        return false;
-      };
-      return item.children ? find(item.children) : false;
-    }
-    if (item.children && isDescendantOf(item.children, targetKey, ancestorKey))
-      return true;
-  }
-  return false;
-}
-
 const RowDragTreeDemo: React.FC = () => {
   const tableRef = useRef<TableRef>(null);
   const [saving, setSaving] = useState(false);
@@ -183,13 +164,13 @@ const RowDragTreeDemo: React.FC = () => {
   const [treeData, setTreeData] = useState<TreeNode[]>(initialTreeData);
 
   const columns: EnhancedColumnType<TreeNode>[] = [
-    { title: '任务名称', dataIndex: 'name', key: 'name', defaultWidth: 220 },
-    { title: '负责人', dataIndex: 'owner', key: 'owner', defaultWidth: 100 },
+    { title: '任务名称', dataIndex: 'name', key: 'name', width: 220 },
+    { title: '负责人', dataIndex: 'owner', key: 'owner', width: 100 },
     {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
-      defaultWidth: 100,
+      width: 100,
       cellPreset: 'tag',
       cellPresetProps: {
         colorMap: {
@@ -204,25 +185,22 @@ const RowDragTreeDemo: React.FC = () => {
   const handleTreeRowDragEnd = useCallback(
     async (result: RowDragResult<TreeNode>) => {
       const { dragKey, targetKey, position } = result;
-      setTreeData((prev) => {
-        const [draggedNode, withoutNode] = removeFromTree(
-          prev,
-          dragKey as string,
-        );
-        if (!draggedNode) return prev;
-        const cleanedNode = { ...draggedNode, children: undefined };
-        return insertIntoTree(
-          withoutNode,
-          cleanedNode,
-          targetKey as string,
-          position,
-        );
-      });
-
-      setDragCount((c) => c + 1);
+      const [draggedNode, withoutNode] = removeFromTree(
+        treeData,
+        String(dragKey),
+      );
+      if (!draggedNode) return;
+      const nextTreeData = insertIntoTree(
+        withoutNode,
+        draggedNode,
+        String(targetKey),
+        position,
+      );
+      setTreeData(nextTreeData);
+      setDragCount((count) => count + 1);
       setSaving(true);
       try {
-        await mockSaveTreeRowOrder(treeData);
+        await mockSaveTreeRowOrder(nextTreeData);
         const posText =
           position === 'inside'
             ? '内部'
@@ -247,7 +225,7 @@ const RowDragTreeDemo: React.FC = () => {
         <Button
           onClick={() => {
             setTreeData(initialTreeData);
-            tableRef.current?.resetAll();
+            tableRef.current?.resetColumnState();
             setDragCount(0);
           }}
         >
@@ -268,7 +246,7 @@ const RowDragTreeDemo: React.FC = () => {
         <strong>上方/下方</strong>可调整同级顺序（position: before/after）。
         <br />
         <strong style={{ color: '#1677ff' }}>
-          已启用 allowDrop 循环引用保护：父节点无法拖入自己的子节点内。
+          组件内置循环引用保护；allowDrop 仅用于业务规则。
         </strong>
       </div>
 
@@ -279,21 +257,10 @@ const RowDragTreeDemo: React.FC = () => {
         enableRowDrag={{
           treeMode: true,
           childrenColumnName: 'children',
-          allowDrop: ({ dragRecord, targetRecord, dropPosition }) => {
-            const dragKey = dragRecord.key as string;
-            const targetKey = targetRecord.key as string;
-            if (
-              dropPosition === 0 &&
-              isDescendantOf(treeData, targetKey, dragKey)
-            ) {
-              return false;
-            }
-            if (
-              dragRecord.status === '已完成' &&
-              targetRecord.status === '已完成'
-            )
-              return false;
-            return true;
+          allowDrop: ({ dragRecord, targetRecord }) => {
+            return !(
+              dragRecord.status === '已完成' && targetRecord.status === '已完成'
+            );
           },
         }}
         showColumnSetting

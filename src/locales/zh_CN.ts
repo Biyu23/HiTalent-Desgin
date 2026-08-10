@@ -31,14 +31,11 @@ const zh_CN = {
     columnSetting: '列设置',
     save: '保存',
     cancel: '取消',
-    searchPlaceholder: '搜索',
-    dragHandle: '拖拽排序列',
+    dragHandle: '拖拽排序',
     resizeHandle: '调整列宽',
     emptyText: '-',
     yes: '是',
     no: '否',
-    editing: '正在编辑',
-    clickToEdit: '双击编辑',
   },
 } as const satisfies HtdLocale;
 

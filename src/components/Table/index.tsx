@@ -1,5 +1,6 @@
 import type { TableProps as AntdTableProps } from 'antd';
 import { Table as AntdTable } from 'antd';
+import type { TableRef as AntdTableRef } from 'antd/es/table';
 import clsx from 'clsx';
 import React, {
   forwardRef,
@@ -18,20 +19,22 @@ import { RowDragHandle, useRowDrag } from './hooks/useRowDrag';
 import './index.less';
 import TableContext from './TableContext';
 import type {
+  ColumnId,
   EnhancedColumnType,
+  EnhancedLeafColumnType,
   RowDragConfig,
   TableProps,
   TableRef,
 } from './type';
 import {
-  filterVisibleColumns,
-  getColumnKey,
+  isColumnGroup,
+  resolveColumnId,
   sanitizeColumn,
-  sortColumnsByOrder,
 } from './utils/columnHelpers';
 
-// 暴露手柄给外部，实现终极灵活性
 export { RowDragHandle };
+
+const ROW_DRAG_HANDLE_KEY = '__htd_internal_row_drag_handle__';
 
 const DEFAULT_TABLE_PROPS = {
   showColumnSetting: true,
@@ -42,183 +45,242 @@ const DEFAULT_TABLE_PROPS = {
   hoverHighlight: true,
 } as const;
 
-function InternalTable<
-  RecordType extends Record<string, unknown> = Record<string, unknown>,
->(props: TableProps<RecordType>, ref: React.Ref<TableRef>) {
+type InternalLeafColumn<RecordType> = EnhancedLeafColumnType<RecordType> & {
+  __htdColumnId?: ColumnId;
+};
+
+function processColumns<RecordType>(
+  columns: readonly EnhancedColumnType<RecordType>[],
+  visibleIds: readonly ColumnId[],
+  orderedIds: readonly ColumnId[],
+  widths: Readonly<Record<ColumnId, number>>,
+): EnhancedColumnType<RecordType>[] {
+  const visibleSet = new Set(visibleIds);
+  const orderMap = new Map(orderedIds.map((id, index) => [id, index]));
+
+  const visit = (
+    items: readonly EnhancedColumnType<RecordType>[],
+    parentPath: readonly number[],
+  ): EnhancedColumnType<RecordType>[] => {
+    const processed = items
+      .map((column, index) => {
+        const path = [...parentPath, index];
+        if (isColumnGroup(column)) {
+          const children = visit(column.children, path);
+          return children.length ? { ...column, children } : null;
+        }
+        const id = resolveColumnId(column, path).id;
+        if (!visibleSet.has(id)) return null;
+        const clean = sanitizeColumn(column) as InternalLeafColumn<RecordType>;
+        const width = widths[id];
+        if (width !== undefined) clean.width = width;
+        clean.__htdColumnId = id;
+        return clean;
+      })
+      .filter(
+        (column): column is EnhancedColumnType<RecordType> => column !== null,
+      );
+
+    const minOrder = (column: EnhancedColumnType<RecordType>): number => {
+      if (isColumnGroup(column)) {
+        return Math.min(...column.children.map(minOrder));
+      }
+      return (
+        orderMap.get(
+          (column as InternalLeafColumn<RecordType>).__htdColumnId!,
+        ) ?? Infinity
+      );
+    };
+    return processed.sort((left, right) => minOrder(left) - minOrder(right));
+  };
+
+  return visit(columns, []);
+}
+
+function InternalTable<RecordType = Record<string, unknown>>(
+  props: TableProps<RecordType>,
+  ref: React.Ref<TableRef>,
+) {
   const {
     columns: columnsProp,
+    columnState,
+    defaultColumnState,
+    onColumnStateChange,
     showColumnSetting = DEFAULT_TABLE_PROPS.showColumnSetting,
+    columnSettingTitle,
+    columnSettingLoading,
     enableColumnResize = DEFAULT_TABLE_PROPS.enableColumnResize,
     enableColumnDrag = DEFAULT_TABLE_PROPS.enableColumnDrag,
-    onColumnsChange,
     enableRowDrag: enableRowDragProp = DEFAULT_TABLE_PROPS.enableRowDrag,
     onRowDragEnd,
-    onColumnSearch,
     zebraStripe = DEFAULT_TABLE_PROPS.zebraStripe,
     hoverHighlight = DEFAULT_TABLE_PROPS.hoverHighlight,
     toolbarRender,
     toolbarExtra,
-    columnSettingLoading,
     className,
     style,
     rowKey: rowKeyProp,
     dataSource,
+    components: userComponents,
     ...restProps
   } = props;
-
   const prefixCls = usePrefixCls('table');
-
-  const columnConfigMap = useMemo(() => {
-    const map = new Map<string, EnhancedColumnType<RecordType>>();
-    columnsProp.forEach((col, index) => {
-      map.set(getColumnKey(col, index), col);
-    });
-    return map;
-  }, [columnsProp]);
+  const antdTableRef = useRef<AntdTableRef>(null);
+  const controlled = 'columnState' in props;
 
   const {
-    visibleKeys,
+    columnMeta,
+    visibleIds,
     columnWidths,
-    orderedKeys,
-    setVisibleKeys,
-    setColumnWidth,
-    setOrderedKeys,
-    commitResize,
-    resetAll,
+    orderedIds,
+    setVisibleIds,
+    previewColumnWidth,
+    commitColumnWidth,
+    previewColumnOrder,
+    commitColumnOrder,
+    cancelColumnOrder,
+    resetColumnState,
   } = useColumnConfig<RecordType>({
     columns: columnsProp,
-    onColumnsChange,
-    showColumnSetting,
-    enableColumnResize,
-    enableColumnDrag,
+    columnState,
+    defaultColumnState,
+    controlled,
+    onColumnStateChange,
   });
 
+  const leafMap = useMemo(
+    () => new Map(columnMeta.map((item) => [item.id, item.column])),
+    [columnMeta],
+  );
+  const columnDragItems = useMemo(
+    () =>
+      columnMeta.map((item, index) => ({
+        id: item.id,
+        title: item.column.title,
+        fixed: Boolean(item.column.fixed) || !item.stable,
+        domToken: `c${index}`,
+      })),
+    [columnMeta],
+  );
+
   const { HeaderWrapper, HeaderCellWrapper, ColumnDragContextWrapper } =
-    useColumnDrag<RecordType>({
-      orderedKeys,
-      onReorder: setOrderedKeys,
-      columns: columnsProp,
+    useColumnDrag({
+      orderedIds,
+      onPreview: previewColumnOrder,
+      onCommit: commitColumnOrder,
+      onCancel: cancelColumnOrder,
+      columns: columnDragItems,
       enabled: enableColumnDrag,
     });
 
-  const rowDragConfig: RowDragConfig<RecordType> = useMemo(() => {
-    if (typeof enableRowDragProp === 'object') return enableRowDragProp;
-    return { treeMode: false };
+  const rowDragConfig = useMemo<RowDragConfig<RecordType>>(() => {
+    return typeof enableRowDragProp === 'object'
+      ? enableRowDragProp
+      : { treeMode: false };
   }, [enableRowDragProp]);
-
   const isRowDragEnabled =
-    typeof enableRowDragProp === 'object' ? true : !!enableRowDragProp;
+    typeof enableRowDragProp === 'object' || Boolean(enableRowDragProp);
+  const rowKey = rowKeyProp || ('key' as keyof RecordType);
 
-  const { BodyWrapper, RowWrapper, RowDragContextWrapper } =
-    useRowDrag<RecordType>({
-      dataSource: dataSource || [],
-      rowKey: rowKeyProp || 'key',
-      enabled: isRowDragEnabled,
-      config: rowDragConfig,
-      onDragEnd: (result) => {
-        onRowDragEnd?.(result);
-      },
-    });
-
-  const rowKey = useMemo(() => rowKeyProp || 'key', [rowKeyProp]);
+  const { BodyWrapper, RowWrapper, RowDragContextWrapper } = useRowDrag({
+    dataSource: dataSource || [],
+    rowKey,
+    enabled: isRowDragEnabled,
+    config: rowDragConfig,
+    onDragEnd: (result) => onRowDragEnd?.(result),
+  });
 
   const processedColumns = useMemo(() => {
-    let sanitized = columnsProp.map((col) => sanitizeColumn(col));
-    sanitized = filterVisibleColumns(sanitized, visibleKeys);
-    sanitized = sortColumnsByOrder(sanitized, orderedKeys);
+    const columns = processColumns(
+      columnsProp,
+      visibleIds,
+      orderedIds,
+      columnWidths,
+    );
 
-    const mapped = sanitized.map((col, index) => {
-      const key = getColumnKey(col, index);
-      const width = columnWidths[key];
-      const enhancedCol = { ...col };
+    const decorate = (
+      items: readonly EnhancedColumnType<RecordType>[],
+    ): EnhancedColumnType<RecordType>[] =>
+      items.map((column) => {
+        if (isColumnGroup(column)) {
+          return { ...column, children: decorate(column.children) };
+        }
+        const internalColumn = column as InternalLeafColumn<RecordType>;
+        const id = internalColumn.__htdColumnId!;
+        const original = leafMap.get(id);
+        if (!original) return column;
+        const enhanced: InternalLeafColumn<RecordType> = { ...column };
+        const originalOnHeaderCell = original.onHeaderCell;
+        enhanced.onHeaderCell = (columnType) => ({
+          ...(originalOnHeaderCell?.(columnType) || {}),
+          column: enhanced,
+        });
+        const originalOnCell = original.onCell;
+        enhanced.onCell = (record, rowIndex) => ({
+          ...(originalOnCell?.(record, rowIndex) || {}),
+          column: enhanced,
+          record,
+        });
+        return enhanced;
+      });
 
-      if (width !== undefined) {
-        enhancedCol.width = width;
-      }
-
-      const originalOnHeaderCell = col.onHeaderCell;
-      enhancedCol.onHeaderCell = (columnType) => {
-        const originalProps = originalOnHeaderCell
-          ? originalOnHeaderCell(columnType)
-          : {};
-        return { ...originalProps, column: enhancedCol };
-      };
-
-      const originalOnCell = col.onCell;
-      enhancedCol.onCell = (record, rowIndex) => {
-        const originalProps = originalOnCell
-          ? originalOnCell(record, rowIndex)
-          : {};
-        return { ...originalProps, column: enhancedCol, record };
-      };
-
-      return enhancedCol;
-    });
-
-    // ---- 注入拖拽手柄列 ----
+    const decorated = decorate(columns);
     if (isRowDragEnabled && rowDragConfig.handleColumn !== false) {
-      const handleCfg = rowDragConfig.handleColumn || {};
-      mapped.unshift({
-        key: '__drag_handle__',
-        dataIndex: '__drag_handle__',
-        title: handleCfg.title || '',
-        width: handleCfg.width || 46,
-        align: handleCfg.align || 'center',
-        fixed: handleCfg.fixed !== undefined ? handleCfg.fixed : 'left',
+      const config = rowDragConfig.handleColumn || {};
+      decorated.unshift({
+        key: ROW_DRAG_HANDLE_KEY,
+        dataIndex: ROW_DRAG_HANDLE_KEY,
+        title: config.title || '',
+        width: config.width || 46,
+        align: config.align || 'center',
+        fixed: config.fixed === undefined ? 'left' : config.fixed,
         render: () => <RowDragHandle />,
-      } as EnhancedColumnType<RecordType>);
+      });
     }
-
-    return mapped;
+    return decorated;
   }, [
-    columnsProp,
-    visibleKeys,
-    orderedKeys,
     columnWidths,
+    columnsProp,
     isRowDragEnabled,
+    leafMap,
+    orderedIds,
     rowDragConfig,
+    visibleIds,
   ]);
 
-  const columnConfigMapRef = useRef(columnConfigMap);
-  columnConfigMapRef.current = columnConfigMap;
+  type TableComponents = NonNullable<AntdTableProps<RecordType>['components']>;
+  const tableComponents = useMemo<TableComponents>(() => {
+    const header =
+      typeof userComponents?.header === 'object'
+        ? { ...userComponents.header }
+        : {};
+    const body =
+      typeof userComponents?.body === 'object'
+        ? { ...userComponents.body }
+        : {};
 
-  type TableComponentsType = NonNullable<
-    AntdTableProps<RecordType>['components']
-  >;
-  const tableComponents = useMemo(() => {
-    const comps: TableComponentsType = {};
-    const headerComps: NonNullable<TableComponentsType['header']> = {};
-
-    if (enableColumnDrag) {
-      headerComps.wrapper = HeaderWrapper;
-    }
-
-    headerComps.cell = (
+    if (enableColumnDrag) header.wrapper = HeaderWrapper;
+    const UserHeaderCell = header.cell;
+    header.cell = (
       cellProps: React.ThHTMLAttributes<HTMLTableCellElement> & {
-        column?: EnhancedColumnType<RecordType>;
+        column?: InternalLeafColumn<RecordType>;
       },
     ) => {
-      const { children, column: antdColumn, ...rest } = cellProps;
-      const colKey = antdColumn?.key || antdColumn?.dataIndex?.toString() || '';
-      const originalCol = columnConfigMapRef.current.get(colKey as string);
-
-      if (!originalCol) {
-        const wrappedContent =
-          enableColumnDrag && colKey !== '__drag_handle__' ? (
-            <HeaderCellWrapper columnKey={colKey as string}>
-              {children}
-            </HeaderCellWrapper>
-          ) : (
-            children
-          );
-        return <th {...rest}>{wrappedContent}</th>;
+      const { children, column, ...rest } = cellProps;
+      const id = column?.__htdColumnId;
+      const original = id ? leafMap.get(id) : undefined;
+      if (!original || !id) {
+        return UserHeaderCell ? (
+          React.createElement(UserHeaderCell, rest, children)
+        ) : (
+          <th {...rest}>{children}</th>
+        );
       }
-
       return (
         <EnhancedHeaderCell
           {...rest}
-          column={originalCol}
-          columnKey={colKey as string}
+          column={original}
+          columnId={id}
           enableColumnResize={enableColumnResize}
           enableColumnDrag={enableColumnDrag}
           HeaderCellWrapper={HeaderCellWrapper}
@@ -228,100 +290,98 @@ function InternalTable<
       );
     };
 
-    comps.header = headerComps;
-
-    const bodyComps: NonNullable<TableComponentsType['body']> = {};
-
     if (isRowDragEnabled) {
-      bodyComps.wrapper = BodyWrapper;
-      bodyComps.row = RowWrapper;
+      body.wrapper = BodyWrapper;
+      body.row = RowWrapper;
     }
-
-    bodyComps.cell = (
+    const UserBodyCell = body.cell;
+    body.cell = (
       cellProps: React.TdHTMLAttributes<HTMLTableCellElement> & {
-        column?: EnhancedColumnType<RecordType>;
+        column?: InternalLeafColumn<RecordType>;
         record?: RecordType;
-        'data-row-key'?: React.Key;
       },
     ) => {
-      const { children, column: antdColumn, record, ...rest } = cellProps;
-      const colKey = antdColumn?.key || antdColumn?.dataIndex?.toString() || '';
-      const originalCol = columnConfigMapRef.current.get(colKey as string);
-      const rowKeyValue = rest['data-row-key'];
-
-      let cellContent = children;
-
-      if (originalCol?.cellPreset) {
-        cellContent = (
-          <PresetBodyCell
-            record={record as RecordType}
-            column={originalCol}
-            rowKey={rowKeyValue!}
-            columnKey={colKey as string}
-          >
-            {children}
-          </PresetBodyCell>
+      const { children, column, record, ...rest } = cellProps;
+      const id = column?.__htdColumnId;
+      const original = id ? leafMap.get(id) : undefined;
+      const content =
+        original?.cellPreset && record !== undefined ? (
+          <PresetBodyCell record={record} column={original} />
+        ) : (
+          children
         );
-      }
-
-      if (enableColumnDrag && colKey && colKey !== '__drag_handle__') {
+      if (enableColumnDrag && id) {
         return (
-          <SortableBodyCell id={colKey as string} {...rest}>
-            {cellContent}
+          <SortableBodyCell columnId={id} {...rest}>
+            {content}
           </SortableBodyCell>
         );
       }
-      return <td {...rest}>{cellContent}</td>;
+      return UserBodyCell ? (
+        React.createElement(UserBodyCell, rest, content)
+      ) : (
+        <td {...rest}>{content}</td>
+      );
     };
 
-    comps.body = bodyComps;
-    return comps;
+    return { ...userComponents, header, body };
   }, [
-    enableColumnResize,
-    enableColumnDrag,
-    isRowDragEnabled,
-    HeaderWrapper,
-    HeaderCellWrapper,
     BodyWrapper,
+    HeaderCellWrapper,
+    HeaderWrapper,
     RowWrapper,
+    enableColumnDrag,
+    enableColumnResize,
+    isRowDragEnabled,
+    leafMap,
+    userComponents,
   ]);
 
   const contextValue = useMemo(
     () => ({
       columnWidths,
-      onColumnWidthChange: setColumnWidth,
-      onColumnResizeEnd: commitResize,
-      onColumnSearch,
+      onColumnWidthChange: previewColumnWidth,
+      onColumnResizeEnd: commitColumnWidth,
     }),
-    [columnWidths, setColumnWidth, commitResize, onColumnSearch],
+    [columnWidths, commitColumnWidth, previewColumnWidth],
   );
-
   const defaultToolbar = useMemo(
     () => (
       <Toolbar
-        columns={columnsProp as EnhancedColumnType<RecordType>[]}
-        visibleKeys={visibleKeys}
-        onVisibleKeysChange={setVisibleKeys}
+        columns={columnsProp}
+        visibleIds={visibleIds}
+        onVisibleIdsChange={setVisibleIds}
         showColumnSetting={showColumnSetting}
+        columnSettingTitle={columnSettingTitle}
         toolbarExtra={toolbarExtra}
         columnSettingLoading={columnSettingLoading}
       />
     ),
     [
+      columnSettingLoading,
+      columnSettingTitle,
       columnsProp,
-      visibleKeys,
-      setVisibleKeys,
+      setVisibleIds,
       showColumnSetting,
       toolbarExtra,
-      columnSettingLoading,
+      visibleIds,
     ],
   );
-
   const finalToolbar = toolbarRender
     ? toolbarRender(defaultToolbar)
     : defaultToolbar;
 
-  useImperativeHandle(ref, () => ({ resetAll }), [resetAll]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      get nativeElement() {
+        return antdTableRef.current?.nativeElement as HTMLDivElement;
+      },
+      scrollTo: (config) => antdTableRef.current?.scrollTo(config),
+      resetColumnState,
+    }),
+    [resetColumnState],
+  );
 
   const mergedClassName = clsx(prefixCls, className, {
     [`${prefixCls}-zebra`]: zebraStripe,
@@ -336,6 +396,7 @@ function InternalTable<
           <RowDragContextWrapper>
             <AntdTable<RecordType>
               {...restProps}
+              ref={antdTableRef}
               className={mergedClassName}
               style={style}
               columns={processedColumns}
@@ -352,7 +413,7 @@ function InternalTable<
 }
 
 const TableWithRef = forwardRef(InternalTable) as <
-  RecordType extends Record<string, unknown> = Record<string, unknown>,
+  RecordType = Record<string, unknown>,
 >(
   props: TableProps<RecordType> & { ref?: React.Ref<TableRef> },
 ) => React.ReactElement;
