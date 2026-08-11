@@ -7,7 +7,7 @@
         width: 100%;
         max-height: 400px;
         min-width: 150px;
-        padding-bottom: 12px 0;
+        padding-bottom: @size-sm;
         overflow-x: hidden;
         overflow-y: auto;
         flex: 1;
@@ -17,12 +17,12 @@
         .ant-checkbox-wrapper {
           width: 100%;
           overflow: hidden;
-          padding: 5px 18px;
-          color: @popover-select-text-color;
+          padding: @size-xxs @size;
+          color: @color-text;
           transition: background-color 0.2s;
 
           &:hover {
-            background-color: @popover-select-active-bg;
+            background-color: @color-primary-bg;
           }
 
           > span {
@@ -39,14 +39,14 @@
 
         &-checkbox {
           display: flex;
-          padding: 4px 12px;
+          padding: @size-xxs @size-sm;
           margin: 0;
         }
 
         &-radio {
           flex: 1;
           overflow: hidden;
-          padding: 5px 12px;
+          padding: @size-xxs @size-sm;
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -54,7 +54,7 @@
           transition: background-color 0.2s;
 
           &:hover {
-            background-color: @popover-select-hover-bg;
+            background-color: @color-fill-tertiary;
           }
 
           &-disabled {
@@ -64,8 +64,8 @@
           }
 
           &-active {
-            background-color: @popover-select-active-bg;
-            color: @popover-select-active-color;
+            background-color: @color-primary-bg;
+            color: @color-primary;
             font-weight: 600;
           }
 
@@ -85,34 +85,34 @@
       &-footer {
         display: flex;
         justify-content: flex-end;
-        padding: 8px 12px;
-        border-top: 1px solid @popover-select-border-color;
+        padding: @size-xs @size-sm;
+        border-top: 1px solid @color-border-secondary;
       }
     }
 
     .@{custom-prefix}-popover-select-search {
       .ant-input-affix-wrapper {
         border-radius: 0;
-        padding: 6px 12px;
-        border-bottom: 1px solid @popover-select-border-color;
+        padding: @size-xs @size-sm;
+        border-bottom: 1px solid @color-border-secondary;
       }
 
       .anticon {
-        color: @popover-select-search-icon-color;
+        color: @color-text-quaternary;
       }
     }
 
     .@{custom-prefix}-popover-select-select-all {
-      padding: 5px 18px;
+      padding: @size-xxs @size;
     }
 
     .@{custom-prefix}-popover-select-empty {
-      padding: 24px 12px;
+      padding: @size-lg @size-sm;
       text-align: center;
 
       .ant-empty-image {
         height: 40px;
-        margin-bottom: 8px;
+        margin-bottom: @size-xs;
 
         .ant-empty-img-simple {
           width: 40px;
@@ -121,7 +121,7 @@
       }
 
       .ant-empty-description {
-        color: @popover-select-text-color;
+        color: @color-text;
         font-size: 13px;
       }
     }
@@ -137,16 +137,16 @@
 .@{custom-prefix}-popover-selector {
   &-btn {
     display: flex;
-    gap: 8px;
+    gap: @size-xs;
     align-items: center;
-    padding: 4px 12px;
-    border-radius: 2px;
+    padding: @size-xxs @size-sm;
+    border-radius: @border-radius-xs;
   }
 
   &-active-btn {
-    background-color: @popover-select-btn-active-bg;
-    border: solid 1px @popover-select-btn-active-border;
-    color: @popover-select-btn-active-color;
+    background-color: @color-primary-bg;
+    border: solid 1px @color-primary-border;
+    color: @color-primary;
   }
 
   &-popover &-text {
@@ -172,7 +172,7 @@
   }
 
   &-open .ant-popover-open {
-    color: @popover-select-text-color;
-    background-color: @popover-select-important-bg;
+    color: @color-text;
+    background-color: @color-bg-elevated;
   }
 }

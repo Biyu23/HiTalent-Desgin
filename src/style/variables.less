@@ -1,102 +1,13 @@
 // ============================================================
-// HiTalent Design — 主题变量体系
+// HiTalent Design — 主题变量入口
 // ============================================================
 //
-// 架构说明：
-// - Less 变量：编译期默认值，向下兼容。
-// - CSS 自定义属性：运行时可通过 `:root` 或容器选择器覆盖，
-//   为暗色主题、品牌定制等场景提供零侵入的扩展入口。
-//
-// 使用方式：
-//   color: var(--htd-color-text, @color-text);
-//
-// 暗色主题示例（消费方只需覆盖 CSS 变量）：
-//   [data-theme="dark"] {
-//     --htd-color-text: rgba(255, 255, 255, 0.85);
-//     --htd-color-bg-container: #141414;
-//     --htd-color-border: #424242;
-//     ...
-//   }
+// - seed.less：基础设计决策，仅供 Alias Token 映射。
+// - tokens.less：组件消费的全局语义 Token，支持 CSS 变量运行时覆盖。
 // ============================================================
+
+@import './seed.less';
+@import './tokens.less';
 
 // -------------------- 类名前缀 --------------------
 @custom-prefix: htd;
-
-// -------------------- 基础色板（Less 变量 + CSS 变量双轨） --------------------
-// 文本色
-@color-text: rgba(0, 0, 0, 65%);
-@color-text-secondary: rgba(0, 0, 0, 45%);
-@color-text-tertiary: rgba(0, 0, 0, 25%);
-
-// 容器/背景色
-@color-bg-container: #fff;
-@color-bg-elevated: #fff;
-@color-bg-hover: #f5f5f5;
-
-// 品牌色
-@color-primary: #1677ff;
-@color-primary-bg: #e6f7ff;
-@color-primary-border: #91d5ff;
-@color-primary-hover: #4096ff;
-
-// 边框色
-@color-border: #f0f0f0;
-@color-border-secondary: rgba(5, 5, 5, 0.06);
-
-// 阴影
-@shadow-elevated: 0 6px 16px 0 rgba(0, 0, 0, 8%),
-  0 3px 6px -4px rgba(0, 0, 0, 12%), 0 9px 28px 8px rgba(0, 0, 0, 5%);
-
-// -------------------- 组件级变量 --------------------
-
-// Modal 相关
-@modal-minimized-bg: var(--htd-modal-minimized-bg, @color-bg-container);
-@modal-minimized-border: var(--htd-modal-minimized-border, @color-border);
-@modal-minimized-box-shadow: var(
-  --htd-modal-minimized-box-shadow,
-  @shadow-elevated
-);
-@modal-action-btn-color: var(
-  --htd-modal-action-btn-color,
-  @color-text-secondary
-);
-
-// PopoverSelect 相关
-@popover-select-text-color: var(--htd-popover-select-text-color, @color-text);
-@popover-select-hover-bg: var(--htd-popover-select-hover-bg, @color-bg-hover);
-@popover-select-active-bg: var(
-  --htd-popover-select-active-bg,
-  @color-primary-bg
-);
-@popover-select-active-color: var(
-  --htd-popover-select-active-color,
-  @color-primary
-);
-@popover-select-active-border: var(
-  --htd-popover-select-active-border,
-  @color-primary-border
-);
-@popover-select-border-color: var(
-  --htd-popover-select-border-color,
-  @color-border
-);
-@popover-select-search-icon-color: var(
-  --htd-popover-select-search-icon-color,
-  #bfbfbf
-);
-@popover-select-btn-active-bg: var(
-  --htd-popover-select-btn-active-bg,
-  @color-primary-bg
-);
-@popover-select-btn-active-border: var(
-  --htd-popover-select-btn-active-border,
-  @color-primary-border
-);
-@popover-select-btn-active-color: var(
-  --htd-popover-select-btn-active-color,
-  #1890ff
-);
-@popover-select-important-bg: var(
-  --htd-popover-select-important-bg,
-  @color-bg-container
-);

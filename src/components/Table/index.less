@@ -4,13 +4,13 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: @size-xs;
+  margin-bottom: @size-sm;
 
   &-extra {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: @size-xs;
     flex: 1;
   }
 
@@ -29,9 +29,9 @@
         font-weight: 400;
         margin-bottom: 0;
         font-size: 14px;
-        color: rgba(0, 0, 0, 65%);
-        padding: 8px 16px;
-        border-bottom: 1px solid rgba(0, 0, 0, 6%);
+        color: @color-text;
+        padding: @size-xs @size;
+        border-bottom: 1px solid @color-split;
       }
     }
   }
@@ -41,25 +41,25 @@
     max-height: 300px;
     overflow-x: hidden;
     overflow-y: auto;
-    border-bottom: 1px solid rgba(0, 0, 0, 6%);
-    padding: 4px 0;
+    border-bottom: 1px solid @color-split;
+    padding: @size-xxs 0;
     display: flex;
     flex-direction: column;
 
     :global {
       .ant-checkbox-group {
-        padding: 5px 0;
+        padding: @size-xxs 0;
         display: flex;
         flex-direction: column;
       }
 
       .ant-checkbox-wrapper {
         width: 100%;
-        padding: 5px 18px;
-        color: rgba(0, 0, 0, 65%);
+        padding: @size-xxs @size;
+        color: @color-text;
 
         &:hover {
-          background-color: #e6f7ff;
+          background-color: @color-primary-bg;
         }
       }
     }
@@ -67,17 +67,14 @@
 
   &-item {
     width: 100%;
-    padding: 6px 16px;
-    color: rgba(0, 0, 0, 65%);
+    padding: @size-xs @size;
+    color: @color-text;
     cursor: pointer;
     transition: background-color 0.2s;
     overflow: hidden;
 
     &:hover {
-      background-color: var(
-        --htd-table-column-setting-hover-bg,
-        rgba(0, 0, 0, 4%)
-      );
+      background-color: @color-fill-tertiary;
     }
 
     .ant-checkbox-wrapper {
@@ -91,20 +88,20 @@
   &-footer {
     display: flex;
     justify-content: flex-end;
-    gap: 16px;
-    padding: 8px 16px;
-    border-top: 1px solid var(--htd-table-column-setting-border, #f0f0f0);
+    gap: @size;
+    padding: @size-xs @size;
+    border-top: 1px solid @color-border-secondary;
   }
 }
 
 .@{custom-prefix}-table {
   &-zebra {
     .ant-table-tbody > tr.ant-table-row:nth-child(even) > td {
-      background-color: var(--htd-table-zebra-bg, #fafafa);
+      background-color: @color-fill-quaternary;
     }
 
     .ant-table-tbody > tr.ant-table-row:hover > td {
-      background-color: var(--htd-table-hover-bg, #f5f5f5) !important;
+      background-color: @color-fill-tertiary !important;
     }
   }
 
@@ -140,7 +137,7 @@
       width: 1px;
       height: 1.6em;
       transform: translateY(-50%);
-      background-color: var(--htd-table-resize-handle-line, #e8e8e8);
+      background-color: @color-border-secondary;
       transition: all 0.2s;
     }
 
@@ -148,7 +145,7 @@
     &-active::after {
       width: 2px;
       height: 100%;
-      background-color: var(--htd-table-resize-handle-line-hover, #1677ff);
+      background-color: @color-primary;
     }
   }
 
@@ -156,12 +153,12 @@
   &-drag-handle {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: @size-xxs;
 
     &-wrapper {
       flex-shrink: 0;
       cursor: grab;
-      color: var(--htd-table-drag-handle-color, rgba(0, 0, 0, 25%));
+      color: @color-text-quaternary;
       font-size: 12px;
       visibility: hidden;
       transition: color 0.2s, visibility 0.2s;
@@ -206,12 +203,12 @@
 
   &-row-drag-handle {
     cursor: grab;
-    color: var(--htd-table-row-drag-color, rgba(0, 0, 0, 45%));
+    color: @color-text-tertiary;
     font-size: 14px;
     transition: color 0.2s;
 
     &:hover {
-      color: var(--htd-table-row-drag-hover-color, #1677ff);
+      color: @color-primary;
     }
 
     &:active {
@@ -220,31 +217,30 @@
 
     &-disabled {
       cursor: not-allowed;
-      color: var(--htd-table-row-drag-disabled-color, rgba(0, 0, 0, 15%));
+      color: @color-text-disabled;
     }
   }
 
   // ---- 树形/扁平行拖拽 Drop 位置高亮样式 ----
   &-row-drag-over-before > td {
-    border-top: 2px solid var(--htd-table-drag-line-color, #1677ff) !important;
+    border-top: 2px solid @color-primary !important;
   }
 
   &-row-drag-over-after > td {
-    border-bottom: 2px solid var(--htd-table-drag-line-color, #1677ff) !important;
+    border-bottom: 2px solid @color-primary !important;
   }
 
   &-row-drag-over-inside > td {
-    background-color: var(--htd-table-drag-inside-bg, #e6f4ff) !important;
-    border-top: 1px dashed var(--htd-table-drag-inside-border, #1677ff) !important;
-    border-bottom: 1px dashed var(--htd-table-drag-inside-border, #1677ff) !important;
+    background-color: @color-primary-bg !important;
+    border-top: 1px dashed @color-primary !important;
+    border-bottom: 1px dashed @color-primary !important;
 
     &:first-child {
-      border-inline-start: 1px dashed
-        var(--htd-table-drag-inside-border, #1677ff);
+      border-inline-start: 1px dashed @color-primary;
     }
 
     &:last-child {
-      border-inline-end: 1px dashed var(--htd-table-drag-inside-border, #1677ff);
+      border-inline-end: 1px dashed @color-primary;
     }
   }
 }
@@ -252,15 +248,15 @@
 .@{custom-prefix}-table-drag-overlay {
   table {
     border-collapse: collapse;
-    background: var(--htd-table-drag-overlay-bg, #fff);
-    border: 1px dashed var(--htd-table-drag-overlay-border, #1677ff);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 15%);
+    background: @color-bg-elevated;
+    border: 1px dashed @color-primary;
+    box-shadow: @box-shadow-secondary;
   }
 
   th,
   td {
-    padding: 8px 16px;
-    background: var(--htd-table-drag-overlay-bg, #fff);
+    padding: @size-xs @size;
+    background: @color-bg-elevated;
   }
 }
 
