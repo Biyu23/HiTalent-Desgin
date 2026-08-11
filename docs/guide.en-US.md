@@ -43,32 +43,34 @@ export default () => {
 ## Global Configuration
 
 ```tsx | pure
-import { ConfigProvider } from 'hi-talent-design';
+import { ConfigProvider, en_US } from 'hi-talent-design';
 
-// Option 1: Pass a built-in locale string
+// Option 1: Pass a complete locale and optionally set text direction
 export default () => (
-  <ConfigProvider prefixCls="my-app" locale="en-US">
+  <ConfigProvider prefixCls="my-app" locale={en_US} direction="ltr">
     <App />
   </ConfigProvider>
 );
 
-// Option 2: Pass a custom locale object
+// Option 2: Override selected messages on top of a complete locale
 export default () => (
   <ConfigProvider
-    prefixCls="my-app"
-    locale={{ PopoverSelect: { placeholder: 'Choose' } }}
+    locale={en_US}
+    localeOverrides={{
+      PopoverSelect: { placeholder: 'Choose a document' },
+    }}
   >
     <App />
   </ConfigProvider>
 );
 
-// Option 3: Bridge with react-i18next
+// Option 3: Select the component locale from react-i18next state
 import { useTranslation } from 'react-i18next';
-import { createHiTalent DesignLocale } from 'hi-talent-design';
+import { ConfigProvider, en_US, zh_CN } from 'hi-talent-design';
 
 export default () => {
-  const { t } = useTranslation();
-  const locale = useMemo(() => createHiTalent DesignLocale(t, { keyPrefix: 'hi-talent-design' }), [t]);
+  const { i18n } = useTranslation();
+  const locale = i18n.resolvedLanguage?.startsWith('en') ? en_US : zh_CN;
 
   return (
     <ConfigProvider locale={locale}>

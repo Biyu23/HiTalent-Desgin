@@ -9,7 +9,7 @@ title: ConfigProvider 全局配置
 
 ## 为什么需要这个组件
 
-在使用 HiTalent Design 时，如果默认的 `htd` 样式前缀与项目中其他 UI 库冲突，或者需要全局切换中英文语言包，ConfigProvider 是唯一入口。无需在每个组件上单独配置，只需在根组件外层包裹即可。
+在使用 HiTalent Design 时，如果默认的 `htd` 样式前缀与项目中其他 UI 库冲突，或者需要全局切换语言包和文字方向，ConfigProvider 是统一入口。传入完整语言包进行切换，使用 `localeOverrides` 局部覆盖组件文案；嵌套 Provider 会自动继承外层配置。
 
 ## 代码演示
 
@@ -17,7 +17,7 @@ title: ConfigProvider 全局配置
 
 <code src="./demo/basic.tsx"></code>
 
-### 自定义语言包
+### 语言包、局部覆盖与 RTL
 
 <code src="./demo/custom-locale.tsx"></code>
 

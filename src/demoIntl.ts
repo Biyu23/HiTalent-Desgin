@@ -32,7 +32,7 @@ export function useDemoIntl<T extends DemoMessages>(messages: T) {
 
   const t = useMemo(() => {
     return (id: keyof T['zh-CN'] & keyof T['en-US'] & string): string => {
-      return messages[locale]?.[id] || messages['zh-CN'][id] || id;
+      return messages[locale]?.[id] ?? messages['zh-CN'][id] ?? id;
     };
   }, [locale, messages]);
 

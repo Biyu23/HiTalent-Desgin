@@ -9,14 +9,15 @@ export type { ConfigProviderProps } from './configProvider';
 export { useDragBounds, useFieldNames, useMergeState } from './hooks';
 
 // Locales
-export { createHtdLocale, en_US, localeMap, zh_CN } from './locales';
+export { en_US, zh_CN } from './locales';
 export type {
   ButtonLocale,
   DeepPartial,
   HtdLocale,
   LocaleComponentMap,
+  LocaleDirection,
+  LocaleOverrides,
   ModalLocale,
   PopoverSelectLocale,
-  SupportedLocale,
   TableLocale,
 } from './locales';

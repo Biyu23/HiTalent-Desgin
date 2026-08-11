@@ -34,32 +34,34 @@ export default () => {
 ## 全局配置
 
 ```tsx | pure
-import { ConfigProvider } from 'hi-talent-design';
+import { ConfigProvider, en_US } from 'hi-talent-design';
 
-// 方式一：直接传入语言包字符串
+// 方式一：传入完整语言包，并可显式设置文字方向
 export default () => (
-  <ConfigProvider prefixCls="my-app" locale="en-US">
+  <ConfigProvider prefixCls="my-app" locale={en_US} direction="ltr">
     <App />
   </ConfigProvider>
 );
 
-// 方式二：传入自定义语言包对象
+// 方式二：在完整语言包上局部覆盖文案
 export default () => (
   <ConfigProvider
-    prefixCls="my-app"
-    locale={{ PopoverSelect: { placeholder: 'Choose' } }}
+    locale={en_US}
+    localeOverrides={{
+      PopoverSelect: { placeholder: 'Choose a document' },
+    }}
   >
     <App />
   </ConfigProvider>
 );
 
-// 方式三：与 react-i18next 桥接
+// 方式三：使用 react-i18next 的当前语言选择组件库语言包
 import { useTranslation } from 'react-i18next';
-import { createHiTalent DesignLocale } from 'hi-talent-design';
+import { ConfigProvider, en_US, zh_CN } from 'hi-talent-design';
 
 export default () => {
-  const { t } = useTranslation();
-  const locale = useMemo(() => createHiTalent DesignLocale(t, { keyPrefix: 'hi-talent-design' }), [t]);
+  const { i18n } = useTranslation();
+  const locale = i18n.resolvedLanguage?.startsWith('en') ? en_US : zh_CN;
 
   return (
     <ConfigProvider locale={locale}>

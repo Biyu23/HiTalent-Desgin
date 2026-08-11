@@ -55,40 +55,29 @@ export interface TableLocale {
   no: string;
 }
 
-/**
- * HiTalent Design 完整语言包接口
- * 每新增一个有国际化需求的组件，在此追加对应的 locale 子接口
- */
-export interface HtdLocale {
-  /** 语言标识，如 'zh-CN'、'en-US' */
-  locale: string;
-  /** 语言方向：'ltr'（左到右）或 'rtl'（右到左），供 RTL 语言（阿拉伯语、希伯来语等）适配 */
-  direction: 'ltr' | 'rtl';
-  /** Button 按钮 */
-  Button: ButtonLocale;
-  /** PopoverSelect 气泡选择 */
-  PopoverSelect: PopoverSelectLocale;
-  /** Modal 弹窗 */
-  Modal: ModalLocale;
-  /** Table 表格 */
-  Table: TableLocale;
-}
+/** 文字方向 */
+export type LocaleDirection = 'ltr' | 'rtl';
 
-/**
- * 深度 Partial 工具类型
- * 允许传入自定义语言包时仅覆盖部分字段，未覆盖的字段从默认语言包 fallback
- */
-export type DeepPartial<T> = T extends object
-  ? { [P in keyof T]?: DeepPartial<T[P]> }
-  : T;
-
-/**
- * 组件名称到对应 locale 类型的映射
- * componentName → locale interface
- */
+/** 组件名称到对应 locale 类型的映射 */
 export interface LocaleComponentMap {
   Button: ButtonLocale;
   PopoverSelect: PopoverSelectLocale;
   Modal: ModalLocale;
   Table: TableLocale;
 }
+
+/** HiTalent Design 完整语言包 */
+export type HtdLocale = {
+  /** 语言标识，如 'zh-CN'、'en-US' */
+  locale: string;
+  /** 语言方向 */
+  direction: LocaleDirection;
+} & LocaleComponentMap;
+
+/** 深度 Partial 工具类型 */
+export type DeepPartial<T> = T extends object
+  ? { [P in keyof T]?: DeepPartial<T[P]> }
+  : T;
+
+/** 基于完整语言包进行局部文案覆盖 */
+export type LocaleOverrides = DeepPartial<LocaleComponentMap>;

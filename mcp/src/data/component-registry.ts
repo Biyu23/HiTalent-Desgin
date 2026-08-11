@@ -714,10 +714,16 @@ const backendData = [
   ConfigProvider: {
     name: 'ConfigProvider',
     description:
-      '全局配置提供者组件。为所有子组件提供统一的类名前缀（prefixCls）和国际化语言配置。',
+      '全局配置提供者组件。为所有子组件提供统一的类名前缀、完整语言包、局部文案覆盖和文字方向。',
     category: 'configProvider',
-    features: ['类名前缀配置', '国际化语言切换', 'Context 传递'],
-    imports: "import { ConfigProvider } from 'hi-talent-design';",
+    features: [
+      '类名前缀配置',
+      '国际化语言切换',
+      '局部文案覆盖',
+      'RTL',
+      'Context 传递',
+    ],
+    imports: "import { ConfigProvider, en_US, zh_CN } from 'hi-talent-design';",
     props: [
       {
         name: 'prefixCls',
@@ -729,11 +735,24 @@ const backendData = [
       },
       {
         name: 'locale',
-        type: 'zh_CN | en_US | DeepPartial<HtdLocale>',
+        type: 'HtdLocale',
         default: 'zh_CN',
         required: false,
-        description:
-          "语言包。内置支持 'zh-CN' 和 'en-US'，也可传入自定义的 DeepPartial 语言包来覆盖部分文案。",
+        description: '完整语言包。未传时继承父级 ConfigProvider。',
+      },
+      {
+        name: 'localeOverrides',
+        type: 'LocaleOverrides',
+        default: '-',
+        required: false,
+        description: '在当前完整语言包上局部覆盖组件文案。',
+      },
+      {
+        name: 'direction',
+        type: "'ltr' | 'rtl'",
+        default: '语言包或父级方向',
+        required: false,
+        description: '文字方向，显式配置优先于语言包和父级方向。',
       },
       {
         name: 'children',
@@ -746,25 +765,25 @@ const backendData = [
     examples: [
       {
         title: '基础配置',
-        code: `import { ConfigProvider } from 'hi-talent-design';
+        code: `import { ConfigProvider, en_US } from 'hi-talent-design';
 
-<ConfigProvider prefixCls="my-app" locale={zh_CN}>
+<ConfigProvider prefixCls="my-app" locale={en_US}>
   <App />
 </ConfigProvider>`,
       },
       {
-        title: '自定义语言包',
-        code: `import { ConfigProvider } from 'hi-talent-design';
+        title: '局部覆盖与 RTL',
+        code: `import { ConfigProvider, en_US } from 'hi-talent-design';
 
-// 仅覆盖部分文案
 <ConfigProvider
-  locale={{
+  locale={en_US}
+  localeOverrides={{
     PopoverSelect: {
-      placeholder: '全部选项',
-      confirm: '确认选择',
-      cancel: '放弃',
+      placeholder: 'Choose an option',
+      confirm: 'Apply selection',
     },
   }}
+  direction="rtl"
 >
   <App />
 </ConfigProvider>`,
@@ -772,8 +791,9 @@ const backendData = [
     ],
     notes: [
       'ConfigProvider 使用 React Context 传递配置，所有子组件通过 usePrefixCls 和 useLocale 消费',
-      'prefixCls 支持自定义，方便与项目现有样式体系整合',
-      'locale 支持 DeepPartial，无需提供完整的语言包即可覆盖特定文案',
+      '嵌套 ConfigProvider 会继承外层 prefixCls、locale 和 direction',
+      'locale 接收完整 HtdLocale，localeOverrides 只负责局部文案覆盖',
+      'direction 会同步到 Ant Design ConfigProvider，使底层组件支持 RTL',
     ],
   },
 };

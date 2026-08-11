@@ -124,7 +124,7 @@
   &-resize-handle {
     position: absolute;
     top: 0;
-    right: 0;
+    inset-inline-end: 0;
     bottom: 0;
     width: 10px;
     cursor: col-resize;
@@ -136,7 +136,7 @@
       content: '';
       position: absolute;
       top: 50%;
-      right: 0;
+      inset-inline-end: 0;
       width: 1px;
       height: 1.6em;
       transform: translateY(-50%);
@@ -239,11 +239,12 @@
     border-bottom: 1px dashed var(--htd-table-drag-inside-border, #1677ff) !important;
 
     &:first-child {
-      border-left: 1px dashed var(--htd-table-drag-inside-border, #1677ff);
+      border-inline-start: 1px dashed
+        var(--htd-table-drag-inside-border, #1677ff);
     }
 
     &:last-child {
-      border-right: 1px dashed var(--htd-table-drag-inside-border, #1677ff);
+      border-inline-end: 1px dashed var(--htd-table-drag-inside-border, #1677ff);
     }
   }
 }

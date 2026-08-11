@@ -1,17 +1,17 @@
 import { createContext } from 'react';
-import type { LocaleProp } from '../locales';
+import type { HtdLocale, LocaleDirection } from '../locales';
 import { zh_CN } from '../locales';
 
-export interface ConfigContextProps {
-  /** 样式类名前缀，默认 'htd' */
-  prefixCls?: string;
-  /** 语言包：支持传入 locale 字符串（'zh-CN' | 'en-US'）或自定义 DeepPartial 语言包对象 */
-  locale?: LocaleProp;
+export interface ConfigContextValue {
+  prefixCls: string;
+  locale: HtdLocale;
+  direction: LocaleDirection;
 }
 
-export const defaultConfig: ConfigContextProps = {
+export const defaultConfig: ConfigContextValue = {
   prefixCls: 'htd',
   locale: zh_CN,
+  direction: zh_CN.direction,
 };
 
-export const ConfigContext = createContext<ConfigContextProps>(defaultConfig);
+export const ConfigContext = createContext<ConfigContextValue>(defaultConfig);

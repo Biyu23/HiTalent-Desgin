@@ -1,61 +1,66 @@
 /**
- * description: `locale` 支持传入内置语言字符串（`zh-CN` / `en-US`）或自定义语言包对象，实现国际化文本的灵活覆盖。
+ * description: 传入完整语言包切换语言，使用 `localeOverrides` 局部覆盖文案；嵌套 Provider 会继承父级配置，并可独立切换 RTL。
  */
 import { Space } from 'antd';
-import { ConfigProvider, PopoverSelect } from 'hi-talent-design';
+import { ConfigProvider, en_US, PopoverSelect } from 'hi-talent-design';
 import React from 'react';
 
-// 自定义语言包：仅覆盖 PopoverSelect 的占位文字
-const customLocale = {
-  PopoverSelect: {
-    placeholder: '请挑选一个选项 🎯',
-    selectAll: '全部勾选',
-    clearAll: '一键清除',
-    cancel: '算了',
-    confirm: '就这些',
-    noMatch: '啥也没找到',
-    searchPlaceholder: '搜一下',
-  },
-};
-
 const demoOptions = [
-  { label: '产品需求文档', value: 'prd' },
-  { label: '技术方案设计', value: 'tech' },
-  { label: '测试用例评审', value: 'test' },
+  { label: 'Product requirements', value: 'prd' },
+  { label: 'Technical design', value: 'tech' },
+  { label: 'Test review', value: 'test' },
 ];
 
 export default () => {
   return (
-    <ConfigProvider locale={customLocale}>
+    <ConfigProvider locale={en_US}>
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         <div>
           <p style={{ marginBottom: 8, color: '#666', fontSize: 13 }}>
-            📝 自定义语言包（覆盖了 PopoverSelect 的全部文案）：
+            完整英文语言包：
           </p>
           <PopoverSelect
             mode="multiple"
             options={demoOptions}
-            placeholder="请挑选一个选项 🎯"
             showConfirm
-            showCancelBtn
-            showClearBtn
             style={{ width: 280 }}
           />
         </div>
 
-        <div>
-          <p style={{ marginBottom: 8, color: '#666', fontSize: 13 }}>
-            🌍 内置英文语言包（传入 <code>locale=&quot;en-US&quot;</code>）：
-          </p>
-          <ConfigProvider locale="en-US">
+        <ConfigProvider
+          localeOverrides={{
+            PopoverSelect: {
+              placeholder: 'Pick the documents you need 🎯',
+              confirm: 'Apply selection',
+            },
+          }}
+        >
+          <div>
+            <p style={{ marginBottom: 8, color: '#666', fontSize: 13 }}>
+              继承英文语言包，仅覆盖指定文案：
+            </p>
             <PopoverSelect
               mode="multiple"
               options={demoOptions}
               showConfirm
               style={{ width: 280 }}
             />
-          </ConfigProvider>
-        </div>
+          </div>
+        </ConfigProvider>
+
+        <ConfigProvider direction="rtl">
+          <div>
+            <p style={{ marginBottom: 8, color: '#666', fontSize: 13 }}>
+              继承英文语言包，并将当前区域切换为 RTL：
+            </p>
+            <PopoverSelect
+              mode="multiple"
+              options={demoOptions}
+              showConfirm
+              style={{ width: 280 }}
+            />
+          </div>
+        </ConfigProvider>
       </Space>
     </ConfigProvider>
   );

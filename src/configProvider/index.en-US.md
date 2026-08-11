@@ -9,7 +9,7 @@ Provides unified CSS class prefix (`prefixCls`) and internationalization (`local
 
 ## Why this component
 
-When the default `htd` class prefix conflicts with other UI libraries in your project, or you need to globally switch between Chinese and English language packs, ConfigProvider is the single entry point. No per-component configuration needed — simply wrap your root component.
+When the default `htd` class prefix conflicts with another UI library, or when the application needs to switch language packs and text direction globally, ConfigProvider is the unified entry point. Pass a complete locale to switch languages, use `localeOverrides` for scoped copy changes, and nest providers to inherit the surrounding configuration.
 
 ## Demos
 
@@ -17,9 +17,9 @@ When the default `htd` class prefix conflicts with other UI libraries in your pr
 
 <code src="./demo/basic.tsx" title="Basic Usage" description="Use `prefixCls` to customize the CSS class prefix for components, avoiding style conflicts with other UI libraries in your project."></code>
 
-### Custom Locale
+### Locale, Overrides, and RTL
 
-<code src="./demo/custom-locale.tsx" title="Custom Locale" description="The `locale` prop supports built-in locale strings (`zh-CN` / `en-US`) or a custom locale object for flexible internationalization text overrides. Also shows ConfigProvider nesting for scoped locale switching."></code>
+<code src="./demo/custom-locale.tsx" title="Locale, Overrides, and RTL" description="Pass a complete locale object to switch languages, use `localeOverrides` for scoped copy changes, and nest ConfigProvider to inherit configuration or switch text direction independently."></code>
 
 ## API
 
