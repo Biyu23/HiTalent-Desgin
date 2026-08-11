@@ -1,10 +1,21 @@
 import React, { createContext, useContext } from 'react';
-import type { MinimizePosition } from './type';
+import type {
+  ModalWindowPosition,
+  ModalWindowSize,
+} from './hooks/useModalWindowState';
+import type {
+  MinimizePosition,
+  ModalProps,
+  ModalResizableConfig,
+} from './type';
+
 export interface ModalContextValue {
   /** 组件类名前缀（如 'htd-modal'） */
   prefixCls: string;
   /** 是否开启拖拽 */
   draggable: boolean;
+  /** resize 配置；null 表示关闭 */
+  resizable: ModalResizableConfig | null;
   /** 是否支持最小化 */
   minimizable: boolean;
   /** 是否支持最大化 */
@@ -15,26 +26,36 @@ export interface ModalContextValue {
   minimizePosition: MinimizePosition;
   /** 弹窗是否处于开启状态（来自父组件控制的 open prop） */
   open?: boolean;
+  /** 是否使用 Ant Design 居中布局 */
+  centered: boolean;
   /** 是否处于最大化状态 */
   isMaximized: boolean;
   /** 是否处于最小化状态 */
   isMinimized: boolean;
-  /** 拖拽是否被禁用（最大化时强制禁用，非拖拽态时默认禁用） */
-  disabledDrag: boolean;
+  /** 当前普通窗口位置 */
+  windowPosition: ModalWindowPosition;
+  /** 当前普通窗口位置的同步引用 */
+  windowPositionRef: React.MutableRefObject<ModalWindowPosition>;
+  /** 用户手动调整后的尺寸；null 表示沿用传入尺寸 */
+  windowSize: ModalWindowSize | null;
+  /** 是否正在调整尺寸 */
+  isResizing: boolean;
   /** 弹窗标题（同时用于 ModalHeader 和 MinimizedDock 展示） */
   title: React.ReactNode;
+  /** 更新普通窗口位置 */
+  setWindowPosition: (position: ModalWindowPosition) => void;
+  /** 更新普通窗口尺寸 */
+  setWindowSize: (size: ModalWindowSize) => void;
+  /** 更新 resize 交互状态 */
+  setResizing: (resizing: boolean) => void;
   /** 最小化 */
   onMinimize: () => void;
   /** 从最小化恢复 */
   onRestore: () => void;
   /** 切换最大化/还原 */
   onToggleMaximize: () => void;
-  /** 关闭弹窗（按钮点击或 ESC 按键） */
-  onClose: (
-    e: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
-  ) => void;
-  /** 设置拖拽禁用状态 */
-  setDisabledDrag: (disabled: boolean) => void;
+  /** 关闭弹窗（按钮点击、ESC 按键或程序化销毁） */
+  onClose: NonNullable<ModalProps['onCancel']>;
 }
 
 const ModalContext = createContext<ModalContextValue | null>(null);

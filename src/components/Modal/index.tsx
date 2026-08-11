@@ -8,11 +8,12 @@ import React, {
   useMemo,
 } from 'react';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
-import DraggableWrapper from './components/DraggableWrapper';
 import MinimizedDock from './components/MinimizedDock';
 import ModalHeader from './components/ModalHeader';
+import ModalWindowWrapper from './components/ModalWindowWrapper';
 import { useDestroyRegister } from './hooks/useDestroyRegister';
 import { useModalState } from './hooks/useModalState';
+import { useModalWindowState } from './hooks/useModalWindowState';
 import './index.less';
 import ModalContext, { ModalContextValue } from './ModalContext';
 import { ModalProps, ModalRef, ModalStaticMethods } from './type';
@@ -33,6 +34,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     open,
     title,
     draggable = false,
+    resizable = false,
     minimizable = false,
     maximizable = false,
     destroyOnHidden,
@@ -42,6 +44,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     closable = true,
     className,
     style,
+    centered = false,
     children,
     onCancel,
     modalRender,
@@ -56,8 +59,6 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   const {
     isMinimized,
     isMaximized,
-    dragDisabled,
-    setDisabledDrag,
     handleMinimize,
     handleRestore,
     handleToggleMaximize,
@@ -65,19 +66,32 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     handleUnmaximize,
     handleReset,
   } = useModalState({
-    draggable,
     minimized: controlledMinimized,
     maximized: controlledMaximized,
     onMinimizeChange,
     onMaximizedChange,
   });
 
+  const {
+    position: windowPosition,
+    positionRef: windowPositionRef,
+    size: windowSize,
+    isResizing,
+    setPosition: setWindowPosition,
+    setSize: setWindowSize,
+    setResizing,
+  } = useModalWindowState();
+  const resizableConfig = useMemo(
+    () => (resizable ? (typeof resizable === 'object' ? resizable : {}) : null),
+    [resizable],
+  );
+
   // minimizable 模式下关闭不销毁 DOM，保留表单数据
   const resolvedDestroyOnHidden = minimizable ? false : destroyOnHidden;
 
   // ---- 关闭处理 ----
   const handleClose = useCallback(
-    (e: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>) => {
+    (e?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>) => {
       if (isMinimized) handleRestore();
       if (isMaximized) onMaximizedChange?.(false);
       handleReset();
@@ -115,21 +129,24 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   const finalModalRender = useCallback(
     (modalNode: React.ReactNode) => {
       const rendered = modalRender ? modalRender(modalNode) : modalNode;
-      return <DraggableWrapper>{rendered}</DraggableWrapper>;
+      return <ModalWindowWrapper>{rendered}</ModalWindowWrapper>;
     },
     [modalRender],
   );
 
-  const modalWidth = isMaximized ? '100%' : restProps.width;
+  const modalWidth = isMaximized
+    ? '100%'
+    : windowSize?.width || restProps.width;
 
   const mergedStyle: React.CSSProperties = useMemo(
     () => ({
       ...style,
+      ...(windowSize && !isMaximized ? { height: windowSize.height } : {}),
       ...(isMaximized
         ? { top: 0, maxWidth: '100vw', margin: 0, paddingBottom: 0 }
         : {}),
     }),
-    [style, isMaximized],
+    [style, windowSize, isMaximized],
   );
 
   // ---- Context 值 ----
@@ -137,38 +154,52 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     () => ({
       prefixCls,
       draggable,
+      resizable: resizableConfig,
       minimizable,
       maximizable,
       closable,
       minimizePosition,
       open,
+      centered,
       isMaximized,
       isMinimized,
-      disabledDrag: dragDisabled,
+      windowPosition,
+      windowPositionRef,
+      windowSize,
+      isResizing,
       title,
+      setWindowPosition,
+      setWindowSize,
+      setResizing,
       onMinimize: handleMinimize,
       onRestore: handleRestore,
       onToggleMaximize: handleToggleMaximize,
       onClose: handleClose,
-      setDisabledDrag,
     }),
     [
       prefixCls,
       draggable,
+      resizableConfig,
       minimizable,
       maximizable,
       closable,
       minimizePosition,
       open,
+      centered,
       isMaximized,
       isMinimized,
-      dragDisabled,
+      windowPosition,
+      windowPositionRef,
+      windowSize,
+      isResizing,
       title,
+      setWindowPosition,
+      setWindowSize,
+      setResizing,
       handleMinimize,
       handleRestore,
       handleToggleMaximize,
       handleClose,
-      setDisabledDrag,
     ],
   );
 
@@ -178,6 +209,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
         {...restProps}
         destroyOnHidden={resolvedDestroyOnHidden}
         width={modalWidth}
+        centered={centered}
         open={open && !isMinimized}
         closable={false}
         modalRender={finalModalRender}
@@ -185,7 +217,10 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
         style={mergedStyle}
         className={clsx(prefixCls, className, {
           [`${prefixCls}-maximized`]: isMaximized,
-          [`${prefixCls}-transition-active`]: true,
+          [`${prefixCls}-manual-size`]: !!windowSize && !isMaximized,
+          [`${prefixCls}-resizing`]: isResizing,
+          [`${prefixCls}-draggable`]: draggable && !isMaximized,
+          [`${prefixCls}-transition-active`]: !isResizing,
         })}
         title={<ModalHeader title={title} />}
       >

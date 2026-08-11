@@ -96,7 +96,6 @@
   .@{custom-prefix}-modal-minimize-dock-bottom & {
     flex-direction: column-reverse;
     mask-image: linear-gradient(to bottom, transparent, black 28px, black 100%);
-    mask-image: linear-gradient(to bottom, transparent, black 28px, black 100%);
   }
 
   // 顶部位置 & 左右位置：从上往下堆叠，溢出向下滚动 → 底部渐隐提示
@@ -106,12 +105,6 @@
   .@{custom-prefix}-modal-minimize-dock-left &,
   .@{custom-prefix}-modal-minimize-dock-right & {
     flex-direction: column;
-    mask-image: linear-gradient(
-      to bottom,
-      black,
-      black calc(100% - 28px),
-      transparent
-    );
     mask-image: linear-gradient(
       to bottom,
       black,
@@ -151,8 +144,8 @@
     }
   }
 
-  &-draggable-wrapper {
-    // 拖拽容器，无额外样式
+  &-window-wrapper {
+    // transform 由 react-draggable 管理，不参与 Ant Design 的初始定位。
   }
 
   &-header-wrapper {
@@ -177,6 +170,82 @@
 
     .ant-btn {
       color: @modal-action-btn-color;
+    }
+  }
+
+  &-draggable {
+    .ant-modal-footer {
+      cursor: move;
+
+      button,
+      a,
+      input,
+      textarea,
+      select,
+      [contenteditable],
+      [data-modal-no-drag] {
+        cursor: auto;
+      }
+    }
+  }
+
+  &&-manual-size {
+    box-sizing: border-box;
+    max-width: none;
+
+    .ant-modal-content {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ant-modal-header,
+    .ant-modal-footer {
+      flex-shrink: 0;
+    }
+
+    .ant-modal-body {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+    }
+  }
+
+  &-resizing,
+  &-resizing .ant-modal-content {
+    transition: none !important;
+  }
+
+  .ant-modal-content {
+    position: relative;
+  }
+
+  &-resize-handle {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    width: 16px;
+    height: 16px;
+    cursor: nwse-resize;
+    touch-action: none;
+
+    &::after {
+      content: '';
+      position: absolute;
+      right: 3px;
+      bottom: 3px;
+      width: 6px;
+      height: 6px;
+      border-color: currentcolor;
+      border-style: solid;
+      border-width: 0 1px 1px 0;
+      opacity: 0.35;
+    }
+
+    &:hover::after {
+      color: @color-primary;
+      opacity: 1;
     }
   }
 

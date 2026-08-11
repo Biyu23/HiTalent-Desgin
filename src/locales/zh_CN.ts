@@ -23,6 +23,7 @@ const zh_CN = {
     unmaximize: '还原',
     close: '关闭',
     dragHandle: '拖拽',
+    resizeBottomRight: '从右下角调整弹窗尺寸',
     headerTitle: '弹窗标题栏',
     minimizedDockLabel: '最小化弹窗悬浮窗',
     minimizedDockDragHandle: '拖拽悬浮窗',

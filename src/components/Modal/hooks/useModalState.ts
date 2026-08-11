@@ -1,22 +1,20 @@
-import { useCallback, useEffect, useReducer, useRef } from 'react';
+import { useCallback, useReducer, useRef } from 'react';
 import type { ModalProps } from '../type';
 
 // ======== State & Action 定义 ========
 
 /**
- * Modal 内部状态——三个互相关联的布尔标志。
+ * Modal 内部状态——两个互相关联的布尔标志。
  * 合并为一个对象以避免多次 setState 调度和中间无效态。
  */
 interface ModalState {
   internalMinimized: boolean;
   internalMaximized: boolean;
-  dragDisabled: boolean;
 }
 
 type ModalAction =
   | { type: 'SET_MINIMIZED'; payload: boolean }
   | { type: 'SET_MAXIMIZED'; payload: boolean }
-  | { type: 'SET_DRAG_DISABLED'; payload: boolean }
   | { type: 'RESET_ALL' };
 
 /**
@@ -44,13 +42,10 @@ function modalReducer(state: ModalState, action: ModalAction): ModalState {
         // 最大化时自动退出最小化
         internalMinimized: action.payload ? false : state.internalMinimized,
       };
-    case 'SET_DRAG_DISABLED':
-      return { ...state, dragDisabled: action.payload };
     case 'RESET_ALL':
       return {
         internalMinimized: false,
         internalMaximized: false,
-        dragDisabled: state.dragDisabled,
       };
     default:
       return state;
@@ -61,11 +56,7 @@ function modalReducer(state: ModalState, action: ModalAction): ModalState {
 
 type UseModalStateOptions = Pick<
   ModalProps,
-  | 'draggable'
-  | 'minimized'
-  | 'maximized'
-  | 'onMinimizeChange'
-  | 'onMaximizedChange'
+  'minimized' | 'maximized' | 'onMinimizeChange' | 'onMaximizedChange'
 >;
 
 interface UseModalStateReturn {
@@ -73,10 +64,6 @@ interface UseModalStateReturn {
   isMinimized: boolean;
   /** 合并后的最大化状态（受控优先） */
   isMaximized: boolean;
-  /** 拖拽禁用状态 */
-  dragDisabled: boolean;
-  /** 设置拖拽禁用 */
-  setDisabledDrag: (disabled: boolean) => void;
   /** 最小化 */
   handleMinimize: () => void;
   /** 从最小化恢复 */
@@ -95,7 +82,6 @@ export const useModalState = (
   options: UseModalStateOptions,
 ): UseModalStateReturn => {
   const {
-    draggable = false,
     minimized: controlledMinimized,
     maximized: controlledMaximized,
     onMinimizeChange,
@@ -110,7 +96,6 @@ export const useModalState = (
   const [state, dispatch] = useReducer(modalReducer, {
     internalMinimized: false,
     internalMaximized: false,
-    dragDisabled: !draggable,
   });
 
   // ✅ 通过 ref 镜像 reducer 中的 internal 状态，供回调函数闭包中读取最新值，
@@ -123,11 +108,6 @@ export const useModalState = (
   const onMaximizedChangeRef = useRef(onMaximizedChange);
   onMaximizedChangeRef.current = onMaximizedChange;
 
-  // 同步 draggable 到 dragDisabled（最大化时由 reducer 保证不变）
-  useEffect(() => {
-    dispatch({ type: 'SET_DRAG_DISABLED', payload: !draggable });
-  }, [draggable]);
-
   const isMinimized = isControlledMinimized
     ? !!controlledMinimized
     : state.internalMinimized;
@@ -136,10 +116,6 @@ export const useModalState = (
     : state.internalMaximized;
 
   // ---- 稳定的回调（引用在组件生命周期内不变） ----
-  const setDisabledDrag = useCallback((disabled: boolean) => {
-    dispatch({ type: 'SET_DRAG_DISABLED', payload: disabled });
-  }, []);
-
   const handleMinimize = useCallback(() => {
     if (!isControlledMinimized)
       dispatch({ type: 'SET_MINIMIZED', payload: true });
@@ -183,8 +159,6 @@ export const useModalState = (
   return {
     isMinimized,
     isMaximized,
-    dragDisabled: state.dragDisabled,
-    setDisabledDrag,
     handleMinimize,
     handleRestore,
     handleToggleMaximize,

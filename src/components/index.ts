@@ -9,6 +9,7 @@ export type {
   MinimizePosition,
   ModalProps,
   ModalRef,
+  ModalResizableConfig,
   ModalStaticMethods,
 } from './Modal/type';
 

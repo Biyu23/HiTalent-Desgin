@@ -23,6 +23,7 @@ const en_US = {
     unmaximize: 'Restore',
     close: 'Close',
     dragHandle: 'Drag',
+    resizeBottomRight: 'Resize dialog from the bottom-right corner',
     headerTitle: 'Dialog header',
     minimizedDockLabel: 'Minimized dialog dock',
     minimizedDockDragHandle: 'Drag to reposition',

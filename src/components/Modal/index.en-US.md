@@ -21,6 +21,10 @@ Ant Design's Modal falls short in desktop-grade complex interactions: it can't b
 
 <code src="./demo/form-submit.tsx" title="Form Submission" description="Combine Ant Design form validation with Modal's `confirmLoading` prop for async form submission with validation. Form state is automatically reset on close."></code>
 
+### Drag and Resize
+
+<code src="./demo/resize.tsx" title="Drag and Resize" description="Move the dialog from its title bar or empty footer area, and resize it from the bottom-right corner. Interactive footer controls remain clickable."></code>
+
 ### Advanced Window Management
 
 <code src="./demo/advanced.tsx" title="Advanced Window Management (Minimize without Destroy)" description="Enable `minimizable`, `maximizable`, and `draggable` for a desktop-class window experience. When minimized, the modal docks to a corner — form data is perfectly preserved and can be restored at any time."></code>
@@ -40,6 +44,10 @@ Ant Design's Modal falls short in desktop-grade complex interactions: it can't b
 ## API
 
 <API src="./type.ts" identifier="ModalProps" hideTitle></API>
+
+## ModalResizableConfig
+
+<API src="./type.ts" identifier="ModalResizableConfig" hideTitle></API>
 
 ## ModalRef
 

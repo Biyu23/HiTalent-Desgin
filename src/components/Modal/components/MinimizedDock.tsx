@@ -2,7 +2,7 @@ import { CloseOutlined, ExpandOutlined } from '@ant-design/icons';
 import { Button, Flex } from 'antd';
 import React, { memo, useEffect, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import Draggable from 'react-draggable';
+import ReactDraggable from 'react-draggable';
 import { useLocale } from '../../../configProvider/useLocale';
 import useDragBounds from '../../../hooks/useDragBounds';
 import { useModalContext } from '../ModalContext';
@@ -12,6 +12,8 @@ import {
   getExistingScrollWrapper,
   incrementRefCount,
 } from '../utils/minimizedDockUtils';
+
+const Draggable = ReactDraggable as any;
 
 /**
  * 内层实现：仅在 open && isMinimized 时渲染，可安全使用 hooks。

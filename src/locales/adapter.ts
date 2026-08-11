@@ -146,6 +146,10 @@ export function createHtdLocale(
       unmaximize: t(`${pfx}Modal.unmaximize`, fallback.Modal.unmaximize),
       close: t(`${pfx}Modal.close`, fallback.Modal.close),
       dragHandle: t(`${pfx}Modal.dragHandle`, fallback.Modal.dragHandle),
+      resizeBottomRight: t(
+        `${pfx}Modal.resizeBottomRight`,
+        fallback.Modal.resizeBottomRight,
+      ),
       headerTitle: t(`${pfx}Modal.headerTitle`, fallback.Modal.headerTitle),
       minimizedDockLabel: t(
         `${pfx}Modal.minimizedDockLabel`,

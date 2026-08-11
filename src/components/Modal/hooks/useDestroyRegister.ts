@@ -11,7 +11,7 @@ import destroyFns from '../utils/destroyFns';
 export function useDestroyRegister(
   open: boolean,
   handleClose: (
-    e: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
+    e?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
   ) => void,
 ) {
   const handleCloseRef = useRef(handleClose);
@@ -21,9 +21,7 @@ export function useDestroyRegister(
     if (!open) return;
 
     const destroyFn = () => {
-      handleCloseRef.current?.(
-        undefined as unknown as React.MouseEvent<HTMLElement>,
-      );
+      handleCloseRef.current?.();
     };
 
     destroyFns.push(destroyFn);

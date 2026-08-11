@@ -21,6 +21,10 @@ Ant Design 的 Modal 在桌面级复杂交互中存在不足：无法拖拽移�
 
 <code src="./demo/form-submit.tsx"></code>
 
+### 拖动与调整尺寸
+
+<code src="./demo/resize.tsx"></code>
+
 ### 高级窗口管理
 
 <code src="./demo/advanced.tsx"></code>
@@ -40,6 +44,10 @@ Ant Design 的 Modal 在桌面级复杂交互中存在不足：无法拖拽移�
 ## API
 
 <API src="./type.ts" identifier="ModalProps" hideTitle></API>
+
+## ModalResizableConfig
+
+<API src="./type.ts" identifier="ModalResizableConfig" hideTitle></API>
 
 ## ModalRef
 
