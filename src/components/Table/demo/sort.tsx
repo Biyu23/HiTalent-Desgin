@@ -1,6 +1,7 @@
 import type { TableProps as AntdTableProps } from 'antd';
 import { Button, message, Space, Tag } from 'antd';
-import React, { useCallback, useRef, useState } from 'react';
+import { useDemoIntl } from 'hi-talent-design/demoIntl';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import HiTable from '../index';
 import type { EnhancedColumnType, TableRef } from '../type';
 
@@ -13,543 +14,368 @@ interface EmployeeRecord {
   status: string;
   salary: number;
   joinDate: string;
-  email: string;
 }
 
-/**
- * 模拟异步接口：获取排序后的数据
- *
- * 实际项目中将排序参数传给后端，由后端返回排序好的数据
- */
+const messages = {
+  'zh-CN': {
+    'column.name': '姓名',
+    'column.age': '年龄',
+    'column.department': '部门',
+    'column.position': '职位',
+    'column.status': '状态',
+    'column.salary': '薪资',
+    'column.joinDate': '入职日期',
+    'department.engineering': '技术部',
+    'department.product': '产品部',
+    'department.design': '设计部',
+    'department.marketing': '市场部',
+    'position.frontend': '前端工程师',
+    'position.product': '产品经理',
+    'position.design': 'UI 设计师',
+    'position.backend': '后端工程师',
+    'position.director': '技术总监',
+    'position.marketing': '市场专员',
+    'status.active': '在职',
+    'status.probation': '试用期',
+    'status.left': '离职',
+    'frontend.title': '前端排序 — 自定义 sorter',
+    'frontend.description':
+      '点击列标题排序。年龄列默认降序；所有排序在浏览器中完成，适合较小数据集。',
+    'remote.title': '远程排序 — sorter + onChange',
+    'remote.description':
+      '排序参数通过 onChange 传给接口，适合由服务端处理的大数据集。',
+    'action.load': '加载数据',
+    'action.reset': '重置',
+    'state.loading': '加载中...',
+    'state.current': '当前排序',
+    'state.unsorted': '未排序',
+    'sort.asc': '升序',
+    'sort.desc': '降序',
+    'message.loaded': '数据加载成功',
+    'message.failed': '数据加载失败',
+    'pagination.total': '共',
+    'pagination.items': '条',
+  },
+  'en-US': {
+    'column.name': 'Name',
+    'column.age': 'Age',
+    'column.department': 'Department',
+    'column.position': 'Position',
+    'column.status': 'Status',
+    'column.salary': 'Salary',
+    'column.joinDate': 'Join date',
+    'department.engineering': 'Engineering',
+    'department.product': 'Product',
+    'department.design': 'Design',
+    'department.marketing': 'Marketing',
+    'position.frontend': 'Frontend Engineer',
+    'position.product': 'Product Manager',
+    'position.design': 'UI Designer',
+    'position.backend': 'Backend Engineer',
+    'position.director': 'Engineering Director',
+    'position.marketing': 'Marketing Specialist',
+    'status.active': 'Active',
+    'status.probation': 'Probation',
+    'status.left': 'Left',
+    'frontend.title': 'Client sorting — custom sorter',
+    'frontend.description':
+      'Select a column sort control. Age starts descending and all ordering runs in the browser for smaller datasets.',
+    'remote.title': 'Remote sorting — sorter + onChange',
+    'remote.description':
+      'onChange sends sort parameters to an API, suitable for large datasets ordered by the server.',
+    'action.load': 'Load data',
+    'action.reset': 'Reset',
+    'state.loading': 'Loading...',
+    'state.current': 'Current sort',
+    'state.unsorted': 'Unsorted',
+    'sort.asc': 'ascending',
+    'sort.desc': 'descending',
+    'message.loaded': 'Data loaded',
+    'message.failed': 'Failed to load data',
+    'pagination.total': 'Total',
+    'pagination.items': 'items',
+  },
+};
+
+type MessageKey = keyof (typeof messages)['zh-CN'] &
+  keyof (typeof messages)['en-US'];
+type Translate = (id: MessageKey) => string;
+
+const createEmployees = (t: Translate): EmployeeRecord[] => [
+  {
+    key: '1',
+    name: 'Alex Chen',
+    age: 28,
+    department: t('department.engineering'),
+    position: t('position.frontend'),
+    status: t('status.active'),
+    salary: 18000,
+    joinDate: '2022-03-15',
+  },
+  {
+    key: '2',
+    name: 'Morgan Li',
+    age: 32,
+    department: t('department.product'),
+    position: t('position.product'),
+    status: t('status.active'),
+    salary: 22000,
+    joinDate: '2021-07-01',
+  },
+  {
+    key: '3',
+    name: 'Jamie Wang',
+    age: 25,
+    department: t('department.design'),
+    position: t('position.design'),
+    status: t('status.probation'),
+    salary: 12000,
+    joinDate: '2023-11-20',
+  },
+  {
+    key: '4',
+    name: 'Taylor Zhao',
+    age: 35,
+    department: t('department.engineering'),
+    position: t('position.backend'),
+    status: t('status.active'),
+    salary: 25000,
+    joinDate: '2020-01-10',
+  },
+  {
+    key: '5',
+    name: 'Casey Qian',
+    age: 40,
+    department: t('department.engineering'),
+    position: t('position.director'),
+    status: t('status.active'),
+    salary: 35000,
+    joinDate: '2018-05-08',
+  },
+  {
+    key: '6',
+    name: 'Riley Sun',
+    age: 27,
+    department: t('department.marketing'),
+    position: t('position.marketing'),
+    status: t('status.left'),
+    salary: 10000,
+    joinDate: '2023-02-14',
+  },
+];
+
 async function mockFetchSortedData(
+  source: EmployeeRecord[],
   pagination: { current: number; pageSize: number },
   sorter?: { field?: string; order?: string },
-): Promise<{ data: EmployeeRecord[]; total: number }> {
-  console.log(
-    '%c[Mock API] 请求排序数据...',
-    'color: #1677ff; font-weight: bold',
-  );
-  console.log('分页参数:', pagination, '排序参数:', sorter);
-
-  // 模拟网络延迟
+) {
   await new Promise((resolve) => {
     setTimeout(resolve, 500);
   });
 
-  const allData: EmployeeRecord[] = [
-    {
-      key: '1',
-      name: '张三',
-      age: 28,
-      department: '技术部',
-      position: '前端工程师',
-      status: '在职',
-      salary: 18000,
-      joinDate: '2022-03-15',
-      email: 'zhangsan@example.com',
-    },
-    {
-      key: '2',
-      name: '李四',
-      age: 32,
-      department: '产品部',
-      position: '产品经理',
-      status: '在职',
-      salary: 22000,
-      joinDate: '2021-07-01',
-      email: 'lisi@example.com',
-    },
-    {
-      key: '3',
-      name: '王五',
-      age: 25,
-      department: '设计部',
-      position: 'UI 设计师',
-      status: '试用期',
-      salary: 12000,
-      joinDate: '2023-11-20',
-      email: 'wangwu@example.com',
-    },
-    {
-      key: '4',
-      name: '赵六',
-      age: 35,
-      department: '技术部',
-      position: '后端工程师',
-      status: '在职',
-      salary: 25000,
-      joinDate: '2020-01-10',
-      email: 'zhaoliu@example.com',
-    },
-    {
-      key: '5',
-      name: '钱七',
-      age: 40,
-      department: '管理部',
-      position: '技术总监',
-      status: '在职',
-      salary: 35000,
-      joinDate: '2018-05-08',
-      email: 'qianqi@example.com',
-    },
-    {
-      key: '6',
-      name: '孙八',
-      age: 27,
-      department: '市场部',
-      position: '市场专员',
-      status: '离职',
-      salary: 10000,
-      joinDate: '2023-02-14',
-      email: 'sunba@example.com',
-    },
-    {
-      key: '7',
-      name: '周九',
-      age: 31,
-      department: '技术部',
-      position: '架构师',
-      status: '在职',
-      salary: 28000,
-      joinDate: '2019-06-20',
-      email: 'zhoujiu@example.com',
-    },
-    {
-      key: '8',
-      name: '吴十',
-      age: 26,
-      department: '市场部',
-      position: '运营专员',
-      status: '试用期',
-      salary: 11000,
-      joinDate: '2024-01-15',
-      email: 'wushi@example.com',
-    },
-    {
-      key: '9',
-      name: '郑十一',
-      age: 38,
-      department: '管理部',
-      position: 'CEO',
-      status: '在职',
-      salary: 50000,
-      joinDate: '2015-03-01',
-      email: 'zhengshiyi@example.com',
-    },
-    {
-      key: '10',
-      name: '冯十二',
-      age: 29,
-      department: '设计部',
-      position: '交互设计师',
-      status: '在职',
-      salary: 16000,
-      joinDate: '2022-09-12',
-      email: 'fengshier@example.com',
-    },
-  ];
-
-  // 前端排序逻辑（实际项目中后端完成排序）
-  let sorted = [...allData];
-  if (sorter?.field && sorter?.order) {
+  const sorted = [...source];
+  if (sorter?.field && sorter.order) {
     sorted.sort((a, b) => {
-      const valA = a[sorter.field as keyof EmployeeRecord];
-      const valB = b[sorter.field as keyof EmployeeRecord];
-
-      if (typeof valA === 'string' && typeof valB === 'string') {
-        const cmp = valA.localeCompare(valB, 'zh-CN');
-        return sorter.order === 'descend' ? -cmp : cmp;
-      }
-      if (typeof valA === 'number' && typeof valB === 'number') {
-        return sorter.order === 'descend' ? valB - valA : valA - valB;
-      }
-      return 0;
+      const left = a[sorter.field as keyof EmployeeRecord];
+      const right = b[sorter.field as keyof EmployeeRecord];
+      const difference =
+        typeof left === 'number' && typeof right === 'number'
+          ? left - right
+          : String(left).localeCompare(String(right));
+      return sorter.order === 'descend' ? -difference : difference;
     });
   }
 
   const start = (pagination.current - 1) * pagination.pageSize;
-  const end = start + pagination.pageSize;
-  return { data: sorted.slice(start, end), total: sorted.length };
+  return {
+    data: sorted.slice(start, start + pagination.pageSize),
+    total: sorted.length,
+  };
 }
 
-/**
- * 表头排序 Demo
- *
- * 演示功能：
- * - 前端排序（点击列标题排序箭头）
- * - 默认排序
- * - 自定义排序函数（如中文排序、数字排序）
- * - 多列排序
- * - 远程排序（通过 onChange 回调获取排序参数并调用接口）
- * - 排序与 cellPreset 结合使用
- *
- * 注意：排序能力由 antd Table 内置提供，HiTable 通过继承 antd TableProps
- * 原生支持。列定义中配置 sorter 属性即可启用排序。
- */
 const TableSortDemo: React.FC = () => {
+  const { t } = useDemoIntl(messages);
   const tableRef = useRef<TableRef>(null);
+  const allData = useMemo(() => createEmployees(t), [t]);
   const [loading, setLoading] = useState(false);
   const [dataSource, setDataSource] = useState<EmployeeRecord[]>([]);
   const [total, setTotal] = useState(0);
+  const [remoteInitialized, setRemoteInitialized] = useState(false);
   const [sortInfo, setSortInfo] = useState<{
     columnKey?: string;
     order?: string;
   }>({});
 
-  // 前端排序模式：使用 antd 内置排序
-  const columns_frontend: EnhancedColumnType<EmployeeRecord>[] = [
-    {
-      title: '姓名',
-      dataIndex: 'name',
-      key: 'name',
-      width: 120,
-      sorter: (a, b) => a.name.localeCompare(b.name, 'zh-CN'),
-    },
-    {
-      title: '年龄',
-      dataIndex: 'age',
-      key: 'age',
-      width: 80,
-      sorter: (a, b) => a.age - b.age,
-      defaultSortOrder: 'descend',
-    },
-    {
-      title: '部门',
-      dataIndex: 'department',
-      key: 'department',
-      width: 110,
-      sorter: (a, b) => a.department.localeCompare(b.department, 'zh-CN'),
-    },
-    {
-      title: '职位',
-      dataIndex: 'position',
-      key: 'position',
-      width: 130,
-      sorter: (a, b) => a.position.localeCompare(b.position, 'zh-CN'),
-    },
-    {
-      title: '状态',
-      dataIndex: 'status',
-      key: 'status',
-      width: 90,
-      cellPreset: 'tag',
-      cellPresetProps: {
-        colorMap: {
-          在职: 'green',
-          试用期: 'blue',
-          离职: 'red',
-        },
-      },
-      sorter: (a, b) => a.status.localeCompare(b.status, 'zh-CN'),
-    },
-    {
-      title: '入职日期',
-      dataIndex: 'joinDate',
-      key: 'joinDate',
-      width: 130,
-      cellPreset: 'date',
-      cellPresetProps: { format: 'YYYY-MM-DD' },
-      sorter: (a, b) =>
-        new Date(a.joinDate).getTime() - new Date(b.joinDate).getTime(),
-    },
-    {
-      title: '薪资',
-      dataIndex: 'salary',
-      key: 'salary',
-      width: 120,
-      cellPreset: 'number',
-      cellPresetProps: {
-        decimals: 0,
-        thousandsSeparator: ',',
-      },
-      sorter: (a, b) => a.salary - b.salary,
-    },
-  ];
+  const statusColors = useMemo(
+    () => ({
+      [t('status.active')]: 'green',
+      [t('status.probation')]: 'blue',
+      [t('status.left')]: 'red',
+    }),
+    [t],
+  );
 
-  // 远程排序模式：通过 onChange 获取排序状态并调用接口
-  const columns_remote: EnhancedColumnType<EmployeeRecord>[] = [
-    {
-      title: '姓名',
-      dataIndex: 'name',
-      key: 'name',
-      width: 120,
-      sorter: true,
-    },
-    {
-      title: '年龄',
-      dataIndex: 'age',
-      key: 'age',
-      width: 80,
-      sorter: true,
-    },
-    {
-      title: '部门',
-      dataIndex: 'department',
-      key: 'department',
-      width: 110,
-      sorter: true,
-    },
-    {
-      title: '职位',
-      dataIndex: 'position',
-      key: 'position',
-      width: 130,
-      sorter: true,
-    },
-    {
-      title: '状态',
-      dataIndex: 'status',
-      key: 'status',
-      width: 90,
-      cellPreset: 'tag',
-      cellPresetProps: {
-        colorMap: {
-          在职: 'green',
-          试用期: 'blue',
-          离职: 'red',
-        },
+  const frontendColumns = useMemo<EnhancedColumnType<EmployeeRecord>[]>(
+    () => [
+      {
+        title: t('column.name'),
+        dataIndex: 'name',
+        key: 'name',
+        width: 130,
+        sorter: (a, b) => a.name.localeCompare(b.name),
       },
-      sorter: true,
-    },
-    {
-      title: '薪资',
-      dataIndex: 'salary',
-      key: 'salary',
-      width: 120,
-      cellPreset: 'number',
-      cellPresetProps: {
-        decimals: 0,
-        thousandsSeparator: ',',
+      {
+        title: t('column.age'),
+        dataIndex: 'age',
+        key: 'age',
+        width: 80,
+        sorter: (a, b) => a.age - b.age,
+        defaultSortOrder: 'descend',
       },
-      sorter: true,
-    },
-    {
-      title: '入职日期',
-      dataIndex: 'joinDate',
-      key: 'joinDate',
-      width: 130,
-      cellPreset: 'date',
-      cellPresetProps: { format: 'YYYY-MM-DD' },
-      sorter: true,
-    },
-  ];
+      {
+        title: t('column.department'),
+        dataIndex: 'department',
+        key: 'department',
+        width: 120,
+        sorter: (a, b) => a.department.localeCompare(b.department),
+      },
+      {
+        title: t('column.position'),
+        dataIndex: 'position',
+        key: 'position',
+        width: 150,
+        sorter: (a, b) => a.position.localeCompare(b.position),
+      },
+      {
+        title: t('column.status'),
+        dataIndex: 'status',
+        key: 'status',
+        width: 110,
+        cellPreset: 'tag',
+        cellPresetProps: { colorMap: statusColors },
+        sorter: (a, b) => a.status.localeCompare(b.status),
+      },
+      {
+        title: t('column.joinDate'),
+        dataIndex: 'joinDate',
+        key: 'joinDate',
+        width: 130,
+        cellPreset: 'date',
+        cellPresetProps: { format: 'YYYY-MM-DD' },
+        sorter: (a, b) => a.joinDate.localeCompare(b.joinDate),
+      },
+      {
+        title: t('column.salary'),
+        dataIndex: 'salary',
+        key: 'salary',
+        width: 120,
+        cellPreset: 'number',
+        cellPresetProps: { decimals: 0, thousandsSeparator: ',' },
+        sorter: (a, b) => a.salary - b.salary,
+      },
+    ],
+    [statusColors, t],
+  );
 
-  // 所有数据（前端排序用）
-  const [allData] = useState<EmployeeRecord[]>([
-    {
-      key: '1',
-      name: '张三',
-      age: 28,
-      department: '技术部',
-      position: '前端工程师',
-      status: '在职',
-      salary: 18000,
-      joinDate: '2022-03-15',
-      email: 'zhangsan@example.com',
-    },
-    {
-      key: '2',
-      name: '李四',
-      age: 32,
-      department: '产品部',
-      position: '产品经理',
-      status: '在职',
-      salary: 22000,
-      joinDate: '2021-07-01',
-      email: 'lisi@example.com',
-    },
-    {
-      key: '3',
-      name: '王五',
-      age: 25,
-      department: '设计部',
-      position: 'UI 设计师',
-      status: '试用期',
-      salary: 12000,
-      joinDate: '2023-11-20',
-      email: 'wangwu@example.com',
-    },
-    {
-      key: '4',
-      name: '赵六',
-      age: 35,
-      department: '技术部',
-      position: '后端工程师',
-      status: '在职',
-      salary: 25000,
-      joinDate: '2020-01-10',
-      email: 'zhaoliu@example.com',
-    },
-    {
-      key: '5',
-      name: '钱七',
-      age: 40,
-      department: '管理部',
-      position: '技术总监',
-      status: '在职',
-      salary: 35000,
-      joinDate: '2018-05-08',
-      email: 'qianqi@example.com',
-    },
-    {
-      key: '6',
-      name: '孙八',
-      age: 27,
-      department: '市场部',
-      position: '市场专员',
-      status: '离职',
-      salary: 10000,
-      joinDate: '2023-02-14',
-      email: 'sunba@example.com',
-    },
-    {
-      key: '7',
-      name: '周九',
-      age: 31,
-      department: '技术部',
-      position: '架构师',
-      status: '在职',
-      salary: 28000,
-      joinDate: '2019-06-20',
-      email: 'zhoujiu@example.com',
-    },
-    {
-      key: '8',
-      name: '吴十',
-      age: 26,
-      department: '市场部',
-      position: '运营专员',
-      status: '试用期',
-      salary: 11000,
-      joinDate: '2024-01-15',
-      email: 'wushi@example.com',
-    },
-    {
-      key: '9',
-      name: '郑十一',
-      age: 38,
-      department: '管理部',
-      position: 'CEO',
-      status: '在职',
-      salary: 50000,
-      joinDate: '2015-03-01',
-      email: 'zhengshiyi@example.com',
-    },
-    {
-      key: '10',
-      name: '冯十二',
-      age: 29,
-      department: '设计部',
-      position: '交互设计师',
-      status: '在职',
-      salary: 16000,
-      joinDate: '2022-09-12',
-      email: 'fengshier@example.com',
-    },
-  ]);
+  const remoteColumns = useMemo<EnhancedColumnType<EmployeeRecord>[]>(
+    () =>
+      frontendColumns.map((column) => ({
+        ...column,
+        defaultSortOrder: undefined,
+        sorter: true,
+      })),
+    [frontendColumns],
+  );
 
-  /**
-   * 远程排序 onChange 回调
-   *
-   * antd Table 的 onChange 会在分页、排序、筛选变化时触发。
-   * 通过 sorter 参数可以获取当前的排序字段和方向。
-   */
   const handleRemoteTableChange: NonNullable<
     AntdTableProps<EmployeeRecord>['onChange']
-  > = useCallback(async (pagination, _filters, sorter) => {
-    // 多列排序时 sorter 是数组，单列排序是对象
-    const singleSorter = Array.isArray(sorter) ? sorter[0] : sorter;
+  > = useCallback(
+    async (pagination, _filters, sorter) => {
+      const currentSorter = Array.isArray(sorter) ? sorter[0] : sorter;
+      setSortInfo({
+        columnKey: currentSorter?.columnKey?.toString(),
+        order: currentSorter?.order?.toString(),
+      });
+      setLoading(true);
 
-    setSortInfo({
-      columnKey: singleSorter?.columnKey?.toString(),
-      order: singleSorter?.order?.toString(),
-    });
+      try {
+        const result = await mockFetchSortedData(
+          allData,
+          {
+            current: pagination.current || 1,
+            pageSize: pagination.pageSize || 10,
+          },
+          {
+            field: currentSorter?.field as string | undefined,
+            order: currentSorter?.order as string | undefined,
+          },
+        );
+        setDataSource(result.data);
+        setTotal(result.total);
+        message.success(t('message.loaded'));
+      } catch {
+        message.error(t('message.failed'));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [allData, t],
+  );
 
-    setLoading(true);
-    try {
-      const result = await mockFetchSortedData(
-        {
-          current: pagination.current || 1,
-          pageSize: pagination.pageSize || 10,
-        },
-        {
-          field: singleSorter?.field as string | undefined,
-          order: singleSorter?.order as string | undefined,
-        },
-      );
-      setDataSource(result.data);
-      setTotal(result.total);
-      message.success(
-        `数据加载成功${
-          singleSorter?.order
-            ? `（排序: ${singleSorter.columnKey} ${
-                singleSorter.order === 'descend' ? '降序' : '升序'
-              }）`
-            : ''
-        }`,
-      );
-    } catch {
-      message.error('数据加载失败');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // 初始加载远程数据
-  const [remoteInitialized, setRemoteInitialized] = useState(false);
-  const initRemoteData = useCallback(async () => {
+  const loadRemoteData = useCallback(async () => {
     if (remoteInitialized) return;
     setRemoteInitialized(true);
     setLoading(true);
     try {
-      const result = await mockFetchSortedData({ current: 1, pageSize: 10 });
+      const result = await mockFetchSortedData(allData, {
+        current: 1,
+        pageSize: 10,
+      });
       setDataSource(result.data);
       setTotal(result.total);
     } finally {
       setLoading(false);
     }
-  }, [remoteInitialized]);
+  }, [allData, remoteInitialized]);
+
+  const showTotal = (count: number) =>
+    `${t('pagination.total')} ${count} ${t('pagination.items')}`;
+  const captionStyle = {
+    marginBottom: 12,
+    color: 'var(--htd-doc-text-secondary, #888)',
+    fontSize: 13,
+  } as const;
 
   return (
     <div>
       <h3 style={{ marginBottom: 16, fontSize: 16, fontWeight: 600 }}>
-        1. 前端排序 — 使用自定义 sorter 函数
+        {t('frontend.title')}
       </h3>
-      <div style={{ marginBottom: 12, color: '#888', fontSize: 13 }}>
-        点击列标题的排序箭头触发排序。年龄列默认按降序排列。排序完全由前端完成，
-        适合数据量较小的场景。支持中文拼音排序（姓名、部门列）。
-      </div>
-
+      <div style={captionStyle}>{t('frontend.description')}</div>
       <HiTable<EmployeeRecord>
         ref={tableRef}
-        columns={columns_frontend}
+        columns={frontendColumns}
         dataSource={allData}
         showColumnSetting
         enableColumnResize
         zebraStripe
         bordered
-        pagination={{ pageSize: 10, showTotal: (total) => `共 ${total} 条` }}
+        pagination={{ pageSize: 10, showTotal }}
         rowKey="key"
       />
 
-      <h3 style={{ margin: '24px 0 16px', fontSize: 16, fontWeight: 600 }}>
-        2. 远程排序 — 后端排序（sorter: true + onChange）
+      <h3 style={{ margin: '28px 0 16px', fontSize: 16, fontWeight: 600 }}>
+        {t('remote.title')}
       </h3>
-      <div style={{ marginBottom: 12, color: '#888', fontSize: 13 }}>
-        点击列标题排序箭头，排序参数通过 <Tag>onChange</Tag>{' '}
-        回调传递，由后端完成排序。 适合大数据量场景。下方显示当前排序状态。
-      </div>
-
-      <Space style={{ marginBottom: 16 }}>
+      <div style={captionStyle}>{t('remote.description')}</div>
+      <Space style={{ marginBottom: 16 }} wrap>
         <Button
-          onClick={() => {
-            initRemoteData();
-          }}
+          onClick={loadRemoteData}
           type="primary"
           size="small"
           disabled={remoteInitialized}
         >
-          加载数据
+          {t('action.load')}
         </Button>
         <Button
           onClick={() => {
@@ -560,21 +386,23 @@ const TableSortDemo: React.FC = () => {
           }}
           size="small"
         >
-          重置
+          {t('action.reset')}
         </Button>
-        {loading && <Tag color="processing">加载中...</Tag>}
+        {loading && <Tag color="processing">{t('state.loading')}</Tag>}
         {sortInfo.order ? (
           <Tag color="blue">
-            当前排序: {sortInfo.columnKey}{' '}
-            {sortInfo.order === 'descend' ? '↓ 降序' : '↑ 升序'}
+            {t('state.current')}: {sortInfo.columnKey}{' '}
+            {sortInfo.order === 'descend'
+              ? `↓ ${t('sort.desc')}`
+              : `↑ ${t('sort.asc')}`}
           </Tag>
         ) : dataSource.length > 0 ? (
-          <Tag>未排序</Tag>
+          <Tag>{t('state.unsorted')}</Tag>
         ) : null}
       </Space>
 
       <HiTable<EmployeeRecord>
-        columns={columns_remote}
+        columns={remoteColumns}
         dataSource={dataSource}
         loading={loading}
         onChange={handleRemoteTableChange}
@@ -582,11 +410,7 @@ const TableSortDemo: React.FC = () => {
         enableColumnResize
         zebraStripe
         bordered
-        pagination={{
-          total,
-          showTotal: (total) => `共 ${total} 条`,
-          pageSize: 10,
-        }}
+        pagination={{ total, showTotal, pageSize: 10 }}
         rowKey="key"
       />
     </div>

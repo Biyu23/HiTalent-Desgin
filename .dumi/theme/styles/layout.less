@@ -1,0 +1,86 @@
+.dumi-default-doc-layout {
+  min-height: 100vh;
+  color: var(--htd-doc-text);
+  background: var(--htd-doc-bg);
+  font-family: var(--htd-doc-font-body);
+
+  > main {
+    max-width: var(--htd-doc-content-width);
+    padding: 0 32px;
+  }
+
+  > main > .dumi-default-doc-layout-toc-wrapper {
+    top: calc(var(--htd-doc-header-height) + 28px);
+    width: var(--htd-doc-toc-width);
+    margin-inline-start: 32px;
+
+    > h4 {
+      margin-bottom: 12px;
+      color: var(--htd-doc-text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+  }
+}
+
+.dumi-default-content {
+  color: var(--htd-doc-text);
+
+  &:not([data-no-sidebar]) {
+    margin-top: 24px;
+    padding: 48px 56px 0;
+    background: var(--htd-doc-surface);
+    border: 1px solid var(--htd-doc-border);
+    border-bottom: 0;
+    border-radius: var(--htd-doc-radius-lg) var(--htd-doc-radius-lg) 0 0;
+    box-shadow: none;
+  }
+}
+
+@media only screen and (max-width: 1199px) {
+  .dumi-default-doc-layout {
+    > main {
+      max-width: 1120px;
+    }
+
+    > main > .dumi-default-doc-layout-toc-wrapper {
+      display: none;
+    }
+  }
+}
+
+@media only screen and (min-width: 768px) and (max-width: 1024px) {
+  .dumi-default-doc-layout > main {
+    padding: 0 24px;
+  }
+
+  .dumi-default-content:not([data-no-sidebar]) {
+    padding: 40px 36px 0;
+  }
+}
+
+@media only screen and (max-width: 767px) {
+  .dumi-default-doc-layout {
+    > main {
+      padding: 0 20px;
+    }
+
+    &-mobile-bar {
+      top: 58px;
+      height: 40px;
+      padding: 0 20px;
+      color: var(--htd-doc-text-secondary);
+      background: color-mix(in srgb, var(--htd-doc-surface) 92%, transparent);
+      border-color: var(--htd-doc-border);
+      backdrop-filter: blur(14px);
+    }
+  }
+
+  .dumi-default-content:not([data-no-sidebar]) {
+    margin: 0 -20px;
+    padding: 30px 20px 0;
+    border: 0;
+    border-radius: 0;
+  }
+}

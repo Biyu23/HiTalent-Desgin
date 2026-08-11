@@ -1,8 +1,23 @@
 import { defineConfig } from 'dumi';
 import path from 'path';
 
+const zhNav = [
+  { title: '首页', link: '/' },
+  { title: '指南', link: '/guide' },
+  { title: '组件', link: '/components/button' },
+  { title: 'Hooks', link: '/hooks/use-merge-state' },
+];
+
+const enNav = [
+  { title: 'Home', link: '/en-US' },
+  { title: 'Guide', link: '/en-US/guide' },
+  { title: 'Components', link: '/en-US/components/button' },
+  { title: 'Hooks', link: '/en-US/hooks/use-merge-state' },
+];
+
 export default defineConfig({
   outputPath: 'docs-dist',
+  favicons: ['/favicon.svg'],
   locales: [
     { id: 'zh-CN', name: '中文' },
     { id: 'en-US', name: 'EN' },
@@ -14,37 +29,78 @@ export default defineConfig({
     entryFile: './src/index.ts',
     atomDirs: [
       { type: 'component', dir: 'src/components' },
-      { type: 'component', dir: 'src/configProvider' },
+      {
+        type: 'component',
+        subType: 'config-provider',
+        dir: 'src/configProvider',
+      },
     ],
   },
   themeConfig: {
     name: 'HiTalent Design',
     logo: false,
-    theme: {
-      '@c-primary': '#1677ff',
+    prefersColor: {
+      default: 'auto',
+      switch: true,
     },
-    nav: [
-      { title: '指南', link: '/guide' },
-      { title: '组件', link: '/components/button' },
-      { title: 'Hooks', link: '/hooks/use-merge-state' },
-    ],
-    footer: 'HiTalent Design · 基于 Ant Design 的业务组件库',
+    theme: {
+      '@c-primary': '#4f46e5',
+    },
+    nav: {
+      'zh-CN': zhNav,
+      'en-US': enNav,
+    },
+    footer: 'HiTalent Design',
     socialLinks: {
       github: 'https://github.com/biyu23/hi-talent-design',
     },
     sidebar: {
+      '/guide': [
+        {
+          title: '开始使用',
+          children: [
+            { title: '介绍', link: '/guide' },
+            { title: '安装', link: '/guide/installation' },
+            { title: '快速开始', link: '/guide/quick-start' },
+            { title: '全局配置', link: '/guide/global-config' },
+          ],
+        },
+      ],
+      '/en-US/guide': [
+        {
+          title: 'Getting Started',
+          children: [
+            { title: 'Introduction', link: '/en-US/guide' },
+            { title: 'Installation', link: '/en-US/guide/installation' },
+            { title: 'Quick Start', link: '/en-US/guide/quick-start' },
+            {
+              title: 'Global Configuration',
+              link: '/en-US/guide/global-config',
+            },
+          ],
+        },
+      ],
       '/components': [
         {
-          title: '通用组件',
+          title: '通用',
+          children: [{ title: 'Button 按钮', link: '/components/button' }],
+        },
+        {
+          title: '数据录入',
           children: [
-            { title: 'Button 高级按钮', link: '/components/button' },
-            { title: 'Modal 高级弹窗', link: '/components/modal' },
             {
               title: 'PopoverSelect 气泡选择',
               link: '/components/popover-select',
             },
-            { title: 'Table 增强表格', link: '/components/table' },
           ],
+        },
+        {
+          title: '数据展示',
+          children: [{ title: 'Table 增强表格', link: '/components/table' }],
+        },
+        {
+          title: '反馈与窗口',
+          children: [{ title: 'Modal 高级弹窗', link: '/components/modal' }],
         },
         {
           title: '全局配置',
@@ -56,24 +112,60 @@ export default defineConfig({
           ],
         },
       ],
-      '/guide': [
+      '/en-US/components': [
         {
-          title: '指南',
-          children: [{ title: 'Getting Started', link: '/guide' }],
+          title: 'General',
+          children: [{ title: 'Button', link: '/en-US/components/button' }],
+        },
+        {
+          title: 'Data Entry',
+          children: [
+            {
+              title: 'PopoverSelect',
+              link: '/en-US/components/popover-select',
+            },
+          ],
+        },
+        {
+          title: 'Data Display',
+          children: [{ title: 'Table', link: '/en-US/components/table' }],
+        },
+        {
+          title: 'Feedback & Windows',
+          children: [{ title: 'Modal', link: '/en-US/components/modal' }],
+        },
+        {
+          title: 'Global Configuration',
+          children: [
+            {
+              title: 'ConfigProvider',
+              link: '/en-US/components/config-provider',
+            },
+          ],
         },
       ],
       '/hooks': [
         {
-          title: '自定义 Hooks',
+          title: '状态管理',
           children: [
             {
               title: 'useMergeState 合并状态',
               link: '/hooks/use-merge-state',
             },
+          ],
+        },
+        {
+          title: '交互能力',
+          children: [
             {
               title: 'useDragBounds 拖拽边界',
               link: '/hooks/use-drag-bounds',
             },
+          ],
+        },
+        {
+          title: '数据适配',
+          children: [
             {
               title: 'useFieldNames 字段映射',
               link: '/hooks/use-field-names',
@@ -81,13 +173,34 @@ export default defineConfig({
           ],
         },
       ],
-    },
-    hero: {
-      title: 'HiTalent Design',
-      description: '基于 Ant Design 的高级业务组件库，简洁、类型安全、开箱即用',
-      actions: [
-        { text: '开始使用', link: '/guide' },
-        { text: '浏览组件', link: '/components/button' },
+      '/en-US/hooks': [
+        {
+          title: 'State',
+          children: [
+            {
+              title: 'useMergeState',
+              link: '/en-US/hooks/use-merge-state',
+            },
+          ],
+        },
+        {
+          title: 'Interaction',
+          children: [
+            {
+              title: 'useDragBounds',
+              link: '/en-US/hooks/use-drag-bounds',
+            },
+          ],
+        },
+        {
+          title: 'Data Adapters',
+          children: [
+            {
+              title: 'useFieldNames',
+              link: '/en-US/hooks/use-field-names',
+            },
+          ],
+        },
       ],
     },
   },

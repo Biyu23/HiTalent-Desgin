@@ -1,4 +1,5 @@
 import { Button, message, Space, Tag } from 'antd';
+import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import HiTable from '../index';
 import type {
@@ -20,60 +21,62 @@ interface Employee {
   email: string;
 }
 
-async function mockSaveColumnState(state: ColumnState) {
-  await new Promise<void>((resolve) => {
-    setTimeout(resolve, 300);
-  });
-  console.table(state);
-  return { code: 0 };
-}
-
-const dataSource: Employee[] = [
-  {
-    key: '1',
-    name: '张三',
-    age: 28,
-    department: '技术部',
-    position: '前端工程师',
-    status: '在职',
-    salary: 18000,
-    joinDate: '2022-03-15',
-    email: 'zhangsan@example.com',
+const messages = {
+  'zh-CN': {
+    'column.name': '姓名',
+    'column.age': '年龄',
+    'column.department': '部门',
+    'column.position': '职位',
+    'column.status': '状态',
+    'column.salary': '薪资',
+    'column.joinDate': '入职日期',
+    'column.email': '邮箱',
+    'department.engineering': '技术部',
+    'department.product': '产品部',
+    'department.design': '设计部',
+    'position.frontend': '前端工程师',
+    'position.product': '产品经理',
+    'position.design': 'UI 设计师',
+    'position.backend': '后端工程师',
+    'status.active': '在职',
+    'status.probation': '试用期',
+    'status.left': '离职',
+    'action.reset': '重置列配置',
+    'state.saving': '保存中...',
+    'state.synced': '已同步',
+    'state.hidden': '已隐藏',
+    'state.columns': '列',
+    'message.saved': '列配置已保存',
+    'message.failed': '保存失败，请重试',
   },
-  {
-    key: '2',
-    name: '李四',
-    age: 32,
-    department: '产品部',
-    position: '产品经理',
-    status: '在职',
-    salary: 22000,
-    joinDate: '2021-07-01',
-    email: 'lisi@example.com',
+  'en-US': {
+    'column.name': 'Name',
+    'column.age': 'Age',
+    'column.department': 'Department',
+    'column.position': 'Position',
+    'column.status': 'Status',
+    'column.salary': 'Salary',
+    'column.joinDate': 'Join date',
+    'column.email': 'Email',
+    'department.engineering': 'Engineering',
+    'department.product': 'Product',
+    'department.design': 'Design',
+    'position.frontend': 'Frontend Engineer',
+    'position.product': 'Product Manager',
+    'position.design': 'UI Designer',
+    'position.backend': 'Backend Engineer',
+    'status.active': 'Active',
+    'status.probation': 'Probation',
+    'status.left': 'Left',
+    'action.reset': 'Reset columns',
+    'state.saving': 'Saving...',
+    'state.synced': 'Synced',
+    'state.hidden': 'Hidden',
+    'state.columns': 'columns',
+    'message.saved': 'Column settings saved',
+    'message.failed': 'Save failed. Try again.',
   },
-  {
-    key: '3',
-    name: '王五',
-    age: 25,
-    department: '设计部',
-    position: 'UI 设计师',
-    status: '试用期',
-    salary: 12000,
-    joinDate: '2023-11-20',
-    email: 'wangwu@example.com',
-  },
-  {
-    key: '4',
-    name: '赵六',
-    age: 35,
-    department: '技术部',
-    position: '后端工程师',
-    status: '在职',
-    salary: 25000,
-    joinDate: '2020-01-10',
-    email: 'zhaoliu@example.com',
-  },
-];
+};
 
 const initialState: ColumnState = [
   { id: 'name', width: 120 },
@@ -86,35 +89,102 @@ const initialState: ColumnState = [
   { id: 'email', width: 200 },
 ];
 
+async function mockSaveColumnState(state: ColumnState) {
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, 300);
+  });
+  console.table(state);
+}
+
 const ColumnDragDemo: React.FC = () => {
+  const { t } = useDemoIntl(messages);
   const tableRef = useRef<TableRef>(null);
   const [saving, setSaving] = useState(false);
   const [columnState, setColumnState] = useState<ColumnState>(initialState);
 
+  const dataSource = useMemo<Employee[]>(
+    () => [
+      {
+        key: '1',
+        name: 'Alex Chen',
+        age: 28,
+        department: t('department.engineering'),
+        position: t('position.frontend'),
+        status: t('status.active'),
+        salary: 18000,
+        joinDate: '2022-03-15',
+        email: 'alex@example.com',
+      },
+      {
+        key: '2',
+        name: 'Morgan Li',
+        age: 32,
+        department: t('department.product'),
+        position: t('position.product'),
+        status: t('status.active'),
+        salary: 22000,
+        joinDate: '2021-07-01',
+        email: 'morgan@example.com',
+      },
+      {
+        key: '3',
+        name: 'Jamie Wang',
+        age: 25,
+        department: t('department.design'),
+        position: t('position.design'),
+        status: t('status.probation'),
+        salary: 12000,
+        joinDate: '2023-11-20',
+        email: 'jamie@example.com',
+      },
+      {
+        key: '4',
+        name: 'Taylor Zhao',
+        age: 35,
+        department: t('department.engineering'),
+        position: t('position.backend'),
+        status: t('status.active'),
+        salary: 25000,
+        joinDate: '2020-01-10',
+        email: 'taylor@example.com',
+      },
+    ],
+    [t],
+  );
+
   const columns = useMemo<readonly EnhancedColumnType<Employee>[]>(
     () => [
-      { id: 'name', title: '姓名', dataIndex: 'name', key: 'name' },
-      { id: 'age', title: '年龄', dataIndex: 'age', key: 'age' },
+      { id: 'name', title: t('column.name'), dataIndex: 'name', key: 'name' },
+      { id: 'age', title: t('column.age'), dataIndex: 'age', key: 'age' },
       {
         id: 'department',
-        title: '部门',
+        title: t('column.department'),
         dataIndex: 'department',
         key: 'department',
       },
-      { id: 'position', title: '职位', dataIndex: 'position', key: 'position' },
+      {
+        id: 'position',
+        title: t('column.position'),
+        dataIndex: 'position',
+        key: 'position',
+      },
       {
         id: 'status',
-        title: '状态',
+        title: t('column.status'),
         dataIndex: 'status',
         key: 'status',
         cellPreset: 'tag',
         cellPresetProps: {
-          colorMap: { 在职: 'green', 试用期: 'blue', 离职: 'red' },
+          colorMap: {
+            [t('status.active')]: 'green',
+            [t('status.probation')]: 'blue',
+            [t('status.left')]: 'red',
+          },
         },
       },
       {
         id: 'salary',
-        title: '薪资',
+        title: t('column.salary'),
         dataIndex: 'salary',
         key: 'salary',
         cellPreset: 'number',
@@ -122,15 +192,20 @@ const ColumnDragDemo: React.FC = () => {
       },
       {
         id: 'joinDate',
-        title: '入职日期',
+        title: t('column.joinDate'),
         dataIndex: 'joinDate',
         key: 'joinDate',
         cellPreset: 'date',
         cellPresetProps: { format: 'YYYY-MM-DD' },
       },
-      { id: 'email', title: '邮箱', dataIndex: 'email', key: 'email' },
+      {
+        id: 'email',
+        title: t('column.email'),
+        dataIndex: 'email',
+        key: 'email',
+      },
     ],
-    [],
+    [t],
   );
 
   const handleColumnStateChange = useCallback(
@@ -139,26 +214,32 @@ const ColumnDragDemo: React.FC = () => {
       setSaving(true);
       try {
         await mockSaveColumnState(next);
-        message.success(`列配置已保存（${info.reason}）`);
+        message.success(`${t('message.saved')} (${info.reason})`);
       } catch {
-        message.error('保存失败，请重试');
+        message.error(t('message.failed'));
       } finally {
         setSaving(false);
       }
     },
-    [],
+    [t],
   );
 
   const hiddenCount = columnState.filter((item) => item.hidden).length;
 
   return (
     <div>
-      <Space style={{ marginBottom: 16 }}>
+      <Space style={{ marginBottom: 16 }} wrap>
         <Button onClick={() => tableRef.current?.resetColumnState()}>
-          重置列配置
+          {t('action.reset')}
         </Button>
-        <Tag color="processing">{saving ? '保存中...' : '已同步'}</Tag>
-        {hiddenCount > 0 && <Tag color="warning">已隐藏 {hiddenCount} 列</Tag>}
+        <Tag color="processing">
+          {saving ? t('state.saving') : t('state.synced')}
+        </Tag>
+        {hiddenCount > 0 && (
+          <Tag color="warning">
+            {t('state.hidden')} {hiddenCount} {t('state.columns')}
+          </Tag>
+        )}
       </Space>
       <HiTable<Employee>
         ref={tableRef}

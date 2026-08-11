@@ -1,38 +1,63 @@
 ---
-nav:
-  title: Hooks
-  order: 2
+title: useDragBounds
+toc: content
 ---
 
 # useDragBounds
 
-为 `react-draggable` 组件**动态计算拖拽边界**，确保拖拽元素始终保留在可视窗口内。
+在拖拽开始时根据视口和元素位置计算 `react-draggable` 边界，让可拖动内容保留在可视区域内。
 
-## 为什么需要这个 Hook
+## 适用场景
 
-当弹窗或悬浮窗支持拖拽时，需要限制拖拽范围不超出浏览器窗口。`useDragBounds` 在拖拽开始时（`onStart`）根据元素当前位置和窗口尺寸自动计算 `bounds`，省去手动计算的繁琐。
+- 弹窗、悬浮面板或工具窗口不能被拖出浏览器视口。
+- Draggable 包装节点与实际可视节点不一致，需要单独测量。
 
 ## 基本用法
 
 ```tsx | pure
-import { useDragBounds } from 'hi-talent-design';
 import Draggable from 'react-draggable';
+import { useDragBounds } from 'hi-talent-design';
 
-const MyComponent = () => {
+export default () => {
   const { dragRef, bounds, onStart } = useDragBounds();
 
   return (
     <Draggable nodeRef={dragRef} bounds={bounds} onStart={onStart}>
-      <div ref={dragRef}>可拖拽的区域</div>
+      <div ref={dragRef}>可拖拽区域</div>
     </Draggable>
   );
 };
 ```
 
+## 参数
+
+| 参数         | 类型                           | 说明                                             |
+| ------------ | ------------------------------ | ------------------------------------------------ |
+| `measureRef` | `React.RefObject<HTMLElement>` | 可选；用于测量真实可视节点，不传时测量 `dragRef` |
+
 ## 返回值
 
-| 字段      | 类型                                                           | 说明                                                      |
-| --------- | -------------------------------------------------------------- | --------------------------------------------------------- |
-| `dragRef` | `React.RefObject<HTMLDivElement>`                              | 传给 Draggable 的 `nodeRef` 和被拖拽元素的 `ref`          |
-| `bounds`  | `{ left: number; top: number; bottom: number; right: number }` | 动态计算的边界约束，限制元素不超出窗口                    |
-| `onStart` | `DraggableProps['onStart']`                                    | 直接传给 Draggable 的 `onStart`，在拖拽开始时重新计算边界 |
+| 字段      | 类型                              | 说明                                          |
+| --------- | --------------------------------- | --------------------------------------------- |
+| `dragRef` | `React.RefObject<HTMLDivElement>` | 同时传给 Draggable `nodeRef` 和包装元素 `ref` |
+| `bounds`  | `{ left; top; right; bottom }`    | 基于当前视口计算的移动边界                    |
+| `onStart` | `DraggableProps['onStart']`       | 每次开始拖动时重新测量并更新边界              |
+
+## 进阶示例：测量内部节点
+
+```tsx | pure
+const measureRef = useRef<HTMLDivElement>(null);
+const { dragRef, bounds, onStart } = useDragBounds(measureRef);
+
+<Draggable nodeRef={dragRef} bounds={bounds} onStart={onStart}>
+  <div ref={dragRef}>
+    <div ref={measureRef}>实际需要留在视口内的节点</div>
+  </div>
+</Draggable>;
+```
+
+## 注意事项
+
+- 边界在每次 `onStart` 时计算，因此会读取最新视口尺寸和元素位置。
+- Hook 依赖浏览器 DOM，不应在服务端渲染阶段主动调用 `onStart`。
+- 若目标节点尚未挂载，当前拖动不会更新边界。

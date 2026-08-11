@@ -1,58 +1,93 @@
 ---
 category: Components
 title: Modal
+toc: content
 ---
 
 # Modal
 
-Built on top of Ant Design Modal, HiTalent Design Modal adds drag-to-move, maximize for immersive viewing, and minimize-to-dock — delivering a desktop-class window experience.
+Adds drag, resize, maximize, and multi-window minimization to Ant Design Modal, creating a desktop-class work window that preserves task context.
 
-## Why this component
+## When to use
 
-Ant Design's Modal falls short in desktop-grade complex interactions: it can't be dragged (blocking critical information behind it), can't go fullscreen for long content, and closing the modal destroys form data requiring re-entry. HiTalent Design Modal upgrades the modal into a true desktop workspace window through built-in drag, maximize, and minimize-to-dock capabilities. The DOM is preserved when minimized, keeping form state intact.
+- People need to move the dialog to inspect information behind it.
+- A form or complex view benefits from resizing or fullscreen reading.
+- Parallel tasks need to minimize temporarily and restore without losing form or component state.
+
+For short confirmations and one-time notices, keep the default Ant Design Modal behavior without enabling window features.
+
+## Core capabilities
+
+- Drag from the title bar or empty footer space while interactive controls remain clickable.
+- Resize from the bottom-right corner with minimum and maximum constraints.
+- Maximize, restore, minimize, and automatically arrange a global dock.
+- Preserve DOM and form state while minimized.
+- Control one instance through `ModalRef` and clean up all instances through static methods.
 
 ## Demos
 
-### Basic Usage
+<code src="./demo/basic.tsx" title="Basic Usage" description="Control visibility with open and handle close and confirmation through onCancel and onOk."></code>
 
-<code src="./demo/basic.tsx" title="Basic Usage" description="The simplest Modal usage: control visibility with `open`, handle cancel and confirm actions via `onCancel` and `onOk`."></code>
+<code src="./demo/form-submit.tsx" title="Form Submission" description="Combine Form validation with confirmLoading for async submission, then reset form state after closing."></code>
 
-### Form Submission
+<code src="./demo/resize.tsx" title="Drag and Resize" description="Move the dialog from its title bar or empty footer space and resize from the bottom-right corner without blocking controls."></code>
 
-<code src="./demo/form-submit.tsx" title="Form Submission" description="Combine Ant Design form validation with Modal's `confirmLoading` prop for async form submission with validation. Form state is automatically reset on close."></code>
+<code src="./demo/advanced.tsx" title="Advanced Window Management" description="Combine draggable, resizable, maximizable, and minimizable while preserving content state in the dock."></code>
 
-### Drag and Resize
+<code src="./demo/imperative-control.tsx" title="Imperative Control (Ref API)" description="Use ModalRef outside the component to call minimize, restore, maximize, and unmaximize."></code>
 
-<code src="./demo/resize.tsx" title="Drag and Resize" description="Move the dialog from its title bar or empty footer area, and resize it from the bottom-right corner. Interactive footer controls remain clickable."></code>
+<code src="./demo/multiple-minimize.tsx" title="Multi-Window Minimize" description="Minimize several instances into an automatically arranged global dock; each card remains independently draggable."></code>
 
-### Advanced Window Management
-
-<code src="./demo/advanced.tsx" title="Advanced Window Management (Minimize without Destroy)" description="Enable `minimizable`, `maximizable`, and `draggable` for a desktop-class window experience. When minimized, the modal docks to a corner — form data is perfectly preserved and can be restored at any time."></code>
-
-### Imperative Control (Ref API)
-
-<code src="./demo/imperative-control.tsx" title="Imperative Control (Ref API)" description="Use `useRef<ModalRef>` to get a Modal instance and call `minimize()`, `restore()`, `maximize()`, `unmaximize()` from outside the component for flexible programmatic window management."></code>
-
-### Multi-Window Minimize
-
-<code src="./demo/multiple-minimize.tsx" title="Multi-Window & Auto Arrange" description="Open multiple modals, minimize them all, and watch them auto-arrange in the dock corner — no overlapping. Each minimized card can also be dragged independently."></code>
-
-### Destroy All Modals
-
-<code src="./demo/destroy-all.tsx" title="Destroy All Modals" description="Use `Modal.destroyAll()` to destroy all open modal instances at once — including normal, maximized, and minimized modals. Ideal for route transitions and page navigation cleanup."></code>
+<code src="./demo/destroy-all.tsx" title="Destroy All Modals" description="Use Modal.destroyAll() to clear normal, maximized, and minimized instances during route transitions."></code>
 
 ## API
 
-<API src="./type.ts" identifier="ModalProps" hideTitle></API>
+### ModalProps
 
-## ModalResizableConfig
+All Ant Design `ModalProps` remain available except the replaced `closable`, `title`, and `onCancel` definitions.
 
-<API src="./type.ts" identifier="ModalResizableConfig" hideTitle></API>
+| Property            | Description                                     | Type                                                                                     | Default        |
+| ------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------- |
+| `closable`          | Shows the close button                          | `boolean`                                                                                | `true`         |
+| `title`             | Dialog title                                    | `ReactNode`                                                                              | -              |
+| `onCancel`          | Handles close, ESC, or programmatic destruction | `(event?) => void`                                                                       | -              |
+| `draggable`         | Allows dragging from the title bar              | `boolean`                                                                                | `false`        |
+| `resizable`         | Enables resizing and optional size constraints  | `boolean \| ModalResizableConfig`                                                        | `false`        |
+| `minimizable`       | Allows minimizing into the global dock          | `boolean`                                                                                | `false`        |
+| `maximizable`       | Allows fullscreen maximization                  | `boolean`                                                                                | `false`        |
+| `minimizePosition`  | Dock position for minimized cards               | `top-left \| top-right \| bottom-left \| bottom-right \| top \| bottom \| left \| right` | `bottom-right` |
+| `minimized`         | Controlled minimized state                      | `boolean`                                                                                | -              |
+| `maximized`         | Controlled maximized state                      | `boolean`                                                                                | -              |
+| `onMinimizeChange`  | Runs when minimized state changes               | `(minimized: boolean) => void`                                                           | -              |
+| `onMaximizedChange` | Runs when maximized state changes               | `(maximized: boolean) => void`                                                           | -              |
 
-## ModalRef
+### ModalResizableConfig
 
-<API src="./type.ts" identifier="ModalRef" hideTitle></API>
+| Property    | Description                               | Type     | Default |
+| ----------- | ----------------------------------------- | -------- | ------- |
+| `minWidth`  | Minimum width in pixels                   | `number` | `320`   |
+| `minHeight` | Minimum height in pixels                  | `number` | `200`   |
+| `maxWidth`  | Maximum width, still limited by viewport  | `number` | -       |
+| `maxHeight` | Maximum height, still limited by viewport | `number` | -       |
 
-## ModalStaticMethods
+### ModalRef
 
-<API src="./type.ts" identifier="ModalStaticMethods" hideTitle></API>
+| Method       | Description                       | Type         |
+| ------------ | --------------------------------- | ------------ |
+| `restore`    | Restores a minimized dialog       | `() => void` |
+| `maximize`   | Maximizes the dialog              | `() => void` |
+| `unmaximize` | Returns to the normal window size | `() => void` |
+| `minimize`   | Minimizes the dialog              | `() => void` |
+
+### ModalStaticMethods
+
+| Method       | Description                                           | Type         |
+| ------------ | ----------------------------------------------------- | ------------ |
+| `destroyAll` | Destroys all normal, maximized, and minimized dialogs | `() => void` |
+
+## Notes
+
+- Dragging starts only from the title bar and empty footer space; form controls, buttons, and editable regions retain their interactions.
+- Set realistic `minWidth` and `minHeight` constraints for the content being shown.
+- Minimization preserves the DOM. Close instances when they are no longer needed, or use `Modal.destroyAll()` for route-level cleanup.
+- Window order and the dock use global context; avoid sharing one instance group across separate React roots.

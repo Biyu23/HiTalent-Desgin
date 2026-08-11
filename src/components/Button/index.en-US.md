@@ -1,34 +1,51 @@
 ---
 category: Components
 title: Button
+toc: content
 ---
 
 # Button
 
-A wrapper around Ant Design Button that adds `autoLoading`, `throttle`, and `tooltip` capabilities, while keeping the full native API.
+Adds async loading, click throttling, and disabled explanations while preserving the complete Ant Design Button API.
 
-## Why this component
+## When to use
 
-In daily work, buttons often need loading state for async actions, duplicate-click prevention, and explanations when disabled. Button bakes these into component props so you don't have to wire them up manually.
+- An action returns a Promise and the button should manage its own loading state.
+- A high-frequency action must ignore repeated clicks during a cooldown.
+- A disabled button still needs to explain why the action is unavailable.
+
+Use Ant Design Button directly when none of these behaviors are required.
+
+## Core capabilities
+
+- `autoLoading` follows the Promise returned by `onClick`.
+- `throttle` runs the first click immediately and ignores clicks during the cooldown.
+- `tooltip` accepts either a quick string or complete TooltipProps.
+- Native props, refs, and styling behavior remain compatible.
 
 ## Demos
 
-### Auto Loading
+<code src="./demo/auto-loading.tsx" title="Auto Loading" description="When onClick returns a Promise, the button enters loading state and restores itself when the Promise settles."></code>
 
-<code src="./demo/auto-loading.tsx" title="Auto Loading" description="When `onClick` returns a Promise, the button enters loading state automatically and blocks further clicks until the Promise settles."></code>
+<code src="./demo/controlled-loading.tsx" title="Controlled Loading" description="Disable autoLoading and let external state control the complete loading lifecycle through the loading prop."></code>
 
-### Controlled Loading
+<code src="./demo/throttle.tsx" title="Throttle Clicks" description="Set throttle in milliseconds. The first click runs immediately and repeated clicks during the cooldown are ignored."></code>
 
-<code src="./demo/controlled-loading.tsx" title="Controlled Loading" description="Turn off `autoLoading` and control loading state externally via the `loading` prop."></code>
-
-### Throttle Click
-
-<code src="./demo/throttle.tsx" title="Throttle" description="Set `throttle` to a millisecond value. The first click fires immediately; subsequent clicks within the cooldown are ignored."></code>
-
-### Tooltip
-
-<code src="./demo/tooltip.tsx" title="Tooltip" description="When `tooltip` is set, a Tooltip is shown on hover. Pass a string for quick text, or a `TooltipProps` object for full control over placement and behavior."></code>
+<code src="./demo/tooltip.tsx" title="Disabled Explanation" description="Attach a tooltip to explain a disabled action or provide concise supporting context."></code>
 
 ## API
 
-<API src="./type.ts" identifier="ButtonProps" hideTitle></API>
+All Ant Design `ButtonProps` remain available in addition to these enhancements.
+
+| Property      | Description                                                      | Type                                          | Default |
+| ------------- | ---------------------------------------------------------------- | --------------------------------------------- | ------- |
+| `autoLoading` | Manages Loading while the Promise returned by `onClick` settles  | `boolean`                                     | `true`  |
+| `throttle`    | Runs the first click and ignores later clicks for N milliseconds | `number`                                      | `0`     |
+| `tooltip`     | Tooltip shortcut content or complete configuration               | `ReactNode \| Omit<TooltipProps, 'children'>` | -       |
+| `onClick`     | Click callback that may return a Promise                         | `(event) => void \| Promise<unknown>`         | -       |
+
+## Notes
+
+- `autoLoading` cannot wait for async work when `onClick` does not return its Promise.
+- When a form owns the full submission state, disable `autoLoading` and use controlled `loading`.
+- `throttle` reduces repeated UI events; it does not replace server-side idempotency.

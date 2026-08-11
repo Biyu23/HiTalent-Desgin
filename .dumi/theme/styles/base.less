@@ -1,0 +1,71 @@
+html {
+  scroll-behavior: smooth;
+  background: var(--htd-doc-bg);
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  color: var(--htd-doc-text);
+  background: var(--htd-doc-bg);
+  font-family: var(--htd-doc-font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizelegibility;
+  overflow-x: hidden;
+}
+
+::selection {
+  color: var(--htd-doc-text);
+  background: var(--htd-doc-brand-soft);
+}
+
+a,
+button,
+input,
+select,
+textarea {
+  &:focus-visible {
+    outline: 3px solid var(--htd-doc-focus);
+    outline-offset: 2px;
+  }
+}
+
+a {
+  text-underline-offset: 3px;
+}
+
+button,
+select {
+  font: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--htd-doc-border-strong);
+  border: 2px solid transparent;
+  border-radius: 99px;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
