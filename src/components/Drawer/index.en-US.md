@@ -12,7 +12,6 @@ Adds placement-aware edge resizing while preserving Ant Design Drawer's mask, mo
 
 - A drawer contains tables, forms, or details whose viewing area should be adjustable.
 - A drawer lives inside a local container and must stay within that boundary.
-- An Ant Design 5 project needs an Ant Design 6-style resize API.
 
 ## Core capabilities
 
@@ -24,9 +23,8 @@ Adds placement-aware edge resizing while preserving Ant Design Drawer's mask, mo
 
 ## Demos
 
-<code src="./demo/basic.tsx" title="Basic" description="Control Drawer with open and combine title, content, and footer actions."></code>
-
-<code src="./demo/resizable.tsx" title="Resizable" description="Switch among four placements and drag the inner edge. The Drawer remains within its local container even when maxSize is larger."></code>
+<code src="./demo/resizable.tsx" title="Local Container and Resizable" description="Switch among four placements and drag the inner edge. The Drawer is mounted in a local container and remains within its local boundary even when maxSize is larger."></code>
+<code src="./demo/resizable-body.tsx" title="Global Container and Resizable" description="Global drawer resizing example."></code>
 
 ## API
 

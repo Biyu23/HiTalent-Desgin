@@ -6,13 +6,12 @@ toc: content
 
 # Drawer 抽屉
 
-在 Ant Design Drawer 的遮罩、动画和焦点管理基础上，增加按展开方向拖动内侧边缘调整宽度或高度的能力。
+在 Ant Design Drawer 的基础上，增加按展开方向拖动内侧边缘调整宽度或高度的能力。
 
 ## 何时使用
 
 - 抽屉承载表格、表单或详情，用户需要按内容调整可视区域。
 - 抽屉位于局部容器中，尺寸必须限制在容器边界内。
-- 需要保持 Ant Design 5 兼容，同时使用 Ant Design 6 风格的 resize API。
 
 ## 核心能力
 
@@ -24,24 +23,22 @@ toc: content
 
 ## 代码演示
 
-<code src="./demo/basic.tsx" title="基础用法" description="使用 open 控制 Drawer，并组合标题、正文和底部操作区。"></code>
-
-<code src="./demo/resizable.tsx" title="拖动调整尺寸" description="切换四种 placement 并拖动内侧边缘；即使 maxSize 大于局部容器，Drawer 也不会越界。"></code>
+<code src="./demo/resizable.tsx" title="局部容器与拖动尺寸" description="切换四种 placement 并拖动内侧边缘；Drawer 挂载在局部容器中，即使 maxSize 大于局部容器，Drawer 也不会越界。"></code>
+<code src="./demo/resizable-body.tsx" title="全局容器与拖动尺寸" description="全局抽屉拖动调整尺寸示例。"></code>
 
 ## API
 
 除下列增强属性外，同时支持 Ant Design `DrawerProps`。
-
-| 属性          | 说明                                                     | 类型                                       | 默认值   |
+| 属性 | 说明 | 类型 | 默认值 |
 | ------------- | -------------------------------------------------------- | ------------------------------------------ | -------- |
-| `size`        | 轴向尺寸；left/right 为宽度，top/bottom 为高度；受控模式 | `'default' \| 'large' \| number \| string` | -        |
-| `defaultSize` | 非受控模式的初始轴向尺寸                                 | `number \| string`                         | `378`    |
-| `maxSize`     | resize 最大尺寸，最终仍受实际 Drawer 容器限制            | `number`                                   | 容器尺寸 |
-| `resizable`   | 是否允许 resize，或提供 resize 生命周期回调              | `boolean \| DrawerResizableConfig`         | `false`  |
-| `width`       | 旧版横向受控尺寸，建议改用 `size`                        | `number \| string`                         | -        |
-| `height`      | 旧版纵向受控尺寸，建议改用 `size`                        | `number \| string`                         | -        |
-| `classNames`  | Ant Design 语义 class，并增加 `dragger`                  | `DrawerClassNames`                         | -        |
-| `styles`      | Ant Design 语义样式，并增加 `dragger`                    | `DrawerStyles`                             | -        |
+| `size` | 轴向尺寸；left/right 为宽度，top/bottom 为高度；受控模式 | `'default' \| 'large' \| number \| string` | - |
+| `defaultSize` | 非受控模式的初始轴向尺寸 | `number \| string` | `378` |
+| `maxSize` | resize 最大尺寸，最终仍受实际 Drawer 容器限制 | `number` | 容器尺寸 |
+| `resizable` | 是否允许 resize，或提供 resize 生命周期回调 | `boolean \| DrawerResizableConfig` | `false` |
+| `width` | 旧版横向受控尺寸，建议改用 `size` | `number \| string` | - |
+| `height` | 旧版纵向受控尺寸，建议改用 `size` | `number \| string` | - |
+| `classNames` | Ant Design 语义 class，并增加 `dragger` | `DrawerClassNames` | - |
+| `styles` | Ant Design 语义样式，并增加 `dragger` | `DrawerStyles` | - |
 
 ### DrawerResizableConfig
 

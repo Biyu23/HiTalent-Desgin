@@ -39,8 +39,8 @@ const getPointerPosition = (
 const getAxisSize = (rect: DOMRect, axis: DrawerAxis) =>
   axis === 'horizontal' ? rect.width : rect.height;
 
-const toValidPositiveNumber = (value: number | undefined) =>
-  typeof value === 'number' && Number.isFinite(value) && value > 0
+const toValidNumber = (value: number | undefined) =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0
     ? value
     : undefined;
 
@@ -108,17 +108,15 @@ export const useDrawerResize = ({
           ? document.documentElement.clientWidth
           : document.documentElement.clientHeight;
       const containerSize =
-        toValidPositiveNumber(measuredContainerSize) ??
-        toValidPositiveNumber(fallbackContainerSize);
+        toValidNumber(measuredContainerSize) ??
+        toValidNumber(fallbackContainerSize);
 
-      if (!toValidPositiveNumber(wrapperSize) || !containerSize) return;
+      if (toValidNumber(wrapperSize) === undefined || !containerSize) return;
 
       event.preventDefault();
       event.stopPropagation();
 
-      const configuredMaxSize = toValidPositiveNumber(
-        optionsRef.current.maxSize,
-      );
+      const configuredMaxSize = toValidNumber(optionsRef.current.maxSize);
       const effectiveMaxSize = Math.min(
         configuredMaxSize ?? containerSize,
         containerSize,
