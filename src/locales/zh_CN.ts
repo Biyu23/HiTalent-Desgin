@@ -6,6 +6,12 @@ const zh_CN = {
   Button: {
     loading: '加载中',
   },
+  Drawer: {
+    resizeLeft: '拖动右边缘调整左侧抽屉宽度',
+    resizeRight: '拖动左边缘调整右侧抽屉宽度',
+    resizeTop: '拖动下边缘调整顶部抽屉高度',
+    resizeBottom: '拖动上边缘调整底部抽屉高度',
+  },
   PopoverSelect: {
     placeholder: '请选择',
     selectAll: '全选',

@@ -100,7 +100,10 @@ export default defineConfig({
         },
         {
           title: '反馈与窗口',
-          children: [{ title: 'Modal 高级弹窗', link: '/components/modal' }],
+          children: [
+            { title: 'Drawer 抽屉', link: '/components/drawer' },
+            { title: 'Modal 高级弹窗', link: '/components/modal' },
+          ],
         },
         {
           title: '全局配置',
@@ -132,7 +135,10 @@ export default defineConfig({
         },
         {
           title: 'Feedback & Windows',
-          children: [{ title: 'Modal', link: '/en-US/components/modal' }],
+          children: [
+            { title: 'Drawer', link: '/en-US/components/drawer' },
+            { title: 'Modal', link: '/en-US/components/modal' },
+          ],
         },
         {
           title: 'Global Configuration',

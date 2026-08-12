@@ -1,7 +1,6 @@
 import type { TooltipProps } from 'antd';
 import { Button as AntdButton, Tooltip } from 'antd';
 import React, { memo, useEffect, useRef, useState } from 'react';
-import { useLocale } from '../../configProvider/useLocale';
 import { withNativeProps } from '../../util';
 import { ButtonProps } from './type';
 
@@ -30,7 +29,7 @@ const Button: React.FC<ButtonProps> = (props) => {
   } = props;
 
   // const prefixCls = usePrefixCls('btn');
-  const buttonLocale = useLocale('Button');
+  // const buttonLocale = useLocale('Button');
   const [innerLoading, setInnerLoading] = useState(false);
   const isUnmounted = useRef(false);
   const isThrottling = useRef(false);
@@ -91,11 +90,6 @@ const Button: React.FC<ButtonProps> = (props) => {
   const buttonElement = (
     <AntdButton
       {...restProps}
-      aria-busy={combinedLoading ? true : undefined}
-      aria-label={
-        restProps['aria-label'] ??
-        (combinedLoading ? buttonLocale.loading : undefined)
-      }
       disabled={disabled}
       loading={combinedLoading}
       onClick={handleClick}

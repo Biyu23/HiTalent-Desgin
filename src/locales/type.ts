@@ -16,6 +16,18 @@ export interface ButtonLocale {
   loading: string;
 }
 
+/** Drawer 组件的国际化文案 */
+export interface DrawerLocale {
+  /** 左侧 Drawer 右边缘的缩放把手 */
+  resizeLeft: string;
+  /** 右侧 Drawer 左边缘的缩放把手 */
+  resizeRight: string;
+  /** 顶部 Drawer 下边缘的缩放把手 */
+  resizeTop: string;
+  /** 底部 Drawer 上边缘的缩放把手 */
+  resizeBottom: string;
+}
+
 /** Modal 组件的国际化文案 */
 export interface ModalLocale {
   restore: string;
@@ -61,6 +73,7 @@ export type LocaleDirection = 'ltr' | 'rtl';
 /** 组件名称到对应 locale 类型的映射 */
 export interface LocaleComponentMap {
   Button: ButtonLocale;
+  Drawer: DrawerLocale;
   PopoverSelect: PopoverSelectLocale;
   Modal: ModalLocale;
   Table: TableLocale;

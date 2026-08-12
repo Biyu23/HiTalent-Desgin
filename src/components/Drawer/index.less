@@ -1,0 +1,88 @@
+@import '../../style/variables.less';
+
+.@{custom-prefix}-drawer {
+  &-wrapper-resizing {
+    transition: none !important;
+  }
+
+  &-wrapper-resizing&-wrapper-horizontal {
+    will-change: width;
+  }
+
+  &-wrapper-resizing&-wrapper-vertical {
+    will-change: height;
+  }
+
+  &-resize-handle {
+    position: absolute;
+    z-index: 2;
+    box-sizing: border-box;
+    background: transparent;
+    pointer-events: auto;
+    user-select: none;
+    touch-action: none;
+
+    &::after {
+      content: '';
+      position: absolute;
+      background: transparent;
+      transition: background-color 0.2s ease, opacity 0.2s ease;
+    }
+
+    &:hover::after,
+    &-resizing::after {
+      background: @color-primary;
+      opacity: 0.2;
+    }
+
+    &-resizing::after {
+      opacity: 0.3;
+    }
+
+    &-left,
+    &-right {
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      cursor: col-resize;
+
+      &::after {
+        top: 0;
+        right: -3px;
+        bottom: 0;
+        left: -3px;
+      }
+    }
+
+    &-top,
+    &-bottom {
+      right: 0;
+      left: 0;
+      height: 4px;
+      cursor: row-resize;
+
+      &::after {
+        top: -3px;
+        right: 0;
+        bottom: -3px;
+        left: 0;
+      }
+    }
+
+    &-left {
+      right: 0;
+    }
+
+    &-right {
+      left: 0;
+    }
+
+    &-top {
+      bottom: 0;
+    }
+
+    &-bottom {
+      top: 0;
+    }
+  }
+}

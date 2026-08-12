@@ -13,6 +13,7 @@ export { en_US, zh_CN } from './locales';
 export type {
   ButtonLocale,
   DeepPartial,
+  DrawerLocale,
   HtdLocale,
   LocaleComponentMap,
   LocaleDirection,

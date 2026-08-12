@@ -6,6 +6,12 @@ const en_US = {
   Button: {
     loading: 'Loading',
   },
+  Drawer: {
+    resizeLeft: 'Drag the right edge to resize the left drawer',
+    resizeRight: 'Drag the left edge to resize the right drawer',
+    resizeTop: 'Drag the bottom edge to resize the top drawer',
+    resizeBottom: 'Drag the top edge to resize the bottom drawer',
+  },
   PopoverSelect: {
     placeholder: 'Please select',
     selectAll: 'Select All',

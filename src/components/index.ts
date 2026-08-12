@@ -4,6 +4,14 @@ export type { PopoverSelectProps } from './PopoverSelect/type';
 export { default as Button } from './Button';
 export type { ButtonProps } from './Button/type';
 
+export { default as Drawer } from './Drawer';
+export type {
+  DrawerClassNames,
+  DrawerProps,
+  DrawerResizableConfig,
+  DrawerStyles,
+} from './Drawer/type';
+
 export { default as Modal } from './Modal';
 export type {
   MinimizePosition,

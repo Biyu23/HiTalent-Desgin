@@ -27,8 +27,6 @@ toc: content
 
 <code src="./demo/auto-loading.tsx" title="自动 Loading" description="onClick 返回 Promise 时自动进入 Loading，并在 Promise 完成后恢复。"></code>
 
-<code src="./demo/controlled-loading.tsx" title="受控 Loading" description="关闭 autoLoading，通过 loading 属性由外部状态完整控制加载过程。"></code>
-
 <code src="./demo/throttle.tsx" title="节流点击" description="设置毫秒级 throttle；首次点击立即执行，冷却时间内的重复点击会被忽略。"></code>
 
 <code src="./demo/tooltip.tsx" title="禁用提示" description="为按钮配置 tooltip，在禁用或需要补充说明时仍能展示原因。"></code>
