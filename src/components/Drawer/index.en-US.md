@@ -23,8 +23,9 @@ Adds placement-aware edge resizing while preserving Ant Design Drawer's mask, mo
 
 ## Demos
 
-<code src="./demo/resizable.tsx" title="Local Container and Resizable" description="Switch among four placements and drag the inner edge. The Drawer is mounted in a local container and remains within its local boundary even when maxSize is larger."></code>
-<code src="./demo/resizable-body.tsx" title="Global Container and Resizable" description="Global drawer resizing example."></code>
+<code src="./demo/resizable-body.tsx" title="Basic Usage" description="Drag the edge to resize drawer width or height."></code>
+
+<code src="./demo/resizable.tsx" title="Local Container" description="Render drawer within a local container, bounded by its container area."></code>
 
 ## API
 

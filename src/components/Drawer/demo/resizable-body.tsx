@@ -1,5 +1,5 @@
 /**
- * description: 挂载在 body 上的 Drawer，可以拖动调整尺寸。
+ * description: 拖拽边缘调整抽屉宽度或高度。
  */
 import { Button, Radio, Space } from 'antd';
 import type { DrawerProps } from 'hi-talent-design';
@@ -9,17 +9,16 @@ import React, { useState } from 'react';
 
 const messages = {
   'zh-CN': {
-    'resizable.open': '打开全局调整尺寸抽屉',
-    'resizable.title': '全局可调整尺寸 Drawer',
+    'resizable.open': '打开抽屉',
+    'resizable.title': '可调整尺寸抽屉',
     'resizable.size': '当前尺寸',
-    'resizable.hint': '拖动朝向页面内容的内侧边缘调整宽度或高度。',
+    'resizable.hint': '拖拽边缘调整大小。',
   },
   'en-US': {
-    'resizable.open': 'Open Global Resizable Drawer',
-    'resizable.title': 'Global Resizable Drawer',
+    'resizable.open': 'Open Drawer',
+    'resizable.title': 'Resizable Drawer',
     'resizable.size': 'Current size',
-    'resizable.hint':
-      'Drag the inner edge facing the page content to resize the drawer.',
+    'resizable.hint': 'Drag the edge to resize.',
   },
 };
 
@@ -37,20 +36,22 @@ export default () => {
 
   return (
     <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-      <Radio.Group
-        value={placement}
-        onChange={(event) => handlePlacementChange(event.target.value)}
-        options={['top', 'right', 'bottom', 'left'].map((value) => ({
-          label: value,
-          value,
-        }))}
-      />
+      <Space wrap>
+        <Radio.Group
+          value={placement}
+          onChange={(event) => handlePlacementChange(event.target.value)}
+          options={['top', 'right', 'bottom', 'left'].map((value) => ({
+            label: value,
+            value,
+          }))}
+        />
+        <Button type="primary" onClick={() => setOpen(true)}>
+          {t('resizable.open')}
+        </Button>
+      </Space>
       <div>
         {t('resizable.size')}：{size}px
       </div>
-      <Button type="primary" onClick={() => setOpen(true)}>
-        {t('resizable.open')}
-      </Button>
       <Drawer
         title={t('resizable.title')}
         placement={placement}

@@ -1,5 +1,5 @@
 /**
- * description: 切换四种展开位置并拖动内侧边缘调整尺寸。maxSize 大于局部容器时，实际尺寸仍不会越过容器边界。
+ * description: 在局部容器内渲染抽屉，尺寸受限于容器范围。
  */
 import { Button, Radio, Space } from 'antd';
 import type { DrawerProps } from 'hi-talent-design';
@@ -9,17 +9,16 @@ import React, { useRef, useState } from 'react';
 
 const messages = {
   'zh-CN': {
-    'resizable.open': '打开可调整尺寸抽屉',
-    'resizable.title': '可调整尺寸 Drawer',
+    'resizable.open': '打开抽屉',
+    'resizable.title': '局部抽屉',
     'resizable.size': '当前尺寸',
-    'resizable.hint': '拖动朝向页面内容的内侧边缘调整宽度或高度。',
+    'resizable.hint': '拖拽边缘调整大小。',
   },
   'en-US': {
-    'resizable.open': 'Open Resizable Drawer',
-    'resizable.title': 'Resizable Drawer',
+    'resizable.open': 'Open Drawer',
+    'resizable.title': 'Local Drawer',
     'resizable.size': 'Current size',
-    'resizable.hint':
-      'Drag the inner edge facing the page content to resize the drawer.',
+    'resizable.hint': 'Drag the edge to resize.',
   },
 };
 
