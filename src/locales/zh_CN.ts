@@ -15,6 +15,11 @@ const zh_CN = {
     resizeRight: '拖动左边缘调整右侧抽屉宽度',
     resizeTop: '拖动下边缘调整顶部抽屉高度',
     resizeBottom: '拖动上边缘调整底部抽屉高度',
+    minimize: '最小化',
+    restore: '还原',
+    close: '关闭',
+    minimizedDockLabel: '最小化抽屉悬浮窗',
+    minimizedDockDragHandle: '拖拽悬浮窗',
   },
   PopoverSelect: {
     placeholder: '请选择',

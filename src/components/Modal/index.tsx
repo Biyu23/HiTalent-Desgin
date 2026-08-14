@@ -7,8 +7,9 @@ import React, {
   useImperativeHandle,
   useMemo,
 } from 'react';
+import { useLocale } from '../../configProvider/useLocale';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
-import MinimizedDock from './components/MinimizedDock';
+import MinimizedDock from '../_util/minimize/MinimizedDock';
 import ModalHeader from './components/ModalHeader';
 import ModalWindowWrapper from './components/ModalWindowWrapper';
 import { useDestroyRegister } from './hooks/useDestroyRegister';
@@ -55,6 +56,8 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   } = props;
 
   const prefixCls = usePrefixCls('modal');
+  const dockPrefixCls = usePrefixCls('minimize');
+  const modalLocale = useLocale('Modal');
 
   // ---- 状态管理 ----
   const {
@@ -165,7 +168,6 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       minimizable,
       maximizable,
       closable,
-      minimizePosition,
       open,
       centered,
       isMaximized,
@@ -174,12 +176,10 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       windowPositionRef,
       windowSize,
       isResizing,
-      title,
       setWindowPosition,
       setWindowSize,
       setResizing,
       onMinimize: handleMinimize,
-      onRestore: handleRestore,
       onToggleMaximize: handleToggleMaximize,
       onClose: handleClose,
     }),
@@ -190,7 +190,6 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       minimizable,
       maximizable,
       closable,
-      minimizePosition,
       open,
       centered,
       isMaximized,
@@ -199,12 +198,10 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       windowPositionRef,
       windowSize,
       isResizing,
-      title,
       setWindowPosition,
       setWindowSize,
       setResizing,
       handleMinimize,
-      handleRestore,
       handleToggleMaximize,
       handleClose,
     ],
@@ -239,7 +236,17 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       >
         {children}
       </AntdModal>
-      <MinimizedDock />
+      <MinimizedDock
+        open={open}
+        minimized={isMinimized}
+        title={title}
+        position={minimizePosition}
+        dockPrefixCls={dockPrefixCls}
+        sourcePrefixCls={prefixCls}
+        locale={modalLocale}
+        onRestore={handleRestore}
+        onClose={handleClose}
+      />
     </ModalContext.Provider>
   );
 });

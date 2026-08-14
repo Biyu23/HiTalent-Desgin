@@ -36,6 +36,13 @@ export interface DrawerLocale {
   resizeTop: string;
   /** 底部 Drawer 上边缘的缩放把手 */
   resizeBottom: string;
+  minimize: string;
+  restore: string;
+  close: string;
+  /** 最小化 Drawer 卡片 */
+  minimizedDockLabel: string;
+  /** 最小化 Drawer 卡片拖拽把手 */
+  minimizedDockDragHandle: string;
 }
 
 /** Modal 组件的国际化文案 */

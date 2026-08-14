@@ -1,11 +1,23 @@
-import { Drawer as AntdDrawer } from 'antd';
+import { MinusOutlined } from '@ant-design/icons';
+import { Drawer as AntdDrawer, Button, Flex } from 'antd';
 import clsx from 'clsx';
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
+import React, {
+  forwardRef,
+  memo,
+  useCallback,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { useLocale } from '../../configProvider/useLocale';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
+import MinimizedDock from '../_util/minimize/MinimizedDock';
+import { useMinimizeState } from '../_util/minimize/useMinimizeState';
 import DrawerResizeHandle from './components/DrawerResizeHandle';
 import { useDrawerResize } from './hooks/useDrawerResize';
 import './index.less';
-import type { DrawerProps, DrawerResizableConfig } from './type';
+import type { DrawerProps, DrawerRef, DrawerResizableConfig } from './type';
 import { getDrawerAxis } from './utils/placement';
 import { DEFAULT_DRAWER_SIZE, resolveDrawerSize } from './utils/resize';
 
@@ -22,17 +34,40 @@ const setRef = <T,>(ref: React.Ref<T> | undefined, value: T | null) => {
   }
 };
 
-/** 在 Ant Design 5 Drawer 基础上增加方向感知的拖动调整尺寸能力。 */
-const Drawer: React.FC<DrawerProps> = (props) => {
+const resolveMinimizableClosable = (
+  closable: DrawerProps['closable'],
+  closeIcon: DrawerProps['closeIcon'],
+): DrawerProps['closable'] => {
+  if (closable === false || closeIcon === false || closeIcon === null) {
+    return false;
+  }
+  if (typeof closable === 'object') {
+    return { ...closable, placement: 'end' };
+  }
+  return { placement: 'end' };
+};
+
+/** 在 Ant Design 5 Drawer 基础上增加尺寸调整和最小化能力。 */
+const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
   const {
     placement = 'right',
     size,
     defaultSize,
     maxSize,
     resizable = false,
+    minimizable = false,
+    minimized: controlledMinimized,
+    minimizePosition = 'bottom-right',
+    onMinimizeChange,
     width,
     height,
     open,
+    title,
+    extra,
+    closable,
+    closeIcon,
+    destroyOnHidden,
+    onClose,
     rootClassName,
     classNames,
     styles,
@@ -42,8 +77,14 @@ const Drawer: React.FC<DrawerProps> = (props) => {
   } = props;
 
   const prefixCls = usePrefixCls('drawer');
+  const dockPrefixCls = usePrefixCls('minimize');
+  const drawerLocale = useLocale('Drawer');
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [manualSizes, setManualSizes] = useState<ManualSizes>({});
+  const { isMinimized, minimize, restore, reset } = useMinimizeState({
+    minimized: controlledMinimized,
+    onMinimizeChange,
+  });
   const axis = getDrawerAxis(placement);
   const legacySize = axis === 'horizontal' ? width : height;
   const controlledSize = size !== undefined ? size : legacySize;
@@ -55,6 +96,17 @@ const Drawer: React.FC<DrawerProps> = (props) => {
   );
   const resizeConfig: DrawerResizableConfig =
     typeof resizable === 'object' ? resizable : {};
+
+  const handleClose = useCallback(
+    (event?: React.MouseEvent<Element> | React.KeyboardEvent<Element>) => {
+      if (isMinimized) restore();
+      reset();
+      onClose?.(event);
+    },
+    [isMinimized, onClose, reset, restore],
+  );
+
+  useImperativeHandle(ref, () => ({ minimize, restore }), [minimize, restore]);
 
   const handlePanelRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -77,18 +129,22 @@ const Drawer: React.FC<DrawerProps> = (props) => {
   const { isResizing, handlePointerDown } = useDrawerResize({
     placement,
     maxSize,
-    active: !!open && !!resizable,
+    active: !!open && !isMinimized && !!resizable,
     config: resizeConfig,
     onSizeChange: handleSizeChange,
   });
 
   const {
     dragger: draggerClassName,
+    minimizeButton: minimizeButtonClassName,
+    minimizedDock: minimizedDockClassName,
     wrapper: userWrapperClassName,
     ...antdClassNames
   } = classNames || {};
   const {
     dragger: draggerStyle,
+    minimizeButton: minimizeButtonStyle,
+    minimizedDock: minimizedDockStyle,
     wrapper: userWrapperStyle,
     ...antdStyles
   } = styles || {};
@@ -118,10 +174,55 @@ const Drawer: React.FC<DrawerProps> = (props) => {
     [antdStyles, axis, userWrapperStyle],
   );
 
+  const mergedExtra = useMemo(
+    () =>
+      minimizable ? (
+        <Flex gap={8} align="center" className={`${prefixCls}-header-actions`}>
+          {extra}
+          <Button
+            size="small"
+            type="text"
+            className={minimizeButtonClassName}
+            style={minimizeButtonStyle}
+            onClick={minimize}
+            icon={<MinusOutlined />}
+            aria-label={drawerLocale.minimize}
+          />
+        </Flex>
+      ) : (
+        extra
+      ),
+    [
+      drawerLocale.minimize,
+      extra,
+      minimizable,
+      minimize,
+      minimizeButtonClassName,
+      minimizeButtonStyle,
+      prefixCls,
+    ],
+  );
+
+  const mergedClosable = useMemo(
+    () =>
+      minimizable ? resolveMinimizableClosable(closable, closeIcon) : closable,
+    [closable, closeIcon, minimizable],
+  );
+
+  const mergedTitle = useMemo(
+    () =>
+      minimizable && !title ? (
+        <span className={`${prefixCls}-empty-title`} aria-hidden />
+      ) : (
+        title
+      ),
+    [minimizable, prefixCls, title],
+  );
+
   const finalDrawerRender = useCallback(
     (drawerNode: React.ReactNode) => (
       <>
-        {!!resizable && !!open && (
+        {!!resizable && !!open && !isMinimized && (
           <DrawerResizeHandle
             prefixCls={prefixCls}
             placement={placement}
@@ -138,6 +239,7 @@ const Drawer: React.FC<DrawerProps> = (props) => {
       draggerClassName,
       draggerStyle,
       handlePointerDown,
+      isMinimized,
       isResizing,
       open,
       placement,
@@ -148,19 +250,40 @@ const Drawer: React.FC<DrawerProps> = (props) => {
   );
 
   return (
-    <AntdDrawer
-      {...restProps}
-      open={open}
-      placement={placement}
-      width={axis === 'horizontal' ? currentSize : undefined}
-      height={axis === 'vertical' ? currentSize : undefined}
-      rootClassName={clsx(prefixCls, rootClassName)}
-      classNames={mergedClassNames}
-      styles={mergedStyles}
-      panelRef={handlePanelRef}
-      drawerRender={finalDrawerRender}
-    />
+    <>
+      <AntdDrawer
+        {...restProps}
+        open={open && !isMinimized}
+        placement={placement}
+        width={axis === 'horizontal' ? currentSize : undefined}
+        height={axis === 'vertical' ? currentSize : undefined}
+        title={mergedTitle}
+        extra={mergedExtra}
+        closable={mergedClosable}
+        closeIcon={closeIcon}
+        destroyOnHidden={minimizable ? false : destroyOnHidden}
+        onClose={handleClose}
+        rootClassName={clsx(prefixCls, rootClassName)}
+        classNames={mergedClassNames}
+        styles={mergedStyles}
+        panelRef={handlePanelRef}
+        drawerRender={finalDrawerRender}
+      />
+      <MinimizedDock
+        open={open}
+        minimized={isMinimized}
+        title={title}
+        position={minimizePosition}
+        dockPrefixCls={dockPrefixCls}
+        sourcePrefixCls={prefixCls}
+        className={minimizedDockClassName}
+        style={minimizedDockStyle}
+        locale={drawerLocale}
+        onRestore={restore}
+        onClose={handleClose}
+      />
+    </>
   );
-};
+});
 
 export default memo(Drawer);

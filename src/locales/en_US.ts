@@ -16,6 +16,11 @@ const en_US = {
     resizeRight: 'Drag the left edge to resize the right drawer',
     resizeTop: 'Drag the bottom edge to resize the top drawer',
     resizeBottom: 'Drag the top edge to resize the bottom drawer',
+    minimize: 'Minimize',
+    restore: 'Restore',
+    close: 'Close',
+    minimizedDockLabel: 'Minimized drawer dock',
+    minimizedDockDragHandle: 'Drag to reposition',
   },
   PopoverSelect: {
     placeholder: 'Please select',

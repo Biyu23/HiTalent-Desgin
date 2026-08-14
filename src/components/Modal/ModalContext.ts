@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from 'react';
-import type { MinimizePosition, ModalProps } from './type';
+import type { ModalProps } from './type';
 import type { ModalWindowPosition, ModalWindowSize } from './types/internal';
 
 export interface ModalContextValue {
@@ -15,8 +15,6 @@ export interface ModalContextValue {
   maximizable: boolean;
   /** 是否显示关闭按钮 */
   closable: boolean;
-  /** 最小化悬浮窗停靠位置 */
-  minimizePosition: MinimizePosition;
   /** 弹窗是否处于开启状态（来自父组件控制的 open prop） */
   open?: boolean;
   /** 是否使用 Ant Design 居中布局 */
@@ -33,8 +31,6 @@ export interface ModalContextValue {
   windowSize: ModalWindowSize | null;
   /** 是否正在调整尺寸 */
   isResizing: boolean;
-  /** 弹窗标题（同时用于 ModalHeader 和 MinimizedDock 展示） */
-  title: React.ReactNode;
   /** 更新普通窗口位置 */
   setWindowPosition: (position: ModalWindowPosition) => void;
   /** 更新普通窗口尺寸 */
@@ -43,8 +39,6 @@ export interface ModalContextValue {
   setResizing: (resizing: boolean) => void;
   /** 最小化 */
   onMinimize: () => void;
-  /** 从最小化恢复 */
-  onRestore: () => void;
   /** 切换最大化/还原 */
   onToggleMaximize: () => void;
   /** 关闭弹窗（按钮点击、ESC 按键或程序化销毁） */

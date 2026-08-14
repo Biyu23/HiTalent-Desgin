@@ -1,15 +1,8 @@
 import type { ModalProps as AntdModalProps } from 'antd';
 import React from 'react';
+import type { MinimizePosition } from '../_util/minimize/type';
 
-export type MinimizePosition =
-  | 'top-left'
-  | 'top-right'
-  | 'bottom-left'
-  | 'bottom-right'
-  | 'top'
-  | 'bottom'
-  | 'left'
-  | 'right';
+export type { MinimizePosition } from '../_util/minimize/type';
 
 /**
  * Modal 组件暴露的命令式方法

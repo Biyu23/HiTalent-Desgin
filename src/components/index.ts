@@ -20,6 +20,7 @@ export { default as Drawer } from './Drawer';
 export type {
   DrawerClassNames,
   DrawerProps,
+  DrawerRef,
   DrawerResizableConfig,
   DrawerStyles,
 } from './Drawer/type';
