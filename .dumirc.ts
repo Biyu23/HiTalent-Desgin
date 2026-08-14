@@ -83,7 +83,13 @@ export default defineConfig({
       '/components': [
         {
           title: '通用',
-          children: [{ title: 'Button 按钮', link: '/components/button' }],
+          children: [
+            { title: 'Button 按钮', link: '/components/button' },
+            {
+              title: 'ResponsiveButtonGroup 响应式按钮组',
+              link: '/components/responsive-button-group',
+            },
+          ],
         },
         {
           title: '数据录入',
@@ -122,7 +128,13 @@ export default defineConfig({
       '/en-US/components': [
         {
           title: 'General',
-          children: [{ title: 'Button', link: '/en-US/components/button' }],
+          children: [
+            { title: 'Button', link: '/en-US/components/button' },
+            {
+              title: 'ResponsiveButtonGroup',
+              link: '/en-US/components/responsive-button-group',
+            },
+          ],
         },
         {
           title: 'Data Entry',

@@ -10,6 +10,12 @@ export interface PopoverSelectLocale {
   searchPlaceholder: string;
 }
 
+/** ResponsiveButtonGroup 组件的国际化文案 */
+export interface ResponsiveButtonGroupLocale {
+  more: string;
+  moreActions: (count: number) => string;
+}
+
 /** Button 组件的国际化文案 */
 export interface ButtonLocale {
   /** loading 状态的 aria-label，屏幕阅读器专用 */
@@ -75,6 +81,7 @@ export interface LocaleComponentMap {
   Button: ButtonLocale;
   Drawer: DrawerLocale;
   PopoverSelect: PopoverSelectLocale;
+  ResponsiveButtonGroup: ResponsiveButtonGroupLocale;
   Modal: ModalLocale;
   Table: TableLocale;
 }
@@ -88,7 +95,9 @@ export type HtdLocale = {
 } & LocaleComponentMap;
 
 /** 深度 Partial 工具类型 */
-export type DeepPartial<T> = T extends object
+export type DeepPartial<T> = T extends (...args: any[]) => unknown
+  ? T
+  : T extends object
   ? { [P in keyof T]?: DeepPartial<T[P]> }
   : T;
 

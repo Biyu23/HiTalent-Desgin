@@ -6,6 +6,11 @@ const en_US = {
   Button: {
     loading: 'Loading',
   },
+  ResponsiveButtonGroup: {
+    more: 'More',
+    moreActions: (count: number) =>
+      `${count} more action${count === 1 ? '' : 's'}`,
+  },
   Drawer: {
     resizeLeft: 'Drag the right edge to resize the left drawer',
     resizeRight: 'Drag the left edge to resize the right drawer',

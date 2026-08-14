@@ -4,6 +4,18 @@ export type { PopoverSelectProps } from './PopoverSelect/type';
 export { default as Button } from './Button';
 export type { ButtonProps } from './Button/type';
 
+export { default as ResponsiveButtonGroup } from './ResponsiveButtonGroup';
+export type {
+  ResponsiveButtonGroupButtonProps,
+  ResponsiveButtonGroupClickInfo,
+  ResponsiveButtonGroupItem,
+  ResponsiveButtonGroupItemSource,
+  ResponsiveButtonGroupMode,
+  ResponsiveButtonGroupOverflowRenderInfo,
+  ResponsiveButtonGroupProps,
+  ResponsiveButtonGroupRenderInfo,
+} from './ResponsiveButtonGroup/type';
+
 export { default as Drawer } from './Drawer';
 export type {
   DrawerClassNames,

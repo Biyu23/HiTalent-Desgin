@@ -1,0 +1,71 @@
+@import '../../style/variables.less';
+
+.@{custom-prefix}-responsive-button-group {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+
+  &-visible {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    align-items: center;
+    min-width: max-content;
+  }
+
+  &-overflow-trigger,
+  &-overflow-label,
+  &-menu-item-content,
+  &-menu-item-icon {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  &-overflow-trigger {
+    flex: 0 0 auto;
+  }
+
+  &-overflow-count {
+    margin-inline-start: 4px;
+  }
+
+  &-overflow-arrow {
+    margin-inline-start: 4px;
+    font-size: 10px;
+  }
+
+  &-menu-item-content {
+    gap: 8px;
+    width: 100%;
+  }
+
+  &-menu-item-icon {
+    flex: 0 0 auto;
+  }
+
+  &-menu-item-label {
+    min-width: 0;
+  }
+
+  &-measure {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    display: flex;
+    width: 0;
+    max-width: 0;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    pointer-events: none;
+    contain: strict;
+  }
+
+  &-measure-item {
+    display: inline-flex;
+    flex: 0 0 auto;
+  }
+}

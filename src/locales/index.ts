@@ -8,6 +8,7 @@ export type {
   LocaleOverrides,
   ModalLocale,
   PopoverSelectLocale,
+  ResponsiveButtonGroupLocale,
   TableLocale,
 } from './type';
 

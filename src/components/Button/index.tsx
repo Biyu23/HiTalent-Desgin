@@ -16,7 +16,10 @@ function isTooltipProps(
   );
 }
 
-const Button: React.FC<ButtonProps> = (props) => {
+const Button = React.forwardRef<
+  React.ComponentRef<typeof AntdButton>,
+  ButtonProps
+>((props, ref) => {
   const {
     autoLoading = true,
     throttle = 0,
@@ -36,6 +39,7 @@ const Button: React.FC<ButtonProps> = (props) => {
   const throttleTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
+    isUnmounted.current = false;
     return () => {
       isUnmounted.current = true;
       // 清理未完成的节流定时器，避免卸载后副作用
@@ -89,6 +93,7 @@ const Button: React.FC<ButtonProps> = (props) => {
 
   const buttonElement = (
     <AntdButton
+      ref={ref}
       {...restProps}
       disabled={disabled}
       loading={combinedLoading}
@@ -108,6 +113,6 @@ const Button: React.FC<ButtonProps> = (props) => {
       buttonElement
     ),
   );
-};
+});
 
 export default memo(Button);

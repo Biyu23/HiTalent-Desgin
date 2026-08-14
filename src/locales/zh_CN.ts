@@ -6,6 +6,10 @@ const zh_CN = {
   Button: {
     loading: '加载中',
   },
+  ResponsiveButtonGroup: {
+    more: '更多',
+    moreActions: (count: number) => `更多，${count} 个操作`,
+  },
   Drawer: {
     resizeLeft: '拖动右边缘调整左侧抽屉宽度',
     resizeRight: '拖动左边缘调整右侧抽屉宽度',
