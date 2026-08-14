@@ -3,10 +3,11 @@
   z-index: 30;
   top: 0;
   color: var(--htd-doc-text);
-  background: color-mix(in srgb, var(--htd-doc-surface) 91%, transparent);
-  border-bottom: 1px solid var(--htd-doc-border);
+  background: color-mix(in srgb, var(--htd-doc-surface) 80%, transparent);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--htd-doc-border) 60%, transparent);
   box-shadow: var(--htd-doc-shadow-header);
-  backdrop-filter: blur(18px) saturate(135%);
+  backdrop-filter: blur(24px) saturate(150%);
 }
 
 .htd-doc-header-content {
@@ -53,11 +54,15 @@
         font-size: 13px;
         font-weight: 580;
         text-decoration: none;
-        transition: color 150ms ease, background-color 150ms ease;
+        transition: var(--htd-doc-transition);
 
         &:hover {
           color: var(--htd-doc-text);
           background: var(--htd-doc-surface-muted);
+        }
+
+        &:active {
+          transform: scale(0.96);
         }
 
         &.active {

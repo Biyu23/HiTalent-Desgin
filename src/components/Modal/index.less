@@ -132,7 +132,20 @@
 // Modal 本体样式
 // ============================================================
 
+// Modal 容器层 — 开启拖拽/缩放/最大化时限制视口溢出，避免外层出现滚动条
+.@{custom-prefix}-modal-wrap {
+  &-constrained {
+    overflow: hidden;
+  }
+}
+
 .@{custom-prefix}-modal {
+  &-draggable,
+  &-resizable,
+  &-manual-size {
+    padding-bottom: 0;
+  }
+
   // 最大化丝滑动画过渡
   &-transition-active {
     transition: width 0.3s cubic-bezier(0.645, 0.045, 0.355, 1),
@@ -193,6 +206,7 @@
     box-sizing: border-box;
     max-width: none;
 
+    .@{custom-prefix}-modal-window-wrapper,
     .ant-modal-content {
       height: 100%;
       display: flex;

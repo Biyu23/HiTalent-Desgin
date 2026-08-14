@@ -106,6 +106,10 @@ export default defineConfig({
           ],
         },
         {
+          title: '导航',
+          children: [],
+        },
+        {
           title: '全局配置',
           children: [
             {
@@ -139,6 +143,10 @@ export default defineConfig({
             { title: 'Drawer', link: '/en-US/components/drawer' },
             { title: 'Modal', link: '/en-US/components/modal' },
           ],
+        },
+        {
+          title: 'Navigation',
+          children: [],
         },
         {
           title: 'Global Configuration',

@@ -6,14 +6,14 @@
   overflow: hidden;
   color: var(--htd-doc-text);
   background: radial-gradient(
-      circle at 82% 12%,
-      color-mix(in srgb, var(--htd-doc-brand) 13%, transparent),
-      transparent 31%
+      ellipse at 80% 0%,
+      color-mix(in srgb, var(--htd-doc-brand) 18%, transparent),
+      transparent 50%
     ),
     radial-gradient(
-      circle at 69% 78%,
-      color-mix(in srgb, var(--htd-doc-accent) 10%, transparent),
-      transparent 24%
+      ellipse at 20% 90%,
+      color-mix(in srgb, var(--htd-doc-accent) 15%, transparent),
+      transparent 50%
     ),
     var(--htd-doc-surface);
   text-align: left;
@@ -118,13 +118,16 @@
     font-weight: 680;
     line-height: 1;
     text-decoration: none;
-    transition: color 150ms ease, background-color 150ms ease,
-      border-color 150ms ease, transform 150ms ease;
+    transition: var(--htd-doc-transition);
 
     &:hover {
       color: var(--htd-doc-brand);
       border-color: var(--htd-doc-brand);
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+    }
+
+    &:active {
+      transform: translateY(0) scale(0.96);
     }
 
     &[data-primary] {
@@ -149,10 +152,10 @@
     var(--htd-doc-surface-raised) 88%,
     transparent
   );
-  border: 1px solid var(--htd-doc-border);
-  border-radius: var(--htd-doc-radius-lg);
-  box-shadow: var(--htd-doc-shadow-float);
-  backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--htd-doc-border) 80%, transparent);
+  border-radius: calc(var(--htd-doc-radius-lg) + 4px);
+  box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 12%), 0 0 0 1px rgba(0, 0, 0, 2%);
+  backdrop-filter: blur(24px) saturate(120%);
 
   &::after {
     position: absolute;
@@ -173,8 +176,9 @@
   justify-content: space-between;
   padding: 0 15px;
   color: var(--htd-doc-text-muted);
-  background: var(--htd-doc-surface-muted);
-  border-bottom: 1px solid var(--htd-doc-border);
+  background: color-mix(in srgb, var(--htd-doc-surface-muted) 80%, transparent);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--htd-doc-border) 60%, transparent);
   font-family: var(--htd-doc-font-mono);
   font-size: 9px;
   font-weight: 700;
