@@ -1,6 +1,5 @@
 import type {
   DragEndEvent,
-  DragOverEvent,
   DragStartEvent,
   SensorDescriptor,
   SensorOptions,
@@ -19,6 +18,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import {
+  defaultAnimateLayoutChanges,
   horizontalListSortingStrategy,
   SortableContext,
   sortableKeyboardCoordinates,
@@ -78,7 +78,14 @@ const SortableHeaderItem: React.FC<SortableHeaderItemProps> = ({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id, disabled: isFixed });
+  } = useSortable({
+    id,
+    disabled: isFixed,
+    animateLayoutChanges: (args) => {
+      if (args.wasDragging) return false;
+      return defaultAnimateLayoutChanges(args);
+    },
+  });
   const { tableId, tokenMap } = useContext(TableDragContext);
   const token = tokenMap.get(id);
   const transformValue = CSS.Translate.toString(transform);
@@ -151,6 +158,7 @@ interface InternalColumnDragContextProps {
   optionsRef: React.MutableRefObject<UseColumnDragOptions>;
   prefixCls: string;
   sensors: SensorDescriptor<SensorOptions>[];
+  contextId: string;
 }
 
 function moveItem(
@@ -172,50 +180,34 @@ const InternalColumnDragContext: React.FC<InternalColumnDragContextProps> = ({
   optionsRef,
   prefixCls,
   sensors,
+  contextId,
 }) => {
   const [activeId, setActiveId] = useState<ColumnId | null>(null);
-  const startOrderRef = useRef<ColumnId[]>([]);
-  const previewOrderRef = useRef<ColumnId[]>([]);
 
-  const handleDragStart = useCallback(
-    (event: DragStartEvent) => {
-      const id = event.active.id as ColumnId;
-      const order = [...optionsRef.current.orderedIds];
-      startOrderRef.current = order;
-      previewOrderRef.current = order;
-      setActiveId(id);
-    },
-    [optionsRef],
-  );
-
-  const handleDragOver = useCallback(
-    (event: DragOverEvent) => {
-      const { active, over } = event;
-      if (!over || active.id === over.id) return;
-      const next = moveItem(
-        previewOrderRef.current,
-        active.id as ColumnId,
-        over.id as ColumnId,
-      );
-      previewOrderRef.current = next;
-      optionsRef.current.onPreview(next);
-    },
-    [optionsRef],
-  );
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    const id = event.active.id as ColumnId;
+    setActiveId(id);
+  }, []);
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       setActiveId(null);
-      if (!event.over) {
+      const { active, over } = event;
+      if (!over) {
         optionsRef.current.onCancel();
         return;
       }
-      const next = previewOrderRef.current;
-      const changed = next.some(
-        (id, index) => id !== startOrderRef.current[index],
-      );
-      if (changed) optionsRef.current.onCommit(next);
-      else optionsRef.current.onCancel();
+
+      const activeId = active.id as ColumnId;
+      const overId = over.id as ColumnId;
+      const currentOrder = optionsRef.current.orderedIds;
+
+      if (activeId !== overId) {
+        const next = moveItem(currentOrder, activeId, overId);
+        optionsRef.current.onCommit(next);
+      } else {
+        optionsRef.current.onCancel();
+      }
     },
     [optionsRef],
   );
@@ -231,12 +223,11 @@ const InternalColumnDragContext: React.FC<InternalColumnDragContextProps> = ({
 
   return (
     <DndContext
-      id="column-drag-context"
+      id={contextId}
       sensors={sensors}
       collisionDetection={closestCenter}
       measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
       onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
@@ -274,17 +265,25 @@ const InternalColumnDragContext: React.FC<InternalColumnDragContextProps> = ({
 };
 
 export const SortableBodyCell: React.FC<
-  React.TdHTMLAttributes<HTMLTableCellElement> & { columnId: ColumnId }
-> = ({ columnId, children, ...restProps }) => {
+  React.TdHTMLAttributes<HTMLTableCellElement> & {
+    columnId: ColumnId;
+    cellComponent?: React.ElementType;
+  }
+> = ({
+  columnId,
+  cellComponent: CellComponent = 'td',
+  children,
+  ...restProps
+}) => {
   const { tableId, tokenMap } = useContext(TableDragContext);
   return (
-    <td
+    <CellComponent
       {...restProps}
       data-table-id={tableId}
       data-col-drag-token={tokenMap.get(columnId)}
     >
       {children}
-    </td>
+    </CellComponent>
   );
 };
 
@@ -300,14 +299,28 @@ export function useColumnDrag(options: UseColumnDragOptions) {
       new Map(options.columns.map((column) => [column.id, column.domToken])),
     [options.columns],
   );
+  const pointerSensorOptions = useMemo(
+    () => ({ activationConstraint: { distance: 4 } }),
+    [],
+  );
+  const keyboardSensorOptions = useMemo(
+    () => ({ coordinateGetter: sortableKeyboardCoordinates }),
+    [],
+  );
+  const touchSensorOptions = useMemo(
+    () => ({ activationConstraint: { delay: 150, tolerance: 5 } }),
+    [],
+  );
+
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: { delay: 150, tolerance: 5 },
-    }),
+    useSensor(PointerSensor, pointerSensorOptions),
+    useSensor(KeyboardSensor, keyboardSensorOptions),
+    useSensor(TouchSensor, touchSensorOptions),
+  );
+
+  const contextValue = useMemo(
+    () => ({ tableId, tokenMap }),
+    [tableId, tokenMap],
   );
 
   const ColumnDragContextWrapper: React.FC<{ children: React.ReactNode }> =
@@ -315,11 +328,12 @@ export function useColumnDrag(options: UseColumnDragOptions) {
       ({ children }) => {
         if (!optionsRef.current.enabled) return <>{children}</>;
         return (
-          <TableDragContext.Provider value={{ tableId, tokenMap }}>
+          <TableDragContext.Provider value={contextValue}>
             <InternalColumnDragContext
               optionsRef={optionsRef}
               prefixCls={prefixCls}
               sensors={sensors}
+              contextId={`column-drag-${tableId}`}
             >
               {children}
             </InternalColumnDragContext>
@@ -328,11 +342,6 @@ export function useColumnDrag(options: UseColumnDragOptions) {
       },
       [prefixCls, sensors, tableId, tokenMap],
     );
-
-  const HeaderWrapper: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> =
-    useCallback(({ children, ...restProps }) => {
-      return <thead {...restProps}>{children}</thead>;
-    }, []);
 
   const HeaderCellWrapper: React.FC<{
     children: React.ReactNode;
@@ -357,5 +366,5 @@ export function useColumnDrag(options: UseColumnDragOptions) {
     [locale.dragHandle, prefixCls],
   );
 
-  return { HeaderWrapper, HeaderCellWrapper, ColumnDragContextWrapper };
+  return { HeaderCellWrapper, ColumnDragContextWrapper };
 }

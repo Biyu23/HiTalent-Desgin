@@ -9,9 +9,9 @@ import React, {
   useMemo,
   useRef,
 } from 'react';
+import { useLocale } from '../../configProvider/useLocale';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
 import EnhancedHeaderCell from './components/EnhancedHeaderCell';
-import PresetBodyCell from './components/PresetBodyCell';
 import Toolbar from './components/Toolbar';
 import { useColumnConfig } from './hooks/useColumnConfig';
 import { SortableBodyCell, useColumnDrag } from './hooks/useColumnDrag';
@@ -125,6 +125,7 @@ function InternalTable<RecordType = Record<string, unknown>>(
     ...restProps
   } = props;
   const prefixCls = usePrefixCls('table');
+  const locale = useLocale('Table');
   const antdTableRef = useRef<AntdTableRef>(null);
   const controlled = 'columnState' in props;
 
@@ -163,15 +164,14 @@ function InternalTable<RecordType = Record<string, unknown>>(
     [columnMeta],
   );
 
-  const { HeaderWrapper, HeaderCellWrapper, ColumnDragContextWrapper } =
-    useColumnDrag({
-      orderedIds,
-      onPreview: previewColumnOrder,
-      onCommit: commitColumnOrder,
-      onCancel: cancelColumnOrder,
-      columns: columnDragItems,
-      enabled: enableColumnDrag,
-    });
+  const { HeaderCellWrapper, ColumnDragContextWrapper } = useColumnDrag({
+    orderedIds,
+    onPreview: previewColumnOrder,
+    onCommit: commitColumnOrder,
+    onCancel: cancelColumnOrder,
+    columns: columnDragItems,
+    enabled: enableColumnDrag,
+  });
 
   const rowDragConfig = useMemo<RowDragConfig<RecordType>>(() => {
     return typeof enableRowDragProp === 'object'
@@ -182,7 +182,7 @@ function InternalTable<RecordType = Record<string, unknown>>(
     typeof enableRowDragProp === 'object' || Boolean(enableRowDragProp);
   const rowKey = rowKeyProp || ('key' as keyof RecordType);
 
-  const { BodyWrapper, RowWrapper, RowDragContextWrapper } = useRowDrag({
+  const { RowWrapper, RowDragContextWrapper } = useRowDrag({
     dataSource: dataSource || [],
     rowKey,
     enabled: isRowDragEnabled,
@@ -230,10 +230,11 @@ function InternalTable<RecordType = Record<string, unknown>>(
       decorated.unshift({
         key: ROW_DRAG_HANDLE_KEY,
         dataIndex: ROW_DRAG_HANDLE_KEY,
-        title: config.title || '',
+        title: config.title !== undefined ? config.title : locale.dragHandle,
         width: config.width || 46,
         align: config.align || 'center',
         fixed: config.fixed === undefined ? 'left' : config.fixed,
+        resizable: config.resizable ?? true,
         render: () => <RowDragHandle />,
       });
     }
@@ -246,6 +247,7 @@ function InternalTable<RecordType = Record<string, unknown>>(
     orderedIds,
     rowDragConfig,
     visibleIds,
+    locale.dragHandle,
   ]);
 
   type TableComponents = NonNullable<AntdTableProps<RecordType>['components']>;
@@ -259,7 +261,6 @@ function InternalTable<RecordType = Record<string, unknown>>(
         ? { ...userComponents.body }
         : {};
 
-    if (enableColumnDrag) header.wrapper = HeaderWrapper;
     const UserHeaderCell = header.cell;
     header.cell = (
       cellProps: React.ThHTMLAttributes<HTMLTableCellElement> & {
@@ -284,16 +285,14 @@ function InternalTable<RecordType = Record<string, unknown>>(
           enableColumnResize={enableColumnResize}
           enableColumnDrag={enableColumnDrag}
           HeaderCellWrapper={HeaderCellWrapper}
+          cellComponent={UserHeaderCell}
         >
           {children}
         </EnhancedHeaderCell>
       );
     };
 
-    if (isRowDragEnabled) {
-      body.wrapper = BodyWrapper;
-      body.row = RowWrapper;
-    }
+    if (isRowDragEnabled) body.row = RowWrapper;
     const UserBodyCell = body.cell;
     body.cell = (
       cellProps: React.TdHTMLAttributes<HTMLTableCellElement> & {
@@ -301,34 +300,29 @@ function InternalTable<RecordType = Record<string, unknown>>(
         record?: RecordType;
       },
     ) => {
-      const { children, column, record, ...rest } = cellProps;
+      const { children, column, ...rest } = cellProps;
       const id = column?.__htdColumnId;
-      const original = id ? leafMap.get(id) : undefined;
-      const content =
-        original?.cellPreset && record !== undefined ? (
-          <PresetBodyCell record={record} column={original} />
-        ) : (
-          children
-        );
       if (enableColumnDrag && id) {
         return (
-          <SortableBodyCell columnId={id} {...rest}>
-            {content}
+          <SortableBodyCell
+            columnId={id}
+            cellComponent={UserBodyCell}
+            {...rest}
+          >
+            {children}
           </SortableBodyCell>
         );
       }
       return UserBodyCell ? (
-        React.createElement(UserBodyCell, rest, content)
+        React.createElement(UserBodyCell, rest, children)
       ) : (
-        <td {...rest}>{content}</td>
+        <td {...rest}>{children}</td>
       );
     };
 
     return { ...userComponents, header, body };
   }, [
-    BodyWrapper,
     HeaderCellWrapper,
-    HeaderWrapper,
     RowWrapper,
     enableColumnDrag,
     enableColumnResize,

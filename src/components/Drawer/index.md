@@ -24,6 +24,7 @@ toc: content
 ## 代码演示
 
 <code src="./demo/resizable.tsx" title="局部容器与拖动尺寸" description="切换四种 placement 并拖动内侧边缘；Drawer 挂载在局部容器中，即使 maxSize 大于局部容器，Drawer 也不会越界。"></code>
+
 <code src="./demo/resizable-body.tsx" title="全局容器与拖动尺寸" description="全局抽屉拖动调整尺寸示例。"></code>
 
 ## API

@@ -50,6 +50,10 @@ interface RowDragHandleContextValue {
 const RowDragHandleContext =
   React.createContext<RowDragHandleContextValue | null>(null);
 
+function stopRowEvent(event: React.SyntheticEvent) {
+  event.stopPropagation();
+}
+
 export const RowDragHandle: React.FC = () => {
   const context = useContext(RowDragHandleContext);
   if (!context) return null;
@@ -63,7 +67,13 @@ export const RowDragHandle: React.FC = () => {
   } = context;
 
   return (
-    <div className={`${prefixCls}-row-drag-handle-wrapper`}>
+    <div
+      className={`${prefixCls}-row-drag-handle-wrapper`}
+      onPointerDown={stopRowEvent}
+      onClick={stopRowEvent}
+      onDoubleClick={stopRowEvent}
+      onContextMenu={stopRowEvent}
+    >
       <span
         ref={draggable ? setActivatorNodeRef : undefined}
         className={`${prefixCls}-row-drag-handle${
@@ -186,10 +196,12 @@ function resolveDropCandidate<RecordType>(
 
 interface RowDragStateValue {
   candidate: RowDragResult<unknown> | null;
+  treeMode: boolean;
 }
 
 const RowDragStateContext = React.createContext<RowDragStateValue>({
   candidate: null,
+  treeMode: false,
 });
 
 interface SortableRowProps {
@@ -217,33 +229,52 @@ const SortableRow: React.FC<SortableRowProps> = ({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id, disabled: !draggable });
+  } = useSortable({
+    id,
+    disabled: !draggable,
+    animateLayoutChanges: (args) => {
+      if (args.wasDragging) return false;
+      return true;
+    },
+  });
   const dragState = useContext(RowDragStateContext);
   const candidate = dragState.candidate;
+  const treeMode = dragState.treeMode;
   const isTarget = candidate?.targetKey === id;
-  const dropClass = isTarget
-    ? `${prefixCls}-row-drag-over-${candidate.position}`
-    : undefined;
+  const dropClass =
+    isTarget && treeMode
+      ? `${prefixCls}-row-drag-over-${candidate.position}`
+      : undefined;
+
+  const handleContextValue = useMemo(
+    () => ({
+      attributes,
+      listeners,
+      setActivatorNodeRef,
+      dragHandleLabel,
+      draggable,
+      prefixCls,
+    }),
+    [
+      attributes,
+      listeners,
+      setActivatorNodeRef,
+      dragHandleLabel,
+      draggable,
+      prefixCls,
+    ],
+  );
 
   return (
-    <RowDragHandleContext.Provider
-      value={{
-        attributes,
-        listeners,
-        setActivatorNodeRef,
-        dragHandleLabel,
-        draggable,
-        prefixCls,
-      }}
-    >
+    <RowDragHandleContext.Provider value={handleContextValue}>
       <tr
         {...rowProps}
         ref={setNodeRef}
         style={{
           ...rowProps.style,
-          transform: CSS.Transform.toString(transform),
+          transform: CSS.Transform.toString(isDragging ? null : transform),
           transition,
-          ...(isDragging ? { opacity: 0.3, zIndex: 9999 } : {}),
+          ...(isDragging ? { opacity: treeMode ? 0.3 : 0, zIndex: 9999 } : {}),
         }}
         className={[rowProps.className, dropClass].filter(Boolean).join(' ')}
       >
@@ -265,11 +296,12 @@ type InternalOptions<RecordType> = UseRowDragOptions<RecordType> & {
   registry: RowRegistry<RecordType>;
 };
 
-interface InternalBodyWrapperProps<RecordType> {
-  wrapperProps: React.HTMLAttributes<HTMLTableSectionElement>;
+interface InternalRowDragContextProps<RecordType> {
+  children: React.ReactNode;
   optionsRef: React.MutableRefObject<InternalOptions<RecordType>>;
   prefixCls: string;
   sensors: SensorDescriptor<SensorOptions>[];
+  contextId: string;
 }
 
 function getDropPosition(
@@ -304,15 +336,25 @@ function getDragTitle(
   return fallback;
 }
 
-const InternalBodyWrapper = <RecordType,>({
-  wrapperProps,
+const InternalRowDragContext = <RecordType,>({
+  children,
   optionsRef,
   prefixCls,
   sensors,
-}: InternalBodyWrapperProps<RecordType>) => {
+  contextId,
+}: InternalRowDragContextProps<RecordType>) => {
   const [activeKey, setActiveKey] = useState<React.Key | null>(null);
   const [candidate, setCandidate] = useState<RowDragResult<RecordType> | null>(
     null,
+  );
+  const candidateRef = useRef<RowDragResult<RecordType> | null>(null);
+
+  const setCurrentCandidate = useCallback(
+    (nextCandidate: RowDragResult<RecordType> | null) => {
+      candidateRef.current = nextCandidate;
+      setCandidate(nextCandidate);
+    },
+    [],
   );
 
   const updateCandidate = useCallback(
@@ -321,7 +363,7 @@ const InternalBodyWrapper = <RecordType,>({
         event,
         Boolean(optionsRef.current.config.treeMode),
       );
-      setCandidate(
+      setCurrentCandidate(
         event.over && position
           ? resolveDropCandidate(
               optionsRef.current.registry,
@@ -333,33 +375,46 @@ const InternalBodyWrapper = <RecordType,>({
           : null,
       );
     },
-    [optionsRef],
+    [optionsRef, setCurrentCandidate],
   );
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    setActiveKey(event.active.id);
-    setCandidate(null);
-  }, []);
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      setActiveKey(event.active.id);
+      setCurrentCandidate(null);
+    },
+    [setCurrentCandidate],
+  );
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
+      const currentCandidate = candidateRef.current;
       const finalCandidate =
-        candidate && event.over?.id === candidate.targetKey ? candidate : null;
+        currentCandidate && event.over?.id === currentCandidate.targetKey
+          ? currentCandidate
+          : null;
       setActiveKey(null);
-      setCandidate(null);
+      setCurrentCandidate(null);
       if (finalCandidate) optionsRef.current.onDragEnd(finalCandidate);
     },
-    [candidate, optionsRef],
+    [optionsRef, setCurrentCandidate],
   );
 
   const handleDragCancel = useCallback(() => {
     setActiveKey(null);
-    setCandidate(null);
-  }, []);
+    setCurrentCandidate(null);
+  }, [setCurrentCandidate]);
 
-  const { children, ...restProps } = wrapperProps;
-  if (!optionsRef.current.enabled)
-    return <tbody {...restProps}>{children}</tbody>;
+  const treeMode = Boolean(optionsRef.current.config.treeMode);
+  const dragStateValue = useMemo(
+    () => ({
+      candidate: candidate as RowDragResult<unknown> | null,
+      treeMode,
+    }),
+    [candidate, treeMode],
+  );
+
+  if (!optionsRef.current.enabled) return <>{children}</>;
 
   const activeRecord =
     activeKey === null
@@ -368,7 +423,7 @@ const InternalBodyWrapper = <RecordType,>({
 
   return (
     <DndContext
-      id="row-drag-context"
+      id={contextId}
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
@@ -379,14 +434,10 @@ const InternalBodyWrapper = <RecordType,>({
     >
       <SortableContext
         items={optionsRef.current.registry.ids}
-        strategy={verticalListSortingStrategy}
+        strategy={treeMode ? () => null : verticalListSortingStrategy}
       >
-        <RowDragStateContext.Provider
-          value={{
-            candidate: candidate as RowDragResult<unknown> | null,
-          }}
-        >
-          <tbody {...restProps}>{children}</tbody>
+        <RowDragStateContext.Provider value={dragStateValue}>
+          {children}
         </RowDragStateContext.Provider>
       </SortableContext>
       {activeKey !== null &&
@@ -419,6 +470,10 @@ export function useRowDrag<RecordType>(options: UseRowDragOptions<RecordType>) {
   const { dataSource, rowKey, config } = options;
   const prefixCls = usePrefixCls('table');
   const locale = useLocale('Table');
+  const contextId = useMemo(
+    () => `row-drag-${Math.random().toString(36).slice(2, 10)}`,
+    [],
+  );
   const getKey = useMemo<RowKeyGetter<RecordType>>(() => {
     if (typeof rowKey === 'function') return rowKey;
     return (record) => {
@@ -452,26 +507,23 @@ export function useRowDrag<RecordType>(options: UseRowDragOptions<RecordType>) {
   });
   optionsRef.current = { ...options, registry };
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: { delay: 150, tolerance: 5 },
-    }),
+  const pointerSensorOptions = useMemo(
+    () => ({ activationConstraint: { distance: 4 } }),
+    [],
+  );
+  const keyboardSensorOptions = useMemo(
+    () => ({ coordinateGetter: sortableKeyboardCoordinates }),
+    [],
+  );
+  const touchSensorOptions = useMemo(
+    () => ({ activationConstraint: { delay: 150, tolerance: 5 } }),
+    [],
   );
 
-  const BodyWrapper = useCallback(
-    (wrapperProps: React.HTMLAttributes<HTMLTableSectionElement>) => (
-      <InternalBodyWrapper
-        wrapperProps={wrapperProps}
-        optionsRef={optionsRef}
-        prefixCls={prefixCls}
-        sensors={sensors}
-      />
-    ),
-    [prefixCls, sensors],
+  const sensors = useSensors(
+    useSensor(PointerSensor, pointerSensorOptions),
+    useSensor(KeyboardSensor, keyboardSensorOptions),
+    useSensor(TouchSensor, touchSensorOptions),
   );
 
   const RowWrapper = useCallback(
@@ -506,7 +558,19 @@ export function useRowDrag<RecordType>(options: UseRowDragOptions<RecordType>) {
   );
 
   const RowDragContextWrapper: React.FC<{ children: React.ReactNode }> =
-    useCallback(({ children }) => <>{children}</>, []);
+    useCallback(
+      ({ children }) => (
+        <InternalRowDragContext
+          optionsRef={optionsRef}
+          prefixCls={prefixCls}
+          sensors={sensors}
+          contextId={contextId}
+        >
+          {children}
+        </InternalRowDragContext>
+      ),
+      [contextId, prefixCls, sensors],
+    );
 
-  return { BodyWrapper, RowWrapper, RowDragContextWrapper };
+  return { RowWrapper, RowDragContextWrapper };
 }

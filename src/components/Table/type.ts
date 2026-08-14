@@ -27,44 +27,6 @@ export interface ColumnStateChangeInfo {
   columnId?: ColumnId;
 }
 
-export type CellPresetType =
-  | 'text'
-  | 'tag'
-  | 'progress'
-  | 'date'
-  | 'number'
-  | 'boolean'
-  | 'empty';
-
-export interface TagPresetProps {
-  colorMap?: Readonly<Record<string, string>>;
-  defaultColor?: string;
-}
-
-export interface ProgressPresetProps {
-  max?: number;
-  showInfo?: boolean;
-  strokeColor?: string;
-}
-
-export interface DatePresetProps {
-  format?: string;
-}
-
-export interface NumberPresetProps {
-  decimals?: number;
-  thousandsSeparator?: string;
-  decimalSeparator?: string;
-}
-
-type CellPresetOptions =
-  | { cellPreset?: 'text' | 'empty'; cellPresetProps?: never }
-  | { cellPreset: 'tag'; cellPresetProps?: TagPresetProps }
-  | { cellPreset: 'progress'; cellPresetProps?: ProgressPresetProps }
-  | { cellPreset: 'date'; cellPresetProps?: DatePresetProps }
-  | { cellPreset: 'number'; cellPresetProps?: NumberPresetProps }
-  | { cellPreset: 'boolean'; cellPresetProps?: never };
-
 interface EnhancedColumnOptions {
   /** 增强功能使用的稳定列标识；启用列设置、调整宽度或拖拽时建议显式提供。 */
   id?: ColumnId;
@@ -75,7 +37,7 @@ interface EnhancedColumnOptions {
 }
 
 export type EnhancedLeafColumnType<RecordType = Record<string, unknown>> =
-  ColumnType<RecordType> & EnhancedColumnOptions & CellPresetOptions;
+  ColumnType<RecordType> & EnhancedColumnOptions;
 
 export type EnhancedColumnGroupType<RecordType = Record<string, unknown>> =
   Omit<ColumnGroupType<RecordType>, 'children'> & {
@@ -126,6 +88,7 @@ export interface RowDragConfig<RecordType = Record<string, unknown>> {
         title?: React.ReactNode;
         fixed?: 'left' | 'right' | boolean;
         align?: 'left' | 'center' | 'right';
+        resizable?: boolean;
       };
 }
 

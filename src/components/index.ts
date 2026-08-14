@@ -17,31 +17,25 @@ export type {
   MinimizePosition,
   ModalProps,
   ModalRef,
-  ModalResizableConfig,
   ModalStaticMethods,
 } from './Modal/type';
 
 export { RowDragHandle, default as Table } from './Table';
 export type {
-  CellPresetType,
   ColumnId,
   ColumnState,
   ColumnStateChangeInfo,
   ColumnStateChangeReason,
   ColumnStateItem,
   ColumnStateProps,
-  DatePresetProps,
   DropPosition,
   DropPositionLabel,
   EnhancedColumnGroupType,
   EnhancedColumnType,
   EnhancedLeafColumnType,
-  NumberPresetProps,
-  ProgressPresetProps,
   RowDragConfig,
   RowDragResult,
   RowDropInfo,
   TableProps,
   TableRef,
-  TagPresetProps,
 } from './Table/type';

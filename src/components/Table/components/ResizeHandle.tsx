@@ -15,6 +15,7 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({
     <div
       className={`${prefixCls}${isResizing ? ` ${prefixCls}-active` : ''}`}
       onPointerDown={onPointerDown}
+      onClick={(e) => e.stopPropagation()}
       role="separator"
       aria-orientation="vertical"
       aria-label="resize column"

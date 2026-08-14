@@ -16,6 +16,7 @@ interface EnhancedHeaderCellProps<RecordType = unknown>
     children: React.ReactNode;
     columnId: string;
   }>;
+  cellComponent?: React.ElementType;
 }
 
 function EnhancedHeaderCell<RecordType = unknown>(
@@ -28,6 +29,7 @@ function EnhancedHeaderCell<RecordType = unknown>(
     enableColumnResize,
     enableColumnDrag,
     HeaderCellWrapper,
+    cellComponent: CellComponent = 'th',
     className,
     ...restThProps
   } = props;
@@ -75,7 +77,7 @@ function EnhancedHeaderCell<RecordType = unknown>(
     .join(' ');
 
   return (
-    <th className={mergedClassName} {...restThProps}>
+    <CellComponent className={mergedClassName} {...restThProps}>
       {wrappedContent}
       {showResizeHandle && (
         <ResizeHandle
@@ -83,7 +85,7 @@ function EnhancedHeaderCell<RecordType = unknown>(
           onPointerDown={handlePointerDown}
         />
       )}
-    </th>
+    </CellComponent>
   );
 }
 
