@@ -38,7 +38,7 @@ const zh_CN = {
     columnSetting: '列设置',
     save: '保存',
     cancel: '取消',
-    dragHandle: '拖拽排序',
+    dragHandle: '排序',
     resizeHandle: '调整列宽',
     emptyText: '-',
     yes: '是',

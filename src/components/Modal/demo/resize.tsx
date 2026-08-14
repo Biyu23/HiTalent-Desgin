@@ -42,12 +42,7 @@ export default () => {
         width={600}
         draggable
         maximizable
-        resizable={{
-          minWidth: 360,
-          minHeight: 240,
-          maxWidth: 900,
-          maxHeight: 700,
-        }}
+        resizable
         onCancel={() => setOpen(false)}
         footer={
           <Space>

@@ -52,7 +52,7 @@ All Ant Design `ModalProps` remain available except the replaced `closable`, `ti
 | `title`             | Dialog title                                    | `ReactNode`                                                                              | -              |
 | `onCancel`          | Handles close, ESC, or programmatic destruction | `(event?) => void`                                                                       | -              |
 | `draggable`         | Allows dragging from the title bar              | `boolean`                                                                                | `false`        |
-| `resizable`         | Enables resizing and optional size constraints  | `boolean \| ModalResizableConfig`                                                        | `false`        |
+| `resizable`         | Enables resizing                                | `boolean`                                                                                | `false`        |
 | `minimizable`       | Allows minimizing into the global dock          | `boolean`                                                                                | `false`        |
 | `maximizable`       | Allows fullscreen maximization                  | `boolean`                                                                                | `false`        |
 | `minimizePosition`  | Dock position for minimized cards               | `top-left \| top-right \| bottom-left \| bottom-right \| top \| bottom \| left \| right` | `bottom-right` |

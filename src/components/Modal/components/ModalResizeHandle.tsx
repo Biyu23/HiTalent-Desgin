@@ -6,6 +6,11 @@ interface ModalResizeHandleProps {
   onPointerDown: (event: React.PointerEvent<HTMLDivElement>) => void;
 }
 
+const stopMouseDownPropagation = (event: React.MouseEvent<HTMLDivElement>) => {
+  event.preventDefault();
+  event.stopPropagation();
+};
+
 const ModalResizeHandle = memo<ModalResizeHandleProps>(
   ({ prefixCls, onPointerDown }) => {
     const modalLocale = useLocale('Modal');
@@ -16,6 +21,7 @@ const ModalResizeHandle = memo<ModalResizeHandleProps>(
         data-modal-no-drag
         role="separator"
         aria-label={modalLocale.resizeBottomRight}
+        onMouseDown={stopMouseDownPropagation}
         onPointerDown={onPointerDown}
       />
     );

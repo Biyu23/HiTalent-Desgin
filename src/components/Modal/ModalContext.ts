@@ -3,19 +3,15 @@ import type {
   ModalWindowPosition,
   ModalWindowSize,
 } from './hooks/useModalWindowState';
-import type {
-  MinimizePosition,
-  ModalProps,
-  ModalResizableConfig,
-} from './type';
+import type { MinimizePosition, ModalProps } from './type';
 
 export interface ModalContextValue {
   /** 组件类名前缀（如 'htd-modal'） */
   prefixCls: string;
   /** 是否开启拖拽 */
   draggable: boolean;
-  /** resize 配置；null 表示关闭 */
-  resizable: ModalResizableConfig | null;
+  /** 是否开启尺寸调整 */
+  resizable: boolean;
   /** 是否支持最小化 */
   minimizable: boolean;
   /** 是否支持最大化 */

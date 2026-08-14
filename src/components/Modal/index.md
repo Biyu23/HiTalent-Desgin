@@ -52,7 +52,7 @@ toc: content
 | `title`             | 弹窗标题                            | `ReactNode`                                                                              | -              |
 | `onCancel`          | 点击关闭、按下 ESC 或统一销毁的回调 | `(event?) => void`                                                                       | -              |
 | `draggable`         | 是否允许从标题栏拖动                | `boolean`                                                                                | `false`        |
-| `resizable`         | 是否允许缩放及其尺寸约束            | `boolean \| ModalResizableConfig`                                                        | `false`        |
+| `resizable`         | 是否允许缩放                        | `boolean`                                                                                | `false`        |
 | `minimizable`       | 是否允许最小化到全局 Dock           | `boolean`                                                                                | `false`        |
 | `maximizable`       | 是否允许最大化                      | `boolean`                                                                                | `false`        |
 | `minimizePosition`  | 最小化卡片的停靠位置                | `top-left \| top-right \| bottom-left \| bottom-right \| top \| bottom \| left \| right` | `bottom-right` |

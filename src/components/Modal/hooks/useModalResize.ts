@@ -1,23 +1,23 @@
 import { useCallback, useEffect, useRef } from 'react';
-import type { ModalResizableConfig } from '../type';
+
 import type { ModalWindowSize } from './useModalWindowState';
 
 interface UseModalResizeOptions {
   modalRef: React.RefObject<HTMLElement>;
-  resizable: ModalResizableConfig | null;
+  resizable: boolean;
   active: boolean;
   setSize: (size: ModalWindowSize) => void;
   setResizing: (resizing: boolean) => void;
 }
 
 interface ResizeState {
+  pointerId: number;
   startX: number;
   startY: number;
-  startRect: DOMRect;
+  startWidth: number;
+  startHeight: number;
   minWidth: number;
   minHeight: number;
-  maxWidth: number;
-  maxHeight: number;
   lastSize: ModalWindowSize;
   bodyUserSelect: string;
   bodyCursor: string;
@@ -27,16 +27,8 @@ interface ResizeState {
 const DEFAULT_MIN_WIDTH = 320;
 const DEFAULT_MIN_HEIGHT = 200;
 
-const toSafeNumber = (value: number | undefined): number | undefined =>
-  typeof value === 'number' && Number.isFinite(value) && value >= 0
-    ? value
-    : undefined;
-
-const clamp = (value: number, min: number, max: number) =>
-  Math.min(Math.max(value, Math.min(min, max)), max);
-
 /**
- * 处理 Modal 右下角缩放，包含尺寸边界、视口约束与全局样式恢复。
+ * 处理 Modal 右下角缩放，包含尺寸边界与全局样式恢复。
  */
 export const useModalResize = ({
   modalRef,
@@ -46,6 +38,7 @@ export const useModalResize = ({
   setResizing,
 }: UseModalResizeOptions) => {
   const resizeStateRef = useRef<ResizeState | null>(null);
+  const resizingRef = useRef(false);
   const optionsRef = useRef({
     resizable,
     setSize,
@@ -65,26 +58,29 @@ export const useModalResize = ({
   const finishResize = useCallback(() => {
     const state = resizeStateRef.current;
     if (!state) return;
-    resizeStateRef.current = null;
     state.cleanupListeners();
+    resizeStateRef.current = null;
+    resizingRef.current = false;
     optionsRef.current.setResizing(false);
     restoreBodyStyle(state);
   }, [restoreBodyStyle]);
 
   const handlePointerMove = useCallback((event: PointerEvent) => {
     const state = resizeStateRef.current;
-    if (!state) return;
+    if (
+      !state ||
+      (state.pointerId !== undefined && event.pointerId !== state.pointerId)
+    )
+      return;
 
-    const width = clamp(
-      state.startRect.width + event.clientX - state.startX,
-      state.minWidth,
-      state.maxWidth,
-    );
-    const height = clamp(
-      state.startRect.height + event.clientY - state.startY,
-      state.minHeight,
-      state.maxHeight,
-    );
+    const deltaX = event.clientX - state.startX;
+    const deltaY = event.clientY - state.startY;
+
+    const rawWidth = Math.round(state.startWidth + deltaX);
+    const rawHeight = Math.round(state.startHeight + deltaY);
+
+    const width = Math.max(state.minWidth, rawWidth);
+    const height = Math.max(state.minHeight, rawHeight);
 
     if (width !== state.lastSize.width || height !== state.lastSize.height) {
       state.lastSize = { width, height };
@@ -94,8 +90,8 @@ export const useModalResize = ({
 
   const handlePointerDown = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
-      const config = optionsRef.current.resizable;
-      if (!active || !config) return;
+      if (!active || !optionsRef.current.resizable || resizeStateRef.current)
+        return;
       const modal = modalRef.current;
       if (!modal) return;
 
@@ -104,54 +100,45 @@ export const useModalResize = ({
       const rect = modal.getBoundingClientRect();
       if (!Number.isFinite(rect.width) || !Number.isFinite(rect.height)) return;
 
-      const viewportMaxWidth = document.documentElement.clientWidth - rect.left;
-      const viewportMaxHeight =
-        document.documentElement.clientHeight - rect.top;
-      const configuredMinWidth =
-        toSafeNumber(config.minWidth) ?? DEFAULT_MIN_WIDTH;
-      const configuredMinHeight =
-        toSafeNumber(config.minHeight) ?? DEFAULT_MIN_HEIGHT;
-      const minWidth = Math.min(configuredMinWidth, viewportMaxWidth);
-      const minHeight = Math.min(configuredMinHeight, viewportMaxHeight);
-      const maxWidth = Math.min(
-        Math.max(toSafeNumber(config.maxWidth) ?? viewportMaxWidth, minWidth),
-        viewportMaxWidth,
-      );
-      const maxHeight = Math.min(
-        Math.max(
-          toSafeNumber(config.maxHeight) ?? viewportMaxHeight,
-          minHeight,
-        ),
-        viewportMaxHeight,
-      );
-      const handlePointerUp = () => finishResize();
+      const minWidth = Math.min(DEFAULT_MIN_WIDTH, Math.floor(rect.width));
+      const minHeight = Math.min(DEFAULT_MIN_HEIGHT, Math.floor(rect.height));
+
+      const handlePointerUp = (pointerEvent: PointerEvent) => {
+        if (pointerEvent.pointerId === event.pointerId) finishResize();
+      };
+      const handleBlur = () => finishResize();
       const cleanupListeners = () => {
         document.removeEventListener('pointermove', handlePointerMove);
         document.removeEventListener('pointerup', handlePointerUp);
         document.removeEventListener('pointercancel', handlePointerUp);
-        window.removeEventListener('blur', handlePointerUp);
+        window.removeEventListener('blur', handleBlur);
       };
 
-      resizeStateRef.current = {
+      const state: ResizeState = {
+        pointerId: event.pointerId,
         startX: event.clientX,
         startY: event.clientY,
-        startRect: rect,
+        startWidth: rect.width,
+        startHeight: rect.height,
         minWidth,
         minHeight,
-        maxWidth,
-        maxHeight,
-        lastSize: { width: rect.width, height: rect.height },
+        lastSize: {
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+        },
         bodyUserSelect: document.body.style.userSelect,
         bodyCursor: document.body.style.cursor,
         cleanupListeners,
       };
+      resizeStateRef.current = state;
+      resizingRef.current = true;
       optionsRef.current.setResizing(true);
       document.body.style.userSelect = 'none';
       document.body.style.cursor = 'nwse-resize';
       document.addEventListener('pointermove', handlePointerMove);
       document.addEventListener('pointerup', handlePointerUp);
       document.addEventListener('pointercancel', handlePointerUp);
-      window.addEventListener('blur', handlePointerUp);
+      window.addEventListener('blur', handleBlur);
       event.currentTarget.setPointerCapture?.(event.pointerId);
     },
     [active, finishResize, handlePointerMove, modalRef],
@@ -163,5 +150,5 @@ export const useModalResize = ({
 
   useEffect(() => () => finishResize(), [finishResize]);
 
-  return { handlePointerDown };
+  return { handlePointerDown, resizingRef };
 };

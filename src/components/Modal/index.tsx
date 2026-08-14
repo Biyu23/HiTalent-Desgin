@@ -43,6 +43,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     minimizePosition = 'bottom-right',
     closable = true,
     className,
+    wrapClassName,
     style,
     centered = false,
     children,
@@ -81,10 +82,6 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     setSize: setWindowSize,
     setResizing,
   } = useModalWindowState();
-  const resizableConfig = useMemo(
-    () => (resizable ? (typeof resizable === 'object' ? resizable : {}) : null),
-    [resizable],
-  );
 
   // minimizable 模式下关闭不销毁 DOM，保留表单数据
   const resolvedDestroyOnHidden = minimizable ? false : destroyOnHidden;
@@ -141,12 +138,22 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   const mergedStyle: React.CSSProperties = useMemo(
     () => ({
       ...style,
-      ...(windowSize && !isMaximized ? { height: windowSize.height } : {}),
       ...(isMaximized
         ? { top: 0, maxWidth: '100vw', margin: 0, paddingBottom: 0 }
         : {}),
     }),
-    [style, windowSize, isMaximized],
+    [style, isMaximized],
+  );
+
+  const mergedStyles = useMemo(
+    () => ({
+      ...(restProps.styles || {}),
+      content: {
+        ...(restProps.styles?.content || {}),
+        ...(windowSize && !isMaximized ? { height: windowSize.height } : {}),
+      },
+    }),
+    [restProps.styles, windowSize, isMaximized],
   );
 
   // ---- Context 值 ----
@@ -154,7 +161,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     () => ({
       prefixCls,
       draggable,
-      resizable: resizableConfig,
+      resizable: Boolean(resizable),
       minimizable,
       maximizable,
       closable,
@@ -179,7 +186,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     [
       prefixCls,
       draggable,
-      resizableConfig,
+      resizable,
       minimizable,
       maximizable,
       closable,
@@ -215,11 +222,17 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
         modalRender={finalModalRender}
         onCancel={handleClose}
         style={mergedStyle}
+        styles={mergedStyles}
+        wrapClassName={clsx(wrapClassName, `${prefixCls}-wrap`, {
+          [`${prefixCls}-wrap-constrained`]:
+            draggable || Boolean(resizable) || isMaximized || !!windowSize,
+        })}
         className={clsx(prefixCls, className, {
           [`${prefixCls}-maximized`]: isMaximized,
           [`${prefixCls}-manual-size`]: !!windowSize && !isMaximized,
           [`${prefixCls}-resizing`]: isResizing,
           [`${prefixCls}-draggable`]: draggable && !isMaximized,
+          [`${prefixCls}-resizable`]: Boolean(resizable) && !isMaximized,
           [`${prefixCls}-transition-active`]: !isResizing,
         })}
         title={<ModalHeader title={title} />}

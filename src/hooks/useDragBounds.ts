@@ -1,11 +1,74 @@
-import { useCallback, useRef, useState } from 'react';
-import type { DraggableBounds, DraggableProps } from 'react-draggable';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
+import type { DraggableData } from 'react-draggable';
 
-interface UseDragBoundsReturn {
-  dragRef: React.RefObject<HTMLDivElement>;
-  bounds: DraggableBounds;
-  onStart: DraggableProps['onStart'];
+export type DragStartHandler = (
+  event: unknown,
+  data: Pick<DraggableData, 'x' | 'y'>,
+) => void;
+
+export interface StrictDraggableBounds {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
 }
+
+export interface UseDragBoundsReturn {
+  dragRef: React.RefObject<HTMLDivElement>;
+  bounds: StrictDraggableBounds;
+  boundsRef: React.MutableRefObject<StrictDraggableBounds>;
+  onStart: DragStartHandler;
+  updateBounds: (currentPos?: {
+    x: number;
+    y: number;
+  }) => StrictDraggableBounds;
+}
+
+/**
+ * 依据目标节点在视口中的位置计算拖拽移动边界，确保节点始终被限制在当前视口内。
+ */
+export const computeDragBounds = (
+  target: HTMLElement,
+  currentPosition?: { x: number; y: number },
+): StrictDraggableBounds => {
+  const clientWidth = document.documentElement.clientWidth || window.innerWidth;
+  const clientHeight =
+    document.documentElement.clientHeight || window.innerHeight;
+  const targetRect = target.getBoundingClientRect();
+  if (
+    !targetRect ||
+    !Number.isFinite(targetRect.width) ||
+    !Number.isFinite(targetRect.height)
+  ) {
+    return { left: 0, top: 0, right: 0, bottom: 0 };
+  }
+
+  const posX = currentPosition?.x ?? 0;
+  const posY = currentPosition?.y ?? 0;
+
+  // 计算无位移时的基准左上角坐标
+  const baseLeft = targetRect.left - posX;
+  const baseTop = targetRect.top - posY;
+
+  // 计算视口限制下的合法位移范围
+  const minX = Math.ceil(-baseLeft);
+  const maxX = Math.floor(clientWidth - baseLeft - targetRect.width);
+  const minY = Math.ceil(-baseTop);
+  const maxY = Math.floor(clientHeight - baseTop - targetRect.height);
+
+  return {
+    left: Math.min(minX, maxX),
+    right: Math.max(minX, maxX),
+    top: Math.min(minY, maxY),
+    bottom: Math.max(minY, maxY),
+  };
+};
 
 /**
  * 计算拖拽节点在当前视口内的移动边界。
@@ -17,31 +80,49 @@ const useDragBounds = (
   measureRef?: React.RefObject<HTMLElement>,
 ): UseDragBoundsReturn => {
   const dragRef = useRef<HTMLDivElement>(null);
-  const [bounds, setBounds] = useState<DraggableBounds>({
+  const [bounds, setBounds] = useState<StrictDraggableBounds>({
     left: 0,
     top: 0,
     bottom: 0,
     right: 0,
   });
-  const onStart: DraggableProps['onStart'] = useCallback(
-    (_event, uiData) => {
-      const { clientWidth, clientHeight } = window.document.documentElement;
-      const targetRect = (
-        measureRef?.current || dragRef.current
-      )?.getBoundingClientRect();
-      if (!targetRect) return;
+  const boundsRef = useRef<StrictDraggableBounds>(bounds);
+  boundsRef.current = bounds;
 
-      setBounds({
-        left: -targetRect.left + uiData.x,
-        right: clientWidth - (targetRect.right - uiData.x),
-        top: -targetRect.top + uiData.y,
-        bottom: clientHeight - (targetRect.bottom - uiData.y),
-      });
+  const updateBounds = useCallback(
+    (currentPos?: { x: number; y: number }): StrictDraggableBounds => {
+      const target = measureRef?.current || dragRef.current;
+      if (!target) return boundsRef.current;
+      const nextBounds = computeDragBounds(target, currentPos);
+      boundsRef.current = nextBounds;
+      setBounds(nextBounds);
+      return nextBounds;
     },
     [measureRef],
   );
 
-  return { dragRef, bounds, onStart };
+  const onStart: DragStartHandler = useCallback(
+    (_event, uiData) => {
+      updateBounds({ x: uiData.x, y: uiData.y });
+    },
+    [updateBounds],
+  );
+
+  useLayoutEffect(() => {
+    updateBounds();
+  }, [updateBounds]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      updateBounds();
+    };
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [updateBounds]);
+
+  return { dragRef, bounds, boundsRef, onStart, updateBounds };
 };
 
 export default useDragBounds;

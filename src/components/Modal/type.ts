@@ -11,27 +11,6 @@ export type MinimizePosition =
   | 'left'
   | 'right';
 
-export interface ModalResizableConfig {
-  /**
-   * @description 最小宽度，单位 px
-   * @default 320
-   */
-  minWidth?: number;
-  /**
-   * @description 最小高度，单位 px
-   * @default 200
-   */
-  minHeight?: number;
-  /**
-   * @description 最大宽度，单位 px，最终仍受当前视口限制
-   */
-  maxWidth?: number;
-  /**
-   * @description 最大高度，单位 px，最终仍受当前视口限制
-   */
-  maxHeight?: number;
-}
-
 /**
  * Modal 组件暴露的命令式方法
  */
@@ -77,11 +56,7 @@ export interface ModalProps
    * @default false
    */
   draggable?: boolean;
-  /**
-   * @description 是否允许通过右下角调整弹窗尺寸。传入对象时可配置最小和最大宽高
-   * @default false
-   */
-  resizable?: boolean | ModalResizableConfig;
+  resizable?: boolean;
   /**
    * @description 是否支持最小化（折叠到全局悬浮窗，不销毁 DOM）
    * @default false

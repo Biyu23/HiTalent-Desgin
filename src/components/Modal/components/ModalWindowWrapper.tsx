@@ -2,7 +2,6 @@ import React, { memo, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { DraggableData, DraggableEvent } from 'react-draggable';
 import ReactDraggable from 'react-draggable';
-import useDragBounds from '../../../hooks/useDragBounds';
 import { useModalContext } from '../ModalContext';
 import { useModalResize } from '../hooks/useModalResize';
 import ModalResizeHandle from './ModalResizeHandle';
@@ -27,11 +26,11 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
     setWindowSize,
     setResizing,
   } = useModalContext();
+  const dragRef = useRef<HTMLDivElement>(null);
   const modalContentRef = useRef<HTMLElement | null>(null);
   const [modalContent, setModalContent] = useState<HTMLElement | null>(null);
-  const { dragRef, bounds, onStart } = useDragBounds(modalContentRef);
   const resizeActive = !!resizable && !!open && !isMaximized && !isMinimized;
-  const { handlePointerDown } = useModalResize({
+  const { handlePointerDown, resizingRef } = useModalResize({
     modalRef: modalContentRef,
     resizable,
     active: resizeActive,
@@ -46,7 +45,7 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
     setModalContent((current) =>
       current === (content || null) ? current : content || null,
     );
-  }, [children, dragRef]);
+  }, [children]);
 
   if (!draggable && !resizable) return <>{children}</>;
 
@@ -73,15 +72,24 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
     '.ant-switch',
   ].join(', ');
 
+  const handleDragStart = (event: DraggableEvent): boolean | void => {
+    const target = event.target;
+    if (
+      resizingRef.current ||
+      (target instanceof Element && target.closest(cancelSelector))
+    ) {
+      return false;
+    }
+  };
+
   return (
     <Draggable
       disabled={!draggable || isMaximized || isResizing}
-      bounds={bounds}
       nodeRef={dragRef}
       handle={handleSelector}
       cancel={cancelSelector}
       position={isMaximized ? { x: 0, y: 0 } : windowPosition}
-      onStart={onStart}
+      onStart={handleDragStart}
       onDrag={handleDrag}
     >
       <div
