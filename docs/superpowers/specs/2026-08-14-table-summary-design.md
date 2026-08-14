@@ -15,7 +15,7 @@
 - 汇总行固定在表格底部，并与横向滚动、固定列保持同步。
 - 汇总行跟随列显隐、列排序和分组列变化。
 - 保持 Ant Design 原生 `summary` 回调兼容。
-- 提供中英文文档、国际化文案和可交互 Demo。
+- 提供中英文文档和可交互 Demo。
 
 ## 非目标
 
@@ -63,27 +63,26 @@ summary?: ColumnSummary<RecordType>;
 - 字符串及数组形式的 `dataIndex` 均支持，包括嵌套路径。
 - 没有 `dataIndex` 的列，其 `values` 为等长的 `undefined` 数组；自定义函数仍可使用完整 `data`。
 
-### Table 级 `summaryLabel`
+### 自定义展示内容
 
-`TableOwnProps<RecordType>` 增加：
+组件不提供独立的汇总标签属性，也不假设哪一列用于显示“汇总”“合计”或业务名称。需要展示文字的列同样通过函数形式的 `summary` 返回内容：
 
 ```ts
-summaryLabel?: React.ReactNode;
+{
+  id: 'name',
+  dataIndex: 'name',
+  title: '用户名称',
+  summary: () => '汇总',
+}
 ```
 
-约定：
-
-- 默认文案由 Table locale 提供：中文为“汇总”，英文为“Summary”。
-- 标签放在第一个未配置 `summary` 的可见数据叶子列。
-- 行选择列、展开列和行拖拽把手列属于系统列，不作为标签候选列。
-- 如果所有可见数据叶子列都配置了 `summary`，则不渲染标签，保留所有列的汇总结果。
-- `summaryLabel` 只影响自动生成的汇总行。
+因此，每个可见叶子列的汇总单元格完全由该列自己的 `summary` 决定；未配置 `summary` 的列保持为空。
 
 ### 启用条件与原生兼容
 
 - 最终可见叶子列中至少有一列配置 `summary` 时，组件自动生成汇总行。
-- 被隐藏列既不生成汇总单元格，也不参与标签位置计算。
-- 业务方显式传入 Ant Design 原生 `summary` 回调时，原生回调优先；组件不生成自动汇总行，`summaryLabel` 被忽略。
+- 被隐藏列不生成汇总单元格，也不执行其 `summary`。
+- 业务方显式传入 Ant Design 原生 `summary` 回调时，原生回调优先；组件不生成自动汇总行。
 - 现有未使用列级 `summary` 的表格行为不变。
 
 ### 使用示例
@@ -94,6 +93,7 @@ const columns = [
     id: 'name',
     dataIndex: 'name',
     title: '用户名称',
+    summary: () => '汇总',
   },
   {
     id: 'totalPerformance',
@@ -114,7 +114,6 @@ const columns = [
   dataSource={dataSource}
   pagination={{ pageSize: 10 }}
   scroll={{ x: 1200, y: 420 }}
-  summaryLabel="汇总"
 />;
 ```
 
@@ -124,9 +123,9 @@ const columns = [
 
 职责：
 
-- 接收当前页数据、最终处理后的可见列、标签和系统列偏移信息。
+- 接收当前页数据、最终处理后的可见列和系统列偏移信息。
 - 展平分组列，按视觉顺序生成 `Table.Summary.Cell`。
-- 为空白列、标签列、内置求和列和自定义汇总列生成对应内容。
+- 为未配置列、内置求和列和自定义汇总列生成对应内容。
 - 使用 `Table.Summary fixed` 固定汇总行。
 - 为每个 Summary Cell 提供正确的视觉索引，使 Ant Design 能计算固定列位置。
 
@@ -139,14 +138,13 @@ const columns = [
 - 展平最终可见分组列。
 - 按字符串或数组 `dataIndex` 读取嵌套字段。
 - 收集列值并对有限 `number` 求和。
-- 在可见数据列中选择默认标签列。
 - 计算行选择列、展开列和其他系统前置列所需的视觉索引偏移。
 
 ### `components/Table/index.tsx`
 
 `InternalTable` 的职责变化：
 
-1. 从 props 中单独解构原生 `summary` 和新增 `summaryLabel`。
+1. 从 props 中单独解构原生 `summary`。
 2. 继续通过现有 `processColumns` 生成最终列结构。
 3. 如果存在原生 `summary`，直接将其传给 Ant Design Table。
 4. 否则检查最终可见叶子列是否存在列级 `summary`。
@@ -160,9 +158,9 @@ const columns = [
 3. 分页、排序和筛选继续由 Ant Design 处理。
 4. Ant Design 调用 `summary(currentPageData)`，其中参数为当前渲染页的数据。
 5. `TableSummary` 遍历最终可见叶子列：
-   - 普通列渲染空单元格，默认标签列除外；
+   - 未配置 `summary` 的列渲染空单元格；
    - `'sum'` 列读取当前页值并渲染数值总和；
-   - 函数列构建 `SummaryContext` 并调用自定义函数。
+   - 函数列构建 `SummaryContext` 并调用自定义函数，可返回“汇总”等文字或任意业务内容。
 6. Ant Design 负责固定汇总行、固定列布局及横向滚动同步。
 
 切换分页、筛选、排序、列显隐或列顺序后，React 使用新的当前页数据和最终列结构重新生成汇总行。
@@ -193,25 +191,9 @@ const columns = [
 
 - 汇总行背景色与正文区分。
 - 汇总行顶部边框。
-- 默认标签字重和文本颜色。
 - 汇总单元格继承表格的对齐方式和列宽，不另设固定宽度。
 
 颜色和间距使用项目现有 Less token，不写死业务截图颜色。
-
-## 国际化
-
-Table locale 增加一个字段：
-
-```ts
-summary: string;
-```
-
-默认值：
-
-- `zh_CN.Table.summary = '汇总'`
-- `en_US.Table.summary = 'Summary'`
-
-业务传入 `summaryLabel` 时覆盖默认文案。
 
 ## Demo 与文档
 
@@ -230,8 +212,8 @@ summary: string;
 
 文档补充：
 
-- `summaryLabel` Table 属性。
 - `summary` 叶子列属性。
+- 使用自定义函数渲染“汇总”等业务文字。
 - 当前页统计范围。
 - 数值过滤规则。
 - 自定义格式化方式。
@@ -250,7 +232,7 @@ summary: string;
 - 普通数值求和。
 - 空数据与空分页。
 - `null`、`undefined`、`NaN`、正负 `Infinity` 和数字字符串。
-- 自定义金额格式化。
+- 自定义汇总文字和金额格式化。
 - 当前页切换、页大小变化、筛选和排序。
 - 列隐藏、列重排、列宽调整和分组列。
 - `rowSelection`、展开列及行拖拽把手。
@@ -263,7 +245,7 @@ summary: string;
 - 配置至少一个列级 `summary` 后出现固定汇总行。
 - 内置求和严格遵循有限 `number` 规则。
 - 前端分页时只统计当前页。
-- 标签、自定义格式化和国际化生效。
+- 自定义文字、数值格式化生效。
 - 汇总单元格在列显隐、重排、分组、系统列及横向滚动场景下保持对齐。
 - 原生 Ant Design `summary` 仍可使用且优先级明确。
 - 中英文文档与 Demo 完整。
