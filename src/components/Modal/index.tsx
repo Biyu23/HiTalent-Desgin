@@ -16,7 +16,7 @@ import { useModalState } from './hooks/useModalState';
 import { useModalWindowState } from './hooks/useModalWindowState';
 import './index.less';
 import ModalContext, { ModalContextValue } from './ModalContext';
-import { ModalProps, ModalRef, ModalStaticMethods } from './type';
+import type { ModalProps, ModalRef, ModalStaticMethods } from './type';
 import destroyFns from './utils/destroyFns';
 
 /**

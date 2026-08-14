@@ -1,3 +1,5 @@
 export { default as useDragBounds } from './useDragBounds';
-export * from './useFieldNames';
-export * from './useMergeState';
+export { useFieldNames } from './useFieldNames';
+export type { FieldNames, MergedFieldNames } from './useFieldNames';
+export { useMergeState } from './useMergeState';
+export type { UseMergeStateProps } from './useMergeState';

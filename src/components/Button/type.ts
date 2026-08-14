@@ -1,4 +1,4 @@
-import { ButtonProps as AntdButtonProps, TooltipProps } from 'antd';
+import type { ButtonProps as AntdButtonProps, TooltipProps } from 'antd';
 
 export interface ButtonProps extends AntdButtonProps {
   /**

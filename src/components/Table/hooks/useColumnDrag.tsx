@@ -38,6 +38,7 @@ import ReactDOM from 'react-dom';
 import { useLocale } from '../../../configProvider/useLocale';
 import { usePrefixCls } from '../../../configProvider/usePrefixCls';
 import type { ColumnId } from '../type';
+import { moveColumnItem } from '../utils/columnDrag';
 
 interface ColumnDragItem {
   id: ColumnId;
@@ -161,20 +162,6 @@ interface InternalColumnDragContextProps {
   contextId: string;
 }
 
-function moveItem(
-  order: readonly ColumnId[],
-  activeId: ColumnId,
-  overId: ColumnId,
-): ColumnId[] {
-  const oldIndex = order.indexOf(activeId);
-  const newIndex = order.indexOf(overId);
-  if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) return [...order];
-  const next = [...order];
-  next.splice(oldIndex, 1);
-  next.splice(newIndex, 0, activeId);
-  return next;
-}
-
 const InternalColumnDragContext: React.FC<InternalColumnDragContextProps> = ({
   children,
   optionsRef,
@@ -203,7 +190,7 @@ const InternalColumnDragContext: React.FC<InternalColumnDragContextProps> = ({
       const currentOrder = optionsRef.current.orderedIds;
 
       if (activeId !== overId) {
-        const next = moveItem(currentOrder, activeId, overId);
+        const next = moveColumnItem(currentOrder, activeId, overId);
         optionsRef.current.onCommit(next);
       } else {
         optionsRef.current.onCancel();

@@ -6,7 +6,7 @@ import { usePrefixCls } from '../../configProvider/usePrefixCls';
 import { useMergeState } from '../../hooks';
 import { withNativeProps } from '../../util';
 import './index.less';
-import { SelectorProps } from './type';
+import type { SelectorProps } from './type';
 
 const Selector: React.FC<SelectorProps> = (props) => {
   const {

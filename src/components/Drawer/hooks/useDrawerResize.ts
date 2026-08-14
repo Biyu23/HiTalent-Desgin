@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type {
-  DrawerAxis,
-  DrawerPlacement,
-  DrawerResizableConfig,
-} from '../type';
+import type { DrawerPlacement, DrawerResizableConfig } from '../type';
+import { getDrawerAxis } from '../utils/placement';
+import {
+  clampSize,
+  getAxisSize,
+  getPointerPosition,
+  getResizeCursor,
+  toValidNumber,
+} from '../utils/resize';
 
 interface UseDrawerResizeOptions {
   placement: DrawerPlacement;
@@ -24,27 +28,6 @@ interface ResizeState {
   cleanupListeners: () => void;
   onResizeEnd?: () => void;
 }
-
-const getAxis = (placement: DrawerPlacement): DrawerAxis =>
-  placement === 'left' || placement === 'right' ? 'horizontal' : 'vertical';
-
-const getCursor = (axis: DrawerAxis) =>
-  axis === 'horizontal' ? 'col-resize' : 'row-resize';
-
-const getPointerPosition = (
-  event: Pick<PointerEvent, 'clientX' | 'clientY'>,
-  axis: DrawerAxis,
-) => (axis === 'horizontal' ? event.clientX : event.clientY);
-
-const getAxisSize = (rect: DOMRect, axis: DrawerAxis) =>
-  axis === 'horizontal' ? rect.width : rect.height;
-
-const toValidNumber = (value: number | undefined) =>
-  typeof value === 'number' && Number.isFinite(value) && value >= 0
-    ? value
-    : undefined;
-
-const clamp = (value: number, max: number) => Math.min(Math.max(value, 0), max);
 
 /** 处理 Drawer 单轴缩放，包括展开方向、容器边界与全局样式恢复。 */
 export const useDrawerResize = ({
@@ -76,11 +59,14 @@ export const useDrawerResize = ({
     if (!state || event.pointerId !== state.pointerId) return;
 
     const currentPlacement = optionsRef.current.placement;
-    const axis = getAxis(currentPlacement);
+    const axis = getDrawerAxis(currentPlacement);
     const delta = getPointerPosition(event, axis) - state.startPosition;
     const direction =
       currentPlacement === 'right' || currentPlacement === 'bottom' ? -1 : 1;
-    const nextSize = clamp(state.startSize + delta * direction, state.maxSize);
+    const nextSize = clampSize(
+      state.startSize + delta * direction,
+      state.maxSize,
+    );
 
     if (nextSize === state.lastSize) return;
     state.lastSize = nextSize;
@@ -97,7 +83,7 @@ export const useDrawerResize = ({
       if (!panel || !wrapper) return;
 
       const currentPlacement = optionsRef.current.placement;
-      const axis = getAxis(currentPlacement);
+      const axis = getDrawerAxis(currentPlacement);
       const wrapperSize = getAxisSize(wrapper.getBoundingClientRect(), axis);
       const measuredContainerSize = getAxisSize(
         panel.getBoundingClientRect(),
@@ -146,7 +132,7 @@ export const useDrawerResize = ({
 
       setIsResizing(true);
       document.body.style.userSelect = 'none';
-      document.body.style.cursor = getCursor(axis);
+      document.body.style.cursor = getResizeCursor(axis);
       document.addEventListener('pointermove', handlePointerMove);
       document.addEventListener('pointerup', handlePointerUp);
       document.addEventListener('pointercancel', handlePointerUp);

@@ -1,4 +1,4 @@
-import { ModalProps as AntdModalProps } from 'antd';
+import type { ModalProps as AntdModalProps } from 'antd';
 import React from 'react';
 
 export type MinimizePosition =

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { areMapsEqual } from '../../../util';
 
 export interface ItemMeasurements {
   containerWidth: number | null;
@@ -8,8 +9,8 @@ export interface ItemMeasurements {
 
 interface UseItemMeasurementsResult extends ItemMeasurements {
   setContainerRef: (node: HTMLDivElement | null) => void;
-  setItemMeasureRef: (key: React.Key, node: HTMLElement | null) => void;
-  setOverflowMeasureRef: (count: number, node: HTMLElement | null) => void;
+  getItemMeasureRef: (key: React.Key) => (node: HTMLElement | null) => void;
+  getOverflowMeasureRef: (count: number) => (node: HTMLElement | null) => void;
 }
 
 const initialMeasurements: ItemMeasurements = {
@@ -18,23 +19,16 @@ const initialMeasurements: ItemMeasurements = {
   overflowWidths: new Map(),
 };
 
-function mapsEqual<Key>(
-  left: ReadonlyMap<Key, number>,
-  right: ReadonlyMap<Key, number>,
-): boolean {
-  if (left.size !== right.size) return false;
-
-  for (const [key, value] of left) {
-    if (right.get(key) !== value) return false;
-  }
-
-  return true;
-}
-
 export function useItemMeasurements(): UseItemMeasurementsResult {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const itemNodesRef = useRef(new Map<React.Key, HTMLElement>());
   const overflowNodesRef = useRef(new Map<number, HTMLElement>());
+  const itemCallbacksRef = useRef(
+    new Map<React.Key, (node: HTMLElement | null) => void>(),
+  );
+  const overflowCallbacksRef = useRef(
+    new Map<number, (node: HTMLElement | null) => void>(),
+  );
   const observerRef = useRef<ResizeObserver | null>(null);
   const frameRef = useRef<number | null>(null);
   const mountedRef = useRef(true);
@@ -68,8 +62,8 @@ export function useItemMeasurements(): UseItemMeasurementsResult {
     setMeasurements((previous) => {
       if (
         previous.containerWidth === containerWidth &&
-        mapsEqual(previous.itemWidths, itemWidths) &&
-        mapsEqual(previous.overflowWidths, overflowWidths)
+        areMapsEqual(previous.itemWidths, itemWidths) &&
+        areMapsEqual(previous.overflowWidths, overflowWidths)
       ) {
         return previous;
       }
@@ -133,6 +127,36 @@ export function useItemMeasurements(): UseItemMeasurementsResult {
     [replaceObservedNode],
   );
 
+  const getItemMeasureRef = useCallback(
+    (key: React.Key) => {
+      const cached = itemCallbacksRef.current.get(key);
+      if (cached) return cached;
+
+      const callback = (node: HTMLElement | null) => {
+        setItemMeasureRef(key, node);
+        if (!node) itemCallbacksRef.current.delete(key);
+      };
+      itemCallbacksRef.current.set(key, callback);
+      return callback;
+    },
+    [setItemMeasureRef],
+  );
+
+  const getOverflowMeasureRef = useCallback(
+    (count: number) => {
+      const cached = overflowCallbacksRef.current.get(count);
+      if (cached) return cached;
+
+      const callback = (node: HTMLElement | null) => {
+        setOverflowMeasureRef(count, node);
+        if (!node) overflowCallbacksRef.current.delete(count);
+      };
+      overflowCallbacksRef.current.set(count, callback);
+      return callback;
+    },
+    [setOverflowMeasureRef],
+  );
+
   useEffect(() => {
     mountedRef.current = true;
     const handleResize = () => scheduleMeasure();
@@ -164,7 +188,7 @@ export function useItemMeasurements(): UseItemMeasurementsResult {
   return {
     ...measurements,
     setContainerRef,
-    setItemMeasureRef,
-    setOverflowMeasureRef,
+    getItemMeasureRef,
+    getOverflowMeasureRef,
   };
 }

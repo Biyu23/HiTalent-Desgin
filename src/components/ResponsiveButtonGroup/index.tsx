@@ -13,68 +13,24 @@ import React, {
 import { ConfigContext } from '../../configProvider/context';
 import { useLocale } from '../../configProvider/useLocale';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
-import { withNativeProps } from '../../util';
+import { areArraysEqual, withNativeProps } from '../../util';
 import Button from '../Button';
 import OverflowMenu from './components/OverflowMenu';
+import { useItemAction } from './hooks/useItemAction';
 import { useItemMeasurements } from './hooks/useItemMeasurements';
 import './index.less';
 import type {
-  ResponsiveButtonGroupClickInfo,
   ResponsiveButtonGroupItem,
-  ResponsiveButtonGroupItemSource,
   ResponsiveButtonGroupOverflowRenderInfo,
   ResponsiveButtonGroupProps,
 } from './type';
+import { getMeasurementButtonProps } from './utils/buttonProps';
 import {
   getCollapseOrder,
   getResponsiveLayout,
   normalizeGap,
   normalizeMinVisibleCount,
 } from './utils/layout';
-
-function keysEqual(left: readonly React.Key[], right: readonly React.Key[]) {
-  return (
-    left.length === right.length &&
-    left.every((key, index) => key === right[index])
-  );
-}
-
-function isThenable(value: unknown): value is PromiseLike<unknown> {
-  return (
-    (typeof value === 'object' || typeof value === 'function') &&
-    value !== null &&
-    'then' in value &&
-    typeof (value as PromiseLike<unknown>).then === 'function'
-  );
-}
-
-const MEASUREMENT_IGNORED_PROPS = new Set([
-  'id',
-  'name',
-  'form',
-  'htmlType',
-  'href',
-  'target',
-  'download',
-  'tabIndex',
-  'tooltip',
-]);
-
-function getMeasurementButtonProps<Props extends object>(
-  buttonProps?: Props,
-): Props | undefined {
-  if (!buttonProps) return undefined;
-
-  const measurementProps: Record<string, unknown> = {};
-  Object.entries(buttonProps).forEach(([key, value]) => {
-    if (MEASUREMENT_IGNORED_PROPS.has(key) || /^on[A-Z]/.test(key)) {
-      return;
-    }
-    measurementProps[key] = value;
-  });
-
-  return measurementProps as Props;
-}
 
 const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
   const {
@@ -101,22 +57,13 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
     minVisibleCountProp,
     items.length,
   );
-  const [loadingKeys, setLoadingKeys] = useState<Set<React.Key>>(new Set());
-  const loadingKeysRef = useRef<Set<React.Key>>(new Set());
-  const throttleTimersRef = useRef(
-    new Map<React.Key, ReturnType<typeof setTimeout>>(),
-  );
-  const operationIdsRef = useRef(new Map<React.Key, number>());
-  const nextOperationIdRef = useRef(0);
+  const { loadingKeys, executeItemAction } = useItemAction({
+    items,
+    buttonThrottle: buttonProps?.throttle,
+    onItemClick,
+  });
   const [innerOpen, setInnerOpen] = useState(false);
   const visibleContainerRef = useRef<HTMLDivElement | null>(null);
-  const itemMeasureCallbacksRef = useRef(
-    new Map<React.Key, (node: HTMLElement | null) => void>(),
-  );
-  const overflowMeasureCallbacksRef = useRef(
-    new Map<number, (node: HTMLElement | null) => void>(),
-  );
-  const mountedRef = useRef(true);
   const previousCollapsedCountRef = useRef<number | null>(null);
   const lastLayoutRef = useRef<{
     visibleKeys: React.Key[];
@@ -127,34 +74,9 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
     itemWidths,
     overflowWidths,
     setContainerRef,
-    setItemMeasureRef,
-    setOverflowMeasureRef,
+    getItemMeasureRef,
+    getOverflowMeasureRef,
   } = useItemMeasurements();
-
-  const getItemMeasureRef = useCallback(
-    (key: React.Key) => {
-      const cached = itemMeasureCallbacksRef.current.get(key);
-      if (cached) return cached;
-
-      const callback = (node: HTMLElement | null) =>
-        setItemMeasureRef(key, node);
-      itemMeasureCallbacksRef.current.set(key, callback);
-      return callback;
-    },
-    [setItemMeasureRef],
-  );
-  const getOverflowMeasureRef = useCallback(
-    (count: number) => {
-      const cached = overflowMeasureCallbacksRef.current.get(count);
-      if (cached) return cached;
-
-      const callback = (node: HTMLElement | null) =>
-        setOverflowMeasureRef(count, node);
-      overflowMeasureCallbacksRef.current.set(count, callback);
-      return callback;
-    },
-    [setOverflowMeasureRef],
-  );
 
   const open = overflowDropdownProps?.open ?? innerOpen;
   const overflowText = overflowLabel ?? locale.more;
@@ -232,15 +154,6 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
       ));
 
   useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-      throttleTimersRef.current.forEach((timer) => clearTimeout(timer));
-      throttleTimersRef.current.clear();
-    };
-  }, []);
-
-  useEffect(() => {
     if (process.env.NODE_ENV === 'production') return;
     const keys = new Set<string>();
     items.forEach((item) => {
@@ -255,35 +168,6 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
       keys.add(normalizedKey);
     });
   }, [items]);
-
-  useEffect(() => {
-    const currentKeys = new Set(items.map((item) => item.key));
-    const nextLoadingKeys = new Set(
-      Array.from(loadingKeysRef.current).filter((key) => currentKeys.has(key)),
-    );
-    if (nextLoadingKeys.size !== loadingKeysRef.current.size) {
-      loadingKeysRef.current = nextLoadingKeys;
-      setLoadingKeys(nextLoadingKeys);
-    }
-
-    throttleTimersRef.current.forEach((timer, key) => {
-      if (!currentKeys.has(key)) {
-        clearTimeout(timer);
-        throttleTimersRef.current.delete(key);
-      }
-    });
-    operationIdsRef.current.forEach((_, key) => {
-      if (!currentKeys.has(key)) operationIdsRef.current.delete(key);
-    });
-    itemMeasureCallbacksRef.current.forEach((_, key) => {
-      if (!currentKeys.has(key)) itemMeasureCallbacksRef.current.delete(key);
-    });
-    overflowMeasureCallbacksRef.current.forEach((_, count) => {
-      if (count > maxCollapsedCount) {
-        overflowMeasureCallbacksRef.current.delete(count);
-      }
-    });
-  }, [items, maxCollapsedCount]);
 
   useEffect(() => {
     const previousCount = previousCollapsedCountRef.current;
@@ -309,8 +193,8 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
     const previous = lastLayoutRef.current;
     if (
       previous &&
-      keysEqual(previous.visibleKeys, layout.visibleKeys) &&
-      keysEqual(previous.collapsedKeys, layout.collapsedKeys)
+      areArraysEqual(previous.visibleKeys, layout.visibleKeys) &&
+      areArraysEqual(previous.collapsedKeys, layout.collapsedKeys)
     ) {
       return;
     }
@@ -327,91 +211,6 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
       overflowDropdownProps?.onOpenChange?.(nextOpen, info);
     },
     [overflowDropdownProps],
-  );
-
-  const handleItemClick = useCallback(
-    (
-      item: ResponsiveButtonGroupItem,
-      source: ResponsiveButtonGroupItemSource,
-      event: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
-    ) => {
-      if (
-        item.disabled ||
-        item.loading ||
-        loadingKeysRef.current.has(item.key) ||
-        throttleTimersRef.current.has(item.key)
-      ) {
-        return;
-      }
-
-      const throttle = item.buttonProps?.throttle ?? buttonProps?.throttle ?? 0;
-      if (Number.isFinite(throttle) && throttle > 0) {
-        const timer = setTimeout(() => {
-          throttleTimersRef.current.delete(item.key);
-        }, throttle);
-        throttleTimersRef.current.set(item.key, timer);
-      }
-
-      const info: ResponsiveButtonGroupClickInfo = {
-        key: item.key,
-        item,
-        source,
-        event,
-      };
-      const results: unknown[] = [];
-      let itemCallbackSucceeded = true;
-
-      try {
-        if (item.onClick) results.push(item.onClick(info));
-      } catch (error) {
-        itemCallbackSucceeded = false;
-        results.push(Promise.reject(error));
-      }
-
-      if (itemCallbackSucceeded && onItemClick) {
-        try {
-          results.push(onItemClick(info));
-        } catch (error) {
-          results.push(Promise.reject(error));
-        }
-      }
-
-      const promises = results.filter(isThenable);
-      if (promises.length === 0) return;
-
-      const operationId = nextOperationIdRef.current + 1;
-      nextOperationIdRef.current = operationId;
-      operationIdsRef.current.set(item.key, operationId);
-
-      const nextLoadingKeys = new Set(loadingKeysRef.current);
-      nextLoadingKeys.add(item.key);
-      loadingKeysRef.current = nextLoadingKeys;
-      setLoadingKeys(nextLoadingKeys);
-
-      return Promise.all(
-        promises.map((promise) =>
-          Promise.resolve(promise).then(
-            () => ({ rejected: false as const, error: undefined }),
-            (error: unknown) => ({ rejected: true as const, error }),
-          ),
-        ),
-      ).then((results) => {
-        if (
-          mountedRef.current &&
-          operationIdsRef.current.get(item.key) === operationId
-        ) {
-          operationIdsRef.current.delete(item.key);
-          const next = new Set(loadingKeysRef.current);
-          next.delete(item.key);
-          loadingKeysRef.current = next;
-          setLoadingKeys(next);
-        }
-
-        const rejectedResult = results.find((result) => result.rejected);
-        if (rejectedResult?.rejected) throw rejectedResult.error;
-      });
-    },
-    [buttonProps?.throttle, onItemClick],
   );
 
   const renderItemButton = useCallback(
@@ -441,7 +240,7 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
           onClick={
             measuring
               ? undefined
-              : (event) => handleItemClick(item, 'button', event)
+              : (event) => executeItemAction(item, 'button', event)
           }
         >
           {item.label}
@@ -450,7 +249,7 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
     },
     [
       buttonProps,
-      handleItemClick,
+      executeItemAction,
       loadingKeys,
       measurementButtonProps,
       measurementItemButtonProps,
@@ -525,7 +324,9 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
         menuProps={overflowMenuProps}
         open={open}
         onOpenChange={handleOpenChange}
-        onItemClick={(item, event) => handleItemClick(item, 'overflow', event)}
+        onItemClick={(item, event) =>
+          executeItemAction(item, 'overflow', event)
+        }
       >
         {renderOverflowTrigger(collapsedItems, open)}
       </OverflowMenu>

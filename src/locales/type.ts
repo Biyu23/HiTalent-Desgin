@@ -1,3 +1,7 @@
+import type { DeepPartial } from '../types';
+
+export type { DeepPartial } from '../types';
+
 /** PopoverSelect 组件的国际化文案 */
 export interface PopoverSelectLocale {
   placeholder: string;
@@ -93,13 +97,6 @@ export type HtdLocale = {
   /** 语言方向 */
   direction: LocaleDirection;
 } & LocaleComponentMap;
-
-/** 深度 Partial 工具类型 */
-export type DeepPartial<T> = T extends (...args: any[]) => unknown
-  ? T
-  : T extends object
-  ? { [P in keyof T]?: DeepPartial<T[P]> }
-  : T;
 
 /** 基于完整语言包进行局部文案覆盖 */
 export type LocaleOverrides = DeepPartial<LocaleComponentMap>;

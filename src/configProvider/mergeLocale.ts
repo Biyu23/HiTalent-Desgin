@@ -1,7 +1,5 @@
 import type { HtdLocale, LocaleOverrides } from '../locales';
-
-const isPlainObject = (value: unknown): value is Record<string, unknown> =>
-  Object.prototype.toString.call(value) === '[object Object]';
+import { isPlainObject } from '../util';
 
 function mergeDefined(base: unknown, overrides: unknown): unknown {
   if (overrides === undefined) return base;

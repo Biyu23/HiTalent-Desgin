@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
-import { FieldNames } from '../../hooks';
-import { NativeProps } from '../../types';
+import type { FieldNames } from '../../hooks/useFieldNames';
+import type { NativeProps } from '../../types';
 
 export type { FieldNames };
 

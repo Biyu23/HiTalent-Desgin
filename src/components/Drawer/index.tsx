@@ -5,32 +5,14 @@ import { usePrefixCls } from '../../configProvider/usePrefixCls';
 import DrawerResizeHandle from './components/DrawerResizeHandle';
 import { useDrawerResize } from './hooks/useDrawerResize';
 import './index.less';
-import type {
-  DrawerAxis,
-  DrawerPlacement,
-  DrawerProps,
-  DrawerResizableConfig,
-  DrawerSize,
-} from './type';
-
-const DEFAULT_SIZE = 378;
-const LARGE_SIZE = 736;
+import type { DrawerProps, DrawerResizableConfig } from './type';
+import { getDrawerAxis } from './utils/placement';
+import { DEFAULT_DRAWER_SIZE, resolveDrawerSize } from './utils/resize';
 
 interface ManualSizes {
   horizontal?: number;
   vertical?: number;
 }
-
-const getAxis = (placement: DrawerPlacement): DrawerAxis =>
-  placement === 'left' || placement === 'right' ? 'horizontal' : 'vertical';
-
-const resolveSize = (
-  size: DrawerSize | undefined,
-): number | string | undefined => {
-  if (size === 'default') return DEFAULT_SIZE;
-  if (size === 'large') return LARGE_SIZE;
-  return size;
-};
 
 const setRef = <T,>(ref: React.Ref<T> | undefined, value: T | null) => {
   if (typeof ref === 'function') {
@@ -62,14 +44,14 @@ const Drawer: React.FC<DrawerProps> = (props) => {
   const prefixCls = usePrefixCls('drawer');
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [manualSizes, setManualSizes] = useState<ManualSizes>({});
-  const axis = getAxis(placement);
+  const axis = getDrawerAxis(placement);
   const legacySize = axis === 'horizontal' ? width : height;
   const controlledSize = size !== undefined ? size : legacySize;
   const isControlled = controlledSize !== undefined;
-  const currentSize = resolveSize(
+  const currentSize = resolveDrawerSize(
     isControlled
       ? controlledSize
-      : manualSizes[axis] ?? defaultSize ?? DEFAULT_SIZE,
+      : manualSizes[axis] ?? defaultSize ?? DEFAULT_DRAWER_SIZE,
   );
   const resizeConfig: DrawerResizableConfig =
     typeof resizable === 'object' ? resizable : {};

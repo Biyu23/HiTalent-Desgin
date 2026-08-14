@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 
-import type { ModalWindowSize } from './useModalWindowState';
+import type { ModalWindowSize } from '../types/internal';
 
 interface UseModalResizeOptions {
   modalRef: React.RefObject<HTMLElement>;

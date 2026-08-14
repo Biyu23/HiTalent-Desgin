@@ -1,20 +1,9 @@
 import type { TooltipProps } from 'antd';
 import { Button as AntdButton, Tooltip } from 'antd';
 import React, { memo, useEffect, useRef, useState } from 'react';
-import { withNativeProps } from '../../util';
-import { ButtonProps } from './type';
-
-/**
- * 类型守卫：判断 tooltip 值是否为 TooltipProps 配置对象，
- * 以区分「传配置对象」与「传 ReactNode 作为提示文案」两种用法。
- */
-function isTooltipProps(
-  value: unknown,
-): value is Omit<TooltipProps, 'children'> {
-  return (
-    typeof value === 'object' && value !== null && !React.isValidElement(value)
-  );
-}
+import { isThenable, withNativeProps } from '../../util';
+import type { ButtonProps } from './type';
+import { isTooltipProps } from './utils/tooltip';
 
 const Button = React.forwardRef<
   React.ComponentRef<typeof AntdButton>,
@@ -66,7 +55,7 @@ const Button = React.forwardRef<
   const executeClick = async (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
     if (!onClick) return;
     const ret = onClick(e);
-    if (autoLoading && ret && typeof ret.then === 'function') {
+    if (autoLoading && isThenable(ret)) {
       setInnerLoading(true);
       try {
         await ret;

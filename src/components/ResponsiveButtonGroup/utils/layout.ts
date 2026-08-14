@@ -1,29 +1,10 @@
-import type React from 'react';
-import type { ResponsiveButtonGroupMode } from '../type';
+import type {
+  ResponsiveLayoutInput,
+  ResponsiveLayoutItem,
+  ResponsiveLayoutResult,
+} from '../types/internal';
 
 const LAYOUT_EPSILON = 0.5;
-
-export interface ResponsiveLayoutItem {
-  key: React.Key;
-  priority?: number;
-}
-
-export interface ResponsiveLayoutInput {
-  items: readonly ResponsiveLayoutItem[];
-  mode: ResponsiveButtonGroupMode;
-  direction?: 'ltr' | 'rtl';
-  minVisibleCount: number;
-  gap: number;
-  containerWidth: number | null;
-  itemWidths: ReadonlyMap<React.Key, number>;
-  overflowWidths: ReadonlyMap<number, number>;
-}
-
-export interface ResponsiveLayoutResult {
-  visibleKeys: React.Key[];
-  collapsedKeys: React.Key[];
-}
-
 export function normalizePriority(priority?: number): number {
   return Number.isFinite(priority) ? (priority as number) : 0;
 }

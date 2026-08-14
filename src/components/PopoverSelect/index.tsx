@@ -16,7 +16,11 @@ import { useOptions } from './hooks/useOptions';
 import { useSelection } from './hooks/useSelection';
 import './index.less';
 import Selector from './selector';
-import { DefaultOptionType, PopoverSelectProps, RawValueType } from './type';
+import type {
+  DefaultOptionType,
+  PopoverSelectProps,
+  RawValueType,
+} from './type';
 
 const Component = <
   ValueType extends RawValueType = RawValueType,

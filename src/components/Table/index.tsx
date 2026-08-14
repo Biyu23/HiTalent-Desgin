@@ -19,18 +19,14 @@ import { RowDragHandle, useRowDrag } from './hooks/useRowDrag';
 import './index.less';
 import TableContext from './TableContext';
 import type {
-  ColumnId,
   EnhancedColumnType,
-  EnhancedLeafColumnType,
   RowDragConfig,
   TableProps,
   TableRef,
 } from './type';
-import {
-  isColumnGroup,
-  resolveColumnId,
-  sanitizeColumn,
-} from './utils/columnHelpers';
+import type { InternalLeafColumn } from './types/internal';
+import { isColumnGroup } from './utils/columnHelpers';
+import { processColumns } from './utils/processColumns';
 
 export { RowDragHandle };
 
@@ -44,58 +40,6 @@ const DEFAULT_TABLE_PROPS = {
   zebraStripe: true,
   hoverHighlight: true,
 } as const;
-
-type InternalLeafColumn<RecordType> = EnhancedLeafColumnType<RecordType> & {
-  __htdColumnId?: ColumnId;
-};
-
-function processColumns<RecordType>(
-  columns: readonly EnhancedColumnType<RecordType>[],
-  visibleIds: readonly ColumnId[],
-  orderedIds: readonly ColumnId[],
-  widths: Readonly<Record<ColumnId, number>>,
-): EnhancedColumnType<RecordType>[] {
-  const visibleSet = new Set(visibleIds);
-  const orderMap = new Map(orderedIds.map((id, index) => [id, index]));
-
-  const visit = (
-    items: readonly EnhancedColumnType<RecordType>[],
-    parentPath: readonly number[],
-  ): EnhancedColumnType<RecordType>[] => {
-    const processed = items
-      .map((column, index) => {
-        const path = [...parentPath, index];
-        if (isColumnGroup(column)) {
-          const children = visit(column.children, path);
-          return children.length ? { ...column, children } : null;
-        }
-        const id = resolveColumnId(column, path).id;
-        if (!visibleSet.has(id)) return null;
-        const clean = sanitizeColumn(column) as InternalLeafColumn<RecordType>;
-        const width = widths[id];
-        if (width !== undefined) clean.width = width;
-        clean.__htdColumnId = id;
-        return clean;
-      })
-      .filter(
-        (column): column is EnhancedColumnType<RecordType> => column !== null,
-      );
-
-    const minOrder = (column: EnhancedColumnType<RecordType>): number => {
-      if (isColumnGroup(column)) {
-        return Math.min(...column.children.map(minOrder));
-      }
-      return (
-        orderMap.get(
-          (column as InternalLeafColumn<RecordType>).__htdColumnId!,
-        ) ?? Infinity
-      );
-    };
-    return processed.sort((left, right) => minOrder(left) - minOrder(right));
-  };
-
-  return visit(columns, []);
-}
 
 function InternalTable<RecordType = Record<string, unknown>>(
   props: TableProps<RecordType>,

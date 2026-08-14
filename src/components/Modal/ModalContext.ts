@@ -1,9 +1,6 @@
 import React, { createContext, useContext } from 'react';
-import type {
-  ModalWindowPosition,
-  ModalWindowSize,
-} from './hooks/useModalWindowState';
 import type { MinimizePosition, ModalProps } from './type';
+import type { ModalWindowPosition, ModalWindowSize } from './types/internal';
 
 export interface ModalContextValue {
   /** 组件类名前缀（如 'htd-modal'） */

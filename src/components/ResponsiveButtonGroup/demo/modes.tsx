@@ -2,10 +2,8 @@
  * description: responsive 根据宽度自动布局；expanded 始终平铺；collapsed 收起到 minVisibleCount。
  */
 import { Radio } from 'antd';
-import {
-  ResponsiveButtonGroup,
-  ResponsiveButtonGroupMode,
-} from 'hi-talent-design';
+import type { ResponsiveButtonGroupMode } from 'hi-talent-design';
+import { ResponsiveButtonGroup } from 'hi-talent-design';
 import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React, { useState } from 'react';
 
