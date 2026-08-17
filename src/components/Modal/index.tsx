@@ -46,7 +46,10 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     minimizePosition = 'bottom-right',
     closable = true,
     className,
+    rootClassName,
     wrapClassName,
+    classNames,
+    styles,
     style,
     centered = false,
     children,
@@ -60,6 +63,10 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   const { prefixCls, e, m, em } = useNamespace('modal', customPrefixCls);
   const dockPrefixCls = usePrefixCls('minimize');
   const modalLocale = useLocale('Modal');
+
+  const { minimizedDock: minimizedDockClassName, ...antdClassNames } =
+    classNames || {};
+  const { minimizedDock: minimizedDockStyle, ...antdStyles } = styles || {};
 
   const {
     isMinimized,
@@ -149,13 +156,13 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
 
   const mergedStyles = useMemo(
     () => ({
-      ...(restProps.styles || {}),
+      ...antdStyles,
       content: {
-        ...(restProps.styles?.content || {}),
+        ...(antdStyles?.content || {}),
         ...(windowSize && !isMaximized ? { height: windowSize.height } : {}),
       },
     }),
-    [restProps.styles, windowSize, isMaximized],
+    [antdStyles, windowSize, isMaximized],
   );
 
   const contextValue: ModalContextValue = useMemo(
@@ -209,6 +216,8 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     <ModalContext.Provider value={contextValue}>
       <AntdModal
         {...restProps}
+        rootClassName={rootClassName}
+        classNames={antdClassNames}
         destroyOnClose={resolvedDestroyOnClose}
         destroyOnHidden={resolvedDestroyOnHidden}
         width={modalWidth}
@@ -242,6 +251,8 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
         position={minimizePosition}
         dockPrefixCls={dockPrefixCls}
         sourcePrefixCls={prefixCls}
+        className={clsx(rootClassName, className, minimizedDockClassName)}
+        style={minimizedDockStyle}
         locale={modalLocale}
         onRestore={handleRestore}
         onClose={handleClose}

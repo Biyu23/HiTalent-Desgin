@@ -31,6 +31,8 @@ Adds drag, resize, maximize, and multi-window minimization to Ant Design Modal, 
 
 <code src="./demo/destroy-all.tsx" title="Destroy All Modals" description="Use Modal.destroyAll() to clear normal, maximized, and minimized instances during route transitions."></code>
 
+<code src="./demo/custom-style.tsx" title="Custom Styles" description="Deeply customize header, body, footer, mask, and content layers with colors, gradients, rounded corners, and glassmorphism."></code>
+
 ## API
 
 All Ant Design `ModalProps` remain available except the replaced `closable`, `title`, and `onCancel` definitions.

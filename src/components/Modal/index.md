@@ -31,6 +31,8 @@ toc: content
 
 <code src="./demo/destroy-all.tsx" title="销毁所有弹窗" description="使用 Modal.destroyAll() 清理普通、最大化和最小化的全部实例，适合路由切换。"></code>
 
+<code src="./demo/custom-style.tsx" title="自定义样式" description="通过 styles 和 classNames 深度定制头部、主体、底部、遮罩、内容容器等各个区域的视觉效果与圆角磨砂质感。"></code>
+
 ## API
 
 除下列窗口增强属性外，完全兼容 Ant Design `ModalProps`（不包含其 `closable`、`title` 和 `onCancel` 内部定义）。

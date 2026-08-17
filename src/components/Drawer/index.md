@@ -27,6 +27,8 @@ toc: content
 
 <code src="./demo/shared-dock.tsx" title="Modal 与 Drawer 共享 Dock" description="弹窗与抽屉可同时停靠在同一全局 Dock 中，并支持独立恢复与关闭。"></code>
 
+<code src="./demo/custom-style.tsx" title="自定义样式" description="通过 styles 和 classNames 深度定制头部、主体、底部、遮罩、内容区、拖拽把手及最小化卡片等各层级样式。"></code>
+
 ## API
 
 除下列增强属性外，完全兼容 Ant Design `DrawerProps`。

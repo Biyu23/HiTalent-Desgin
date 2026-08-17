@@ -281,7 +281,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
         position={minimizePosition}
         dockPrefixCls={dockPrefixCls}
         sourcePrefixCls={prefixCls}
-        className={minimizedDockClassName}
+        className={clsx(rootClassName, minimizedDockClassName)}
         style={minimizedDockStyle}
         locale={drawerLocale}
         onRestore={restore}

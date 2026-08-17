@@ -27,6 +27,8 @@ Extends Ant Design Drawer with directional resize handles, minimization to a glo
 
 <code src="./demo/shared-dock.tsx" title="Shared Dock with Modal" description="Modals and Drawers dock together in the same global Dock with independent restore and close operations."></code>
 
+<code src="./demo/custom-style.tsx" title="Custom Styles" description="Deeply customize header, body, footer, mask, content, resize handle, and minimized dock via styles and classNames."></code>
+
 ## API
 
 Fully compatible with Ant Design `DrawerProps` in addition to the enhancements below.

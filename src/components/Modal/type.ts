@@ -46,8 +46,24 @@ export interface ModalResizableConfig {
   onResizeEnd?: () => void;
 }
 
+export interface ModalClassNames
+  extends NonNullable<AntdModalProps['classNames']> {
+  /** 最小化 Dock 卡片的 className */
+  minimizedDock?: string;
+}
+
+export interface ModalStyles extends NonNullable<AntdModalProps['styles']> {
+  /** 最小化 Dock 卡片的行内样式 */
+  minimizedDock?: React.CSSProperties;
+}
+
 export interface ModalProps
-  extends Omit<AntdModalProps, 'closable' | 'title' | 'onCancel'> {
+  extends Omit<
+    AntdModalProps,
+    'closable' | 'title' | 'onCancel' | 'classNames' | 'styles'
+  > {
+  classNames?: ModalClassNames;
+  styles?: ModalStyles;
   /**
    * @description 是否显示关闭按钮
    * @default true
