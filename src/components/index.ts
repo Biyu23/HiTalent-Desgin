@@ -1,3 +1,6 @@
+export { default as SvgIcon, createSvgIcon } from './SvgIcon';
+export type { SvgIconProps } from './SvgIcon/type';
+
 export { default as PopoverSelect } from './PopoverSelect';
 export type { PopoverSelectProps } from './PopoverSelect/type';
 
