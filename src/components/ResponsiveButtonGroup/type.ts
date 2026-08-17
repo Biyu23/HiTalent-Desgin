@@ -65,6 +65,8 @@ export interface ResponsiveButtonGroupItem {
 }
 
 export interface ResponsiveButtonGroupProps extends NativeProps {
+  /** 样式类名前缀 */
+  prefixCls?: string;
   items: readonly ResponsiveButtonGroupItem[];
   mode?: ResponsiveButtonGroupMode;
   /** 必须保持平铺的最少按钮数，不包含“更多”按钮。 */

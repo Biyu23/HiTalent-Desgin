@@ -2,7 +2,7 @@ import { Button } from 'antd';
 import clsx from 'clsx';
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocale } from '../../configProvider/useLocale';
-import { usePrefixCls } from '../../configProvider/usePrefixCls';
+import { useNamespace } from '../../configProvider/usePrefixCls';
 import { useFieldNames, useMergeState } from '../../hooks';
 import type { UseMergeStateProps } from '../../hooks/useMergeState';
 import {
@@ -28,7 +28,7 @@ const Component = <
 >(
   props: PopoverSelectProps<ValueType, OptionType>,
 ) => {
-  const prefixCls = usePrefixCls('popover-select');
+  const { prefixCls, e } = useNamespace('popover-select', props.prefixCls);
   const componentLocale = useLocale('PopoverSelect');
 
   type MappedOption = OptionType & {
@@ -243,7 +243,7 @@ const Component = <
       <Selector
         content={renderContent}
         open={open}
-        rootClassName={`${prefixCls}-selector`}
+        rootClassName={e('selector')}
         onOpenChange={setOpen}
         allowClear={allowClear}
         hasValue={hasValue}

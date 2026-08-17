@@ -1,178 +1,209 @@
 @import '../../style/variables.less';
 
+// ============================================================
+// PopoverSelect 样式
+// ============================================================
+
 .@{custom-prefix}-popover-select {
-  &-dropdown-content {
-    .@{custom-prefix}-popover-select {
-      &-menu {
-        width: 100%;
-        max-height: 400px;
-        min-width: 150px;
-        padding-bottom: @size-sm;
-        overflow-x: hidden;
-        overflow-y: auto;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
+  display: inline-block;
+  width: 100%;
 
-        .ant-checkbox-wrapper {
-          width: 100%;
-          overflow: hidden;
-          padding: @size-xxs @size;
-          color: @color-text;
-          transition: background-color 0.2s;
+  &-dropdown {
+    width: 100%;
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+  }
 
-          &:hover {
-            background-color: @color-primary-bg;
-          }
+  &-menu {
+    width: 100%;
+    max-height: 400px;
+    min-width: 150px;
+    padding-bottom: @size-sm;
+    overflow-x: hidden;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 
-          > span {
-            &:first-child {
-              flex-shrink: 0;
-            }
+    .ant-checkbox-wrapper {
+      width: 100%;
+      overflow: hidden;
+      padding: @size-xxs @size;
+      color: @color-text;
+      transition: background-color 0.2s;
 
-            &:last-child {
-              flex: 1;
-              overflow: hidden;
-            }
-          }
+      &:hover {
+        background-color: @color-primary-bg;
+      }
+
+      > span {
+        &:first-child {
+          flex-shrink: 0;
         }
 
-        &-checkbox {
-          display: flex;
-          padding: @size-xxs @size-sm;
-          margin: 0;
-        }
-
-        &-radio {
+        &:last-child {
           flex: 1;
           overflow: hidden;
-          padding: @size-xxs @size-sm;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: background-color 0.2s;
-
-          &:hover {
-            background-color: @color-fill-tertiary;
-          }
-
-          &-disabled {
-            opacity: 0.5;
-            pointer-events: none;
-            cursor: not-allowed;
-          }
-
-          &-active {
-            background-color: @color-primary-bg;
-            color: @color-primary;
-            font-weight: 600;
-          }
-
-          .ant-typography {
-            flex: 1;
-            overflow: hidden;
-          }
         }
-
-        &-virtual-list {
-          .rc-virtual-list-holder-inner {
-            overflow-x: hidden;
-          }
-        }
-      }
-
-      &-footer {
-        display: flex;
-        justify-content: flex-end;
-        padding: @size-xs @size-sm;
-        border-top: 1px solid @color-border-secondary;
-      }
-    }
-
-    .@{custom-prefix}-popover-select-search {
-      .ant-input-affix-wrapper {
-        border-radius: 0;
-        padding: @size-xs @size-sm;
-        border-bottom: 1px solid @color-border-secondary;
-      }
-
-      .anticon {
-        color: @color-text-quaternary;
-      }
-    }
-
-    .@{custom-prefix}-popover-select-select-all {
-      padding: @size-xxs @size;
-    }
-
-    .@{custom-prefix}-popover-select-empty {
-      padding: @size-lg @size-sm;
-      text-align: center;
-
-      .ant-empty-image {
-        height: 40px;
-        margin-bottom: @size-xs;
-
-        .ant-empty-img-simple {
-          width: 40px;
-          height: 40px;
-        }
-      }
-
-      .ant-empty-description {
-        color: @color-text;
-        font-size: 13px;
       }
     }
   }
 
+  &-menu-checkbox {
+    display: flex;
+    padding: @size-xxs @size-sm;
+    margin: 0;
+  }
+
+  &-menu-radio {
+    flex: 1;
+    overflow: hidden;
+    padding: @size-xxs @size-sm;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: @color-fill-tertiary;
+    }
+
+    &-disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+
+    &-active {
+      background-color: @color-primary-bg;
+      color: @color-primary;
+      font-weight: 600;
+    }
+
+    .ant-typography {
+      flex: 1;
+      overflow: hidden;
+    }
+  }
+
+  &-menu-virtual-list {
+    .rc-virtual-list-holder-inner {
+      overflow-x: hidden;
+    }
+  }
+
+  &-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: @size-xs @size-sm;
+    border-top: 1px solid @color-border-secondary;
+  }
+
+  &-search {
+    .ant-input-affix-wrapper {
+      border-radius: 0;
+      padding: @size-xs @size-sm;
+      border-bottom: 1px solid @color-border-secondary;
+    }
+
+    .anticon {
+      color: @color-text-quaternary;
+    }
+  }
+
+  &-select-all {
+    padding: @size-xxs @size;
+  }
+
+  &-empty {
+    padding: @size-lg @size-sm;
+    text-align: center;
+
+    .ant-empty-image {
+      height: 40px;
+      margin-bottom: @size-xs;
+
+      .ant-empty-img-simple {
+        width: 40px;
+        height: 40px;
+      }
+    }
+
+    .ant-empty-description {
+      color: @color-text;
+      font-size: 13px;
+    }
+  }
+
+  // 弹窗浮层（根样式 rootClassName 为 htd-popover-select-selector）
   &-selector {
     .ant-popover-inner {
       padding: 0;
     }
   }
-}
 
-.@{custom-prefix}-popover-selector {
-  &-btn {
+  // 选择器 Trigger 按钮样式
+  &-selector-btn {
     display: flex;
+    width: 100%;
     gap: @size-xs;
     align-items: center;
+    justify-content: space-between;
     padding: @size-xxs @size-sm;
     border-radius: @border-radius-xs;
-  }
+    border: 1px solid transparent;
+    color: @color-text;
+    transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
 
-  &-active-btn {
-    background-color: @color-primary-bg;
-    border: solid 1px @color-primary-border;
-    color: @color-primary;
-  }
+    &:hover {
+      background-color: @color-fill-tertiary;
+    }
 
-  &-popover &-text {
-    flex: 1;
-    margin-bottom: 0;
-    color: inherit;
-  }
+    &-active {
+      background-color: @color-primary-bg;
+      border: 1px solid @color-primary-border;
+      color: @color-primary;
+    }
 
-  &-arrow {
-    flex-shrink: 0;
-    font-size: 12px;
-    transition: transform 0.3s ease-in-out;
+    &-open,
+    &.ant-popover-open {
+      color: @color-text;
+      background-color: @color-bg-elevated;
 
-    .@{custom-prefix}-popover-selector-open & {
-      transform: rotate(180deg);
+      .@{custom-prefix}-popover-select-selector-arrow {
+        transform: rotate(180deg);
+      }
     }
   }
 
-  &-clear {
+  &-selector-text {
+    &.ant-typography,
+    & {
+      flex: 1;
+      margin-bottom: 0 !important;
+      margin-top: 0 !important;
+      color: inherit;
+      text-align: start;
+    }
+  }
+
+  &-selector-arrow {
+    flex-shrink: 0;
+    font-size: 12px;
+    transition: transform 0.3s ease-in-out;
+  }
+
+  &-selector-clear {
     cursor: pointer;
     flex-shrink: 0;
     font-size: 12px;
-  }
+    color: @color-text-quaternary;
+    transition: color 0.2s;
 
-  &-open .ant-popover-open {
-    color: @color-text;
-    background-color: @color-bg-elevated;
+    &:hover {
+      color: @color-text-tertiary;
+    }
   }
 }

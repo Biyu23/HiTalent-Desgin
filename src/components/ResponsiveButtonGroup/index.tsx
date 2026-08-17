@@ -12,7 +12,7 @@ import React, {
 } from 'react';
 import { ConfigContext } from '../../configProvider/context';
 import { useLocale } from '../../configProvider/useLocale';
-import { usePrefixCls } from '../../configProvider/usePrefixCls';
+import { useNamespace } from '../../configProvider/usePrefixCls';
 import { areArraysEqual, withNativeProps } from '../../util';
 import Button from '../Button';
 import OverflowMenu from './components/OverflowMenu';
@@ -34,6 +34,7 @@ import {
 
 const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
   const {
+    prefixCls: customPrefixCls,
     items,
     mode = 'responsive',
     minVisibleCount: minVisibleCountProp = 0,
@@ -49,7 +50,10 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
     onItemClick,
     onVisibleChange,
   } = props;
-  const prefixCls = usePrefixCls('responsive-button-group');
+  const { prefixCls, e } = useNamespace(
+    'responsive-button-group',
+    customPrefixCls,
+  );
   const locale = useLocale('ResponsiveButtonGroup');
   const { direction } = useContext(ConfigContext);
   const gap = normalizeGap(gapProp);
@@ -271,7 +275,7 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
         <Button
           {...currentOverflowButtonProps}
           className={clsx(
-            `${prefixCls}-overflow-trigger`,
+            e('overflow-trigger'),
             currentOverflowButtonProps?.className,
           )}
           tabIndex={measuring ? -1 : overflowButtonProps?.tabIndex}
@@ -280,11 +284,11 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
           aria-expanded={currentOpen}
           aria-label={overflowButtonProps?.['aria-label'] ?? ariaLabel}
         >
-          <span className={`${prefixCls}-overflow-label`}>{overflowText}</span>
+          <span className={e('overflow-label')}>{overflowText}</span>
           {showOverflowCount && (
-            <span className={`${prefixCls}-overflow-count`}>{count}</span>
+            <span className={e('overflow-count')}>{count}</span>
           )}
-          <DownOutlined className={`${prefixCls}-overflow-arrow`} />
+          <DownOutlined className={e('overflow-arrow')} />
         </Button>
       );
       const renderInfo: ResponsiveButtonGroupOverflowRenderInfo = {
@@ -299,16 +303,16 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
       return React.isValidElement(content) ? (
         content
       ) : (
-        <span className={`${prefixCls}-overflow-trigger`}>{content}</span>
+        <span className={e('overflow-trigger')}>{content}</span>
       );
     },
     [
+      e,
       locale,
       measurementOverflowButtonProps,
       overflowButtonProps,
       overflowIcon,
       overflowText,
-      prefixCls,
       renderOverflowButton,
       showOverflowCount,
     ],
@@ -340,11 +344,7 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
       role="group"
       dir={direction}
     >
-      <div
-        ref={visibleContainerRef}
-        className={`${prefixCls}-visible`}
-        style={{ gap }}
-      >
+      <div ref={visibleContainerRef} className={e('visible')} style={{ gap }}>
         {visibleItems.map((item) => (
           <React.Fragment key={item.key}>
             {renderItemButton(item)}
@@ -354,12 +354,12 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
       </div>
 
       {mode === 'responsive' && items.length > 0 && (
-        <div className={`${prefixCls}-measure`} aria-hidden="true">
+        <div className={e('measure')} aria-hidden="true">
           {items.map((item) => (
             <span
               key={`item-${String(item.key)}`}
               ref={getItemMeasureRef(item.key)}
-              className={`${prefixCls}-measure-item`}
+              className={e('measure-item')}
             >
               {renderItemButton(item, true)}
             </span>
@@ -371,7 +371,7 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
               <span
                 key={`overflow-${count}`}
                 ref={getOverflowMeasureRef(count)}
-                className={`${prefixCls}-measure-item`}
+                className={e('measure-item')}
               >
                 {renderOverflowTrigger(currentMeasuredItems, open, true)}
               </span>

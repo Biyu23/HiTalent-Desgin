@@ -10,7 +10,7 @@ import React, {
   useRef,
 } from 'react';
 import { useLocale } from '../../configProvider/useLocale';
-import { usePrefixCls } from '../../configProvider/usePrefixCls';
+import { useNamespace } from '../../configProvider/usePrefixCls';
 import EnhancedHeaderCell from './components/EnhancedHeaderCell';
 import Toolbar from './components/Toolbar';
 import { useColumnConfig } from './hooks/useColumnConfig';
@@ -61,6 +61,7 @@ function InternalTable<RecordType = Record<string, unknown>>(
     hoverHighlight = DEFAULT_TABLE_PROPS.hoverHighlight,
     toolbarRender,
     toolbarExtra,
+    prefixCls: customPrefixCls,
     className,
     style,
     rowKey: rowKeyProp,
@@ -68,7 +69,7 @@ function InternalTable<RecordType = Record<string, unknown>>(
     components: userComponents,
     ...restProps
   } = props;
-  const prefixCls = usePrefixCls('table');
+  const { prefixCls, e, m } = useNamespace('table', customPrefixCls);
   const locale = useLocale('Table');
   const antdTableRef = useRef<AntdTableRef>(null);
   const controlled = 'columnState' in props;
@@ -322,13 +323,13 @@ function InternalTable<RecordType = Record<string, unknown>>(
   );
 
   const mergedClassName = clsx(prefixCls, className, {
-    [`${prefixCls}-zebra`]: zebraStripe,
-    [`${prefixCls}-no-hover`]: !hoverHighlight,
+    [m('zebra')]: zebraStripe,
+    [m('no-hover')]: !hoverHighlight,
   });
 
   return (
     <TableContext.Provider value={contextValue}>
-      <div className={`${prefixCls}-wrapper`}>
+      <div className={e('wrapper')}>
         {finalToolbar}
         <ColumnDragContextWrapper>
           <RowDragContextWrapper>

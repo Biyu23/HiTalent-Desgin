@@ -2,6 +2,7 @@ import type { CheckboxChangeEvent } from 'antd';
 import { Checkbox, Typography } from 'antd';
 import clsx from 'clsx';
 import React, { memo, useCallback } from 'react';
+import { useNamespace } from '../../../configProvider/usePrefixCls';
 import type { RawValueType } from '../type';
 
 interface ListItemProps<ValueType extends RawValueType = RawValueType> {
@@ -22,6 +23,7 @@ function ListItemInner<ValueType extends RawValueType = RawValueType>(
   props: ListItemProps<ValueType>,
 ) {
   const { item, isChecked, mode, prefixCls, optionRender, onToggle } = props;
+  const { e, em } = useNamespace('popover-select', prefixCls);
 
   const handleCheckboxChange = useCallback(
     (e: CheckboxChangeEvent) => {
@@ -46,7 +48,7 @@ function ListItemInner<ValueType extends RawValueType = RawValueType>(
         checked={isChecked}
         disabled={item?.disabled}
         onChange={handleCheckboxChange}
-        className={`${prefixCls}-menu-checkbox`}
+        className={e('menu-checkbox')}
       >
         {labelNode}
       </Checkbox>
@@ -57,10 +59,9 @@ function ListItemInner<ValueType extends RawValueType = RawValueType>(
     <div
       key={item.value}
       onClick={() => !item?.disabled && onToggle(item.value)}
-      className={clsx({
-        [`${prefixCls}-menu-radio`]: true,
-        [`${prefixCls}-menu-radio-disabled`]: item?.disabled,
-        [`${prefixCls}-menu-radio-active`]: isChecked,
+      className={clsx(e('menu-radio'), {
+        [em('menu-radio', 'disabled')]: item?.disabled,
+        [em('menu-radio', 'active')]: isChecked,
       })}
     >
       {labelNode}

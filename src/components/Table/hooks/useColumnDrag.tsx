@@ -36,7 +36,10 @@ import React, {
 } from 'react';
 import ReactDOM from 'react-dom';
 import { useLocale } from '../../../configProvider/useLocale';
-import { usePrefixCls } from '../../../configProvider/usePrefixCls';
+import {
+  useNamespace,
+  usePrefixCls,
+} from '../../../configProvider/usePrefixCls';
 import type { ColumnId } from '../type';
 import { moveColumnItem } from '../utils/columnDrag';
 
@@ -122,12 +125,14 @@ const SortableHeaderItem: React.FC<SortableHeaderItemProps> = ({
     };
   }, [transformValue, transition, isDragging, tableId, token]);
 
+  const { e } = useNamespace('table', prefixCls);
+
   return (
     <div
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      className={`${prefixCls}-drag-container`}
+      className={e('drag-container')}
       style={{
         transform: transformValue,
         transition,
@@ -169,6 +174,7 @@ const InternalColumnDragContext: React.FC<InternalColumnDragContextProps> = ({
   sensors,
   contextId,
 }) => {
+  const { e } = useNamespace('table', prefixCls);
   const [activeId, setActiveId] = useState<ColumnId | null>(null);
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -235,7 +241,7 @@ const InternalColumnDragContext: React.FC<InternalColumnDragContextProps> = ({
               }),
             }}
           >
-            <div className={`${prefixCls}-drag-overlay`}>
+            <div className={e('drag-overlay')}>
               <table>
                 <thead>
                   <tr>

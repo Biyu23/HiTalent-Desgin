@@ -1,5 +1,5 @@
 import React, { memo, useContext } from 'react';
-import { usePrefixCls } from '../../../configProvider/usePrefixCls';
+import { useNamespace } from '../../../configProvider/usePrefixCls';
 import { useColumnResize } from '../hooks/useColumnResize';
 import TableContext from '../TableContext';
 import type { EnhancedLeafColumnType } from '../type';
@@ -34,8 +34,7 @@ function EnhancedHeaderCell<RecordType = unknown>(
     ...restThProps
   } = props;
 
-  const tablePrefixCls = usePrefixCls('table');
-  const prefixCls = `${tablePrefixCls}-header-cell`;
+  const { e } = useNamespace('table');
   const context = useContext(TableContext);
   const currentControlledWidth =
     context.columnWidths[columnId] ??
@@ -56,8 +55,8 @@ function EnhancedHeaderCell<RecordType = unknown>(
 
   // 内部文字区域
   const cellContent = (
-    <div className={prefixCls}>
-      <span className={`${prefixCls}-title`}>{children}</span>
+    <div className={e('header-cell')}>
+      <span className={e('header-cell-title')}>{children}</span>
     </div>
   );
 
@@ -69,10 +68,7 @@ function EnhancedHeaderCell<RecordType = unknown>(
   );
 
   // 注入特定的样式类以控制 Antd 的分割线
-  const mergedClassName = [
-    className,
-    showResizeHandle ? `${tablePrefixCls}-resizable-th` : '',
-  ]
+  const mergedClassName = [className, showResizeHandle ? e('resizable-th') : '']
     .filter(Boolean)
     .join(' ');
 

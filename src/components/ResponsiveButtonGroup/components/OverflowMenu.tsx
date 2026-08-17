@@ -2,6 +2,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import type { DropdownProps, MenuProps } from 'antd';
 import { Dropdown } from 'antd';
 import React, { memo, useMemo } from 'react';
+import { useNamespace } from '../../../configProvider/usePrefixCls';
 import type {
   ResponsiveButtonGroupItem,
   ResponsiveButtonGroupRenderInfo,
@@ -34,18 +35,19 @@ const OverflowMenu: React.FC<OverflowMenuProps> = (props) => {
     onOpenChange,
     onItemClick,
   } = props;
+  const { e } = useNamespace('responsive-button-group', prefixCls);
 
   const menuItems = useMemo<MenuProps['items']>(() => {
     return items.map((item) => {
       const loading = item.loading || loadingKeys.has(item.key);
       const defaultNode = (
-        <span className={`${prefixCls}-menu-item-content`}>
+        <span className={e('menu-item-content')}>
           {(loading || item.icon) && (
-            <span className={`${prefixCls}-menu-item-icon`}>
+            <span className={e('menu-item-icon')}>
               {loading ? <LoadingOutlined spin /> : item.icon}
             </span>
           )}
-          <span className={`${prefixCls}-menu-item-label`}>{item.label}</span>
+          <span className={e('menu-item-label')}>{item.label}</span>
         </span>
       );
       const renderInfo: ResponsiveButtonGroupRenderInfo = {
@@ -63,7 +65,7 @@ const OverflowMenu: React.FC<OverflowMenuProps> = (props) => {
           : defaultNode,
       };
     });
-  }, [items, loadingKeys, prefixCls]);
+  }, [items, loadingKeys, e]);
 
   const handleMenuClick: MenuProps['onClick'] = (info) => {
     const item = items.find(

@@ -1,19 +1,39 @@
 import { ConfigProvider as AntdConfigProvider } from 'antd';
-import React, { useContext, useMemo } from 'react';
-import { ConfigContext } from './context';
+import React, { useCallback, useContext, useMemo } from 'react';
+import { ConfigContext, defaultPrefixCls } from './context';
 import { mergeLocale } from './mergeLocale';
 import type { ConfigProviderProps } from './type';
 
+export { ConfigContext, defaultPrefixCls } from './context';
+export type { ConfigContextValue } from './context';
 export type { ConfigProviderProps } from './type';
+export { useLocale } from './useLocale';
+export { useNamespace, usePrefixCls } from './usePrefixCls';
+export type { UseNamespaceResult } from './usePrefixCls';
 
 export const ConfigProvider: React.FC<ConfigProviderProps> = ({
   prefixCls,
+  antdPrefixCls,
+  iconPrefixCls,
   locale,
   localeOverrides,
   direction,
   children,
 }) => {
   const parentConfig = useContext(ConfigContext);
+  const mergedPrefixCls =
+    prefixCls ?? parentConfig.prefixCls ?? defaultPrefixCls;
+  const mergedAntdPrefixCls = antdPrefixCls ?? parentConfig.antdPrefixCls;
+  const mergedIconPrefixCls = iconPrefixCls ?? parentConfig.iconPrefixCls;
+
+  const getPrefixCls = useCallback(
+    (suffixCls?: string, customPrefix?: string) => {
+      if (customPrefix) return customPrefix;
+      return suffixCls ? `${mergedPrefixCls}-${suffixCls}` : mergedPrefixCls;
+    },
+    [mergedPrefixCls],
+  );
+
   const baseLocale = locale ?? parentConfig.locale;
   const resolvedDirection =
     direction ?? locale?.direction ?? parentConfig.direction;
@@ -28,15 +48,29 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({
 
   const config = useMemo(
     () => ({
-      prefixCls: prefixCls ?? parentConfig.prefixCls,
+      prefixCls: mergedPrefixCls,
+      antdPrefixCls: mergedAntdPrefixCls,
+      iconPrefixCls: mergedIconPrefixCls,
+      getPrefixCls,
       locale: mergedLocale,
       direction: resolvedDirection,
     }),
-    [prefixCls, parentConfig.prefixCls, mergedLocale, resolvedDirection],
+    [
+      mergedPrefixCls,
+      mergedAntdPrefixCls,
+      mergedIconPrefixCls,
+      getPrefixCls,
+      mergedLocale,
+      resolvedDirection,
+    ],
   );
 
   return (
-    <AntdConfigProvider direction={resolvedDirection}>
+    <AntdConfigProvider
+      prefixCls={mergedAntdPrefixCls}
+      iconPrefixCls={mergedIconPrefixCls}
+      direction={resolvedDirection}
+    >
       <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>
     </AntdConfigProvider>
   );

@@ -8,6 +8,7 @@ import { Button, Flex } from 'antd';
 import clsx from 'clsx';
 import React, { memo } from 'react';
 import { useLocale } from '../../../configProvider/useLocale';
+import { useNamespace } from '../../../configProvider/usePrefixCls';
 import { useModalContext } from '../ModalContext';
 
 export interface ModalHeaderProps {
@@ -36,6 +37,7 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
     onClose,
   } = useModalContext();
 
+  const { e, em } = useNamespace('modal', prefixCls);
   const modalLocale = useLocale('Modal');
 
   const needCustomHeader = draggable || minimizable || maximizable || closable;
@@ -77,16 +79,16 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
 
   return (
     <div
-      className={clsx(`${prefixCls}-header-wrapper`, className, {
-        [`${prefixCls}-header-wrapper-draggable`]: draggable,
+      className={clsx(e('header'), className, {
+        [em('header', 'draggable')]: draggable,
       })}
       role={draggable ? 'button' : undefined}
       aria-label={draggable ? modalLocale.dragHandle : undefined}
     >
-      <div className={`${prefixCls}-title-text`}>{title}</div>
+      <div className={e('title')}>{title}</div>
       <Flex
         hidden={actions.length === 0}
-        className={`${prefixCls}-header-actions`}
+        className={e('actions')}
         gap={8}
         align="center"
         onClick={(e) => e.stopPropagation()}

@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { usePrefixCls } from '../../../configProvider/usePrefixCls';
+import { useNamespace } from '../../../configProvider/usePrefixCls';
 import type { ColumnId, EnhancedColumnType } from '../type';
 import ColumnSettingPopover from './ColumnSettingPopover';
 
@@ -25,15 +25,15 @@ function Toolbar<RecordType = Record<string, unknown>>(
     toolbarExtra,
     columnSettingLoading,
   } = props;
-  const prefixCls = usePrefixCls('table-toolbar');
+  const { e } = useNamespace('table');
 
   if (!showColumnSetting && !toolbarExtra) return null;
 
   return (
-    <div className={prefixCls}>
-      <div className={`${prefixCls}-extra`}>{toolbarExtra}</div>
+    <div className={e('toolbar')}>
+      <div className={e('toolbar-extra')}>{toolbarExtra}</div>
       {showColumnSetting && (
-        <div className={`${prefixCls}-setting`}>
+        <div className={e('toolbar-setting')}>
           <ColumnSettingPopover
             columns={columns}
             visibleIds={visibleIds}

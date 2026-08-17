@@ -5,10 +5,8 @@
 // ============================================================
 
 // Modal 容器层 — 开启拖拽/缩放/最大化时限制视口溢出，避免外层出现滚动条
-.@{custom-prefix}-modal-wrap {
-  &-constrained {
-    overflow: hidden;
-  }
+.@{custom-prefix}-modal-wrap-constrained {
+  overflow: hidden;
 }
 
 .@{custom-prefix}-modal {
@@ -29,11 +27,11 @@
     }
   }
 
-  &-window-wrapper {
+  &-window {
     // transform 由 react-draggable 管理，不参与 Ant Design 的初始定位。
   }
 
-  &-header-wrapper {
+  &-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -45,12 +43,12 @@
     }
   }
 
-  &-title-text {
+  &-title {
     flex: 1;
     overflow: hidden;
   }
 
-  &-header-actions {
+  &-actions {
     flex-shrink: 0;
 
     .ant-btn {
@@ -78,7 +76,7 @@
     box-sizing: border-box;
     max-width: none;
 
-    .@{custom-prefix}-modal-window-wrapper,
+    .@{custom-prefix}-modal-window,
     .ant-modal-content {
       height: 100%;
       display: flex;
@@ -162,7 +160,7 @@
       overflow: auto;
     }
 
-    .@{custom-prefix}-modal-header-wrapper {
+    .@{custom-prefix}-modal-header {
       cursor: default;
     }
   }

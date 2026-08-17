@@ -8,7 +8,7 @@ import React, {
   useMemo,
 } from 'react';
 import { useLocale } from '../../configProvider/useLocale';
-import { usePrefixCls } from '../../configProvider/usePrefixCls';
+import { useNamespace, usePrefixCls } from '../../configProvider/usePrefixCls';
 import MinimizedDock from '../_util/minimize/MinimizedDock';
 import ModalHeader from './components/ModalHeader';
 import ModalWindowWrapper from './components/ModalWindowWrapper';
@@ -32,6 +32,7 @@ import destroyFns from './utils/destroyFns';
  */
 const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   const {
+    prefixCls: customPrefixCls,
     open,
     title,
     draggable = false,
@@ -55,7 +56,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     ...restProps
   } = props;
 
-  const prefixCls = usePrefixCls('modal');
+  const { prefixCls, e, m, em } = useNamespace('modal', customPrefixCls);
   const dockPrefixCls = usePrefixCls('minimize');
   const modalLocale = useLocale('Modal');
 
@@ -220,17 +221,17 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
         onCancel={handleClose}
         style={mergedStyle}
         styles={mergedStyles}
-        wrapClassName={clsx(wrapClassName, `${prefixCls}-wrap`, {
-          [`${prefixCls}-wrap-constrained`]:
+        wrapClassName={clsx(wrapClassName, e('wrap'), {
+          [em('wrap', 'constrained')]:
             draggable || Boolean(resizable) || isMaximized || !!windowSize,
         })}
         className={clsx(prefixCls, className, {
-          [`${prefixCls}-maximized`]: isMaximized,
-          [`${prefixCls}-manual-size`]: !!windowSize && !isMaximized,
-          [`${prefixCls}-resizing`]: isResizing,
-          [`${prefixCls}-draggable`]: draggable && !isMaximized,
-          [`${prefixCls}-resizable`]: Boolean(resizable) && !isMaximized,
-          [`${prefixCls}-transition-active`]: !isResizing,
+          [m('maximized')]: isMaximized,
+          [m('manual-size')]: !!windowSize && !isMaximized,
+          [m('resizing')]: isResizing,
+          [m('draggable')]: draggable && !isMaximized,
+          [m('resizable')]: Boolean(resizable) && !isMaximized,
+          [m('transition-active')]: !isResizing,
         })}
         title={<ModalHeader title={title} />}
       >

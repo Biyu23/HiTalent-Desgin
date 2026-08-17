@@ -1,5 +1,9 @@
 @import '../../style/variables.less';
 
+// ============================================================
+// Drawer 增强样式
+// ============================================================
+
 .@{custom-prefix}-drawer {
   &-header-actions {
     .ant-btn {
@@ -7,16 +11,22 @@
     }
   }
 
-  &-wrapper-resizing {
-    transition: none !important;
+  &-empty-title {
+    display: inline-block;
   }
 
-  &-wrapper-resizing&-wrapper-horizontal {
-    will-change: width;
-  }
+  &-wrapper {
+    &-resizing {
+      transition: none !important;
+    }
 
-  &-wrapper-resizing&-wrapper-vertical {
-    will-change: height;
+    &-resizing&-horizontal {
+      will-change: width;
+    }
+
+    &-resizing&-vertical {
+      will-change: height;
+    }
   }
 
   &-resize-handle {

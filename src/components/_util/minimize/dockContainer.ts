@@ -46,7 +46,7 @@ export const ensureScrollWrapper = (
 
   const container = document.createElement('div');
   container.id = getContainerId(position, dockPrefixCls);
-  container.className = `${dockPrefixCls}-container ${dockPrefixCls}-${position}`;
+  container.className = `${dockPrefixCls}-container ${dockPrefixCls}-container-${position}`;
 
   const scrollWrapper = document.createElement('div');
   scrollWrapper.className = `${dockPrefixCls}-scroll-wrapper`;

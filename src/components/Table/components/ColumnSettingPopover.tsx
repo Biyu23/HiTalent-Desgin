@@ -2,7 +2,7 @@ import { LoadingOutlined, SettingOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Empty, Popover, Spin } from 'antd';
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { useLocale } from '../../../configProvider/useLocale';
-import { usePrefixCls } from '../../../configProvider/usePrefixCls';
+import { useNamespace } from '../../../configProvider/usePrefixCls';
 import type { ColumnId, EnhancedColumnType } from '../type';
 import { collectColumnMeta } from '../utils/columnHelpers';
 
@@ -24,7 +24,7 @@ function ColumnSettingPopover<RecordType = Record<string, unknown>>(
     loading = false,
     title: titleProp,
   } = props;
-  const prefixCls = usePrefixCls('table-column-setting');
+  const { e } = useNamespace('table');
   const locale = useLocale('Table');
   const [open, setOpen] = useState(false);
   const [checkValue, setCheckValue] = useState<ColumnId[]>([...visibleIds]);
@@ -62,9 +62,9 @@ function ColumnSettingPopover<RecordType = Record<string, unknown>>(
     if (!optionsList.length) return <Empty />;
 
     const listContent = (
-      <div className={`${prefixCls}-list`}>
+      <div className={e('column-setting-list')}>
         {optionsList.map((item) => (
-          <div key={item.id} className={`${prefixCls}-item`}>
+          <div key={item.id} className={e('column-setting-item')}>
             <Checkbox
               checked={item.disabled || checkValue.includes(item.id)}
               disabled={item.disabled}
@@ -84,7 +84,7 @@ function ColumnSettingPopover<RecordType = Record<string, unknown>>(
     );
 
     const footer = (
-      <div className={`${prefixCls}-footer`}>
+      <div className={e('column-setting-footer')}>
         <Button size="small" onClick={handleCancel}>
           {locale.cancel}
         </Button>
@@ -121,8 +121,8 @@ function ColumnSettingPopover<RecordType = Record<string, unknown>>(
       content={renderContent()}
       title={title}
       classNames={{
-        root: `${prefixCls}-popover`,
-        body: `${prefixCls}-popover-body`,
+        root: e('column-setting-popover'),
+        body: e('column-setting-popover-body'),
       }}
     >
       <Button

@@ -2,8 +2,19 @@
 export * from './components';
 
 // ConfigProvider
-export { ConfigProvider } from './configProvider';
-export type { ConfigProviderProps } from './configProvider';
+export {
+  ConfigContext,
+  ConfigProvider,
+  defaultPrefixCls,
+  useLocale,
+  useNamespace,
+  usePrefixCls,
+} from './configProvider';
+export type {
+  ConfigContextValue,
+  ConfigProviderProps,
+  UseNamespaceResult,
+} from './configProvider';
 
 // Hooks
 export { useDragBounds, useFieldNames, useMergeState } from './hooks';

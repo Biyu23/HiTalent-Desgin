@@ -11,7 +11,7 @@ import React, {
   useState,
 } from 'react';
 import { useLocale } from '../../configProvider/useLocale';
-import { usePrefixCls } from '../../configProvider/usePrefixCls';
+import { useNamespace, usePrefixCls } from '../../configProvider/usePrefixCls';
 import MinimizedDock from '../_util/minimize/MinimizedDock';
 import { useMinimizeState } from '../_util/minimize/useMinimizeState';
 import DrawerResizeHandle from './components/DrawerResizeHandle';
@@ -50,6 +50,7 @@ const resolveMinimizableClosable = (
 /** 在 Ant Design 5 Drawer 基础上增加尺寸调整和最小化能力。 */
 const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
   const {
+    prefixCls: customPrefixCls,
     placement = 'right',
     size,
     defaultSize,
@@ -76,7 +77,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     ...restProps
   } = props;
 
-  const prefixCls = usePrefixCls('drawer');
+  const { prefixCls, e, em } = useNamespace('drawer', customPrefixCls);
   const dockPrefixCls = usePrefixCls('minimize');
   const drawerLocale = useLocale('Drawer');
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -152,13 +153,13 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
   const mergedClassNames = useMemo(
     () => ({
       ...antdClassNames,
-      wrapper: clsx(userWrapperClassName, `${prefixCls}-wrapper`, {
-        [`${prefixCls}-wrapper-resizing`]: isResizing,
-        [`${prefixCls}-wrapper-horizontal`]: axis === 'horizontal',
-        [`${prefixCls}-wrapper-vertical`]: axis === 'vertical',
+      wrapper: clsx(userWrapperClassName, e('wrapper'), {
+        [em('wrapper', 'resizing')]: isResizing,
+        [em('wrapper', 'horizontal')]: axis === 'horizontal',
+        [em('wrapper', 'vertical')]: axis === 'vertical',
       }),
     }),
-    [antdClassNames, axis, isResizing, prefixCls, userWrapperClassName],
+    [antdClassNames, axis, e, em, isResizing, userWrapperClassName],
   );
 
   const mergedStyles = useMemo(
@@ -177,7 +178,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
   const mergedExtra = useMemo(
     () =>
       minimizable ? (
-        <Flex gap={8} align="center" className={`${prefixCls}-header-actions`}>
+        <Flex gap={8} align="center" className={e('header-actions')}>
           {extra}
           <Button
             size="small"
@@ -194,12 +195,12 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
       ),
     [
       drawerLocale.minimize,
+      e,
       extra,
       minimizable,
       minimize,
       minimizeButtonClassName,
       minimizeButtonStyle,
-      prefixCls,
     ],
   );
 
@@ -212,11 +213,11 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
   const mergedTitle = useMemo(
     () =>
       minimizable && !title ? (
-        <span className={`${prefixCls}-empty-title`} aria-hidden />
+        <span className={e('empty-title')} aria-hidden />
       ) : (
         title
       ),
-    [minimizable, prefixCls, title],
+    [e, minimizable, title],
   );
 
   const finalDrawerRender = useCallback(

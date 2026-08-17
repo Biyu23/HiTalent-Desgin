@@ -18,6 +18,10 @@ export interface PopoverSelectProps<
   OptionType extends Record<string, any> = DefaultOptionType,
 > extends NativeProps {
   /**
+   * @description 样式类名前缀
+   */
+  prefixCls?: string;
+  /**
    * @description 数据配置选项
    * @default []
    */
@@ -122,6 +126,8 @@ export interface PopoverSelectProps<
 }
 
 export interface SelectorProps extends NativeProps {
+  /** 样式类名前缀 */
+  prefixCls?: string;
   /** 下拉内容渲染函数，传递函数引用以配合 memo 优化 */
   content: () => React.ReactNode;
   autoAdjustOverflow?: boolean;

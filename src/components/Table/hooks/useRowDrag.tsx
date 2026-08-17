@@ -26,6 +26,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import clsx from 'clsx';
 import React, {
   useCallback,
   useContext,
@@ -35,7 +36,10 @@ import React, {
 } from 'react';
 import ReactDOM from 'react-dom';
 import { useLocale } from '../../../configProvider/useLocale';
-import { usePrefixCls } from '../../../configProvider/usePrefixCls';
+import {
+  useNamespace,
+  usePrefixCls,
+} from '../../../configProvider/usePrefixCls';
 import type { RowDragConfig, RowDragResult } from '../type';
 import type { RowKeyGetter, RowRegistry } from '../types/internal';
 import {
@@ -63,6 +67,7 @@ function stopRowEvent(event: React.SyntheticEvent) {
 
 export const RowDragHandle: React.FC = () => {
   const context = useContext(RowDragHandleContext);
+  const { e, em } = useNamespace('table', context?.prefixCls);
   if (!context) return null;
   const {
     attributes,
@@ -70,12 +75,11 @@ export const RowDragHandle: React.FC = () => {
     setActivatorNodeRef,
     dragHandleLabel,
     draggable,
-    prefixCls,
   } = context;
 
   return (
     <div
-      className={`${prefixCls}-row-drag-handle-wrapper`}
+      className={e('row-drag-handle-wrapper')}
       onPointerDown={stopRowEvent}
       onClick={stopRowEvent}
       onDoubleClick={stopRowEvent}
@@ -83,9 +87,9 @@ export const RowDragHandle: React.FC = () => {
     >
       <span
         ref={draggable ? setActivatorNodeRef : undefined}
-        className={`${prefixCls}-row-drag-handle${
-          draggable ? '' : ` ${prefixCls}-row-drag-handle-disabled`
-        }`}
+        className={clsx(e('row-drag-handle'), {
+          [em('row-drag-handle', 'disabled')]: !draggable,
+        })}
         aria-label={dragHandleLabel}
         {...(draggable ? listeners : undefined)}
         {...(draggable ? attributes : undefined)}
@@ -143,10 +147,9 @@ const SortableRow: React.FC<SortableRowProps> = ({
   const candidate = dragState.candidate;
   const treeMode = dragState.treeMode;
   const isTarget = candidate?.targetKey === id;
+  const { e } = useNamespace('table', prefixCls);
   const dropClass =
-    isTarget && treeMode
-      ? `${prefixCls}-row-drag-over-${candidate.position}`
-      : undefined;
+    isTarget && treeMode ? e(`row-drag-over-${candidate.position}`) : undefined;
 
   const handleContextValue = useMemo(
     () => ({
@@ -213,6 +216,7 @@ const InternalRowDragContext = <RecordType,>({
   sensors,
   contextId,
 }: InternalRowDragContextProps<RecordType>) => {
+  const { e } = useNamespace('table', prefixCls);
   const [activeKey, setActiveKey] = useState<React.Key | null>(null);
   const [candidate, setCandidate] = useState<RowDragResult<RecordType> | null>(
     null,
@@ -320,7 +324,7 @@ const InternalRowDragContext = <RecordType,>({
               }),
             }}
           >
-            <div className={`${prefixCls}-drag-overlay`}>
+            <div className={e('drag-overlay')}>
               <table>
                 <tbody>
                   <tr>

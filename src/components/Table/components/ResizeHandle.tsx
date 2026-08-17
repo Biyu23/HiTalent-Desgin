@@ -1,5 +1,6 @@
+import clsx from 'clsx';
 import React, { memo } from 'react';
-import { usePrefixCls } from '../../../configProvider/usePrefixCls';
+import { useNamespace } from '../../../configProvider/usePrefixCls';
 
 interface ResizeHandleProps {
   isResizing: boolean;
@@ -10,10 +11,12 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({
   isResizing,
   onPointerDown,
 }) => {
-  const prefixCls = usePrefixCls('table-resize-handle');
+  const { e, em } = useNamespace('table');
   return (
     <div
-      className={`${prefixCls}${isResizing ? ` ${prefixCls}-active` : ''}`}
+      className={clsx(e('resize-handle'), {
+        [em('resize-handle', 'active')]: isResizing,
+      })}
       onPointerDown={onPointerDown}
       onClick={(e) => e.stopPropagation()}
       role="separator"

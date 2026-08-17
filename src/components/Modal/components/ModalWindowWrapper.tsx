@@ -2,6 +2,7 @@ import React, { memo, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { DraggableData, DraggableEvent } from 'react-draggable';
 import ReactDraggable from 'react-draggable';
+import { useNamespace } from '../../../configProvider/usePrefixCls';
 import { useModalContext } from '../ModalContext';
 import { useModalResize } from '../hooks/useModalResize';
 import ModalResizeHandle from './ModalResizeHandle';
@@ -26,6 +27,7 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
     setWindowSize,
     setResizing,
   } = useModalContext();
+  const { e } = useNamespace('modal', prefixCls);
   const dragRef = useRef<HTMLDivElement>(null);
   const modalContentRef = useRef<HTMLElement | null>(null);
   const [modalContent, setModalContent] = useState<HTMLElement | null>(null);
@@ -52,10 +54,10 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
   const handleDrag = (_event: DraggableEvent, data: DraggableData) => {
     setWindowPosition({ x: data.x, y: data.y });
   };
-  const handleSelector = `.${prefixCls}-header-wrapper, .ant-modal-footer`;
+  const handleSelector = `.${e('header')}, .ant-modal-footer`;
   const cancelSelector = [
-    `.${prefixCls}-header-actions`,
-    `.${prefixCls}-resize-handle`,
+    `.${e('actions')}`,
+    `.${e('resize-handle')}`,
     '[data-modal-no-drag]',
     'button',
     'a',
@@ -94,7 +96,7 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
     >
       <div
         ref={dragRef}
-        className={`${prefixCls}-window-wrapper`}
+        className={e('window')}
         data-dragging={draggable && !isMaximized ? 'true' : undefined}
       >
         {children}

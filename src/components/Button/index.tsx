@@ -1,6 +1,7 @@
 import type { TooltipProps } from 'antd';
 import { Button as AntdButton, Tooltip } from 'antd';
 import React, { memo, useEffect, useRef, useState } from 'react';
+import { usePrefixCls } from '../../configProvider/usePrefixCls';
 import { isThenable, withNativeProps } from '../../util';
 import type { ButtonProps } from './type';
 import { isTooltipProps } from './utils/tooltip';
@@ -10,6 +11,7 @@ const Button = React.forwardRef<
   ButtonProps
 >((props, ref) => {
   const {
+    prefixCls: customPrefixCls,
     autoLoading = true,
     throttle = 0,
     onClick,
@@ -20,8 +22,7 @@ const Button = React.forwardRef<
     ...restProps
   } = props;
 
-  // const prefixCls = usePrefixCls('btn');
-  // const buttonLocale = useLocale('Button');
+  const prefixCls = usePrefixCls('btn', customPrefixCls);
   const [innerLoading, setInnerLoading] = useState(false);
   const isUnmounted = useRef(false);
   const isThrottling = useRef(false);
@@ -83,6 +84,7 @@ const Button = React.forwardRef<
   const buttonElement = (
     <AntdButton
       ref={ref}
+      prefixCls={customPrefixCls ? prefixCls : undefined}
       {...restProps}
       disabled={disabled}
       loading={combinedLoading}

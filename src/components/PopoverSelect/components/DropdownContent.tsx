@@ -1,6 +1,7 @@
 import { Empty } from 'antd';
 import VirtualList from 'rc-virtual-list';
 import React, { memo, useCallback } from 'react';
+import { useNamespace } from '../../../configProvider/usePrefixCls';
 import type { RawValueType } from '../type';
 import FooterActions from './FooterActions';
 import ListItem from './ListItem';
@@ -77,6 +78,8 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
     listItemHeight,
   } = props;
 
+  const { e } = useNamespace('popover-select', prefixCls);
+
   // ---- 列表渲染函数，传递给 VirtualList 或 map ----
   const renderItemInner = useCallback(
     (item: Record<string, any>) => {
@@ -102,10 +105,10 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
       listHeight,
     );
     return (
-      <div className={`${prefixCls}-menu`}>
+      <div className={e('menu')}>
         {virtual ? (
           <VirtualList
-            className={`${prefixCls}-menu-virtual-list`}
+            className={e('menu-virtual-list')}
             data={displayOptions}
             height={actualHeight}
             itemHeight={listItemHeight}
@@ -125,16 +128,16 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
     displayOptions,
     listItemHeight,
     listHeight,
+    e,
     virtual,
-    prefixCls,
     renderItemInner,
   ]);
 
   // 空状态：无原始选项
   if (!hasOptions) {
     return (
-      <div className={`${prefixCls}-dropdown-content`}>
-        <div className={`${prefixCls}-empty`}>
+      <div className={e('dropdown')}>
+        <div className={e('empty')}>
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={componentLocale.noData}
@@ -150,7 +153,7 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
     : menuNode;
 
   return (
-    <div className={`${prefixCls}-dropdown-content`}>
+    <div className={e('dropdown')}>
       {showSearch && (
         <SearchInput
           prefixCls={prefixCls}
@@ -173,7 +176,7 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
       {hasDisplayOptions ? (
         finalMenuNode
       ) : (
-        <div className={`${prefixCls}-empty`}>
+        <div className={e('empty')}>
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={componentLocale.noMatch}

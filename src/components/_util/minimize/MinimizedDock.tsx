@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import React, { memo, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import ReactDraggable from 'react-draggable';
+import { useNamespace } from '../../../configProvider/usePrefixCls';
 import useDragBounds from '../../../hooks/useDragBounds';
 import {
   decrementRefCount,
@@ -29,6 +30,7 @@ const MinimizedDockInner = memo<MinimizedDockProps>(
     onRestore,
     onClose,
   }) => {
+    const { e } = useNamespace('minimize', dockPrefixCls);
     const { dragRef, bounds, onStart } = useDragBounds();
     const [scrollWrapperEl, setScrollWrapperEl] = useState<HTMLElement | null>(
       () => getExistingScrollWrapper(position, dockPrefixCls),
@@ -55,12 +57,12 @@ const MinimizedDockInner = memo<MinimizedDockProps>(
         nodeRef={dragRef}
         bounds={bounds}
         onStart={onStart}
-        handle={`.${dockPrefixCls}-header`}
+        handle={`.${e('header')}`}
       >
         <div
           ref={dragRef}
           className={clsx(
-            `${dockPrefixCls}-dock`,
+            e('dock'),
             sourcePrefixCls && `${sourcePrefixCls}-minimized-dock`,
             className,
           )}
@@ -70,7 +72,7 @@ const MinimizedDockInner = memo<MinimizedDockProps>(
         >
           <div
             className={clsx(
-              `${dockPrefixCls}-header`,
+              e('header'),
               sourcePrefixCls && `${sourcePrefixCls}-minimized-header`,
             )}
             role="group"
@@ -78,8 +80,8 @@ const MinimizedDockInner = memo<MinimizedDockProps>(
           >
             <div
               className={clsx(
-                `${dockPrefixCls}-title`,
-                sourcePrefixCls && `${sourcePrefixCls}-title-text`,
+                e('title'),
+                sourcePrefixCls && `${sourcePrefixCls}-title`,
               )}
             >
               {title}
@@ -88,7 +90,7 @@ const MinimizedDockInner = memo<MinimizedDockProps>(
               gap={8}
               align="center"
               className={clsx(
-                `${dockPrefixCls}-actions`,
+                e('actions'),
                 sourcePrefixCls && `${sourcePrefixCls}-minimized-actions`,
               )}
             >

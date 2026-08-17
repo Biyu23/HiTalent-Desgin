@@ -2,7 +2,7 @@ import { CloseCircleOutlined, DownOutlined } from '@ant-design/icons';
 import { Button, Popover, Typography } from 'antd';
 import clsx from 'clsx';
 import React, { memo } from 'react';
-import { usePrefixCls } from '../../configProvider/usePrefixCls';
+import { useNamespace } from '../../configProvider/usePrefixCls';
 import { useMergeState } from '../../hooks';
 import { withNativeProps } from '../../util';
 import './index.less';
@@ -10,6 +10,7 @@ import type { SelectorProps } from './type';
 
 const Selector: React.FC<SelectorProps> = (props) => {
   const {
+    prefixCls: customPrefixCls,
     content,
     autoAdjustOverflow,
     rootClassName,
@@ -24,7 +25,7 @@ const Selector: React.FC<SelectorProps> = (props) => {
     showArrow = true,
     onClear,
   } = props;
-  const prefixCls = usePrefixCls('popover-selector');
+  const { e, em } = useNamespace('popover-select', customPrefixCls);
   const [open, { set: onOpenChange }] = useMergeState<boolean>({
     defaultValue: false,
     value: openProp,
@@ -33,7 +34,7 @@ const Selector: React.FC<SelectorProps> = (props) => {
 
   const renderChildren = () => {
     return (
-      <Typography.Paragraph className={`${prefixCls}-text`} ellipsis={ellipsis}>
+      <Typography.Paragraph className={e('selector-text')} ellipsis={ellipsis}>
         {children}
       </Typography.Paragraph>
     );
@@ -43,7 +44,7 @@ const Selector: React.FC<SelectorProps> = (props) => {
     if (!allowClear || !hasValue) return null;
     return (
       <CloseCircleOutlined
-        className={`${prefixCls}-clear`}
+        className={e('selector-clear')}
         onClick={(e) => {
           e.stopPropagation();
           onClear?.(e);
@@ -54,20 +55,16 @@ const Selector: React.FC<SelectorProps> = (props) => {
 
   const renderArrow = () => {
     if (!showArrow) return null;
-    return <DownOutlined className={`${prefixCls}-arrow`} />;
+    return <DownOutlined className={e('selector-arrow')} />;
   };
 
   return withNativeProps(
     props,
     <Popover
       trigger="click"
-      className={clsx({
-        [`${prefixCls}-popover`]: true,
-        [`${prefixCls}-open`]: open,
-      })}
       autoAdjustOverflow={autoAdjustOverflow}
-      rootClassName={rootClassName}
-      openClassName={openClassName}
+      rootClassName={clsx(e('selector'), rootClassName)}
+      openClassName={clsx(openClassName, em('selector-btn', 'open'))}
       afterOpenChange={afterOpenChange}
       open={open}
       content={content()}
@@ -75,9 +72,9 @@ const Selector: React.FC<SelectorProps> = (props) => {
     >
       <Button
         type="text"
-        className={clsx({
-          [`${prefixCls}-btn`]: true,
-          [`${prefixCls}-active-btn`]: hasValue,
+        className={clsx(e('selector-btn'), {
+          [em('selector-btn', 'active')]: hasValue,
+          [em('selector-btn', 'open')]: open,
         })}
       >
         {renderChildren()}
