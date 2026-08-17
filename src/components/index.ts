@@ -18,10 +18,13 @@ export type {
 
 export { default as Drawer } from './Drawer';
 export type {
+  DrawerAxis,
   DrawerClassNames,
+  DrawerPlacement,
   DrawerProps,
   DrawerRef,
   DrawerResizableConfig,
+  DrawerSize,
   DrawerStyles,
 } from './Drawer/type';
 
@@ -30,6 +33,7 @@ export type {
   MinimizePosition,
   ModalProps,
   ModalRef,
+  ModalResizableConfig,
   ModalStaticMethods,
 } from './Modal/type';
 

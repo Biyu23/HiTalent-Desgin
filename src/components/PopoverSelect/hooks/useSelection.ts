@@ -47,7 +47,6 @@ export function useSelection<
 
   const [draftValue, setDraftValue] = useState<ValueType[]>([]);
 
-  // ---- Ref 缓存：避免 useCallback 闭包陷阱（必须在 useEffect 之前声明） ----
   const internalValueRef = React.useRef(internalValue);
   internalValueRef.current = internalValue;
   const draftValueRef = React.useRef(draftValue);
@@ -65,14 +64,12 @@ export function useSelection<
   const setOpenRef = React.useRef(setOpen);
   setOpenRef.current = setOpen;
 
-  // 每次打开弹窗时用当前已确认值初始化草稿
   useEffect(() => {
     if (open) {
       setDraftValue(internalValueRef.current);
     }
   }, [open]);
 
-  // ---- 计算派生状态 ----
   const targetValueList = realShowConfirm ? draftValue : internalValue;
   const enabledOptions = options.filter((o: MappedOption) => !o.disabled);
   const isAllSelected =
@@ -85,9 +82,6 @@ export function useSelection<
       targetValueList.includes(o.value),
     ) && !isAllSelected;
 
-  // ---- 事件处理（全部通过 Ref 访问最新值） ----
-
-  /** 核心：切换某个选项的选中状态 */
   const handleValueToggle = useCallback((itemValue: ValueType) => {
     const currentTargetList = realShowConfirmRef.current
       ? draftValueRef.current
@@ -116,7 +110,6 @@ export function useSelection<
     }
   }, []);
 
-  /** 全选 / 取消全选 */
   const handleSelectAll = useCallback((e: CheckboxChangeEvent) => {
     const checked = e.target.checked;
     const enabledOpts = optionsRef.current.filter(
@@ -142,7 +135,6 @@ export function useSelection<
     }
   }, []);
 
-  /** Checkbox onChange 包装：从事件中提取 value 并委托给 handleValueToggle */
   const handleChange: CheckboxProps['onChange'] = useCallback(
     (event) => {
       handleValueToggle(event.target.value as ValueType);
@@ -150,7 +142,6 @@ export function useSelection<
     [handleValueToggle],
   );
 
-  /** 多选确认模式：提交草稿值 */
   const handleConfirm = useCallback(() => {
     const newOptions = optionsRef.current.filter((opt: MappedOption) =>
       draftValueRef.current.includes(opt.value),
@@ -159,13 +150,10 @@ export function useSelection<
     setOpenRef.current(false);
   }, []);
 
-  /** 取消：仅关闭弹窗，不提交 */
   const handleCancel = useCallback(() => setOpenRef.current(false), []);
 
-  /** 清空当前草稿 */
   const handleDraftClear = useCallback(() => setDraftValue([]), []);
 
-  /** 清除所有已选值（触发 onChange） */
   const handleClear = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     clearValueRef.current([] as ValueType[]);

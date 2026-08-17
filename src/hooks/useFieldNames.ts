@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from 'react';
-// 1. 定义支持的字段类型 (可以根据你的实际需求增删)
 export interface FieldNames {
   label?: string;
   value?: string;
@@ -7,10 +6,8 @@ export interface FieldNames {
   disabled?: string;
 }
 
-// 2. 内部使用的完整字段类型 (确保所有字段都有默认值)
 export type MergedFieldNames = Required<FieldNames>;
 
-// 3. 默认字段配置
 const defaultFieldNames: MergedFieldNames = {
   label: 'label',
   value: 'value',

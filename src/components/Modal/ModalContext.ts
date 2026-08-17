@@ -8,7 +8,7 @@ export interface ModalContextValue {
   /** 是否开启拖拽 */
   draggable: boolean;
   /** 是否开启尺寸调整 */
-  resizable: boolean;
+  resizable: boolean | ModalProps['resizable'];
   /** 是否支持最小化 */
   minimizable: boolean;
   /** 是否支持最大化 */

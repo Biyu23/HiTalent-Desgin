@@ -55,16 +55,36 @@ export default () => {
         <Button type="primary" onClick={() => setOpen(true)}>
           {t('ref.open')}
         </Button>
-        <Button onClick={() => modalRef.current?.minimize()}>
+        <Button
+          onClick={() => {
+            setOpen(true);
+            modalRef.current?.minimize();
+          }}
+        >
           {t('ref.minimize')}
         </Button>
-        <Button onClick={() => modalRef.current?.restore()}>
+        <Button
+          onClick={() => {
+            setOpen(true);
+            modalRef.current?.restore();
+          }}
+        >
           {t('ref.restore')}
         </Button>
-        <Button onClick={() => modalRef.current?.maximize()}>
+        <Button
+          onClick={() => {
+            setOpen(true);
+            modalRef.current?.maximize();
+          }}
+        >
           {t('ref.maximize')}
         </Button>
-        <Button onClick={() => modalRef.current?.unmaximize()}>
+        <Button
+          onClick={() => {
+            setOpen(true);
+            modalRef.current?.unmaximize();
+          }}
+        >
           {t('ref.unmaximize')}
         </Button>
       </Space>

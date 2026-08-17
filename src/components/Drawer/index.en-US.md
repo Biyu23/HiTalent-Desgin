@@ -6,102 +6,68 @@ toc: content
 
 # Drawer
 
-Extends Ant Design Drawer with placement-aware resizing and minimization to a global Dock.
+Extends Ant Design Drawer with directional resize handles, minimization to a global Dock, state persistence, and multi-window orchestration.
 
-## When to use
+## Features
 
-- A drawer contains tables, forms, or details whose visible area should be adjustable.
-- A complex task needs to be set aside temporarily without losing its context.
-- A drawer is rendered inside a local container and its size must stay within that boundary.
+- **Directional Resizing**: Automatically mounts a drag handle on the inner edge based on `placement` (width for `left`/`right`, height for `top`/`bottom`), with `minSize` (default 100px) anti-collapse and `maxSize` container bounds.
+- **Global Dock Minimization**: Supports 8 dock positions with multi-instance stacking; preserves DOM, form inputs, scroll position, and resized dimensions during minimization.
+- **Dual-Mode Sizing**: Supports controlled `size` and uncontrolled `defaultSize`, fully compatible with `default` (378px), `large` (736px), and custom numbers or CSS units.
+- **Imperative Control & Dock Sharing**: Exposes `minimize` / `restore` via `DrawerRef`, and shares the unified global Dock with Modal.
 
-## Capabilities
+## Code Demonstrations
 
-- Resize width for `left` / `right` and height for `top` / `bottom`.
-- Keep the resize handle on the inner edge facing the page content.
-- Resolve `maxSize` against the actual Drawer container size.
-- Support controlled `size` and uncontrolled `defaultSize`.
-- Minimize to eight global Dock positions with multi-instance stacking, scrolling, and independent dragging.
-- Preserve DOM, form values, scroll position, and manually adjusted size while minimized.
-- Share the same global Dock with Modal.
+<code src="./demo/resizable-body.tsx" title="Basic & Resizing" description="Drag the inner edge to resize width or height with 4-direction support and min/max constraints."></code>
 
-## Examples
+<code src="./demo/minimize.tsx" title="Minimize & Task Persistence" description="Minimize to the global Dock from header button or DrawerRef, preserving form input and resized dimensions on restore."></code>
 
-<code src="./demo/resizable-body.tsx" title="Basic" description="Drag the inner edge to resize the drawer width or height."></code>
+<code src="./demo/controlled-minimize.tsx" title="Controlled Dock Positions" description="Manage minimized state in controlled mode across 8 global dock positions."></code>
 
-<code src="./demo/resizable.tsx" title="Local container" description="Render inside a local container and constrain resizing to its bounds."></code>
+<code src="./demo/resizable.tsx" title="Local Container Rendering" description="Mount the drawer inside a local container; resizing is automatically bounded by the container dimensions."></code>
 
-<code src="./demo/minimize.tsx" title="Minimize and Ref API" description="Minimize from the header or DrawerRef and preserve content and size on restore."></code>
-
-<code src="./demo/controlled-minimize.tsx" title="Controlled minimize" description="Control minimized with onMinimizeChange and choose from eight Dock positions."></code>
-
-<code src="./demo/shared-dock.tsx" title="Shared global Dock" description="Modal and Drawer can share a position and restore or close independently."></code>
+<code src="./demo/shared-dock.tsx" title="Shared Dock with Modal" description="Modals and Drawers dock together in the same global Dock with independent restore and close operations."></code>
 
 ## API
 
-All Ant Design `DrawerProps` are supported in addition to the enhancements below.
+Fully compatible with Ant Design `DrawerProps` in addition to the enhancements below.
+
+### DrawerProps
 
 | Property           | Description                                                                               | Type                                                                                     | Default        |
 | ------------------ | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------- |
-| `size`             | Axis size; width for left/right and height for top/bottom; controlled when provided       | `'default' \| 'large' \| number \| string`                                               | -              |
+| `resizable`        | Enable resize dragging or provide lifecycle callbacks                                     | `boolean \| DrawerResizableConfig`                                                       | `false`        |
+| `minSize`          | Minimum resize size in pixels (prevents collapsing to 0)                                  | `number`                                                                                 | `100`          |
+| `maxSize`          | Maximum resize size in pixels, constrained by container bounds                            | `number`                                                                                 | container size |
+| `size`             | Controlled axis size (width for horizontal, height for vertical)                          | `'default' \| 'large' \| number \| string`                                               | -              |
 | `defaultSize`      | Initial axis size in uncontrolled mode                                                    | `number \| string`                                                                       | `378`          |
-| `maxSize`          | Maximum resize value, also constrained by the actual container                            | `number`                                                                                 | container size |
-| `resizable`        | Enable resizing or provide lifecycle callbacks                                            | `boolean \| DrawerResizableConfig`                                                       | `false`        |
-| `minimizable`      | Allow minimization to the global Dock                                                     | `boolean`                                                                                | `false`        |
+| `minimizable`      | Allow minimizing to the global Dock (keeps DOM and form state)                            | `boolean`                                                                                | `false`        |
 | `minimized`        | Controlled minimized state                                                                | `boolean`                                                                                | -              |
-| `minimizePosition` | Position of the minimized card                                                            | `top-left \| top-right \| bottom-left \| bottom-right \| top \| bottom \| left \| right` | `bottom-right` |
-| `onMinimizeChange` | Called when minimize or restore is requested                                              | `(minimized: boolean) => void`                                                           | -              |
-| `onClose`          | Called by the close button, ESC, or Dock close; event is undefined for programmatic close | `(event?) => void`                                                                       | -              |
-| `width`            | Legacy controlled horizontal size; use `size` instead                                     | `number \| string`                                                                       | -              |
-| `height`           | Legacy controlled vertical size; use `size` instead                                       | `number \| string`                                                                       | -              |
-| `classNames`       | Ant Design semantic classes plus `dragger`, `minimizeButton`, and `minimizedDock`         | `DrawerClassNames`                                                                       | -              |
-| `styles`           | Ant Design semantic styles plus `dragger`, `minimizeButton`, and `minimizedDock`          | `DrawerStyles`                                                                           | -              |
+| `minimizePosition` | Dock position for minimized card                                                          | `top-left \| top-right \| bottom-left \| bottom-right \| top \| bottom \| left \| right` | `bottom-right` |
+| `onMinimizeChange` | Callback when minimized or restored                                                       | `(minimized: boolean) => void`                                                           | -              |
+| `onClose`          | Callback for close button, ESC, or Dock close (event is undefined for programmatic close) | `(event?) => void`                                                                       | -              |
+| `classNames`       | Semantic class names, extended with `dragger`, `minimizeButton`, `minimizedDock`          | `DrawerClassNames`                                                                       | -              |
+| `styles`           | Semantic styles, extended with `dragger`, `minimizeButton`, `minimizedDock`               | `DrawerStyles`                                                                           | -              |
 
 ### DrawerRef
 
-The component `ref` exposes imperative controls. `panelRef` continues to reference the Drawer panel DOM element.
+Imperative control handle via `ref`. Panel DOM element remains accessible via `panelRef`.
 
-| Method     | Description                             | Type         |
-| ---------- | --------------------------------------- | ------------ |
-| `minimize` | Minimize the Drawer                     | `() => void` |
-| `restore`  | Restore the Drawer from the global Dock | `() => void` |
+| Method     | Description                                 | Type         |
+| ---------- | ------------------------------------------- | ------------ |
+| `minimize` | Minimize current drawer to the global Dock  | `() => void` |
+| `restore`  | Restore current drawer from the global Dock | `() => void` |
 
 ### DrawerResizableConfig
 
-| Property        | Description                                 | Type                     |
-| --------------- | ------------------------------------------- | ------------------------ |
-| `onResizeStart` | Called when resizing starts                 | `() => void`             |
-| `onResize`      | Called with the current axis size in pixels | `(size: number) => void` |
-| `onResizeEnd`   | Called when resizing ends or is cancelled   | `() => void`             |
-
-## Minimized state
-
-- Without `minimized`, the component keeps minimized state internally.
-- With `minimized`, the component is controlled; update it in `onMinimizeChange` to change the visual state.
-- When `open=false`, neither the Drawer nor its Dock card is shown. Calling `minimize()` does not set `open=true`.
-- Enabling `minimizable` preserves the hidden DOM, form state, and resized dimensions.
-- In minimizable mode, the close button is placed at the right end of the header. `closable=false`, custom `closeIcon`, and closable object options remain supported.
-- Modal and Drawer instances with the same library prefix share Dock containers by `minimizePosition`.
-
-## Size modes
-
-- Providing `size` enables controlled mode. Update `size` from `onResize` to reflect drag changes visually.
-- Without `size` or the current axis's legacy `width` / `height`, the component stores resize results internally and preserves them when reopened.
-- `width` / `height` remain Ant Design 5 compatibility properties and are treated as controlled values.
-- `size="default"` resolves to 378px and `size="large"` to 736px. CSS strings are accepted for initial or controlled sizes.
-
-## Placements
-
-| placement | Handle edge | Drag direction to grow |
-| --------- | ----------- | ---------------------- |
-| `left`    | right       | right                  |
-| `right`   | left        | left                   |
-| `top`     | bottom      | down                   |
-| `bottom`  | top         | up                     |
+| Property        | Description                                               | Type                     |
+| --------------- | --------------------------------------------------------- | ------------------------ |
+| `onResizeStart` | Triggered when resizing starts                            | `() => void`             |
+| `onResize`      | Triggered during resizing with the current size in pixels | `(size: number) => void` |
+| `onResizeEnd`   | Triggered when resizing ends                              | `() => void`             |
 
 ## Notes
 
-- `maxSize` is capped by the available width or height of the actual Drawer root container.
-- With `getContainer={false}`, give the parent a positioning context such as `position: relative`; minimized cards still enter the global Dock.
-- This component does not add `minSize`; the minimum remains 0, matching Ant Design 6.
-- The handle uses `role="separator"`; keyboard resizing is not included.
-- When a minimized instance is no longer needed, close it and update the business-level `open` state.
+- **Minimum Size & Boundary Protection**: `minSize` defaults to 100px to prevent the drawer from collapsing to 0px and losing its handle. `maxSize` is always capped by the host container's available size.
+- **State Persistence**: When `minimizable` is enabled, `destroyOnHidden: false` is maintained internally so that DOM nodes and form state remain intact during minimization.
+- **Controlled vs Uncontrolled**: When `size` is omitted, the component operates in uncontrolled mode and remembers resized dimensions across open/close cycles; in controlled mode, update `size` via `onResize`.
+- **Local Container**: With `getContainer={false}`, ensure the parent element has relative positioning (e.g. `position: relative`); drawer dimensions will be bounded by the parent container.

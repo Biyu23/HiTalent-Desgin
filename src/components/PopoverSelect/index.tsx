@@ -4,7 +4,6 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocale } from '../../configProvider/useLocale';
 import { useNamespace } from '../../configProvider/usePrefixCls';
 import { useFieldNames, useMergeState } from '../../hooks';
-import type { UseMergeStateProps } from '../../hooks/useMergeState';
 import {
   attachPropertiesToComponent,
   isNullOrBlank,
@@ -37,7 +36,6 @@ const Component = <
     disabled?: boolean;
   };
 
-  // ---- 解构 Props ----
   const {
     options: optionsProp = [],
     fieldNames: customFieldNames,
@@ -67,16 +65,15 @@ const Component = <
   const { fieldNames, getFieldValue } = useFieldNames(customFieldNames);
   const realShowConfirm = mode === 'multiple' && showConfirm;
 
-  // 弹窗关闭时清空搜索关键词
   useEffect(() => {
     if (!open) setSearchValue('');
   }, [open]);
 
-  // ---- 选中值状态管理（useMergeState） ----
-  const mergeStateConfig: UseMergeStateProps<
+  const [internalValue, actions] = useMergeState<
     ValueType[],
     ValueType | ValueType[]
-  > = {
+  >({
+    value: props.value,
     defaultValue: props.defaultValue,
     onChange: props.onChange,
     transformToOrigin: (externalVal) => {
@@ -102,22 +99,13 @@ const Component = <
       }
       return internalArray as ValueType[];
     },
-  };
-  if ('value' in props) {
-    mergeStateConfig.value = props.value;
-  }
-  const [internalValue, actions] = useMergeState<
-    ValueType[],
-    ValueType | ValueType[]
-  >(mergeStateConfig);
+  });
 
-  // ---- 选项映射 & 搜索过滤 ----
   const { options, displayOptions, hasOptions, hasDisplayOptions } = useOptions<
     OptionType,
     MappedOption
   >(optionsProp, fieldNames, getFieldValue, searchValue);
 
-  // ---- 选择逻辑 & Handlers ----
   const {
     isAllSelected,
     isPartiallySelected,
@@ -139,7 +127,6 @@ const Component = <
     clearValue: actions.clear,
   });
 
-  // ---- 展示文本 ----
   const { displayTextNode, hasValue } = useDisplayText<ValueType, MappedOption>(
     {
       internalValue,
@@ -151,7 +138,6 @@ const Component = <
     },
   );
 
-  // ---- 底部操作按钮 ----
   const footerActions = useMemo(() => {
     return [
       showClearBtn && (
@@ -185,7 +171,6 @@ const Component = <
     handleConfirm,
   ]);
 
-  // ---- 下拉内容渲染函数 ----
   const renderContent = useCallback(
     () => (
       <DropdownContent
@@ -236,7 +221,6 @@ const Component = <
     ],
   );
 
-  // ---- 渲染 ----
   return withNativeProps(
     props,
     <div className={clsx(prefixCls, className)} style={style}>

@@ -33,17 +33,6 @@ Use Ant Design Button directly when none of these behaviors are required.
 
 <code src="./demo/tooltip.tsx" title="Disabled Explanation" description="Attach a tooltip to explain a disabled action or provide concise supporting context."></code>
 
-## API
-
-All Ant Design `ButtonProps` remain available in addition to these enhancements.
-
-| Property      | Description                                                      | Type                                          | Default |
-| ------------- | ---------------------------------------------------------------- | --------------------------------------------- | ------- |
-| `autoLoading` | Manages Loading while the Promise returned by `onClick` settles  | `boolean`                                     | `true`  |
-| `throttle`    | Runs the first click and ignores later clicks for N milliseconds | `number`                                      | `0`     |
-| `tooltip`     | Tooltip shortcut content or complete configuration               | `ReactNode \| Omit<TooltipProps, 'children'>` | -       |
-| `onClick`     | Click callback that may return a Promise                         | `(event) => void \| Promise<unknown>`         | -       |
-
 ## Notes
 
 - `autoLoading` cannot wait for async work when `onClick` does not return its Promise.

@@ -57,6 +57,11 @@ export interface DrawerProps
    * @default 378
    */
   defaultSize?: number | string;
+  /**
+   * resize 时允许的最小轴向尺寸。
+   * @default 100
+   */
+  minSize?: number;
   /** resize 时允许的最大轴向尺寸，最终仍受实际容器限制 */
   maxSize?: number;
   /** 是否允许通过内侧边缘调整尺寸，或提供生命周期回调 */

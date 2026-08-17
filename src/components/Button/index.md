@@ -31,17 +31,6 @@ toc: content
 
 <code src="./demo/tooltip.tsx" title="禁用提示" description="为按钮配置 tooltip，在禁用或需要补充说明时仍能展示原因。"></code>
 
-## API
-
-除下列增强属性外，同时支持 Ant Design `ButtonProps`。
-
-| 属性          | 说明                                               | 类型                                          | 默认值 |
-| ------------- | -------------------------------------------------- | --------------------------------------------- | ------ |
-| `autoLoading` | `onClick` 返回 Promise 时自动管理 Loading 状态     | `boolean`                                     | `true` |
-| `throttle`    | 首次点击立即执行，冷却期内忽略后续点击，单位为毫秒 | `number`                                      | `0`    |
-| `tooltip`     | Tooltip 快捷内容或完整配置                         | `ReactNode \| Omit<TooltipProps, 'children'>` | -      |
-| `onClick`     | 点击回调，可返回 Promise 触发自动 Loading          | `(event) => void \| Promise<unknown>`         | -      |
-
 ## 注意事项
 
 - `onClick` 不返回 Promise 时，`autoLoading` 不会等待异步任务。

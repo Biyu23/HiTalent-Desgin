@@ -42,7 +42,6 @@ function EnhancedHeaderCell<RecordType = unknown>(
       ? column.width
       : undefined);
 
-  // 列宽调整
   const { isResizing, handlePointerDown } = useColumnResize({
     columnId,
     minWidth: column.minWidth ?? 80,
@@ -53,21 +52,18 @@ function EnhancedHeaderCell<RecordType = unknown>(
 
   const showResizeHandle = enableColumnResize && column.resizable !== false;
 
-  // 内部文字区域
   const cellContent = (
     <div className={e('header-cell')}>
       <span className={e('header-cell-title')}>{children}</span>
     </div>
   );
 
-  // 拖拽包裹区域
   const wrappedContent = enableColumnDrag ? (
     <HeaderCellWrapper columnId={columnId}>{cellContent}</HeaderCellWrapper>
   ) : (
     cellContent
   );
 
-  // 注入特定的样式类以控制 Antd 的分割线
   const mergedClassName = [className, showResizeHandle ? e('resizable-th') : '']
     .filter(Boolean)
     .join(' ');

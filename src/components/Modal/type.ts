@@ -26,6 +26,26 @@ export interface ModalStaticMethods {
   destroyAll: () => void;
 }
 
+/**
+ * Modal 缩放配置
+ */
+export interface ModalResizableConfig {
+  /** 最小宽度，单位 px @default 320 */
+  minWidth?: number;
+  /** 最小高度，单位 px @default 200 */
+  minHeight?: number;
+  /** 最大宽度，单位 px */
+  maxWidth?: number;
+  /** 最大高度，单位 px */
+  maxHeight?: number;
+  /** 开始缩放时触发 */
+  onResizeStart?: () => void;
+  /** 缩放过程中触发 */
+  onResize?: (size: { width: number; height: number }) => void;
+  /** 结束缩放时触发 */
+  onResizeEnd?: () => void;
+}
+
 export interface ModalProps
   extends Omit<AntdModalProps, 'closable' | 'title' | 'onCancel'> {
   /**
@@ -49,7 +69,11 @@ export interface ModalProps
    * @default false
    */
   draggable?: boolean;
-  resizable?: boolean;
+  /**
+   * @description 是否允许缩放，或提供缩放配置
+   * @default false
+   */
+  resizable?: boolean | ModalResizableConfig;
   /**
    * @description 是否支持最小化（折叠到全局悬浮窗，不销毁 DOM）
    * @default false

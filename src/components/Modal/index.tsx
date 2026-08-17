@@ -39,6 +39,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     resizable = false,
     minimizable = false,
     maximizable = false,
+    destroyOnClose,
     destroyOnHidden,
     minimized: controlledMinimized,
     maximized: controlledMaximized,
@@ -60,7 +61,6 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   const dockPrefixCls = usePrefixCls('minimize');
   const modalLocale = useLocale('Modal');
 
-  // ---- 状态管理 ----
   const {
     isMinimized,
     isMaximized,
@@ -88,9 +88,9 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   } = useModalWindowState();
 
   // minimizable 模式下关闭不销毁 DOM，保留表单数据
+  const resolvedDestroyOnClose = minimizable ? false : destroyOnClose;
   const resolvedDestroyOnHidden = minimizable ? false : destroyOnHidden;
 
-  // ---- 关闭处理 ----
   const handleClose = useCallback(
     (e?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>) => {
       if (isMinimized) handleRestore();
@@ -111,7 +111,6 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   // 注册销毁回调，供 destroyAll 使用
   useDestroyRegister(!!open, handleClose);
 
-  // ---- 命令式 API ----
   useImperativeHandle(
     ref,
     () => ({
@@ -126,7 +125,6 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     [handleRestore, handleMinimize, handleMaximize, handleUnmaximize],
   );
 
-  // ---- 渲染相关 ----
   const finalModalRender = useCallback(
     (modalNode: React.ReactNode) => {
       const rendered = modalRender ? modalRender(modalNode) : modalNode;
@@ -160,12 +158,11 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     [restProps.styles, windowSize, isMaximized],
   );
 
-  // ---- Context 值 ----
   const contextValue: ModalContextValue = useMemo(
     () => ({
       prefixCls,
       draggable,
-      resizable: Boolean(resizable),
+      resizable,
       minimizable,
       maximizable,
       closable,
@@ -212,6 +209,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     <ModalContext.Provider value={contextValue}>
       <AntdModal
         {...restProps}
+        destroyOnClose={resolvedDestroyOnClose}
         destroyOnHidden={resolvedDestroyOnHidden}
         width={modalWidth}
         centered={centered}

@@ -80,7 +80,6 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
 
   const { e } = useNamespace('popover-select', prefixCls);
 
-  // ---- 列表渲染函数，传递给 VirtualList 或 map ----
   const renderItemInner = useCallback(
     (item: Record<string, any>) => {
       const isChecked = targetValueList.includes(item.value);
@@ -133,7 +132,6 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
     renderItemInner,
   ]);
 
-  // 空状态：无原始选项
   if (!hasOptions) {
     return (
       <div className={e('dropdown')}>

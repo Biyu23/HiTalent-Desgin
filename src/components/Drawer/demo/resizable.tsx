@@ -1,7 +1,7 @@
 /**
  * description: 在局部容器内渲染抽屉，尺寸受限于容器范围。
  */
-import { Button, Radio, Space } from 'antd';
+import { Alert, Button, Card, Flex, Radio, Space, Tag, Typography } from 'antd';
 import type { DrawerProps } from 'hi-talent-design';
 import { Drawer } from 'hi-talent-design';
 import { useDemoIntl } from 'hi-talent-design/demoIntl';
@@ -9,16 +9,23 @@ import React, { useRef, useState } from 'react';
 
 const messages = {
   'zh-CN': {
-    'resizable.open': '打开抽屉',
-    'resizable.title': '局部抽屉',
-    'resizable.size': '当前尺寸',
-    'resizable.hint': '拖拽边缘调整大小。',
+    open: '打开局部抽屉',
+    title: '工作区详情抽屉',
+    size: '当前尺寸',
+    hint: '此抽屉通过 getContainer={false} 挂载在局部容器中，拖拽调整尺寸时最大尺寸受限于该容器。',
+    cardTitle: '局部工作台容器 (380px 高度)',
+    cardDesc: '抽屉将在本容器内展开，不会遮盖页面其他区域。',
+    close: '关闭',
   },
   'en-US': {
-    'resizable.open': 'Open Drawer',
-    'resizable.title': 'Local Drawer',
-    'resizable.size': 'Current size',
-    'resizable.hint': 'Drag the edge to resize.',
+    open: 'Open Local Drawer',
+    title: 'Workspace Details',
+    size: 'Current Size',
+    hint: 'Mounted locally via getContainer={false}. Resize dimensions are automatically constrained by this container.',
+    cardTitle: 'Local Container (380px Height)',
+    cardDesc:
+      'The drawer expands strictly within this container without covering the rest of the page.',
+    close: 'Close',
   },
 };
 
@@ -28,58 +35,78 @@ export default () => {
   const [open, setOpen] = useState(false);
   const [placement, setPlacement] =
     useState<NonNullable<DrawerProps['placement']>>('right');
-  const [size, setSize] = useState(256);
+  const [size, setSize] = useState(280);
 
   const handlePlacementChange = (nextPlacement: typeof placement) => {
     setPlacement(nextPlacement);
-    setSize(256);
+    setSize(nextPlacement === 'top' || nextPlacement === 'bottom' ? 200 : 280);
   };
 
   return (
     <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-      <Radio.Group
-        value={placement}
-        onChange={(event) => handlePlacementChange(event.target.value)}
-        options={['top', 'right', 'bottom', 'left'].map((value) => ({
-          label: value,
-          value,
-        }))}
-      />
-      <div>
-        {t('resizable.size')}：{size}px
-      </div>
+      <Flex gap={12} align="center" wrap="wrap">
+        <Radio.Group
+          optionType="button"
+          buttonStyle="solid"
+          value={placement}
+          onChange={(event) => handlePlacementChange(event.target.value)}
+          options={[
+            { label: 'Right (右)', value: 'right' },
+            { label: 'Left (左)', value: 'left' },
+            { label: 'Top (上)', value: 'top' },
+            { label: 'Bottom (下)', value: 'bottom' },
+          ]}
+        />
+        <Tag color="blue">
+          {t('size')}: {size}px
+        </Tag>
+      </Flex>
+
       <div
         ref={containerRef}
         style={{
           position: 'relative',
-          height: 360,
+          height: 380,
           overflow: 'hidden',
-          border: '1px solid #d9d9d9',
+          border: '1px solid #e8e8e8',
           borderRadius: 8,
+          background: '#fafafa',
+          padding: 24,
         }}
       >
-        <Button
-          type="primary"
-          style={{ margin: 24 }}
-          onClick={() => setOpen(true)}
-        >
-          {t('resizable.open')}
-        </Button>
+        <Card size="small" title={t('cardTitle')} style={{ maxWidth: 400 }}>
+          <Typography.Paragraph type="secondary">
+            {t('cardDesc')}
+          </Typography.Paragraph>
+          <Button type="primary" onClick={() => setOpen(true)}>
+            {t('open')}
+          </Button>
+        </Card>
+
         <Drawer
-          title={t('resizable.title')}
+          title={t('title')}
           placement={placement}
           open={open}
           size={size}
-          maxSize={2000}
           getContainer={false}
           rootStyle={{ position: 'absolute' }}
           resizable={{ onResize: setSize }}
           onClose={() => setOpen(false)}
+          extra={
+            <Button size="small" onClick={() => setOpen(false)}>
+              {t('close')}
+            </Button>
+          }
         >
-          <p>{t('resizable.hint')}</p>
-          <p>
-            {t('resizable.size')}：{size}px
-          </p>
+          <Alert
+            type="info"
+            showIcon
+            message={t('hint')}
+            style={{ marginBottom: 16 }}
+          />
+          <Typography.Paragraph>
+            {t('size')}: <strong>{size}px</strong>
+          </Typography.Paragraph>
         </Drawer>
       </div>
     </Space>

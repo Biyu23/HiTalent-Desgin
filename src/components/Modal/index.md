@@ -6,23 +6,14 @@ toc: content
 
 # Modal 高级弹窗
 
-在 Ant Design Modal 上增加拖拽、缩放、最大化与多窗口最小化，构建可保留任务上下文的桌面级工作窗口。
+在 Ant Design Modal 基础上增加拖拽移动、缩放调整、最大化与多窗口最小化，构建可保留任务上下文的桌面级工作窗口。
 
-## 何时使用
+## 核心特性
 
-- 用户需要移动弹窗以查看背后的信息。
-- 表单或复杂内容需要调整窗口尺寸、最大化阅读。
-- 多项并行任务需要暂时最小化，并在恢复后保留表单和组件状态。
-
-短确认、一次性提示等简单反馈无需启用窗口能力，保持 Ant Design Modal 的默认使用方式即可。
-
-## 核心能力
-
-- 从标题栏和底部空白区域拖动，同时避开按钮、输入框等交互控件。
-- 从右下角缩放，并通过 `ModalResizableConfig` 控制最小/最大尺寸。
-- 最大化、还原、最小化与 Dock 自动排列。
-- 最小化时保留 DOM 和表单状态。
-- 通过 `ModalRef` 命令式控制单个实例，通过静态方法统一清理实例。
+- **拖拽与缩放**：支持从标题栏和底部空白区域拖动窗口（自动避开输入框和按钮交互），从右下角自由缩放，支持 `ModalResizableConfig` 配置最小/最大宽高。
+- **全屏与最小化**：支持一键最大化沉浸式浏览，支持最小化至 8 个全局停靠方位的 Dock 悬浮窗，最小化期间 DOM、表单输入与滚动状态完全保留。
+- **命令式控制与批量销毁**：通过 `ModalRef` 可在外部执行 `minimize` / `restore` / `maximize` / `unmaximize`，通过静态方法 `Modal.destroyAll()` 可在路由切换时一键清理所有实例。
+- **全局 Dock 共享**：与 Drawer 共用同一个全局 Dock 体系，支持多窗口堆叠与独立恢复。
 
 ## 代码演示
 
@@ -42,24 +33,24 @@ toc: content
 
 ## API
 
+除下列窗口增强属性外，完全兼容 Ant Design `ModalProps`（不包含其 `closable`、`title` 和 `onCancel` 内部定义）。
+
 ### ModalProps
 
-除下列窗口增强属性外，同时支持 Ant Design `ModalProps`（不包含其 `closable`、`title` 和 `onCancel` 定义）。
-
-| 属性                | 说明                                | 类型                                                                                     | 默认值         |
-| ------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------- | -------------- |
-| `closable`          | 是否显示关闭按钮                    | `boolean`                                                                                | `true`         |
-| `title`             | 弹窗标题                            | `ReactNode`                                                                              | -              |
-| `onCancel`          | 点击关闭、按下 ESC 或统一销毁的回调 | `(event?) => void`                                                                       | -              |
-| `draggable`         | 是否允许从标题栏拖动                | `boolean`                                                                                | `false`        |
-| `resizable`         | 是否允许缩放                        | `boolean`                                                                                | `false`        |
-| `minimizable`       | 是否允许最小化到全局 Dock           | `boolean`                                                                                | `false`        |
-| `maximizable`       | 是否允许最大化                      | `boolean`                                                                                | `false`        |
-| `minimizePosition`  | 最小化卡片的停靠位置                | `top-left \| top-right \| bottom-left \| bottom-right \| top \| bottom \| left \| right` | `bottom-right` |
-| `minimized`         | 受控最小化状态                      | `boolean`                                                                                | -              |
-| `maximized`         | 受控最大化状态                      | `boolean`                                                                                | -              |
-| `onMinimizeChange`  | 最小化状态变化回调                  | `(minimized: boolean) => void`                                                           | -              |
-| `onMaximizedChange` | 最大化状态变化回调                  | `(maximized: boolean) => void`                                                           | -              |
+| 属性                | 说明                                                 | 类型                                                                                     | 默认值         |
+| ------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------- |
+| `closable`          | 是否显示关闭按钮                                     | `boolean`                                                                                | `true`         |
+| `title`             | 弹窗标题                                             | `ReactNode`                                                                              | -              |
+| `onCancel`          | 点击关闭、按下 ESC 或统一销毁的回调                  | `(event?) => void`                                                                       | -              |
+| `draggable`         | 是否允许从标题栏/底部拖动                            | `boolean`                                                                                | `false`        |
+| `resizable`         | 是否允许缩放，或提供缩放配置                         | `boolean \| ModalResizableConfig`                                                        | `false`        |
+| `minimizable`       | 是否允许最小化到全局 Dock（自动保留 DOM 与表单数据） | `boolean`                                                                                | `false`        |
+| `maximizable`       | 是否允许最大化全屏                                   | `boolean`                                                                                | `false`        |
+| `minimizePosition`  | 最小化卡片的停靠位置                                 | `top-left \| top-right \| bottom-left \| bottom-right \| top \| bottom \| left \| right` | `bottom-right` |
+| `minimized`         | 受控最小化状态                                       | `boolean`                                                                                | -              |
+| `maximized`         | 受控最大化状态                                       | `boolean`                                                                                | -              |
+| `onMinimizeChange`  | 最小化状态变化回调                                   | `(minimized: boolean) => void`                                                           | -              |
+| `onMaximizedChange` | 最大化状态变化回调                                   | `(maximized: boolean) => void`                                                           | -              |
 
 ### ModalResizableConfig
 

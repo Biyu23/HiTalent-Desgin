@@ -54,6 +54,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     placement = 'right',
     size,
     defaultSize,
+    minSize,
     maxSize,
     resizable = false,
     minimizable = false,
@@ -67,6 +68,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     extra,
     closable,
     closeIcon,
+    destroyOnClose,
     destroyOnHidden,
     onClose,
     rootClassName,
@@ -129,6 +131,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
 
   const { isResizing, handlePointerDown } = useDrawerResize({
     placement,
+    minSize,
     maxSize,
     active: !!open && !isMinimized && !!resizable,
     config: resizeConfig,
@@ -166,10 +169,10 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     () => ({
       ...antdStyles,
       wrapper: {
-        ...userWrapperStyle,
         ...(axis === 'horizontal'
           ? { maxWidth: '100%' }
           : { maxHeight: '100%' }),
+        ...userWrapperStyle,
       },
     }),
     [antdStyles, axis, userWrapperStyle],
@@ -262,6 +265,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
         extra={mergedExtra}
         closable={mergedClosable}
         closeIcon={closeIcon}
+        destroyOnClose={minimizable ? false : destroyOnClose}
         destroyOnHidden={minimizable ? false : destroyOnHidden}
         onClose={handleClose}
         rootClassName={clsx(prefixCls, rootClassName)}

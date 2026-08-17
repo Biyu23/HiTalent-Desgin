@@ -8,21 +8,12 @@ toc: content
 
 Adds drag, resize, maximize, and multi-window minimization to Ant Design Modal, creating a desktop-class work window that preserves task context.
 
-## When to use
+## Key Features
 
-- People need to move the dialog to inspect information behind it.
-- A form or complex view benefits from resizing or fullscreen reading.
-- Parallel tasks need to minimize temporarily and restore without losing form or component state.
-
-For short confirmations and one-time notices, keep the default Ant Design Modal behavior without enabling window features.
-
-## Core capabilities
-
-- Drag from the title bar or empty footer space while interactive controls remain clickable.
-- Resize from the bottom-right corner with minimum and maximum constraints.
-- Maximize, restore, minimize, and automatically arrange a global dock.
-- Preserve DOM and form state while minimized.
-- Control one instance through `ModalRef` and clean up all instances through static methods.
+- **Drag & Resize**: Move dialog from title bar or empty footer space (avoiding interactive controls), resize freely from the bottom-right corner with `ModalResizableConfig` min/max constraints.
+- **Maximize & Minimize**: One-click fullscreen reading, minimize to 8 global dock positions while preserving DOM, form input, and scroll state.
+- **Imperative API & Batch Cleanup**: Call `minimize`, `restore`, `maximize`, and `unmaximize` via `ModalRef`; clear all instances on route changes using `Modal.destroyAll()`.
+- **Shared Global Dock**: Shares the unified dock system with Drawer, supporting multi-task stacking and independent restoration.
 
 ## Demos
 
@@ -42,24 +33,24 @@ For short confirmations and one-time notices, keep the default Ant Design Modal 
 
 ## API
 
-### ModalProps
-
 All Ant Design `ModalProps` remain available except the replaced `closable`, `title`, and `onCancel` definitions.
 
-| Property            | Description                                     | Type                                                                                     | Default        |
-| ------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------- |
-| `closable`          | Shows the close button                          | `boolean`                                                                                | `true`         |
-| `title`             | Dialog title                                    | `ReactNode`                                                                              | -              |
-| `onCancel`          | Handles close, ESC, or programmatic destruction | `(event?) => void`                                                                       | -              |
-| `draggable`         | Allows dragging from the title bar              | `boolean`                                                                                | `false`        |
-| `resizable`         | Enables resizing                                | `boolean`                                                                                | `false`        |
-| `minimizable`       | Allows minimizing into the global dock          | `boolean`                                                                                | `false`        |
-| `maximizable`       | Allows fullscreen maximization                  | `boolean`                                                                                | `false`        |
-| `minimizePosition`  | Dock position for minimized cards               | `top-left \| top-right \| bottom-left \| bottom-right \| top \| bottom \| left \| right` | `bottom-right` |
-| `minimized`         | Controlled minimized state                      | `boolean`                                                                                | -              |
-| `maximized`         | Controlled maximized state                      | `boolean`                                                                                | -              |
-| `onMinimizeChange`  | Runs when minimized state changes               | `(minimized: boolean) => void`                                                           | -              |
-| `onMaximizedChange` | Runs when maximized state changes               | `(maximized: boolean) => void`                                                           | -              |
+### ModalProps
+
+| Property            | Description                                                    | Type                                                                                     | Default        |
+| ------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------- |
+| `closable`          | Shows the close button                                         | `boolean`                                                                                | `true`         |
+| `title`             | Dialog title                                                   | `ReactNode`                                                                              | -              |
+| `onCancel`          | Handles close, ESC, or programmatic destruction                | `(event?) => void`                                                                       | -              |
+| `draggable`         | Allows dragging from the title bar or footer                   | `boolean`                                                                                | `false`        |
+| `resizable`         | Enables resizing, or provides resize constraints               | `boolean \| ModalResizableConfig`                                                        | `false`        |
+| `minimizable`       | Allows minimizing into the global dock (preserves DOM & state) | `boolean`                                                                                | `false`        |
+| `maximizable`       | Allows fullscreen maximization                                 | `boolean`                                                                                | `false`        |
+| `minimizePosition`  | Dock position for minimized cards                              | `top-left \| top-right \| bottom-left \| bottom-right \| top \| bottom \| left \| right` | `bottom-right` |
+| `minimized`         | Controlled minimized state                                     | `boolean`                                                                                | -              |
+| `maximized`         | Controlled maximized state                                     | `boolean`                                                                                | -              |
+| `onMinimizeChange`  | Runs when minimized state changes                              | `(minimized: boolean) => void`                                                           | -              |
+| `onMaximizedChange` | Runs when maximized state changes                              | `(maximized: boolean) => void`                                                           | -              |
 
 ### ModalResizableConfig
 

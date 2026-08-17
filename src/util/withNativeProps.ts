@@ -14,12 +14,10 @@ export function withNativeProps<P extends NativeProps>(
 ): ReactElement {
   const p: Record<string, any> = { ...element.props };
 
-  // 1. 合并 className
   if (props.className) {
     p.className = clsx(element.props.className, props.className);
   }
 
-  // 2. 合并 style
   if (props.style) {
     p.style = {
       ...p.style,
@@ -27,12 +25,10 @@ export function withNativeProps<P extends NativeProps>(
     };
   }
 
-  // 3. 覆盖 tabIndex
   if (props.tabIndex !== undefined) {
     p.tabIndex = props.tabIndex;
   }
 
-  // 4. 提取并合并 data-* 和 aria-* 属性
   for (const [key, value] of Object.entries(props)) {
     if (key.startsWith('data-') || key.startsWith('aria-')) {
       p[key] = value;

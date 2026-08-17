@@ -47,12 +47,10 @@ export default () => {
   const { t } = useDemoIntl(messages);
   const [position, setPosition] = useState<MinimizePosition>('bottom-right');
 
-  // ---- 单个正常弹窗（追踪最小化状态用于计数） ----
   const [singleId] = useState(() => Date.now());
   const [singleOpen, setSingleOpen] = useState(false);
   const [singleMinimized, setSingleMinimized] = useState(false);
 
-  // ---- 批量最小化弹窗（受控 minimized） ----
   const [batch, setBatch] = useState<
     { id: number; title: string; minimized: boolean }[]
   >([]);
