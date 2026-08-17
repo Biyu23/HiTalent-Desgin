@@ -49,8 +49,68 @@ Uses React Context to provide a shared CSS prefix, Ant Design prefix coordinatio
 - `usePrefixCls(suffixCls?: string, customPrefix?: string): string`: Returns the resolved class prefix string.
 - `useNamespace(suffixCls?: string, customPrefix?: string): UseNamespaceResult`: Returns a namespace generator object (`b()`, `e()`, `m()`, `em()`, `cls()`).
 
+## How to Customize Prefix (e.g. changing `htd` to `myApp`)
+
+If a project needs to customize the class and CSS variable prefixes to `myApp` (e.g. for micro-frontend style isolation), only **two steps** are needed:
+
+### Step 1: Wrap ConfigProvider in React Root
+
+```tsx | pure
+import { ConfigProvider } from 'hi-talent-design';
+
+export default () => (
+  <ConfigProvider prefixCls="myApp">
+    <App />
+  </ConfigProvider>
+);
+```
+
+### Step 2: Configure `@custom-prefix` in the Build Tool
+
+- **Vite (`vite.config.ts`)**:
+
+```ts
+export default defineConfig({
+  css: {
+    preprocessorOptions: {
+      less: {
+        modifyVars: {
+          'custom-prefix': 'myApp',
+        },
+        javascriptEnabled: true,
+      },
+    },
+  },
+});
+```
+
+- **Webpack / CRA / Vue CLI (`webpack.config.js` / `craco.config.js`)**:
+
+```js
+module.exports = {
+  // ...
+  lessOptions: {
+    modifyVars: {
+      'custom-prefix': 'myApp',
+    },
+    javascriptEnabled: true,
+  },
+};
+```
+
+- **Umi / Dumi (`.umirc.ts`)**:
+
+```ts
+export default {
+  theme: {
+    'custom-prefix': 'myApp',
+  },
+};
+```
+
+---
+
 ## Notes
 
-- When changing `prefixCls`, ensure build-time Less variables (`@custom-prefix`) match if using Less styles.
-- `antdPrefixCls` applies directly to Ant Design 5 CSS-in-JS style rendering.
+- `antdPrefixCls` forwards directly to the underlying Ant Design 5 `<ConfigProvider>` to synchronously control Ant Design class names and CSS-in-JS style rendering.
 - `localeOverrides` merges on top of the complete locale, so untouched fields continue to inherit.

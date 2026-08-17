@@ -49,8 +49,68 @@ toc: content
 - `usePrefixCls(suffixCls?: string, customPrefix?: string): string`：获取拼接后的完整类名前缀。
 - `useNamespace(suffixCls?: string, customPrefix?: string): UseNamespaceResult`：获取命名空间类名构造器（提供 `b()`, `e()`, `m()`, `em()`, `cls()`）。
 
+## 如何自定义前缀（例如将 `htd` 改为 `myApp`）
+
+若业务需要将组件类名和 CSS 变量前缀统一修改为 `myApp`（如在微前端主子应用隔离中），仅需 **两步**：
+
+### 步骤 1：在 React 根层包裹 ConfigProvider
+
+```tsx | pure
+import { ConfigProvider } from 'hi-talent-design';
+
+export default () => (
+  <ConfigProvider prefixCls="myApp">
+    <App />
+  </ConfigProvider>
+);
+```
+
+### 步骤 2：在构建工具中配置 Less 变量 `@custom-prefix`
+
+- **Vite (`vite.config.ts`)**：
+
+```ts
+export default defineConfig({
+  css: {
+    preprocessorOptions: {
+      less: {
+        modifyVars: {
+          'custom-prefix': 'myApp',
+        },
+        javascriptEnabled: true,
+      },
+    },
+  },
+});
+```
+
+- **Webpack / CRA / Vue CLI (`webpack.config.js` / `craco.config.js`)**：
+
+```js
+module.exports = {
+  // ...
+  lessOptions: {
+    modifyVars: {
+      'custom-prefix': 'myApp',
+    },
+    javascriptEnabled: true,
+  },
+};
+```
+
+- **Umi / Dumi (`.umirc.ts`)**：
+
+```ts
+export default {
+  theme: {
+    'custom-prefix': 'myApp',
+  },
+};
+```
+
+---
+
 ## 注意事项
 
-- 修改 `prefixCls` 时，若使用 Less 样式，建议在构建工具中同步配置 Less 变量 `@custom-prefix` 以确保编译期样式匹配。
-- `antdPrefixCls` 会直接作用于 Ant Design 5 的底层组件及动态 CSS-in-JS 样式生成。
+- `antdPrefixCls` 会直接透传给 Ant Design 5 的底层 `<ConfigProvider>`，同步控制 antd 组件的类名前缀与动态 CSS-in-JS 生成。
 - `localeOverrides` 会在完整语言包之上合并，未覆盖字段继续继承。

@@ -3,136 +3,422 @@
 // ============================================================
 //
 // Less 变量提供编译期入口，CSS 自定义属性提供运行时覆盖能力。
-// 所有默认值与 Ant Design 5.29.3 的全局 Token 对齐。
+// 采用动态前缀 (@{custom-prefix}) + 双层回退链机制：
+//   var(--@{custom-prefix}-*, var(--ant-*, @seed-*))
+//
+// 1. 前缀可配置：在 Less 构建层通过 @custom-prefix: xxx 配置，类名与 CSS 变量名同步生效；
+// 2. 优先读取业务通过 --@{custom-prefix}-* 注入的专有样式变量；
+// 3. 自动桥接 Ant Design 5 开启 cssVar 时注入的 --ant-* 运行时全局变量；
+// 4. 兜底回退为编译期对齐 Ant Design 5.29.3 的标准 Token 默认值。
 // ============================================================
 
+@import './seed.less';
+
 // -------------------- Primary --------------------
-@color-primary: var(--htd-color-primary, @seed-color-primary);
-@color-primary-bg: var(--htd-color-primary-bg, #e6f4ff);
-@color-primary-bg-hover: var(--htd-color-primary-bg-hover, #bae0ff);
-@color-primary-border: var(--htd-color-primary-border, #91caff);
-@color-primary-border-hover: var(--htd-color-primary-border-hover, #69b1ff);
-@color-primary-hover: var(--htd-color-primary-hover, #4096ff);
-@color-primary-active: var(--htd-color-primary-active, #0958d9);
-@color-primary-text: var(--htd-color-primary-text, @seed-color-primary);
-@color-primary-text-hover: var(--htd-color-primary-text-hover, #4096ff);
-@color-primary-text-active: var(--htd-color-primary-text-active, #0958d9);
+@color-primary: var(
+  ~'--@{custom-prefix}-color-primary',
+  var(--ant-color-primary, @seed-color-primary)
+);
+@color-primary-bg: var(
+  ~'--@{custom-prefix}-color-primary-bg',
+  var(--ant-color-primary-bg, #e6f4ff)
+);
+@color-primary-bg-hover: var(
+  ~'--@{custom-prefix}-color-primary-bg-hover',
+  var(--ant-color-primary-bg-hover, #bae0ff)
+);
+@color-primary-border: var(
+  ~'--@{custom-prefix}-color-primary-border',
+  var(--ant-color-primary-border, #91caff)
+);
+@color-primary-border-hover: var(
+  ~'--@{custom-prefix}-color-primary-border-hover',
+  var(--ant-color-primary-border-hover, #69b1ff)
+);
+@color-primary-hover: var(
+  ~'--@{custom-prefix}-color-primary-hover',
+  var(--ant-color-primary-hover, #4096ff)
+);
+@color-primary-active: var(
+  ~'--@{custom-prefix}-color-primary-active',
+  var(--ant-color-primary-active, #0958d9)
+);
+@color-primary-text: var(
+  ~'--@{custom-prefix}-color-primary-text',
+  var(--ant-color-primary-text, @seed-color-primary)
+);
+@color-primary-text-hover: var(
+  ~'--@{custom-prefix}-color-primary-text-hover',
+  var(--ant-color-primary-text-hover, #4096ff)
+);
+@color-primary-text-active: var(
+  ~'--@{custom-prefix}-color-primary-text-active',
+  var(--ant-color-primary-text-active, #0958d9)
+);
 
 // -------------------- Success --------------------
-@color-success: var(--htd-color-success, @seed-color-success);
-@color-success-bg: var(--htd-color-success-bg, #f6ffed);
-@color-success-bg-hover: var(--htd-color-success-bg-hover, #d9f7be);
-@color-success-border: var(--htd-color-success-border, #b7eb8f);
-@color-success-border-hover: var(--htd-color-success-border-hover, #95de64);
-@color-success-hover: var(--htd-color-success-hover, #95de64);
-@color-success-active: var(--htd-color-success-active, #389e0d);
-@color-success-text: var(--htd-color-success-text, @seed-color-success);
-@color-success-text-hover: var(--htd-color-success-text-hover, #73d13d);
-@color-success-text-active: var(--htd-color-success-text-active, #389e0d);
+@color-success: var(
+  ~'--@{custom-prefix}-color-success',
+  var(--ant-color-success, @seed-color-success)
+);
+@color-success-bg: var(
+  ~'--@{custom-prefix}-color-success-bg',
+  var(--ant-color-success-bg, #f6ffed)
+);
+@color-success-bg-hover: var(
+  ~'--@{custom-prefix}-color-success-bg-hover',
+  var(--ant-color-success-bg-hover, #d9f7be)
+);
+@color-success-border: var(
+  ~'--@{custom-prefix}-color-success-border',
+  var(--ant-color-success-border, #b7eb8f)
+);
+@color-success-border-hover: var(
+  ~'--@{custom-prefix}-color-success-border-hover',
+  var(--ant-color-success-border-hover, #95de64)
+);
+@color-success-hover: var(
+  ~'--@{custom-prefix}-color-success-hover',
+  var(--ant-color-success-hover, #95de64)
+);
+@color-success-active: var(
+  ~'--@{custom-prefix}-color-success-active',
+  var(--ant-color-success-active, #389e0d)
+);
+@color-success-text: var(
+  ~'--@{custom-prefix}-color-success-text',
+  var(--ant-color-success-text, @seed-color-success)
+);
+@color-success-text-hover: var(
+  ~'--@{custom-prefix}-color-success-text-hover',
+  var(--ant-color-success-text-hover, #73d13d)
+);
+@color-success-text-active: var(
+  ~'--@{custom-prefix}-color-success-text-active',
+  var(--ant-color-success-text-active, #389e0d)
+);
 
 // -------------------- Warning --------------------
-@color-warning: var(--htd-color-warning, @seed-color-warning);
-@color-warning-bg: var(--htd-color-warning-bg, #fffbe6);
-@color-warning-bg-hover: var(--htd-color-warning-bg-hover, #fff1b8);
-@color-warning-border: var(--htd-color-warning-border, #ffe58f);
-@color-warning-border-hover: var(--htd-color-warning-border-hover, #ffd666);
-@color-warning-hover: var(--htd-color-warning-hover, #ffd666);
-@color-warning-active: var(--htd-color-warning-active, #d48806);
-@color-warning-text: var(--htd-color-warning-text, @seed-color-warning);
-@color-warning-text-hover: var(--htd-color-warning-text-hover, #ffc53d);
-@color-warning-text-active: var(--htd-color-warning-text-active, #d48806);
+@color-warning: var(
+  ~'--@{custom-prefix}-color-warning',
+  var(--ant-color-warning, @seed-color-warning)
+);
+@color-warning-bg: var(
+  ~'--@{custom-prefix}-color-warning-bg',
+  var(--ant-color-warning-bg, #fffbe6)
+);
+@color-warning-bg-hover: var(
+  ~'--@{custom-prefix}-color-warning-bg-hover',
+  var(--ant-color-warning-bg-hover, #fff1b8)
+);
+@color-warning-border: var(
+  ~'--@{custom-prefix}-color-warning-border',
+  var(--ant-color-warning-border, #ffe58f)
+);
+@color-warning-border-hover: var(
+  ~'--@{custom-prefix}-color-warning-border-hover',
+  var(--ant-color-warning-border-hover, #ffd666)
+);
+@color-warning-hover: var(
+  ~'--@{custom-prefix}-color-warning-hover',
+  var(--ant-color-warning-hover, #ffd666)
+);
+@color-warning-active: var(
+  ~'--@{custom-prefix}-color-warning-active',
+  var(--ant-color-warning-active, #d48806)
+);
+@color-warning-text: var(
+  ~'--@{custom-prefix}-color-warning-text',
+  var(--ant-color-warning-text, @seed-color-warning)
+);
+@color-warning-text-hover: var(
+  ~'--@{custom-prefix}-color-warning-text-hover',
+  var(--ant-color-warning-text-hover, #ffc53d)
+);
+@color-warning-text-active: var(
+  ~'--@{custom-prefix}-color-warning-text-active',
+  var(--ant-color-warning-text-active, #d48806)
+);
 
 // -------------------- Error --------------------
-@color-error: var(--htd-color-error, @seed-color-error);
-@color-error-bg: var(--htd-color-error-bg, #fff2f0);
-@color-error-bg-hover: var(--htd-color-error-bg-hover, #fff1f0);
-@color-error-border: var(--htd-color-error-border, #ffccc7);
-@color-error-border-hover: var(--htd-color-error-border-hover, #ffa39e);
-@color-error-hover: var(--htd-color-error-hover, #ff7875);
-@color-error-active: var(--htd-color-error-active, #d9363e);
-@color-error-text: var(--htd-color-error-text, @seed-color-error);
-@color-error-text-hover: var(--htd-color-error-text-hover, #ff7875);
-@color-error-text-active: var(--htd-color-error-text-active, #d9363e);
+@color-error: var(
+  ~'--@{custom-prefix}-color-error',
+  var(--ant-color-error, @seed-color-error)
+);
+@color-error-bg: var(
+  ~'--@{custom-prefix}-color-error-bg',
+  var(--ant-color-error-bg, #fff2f0)
+);
+@color-error-bg-hover: var(
+  ~'--@{custom-prefix}-color-error-bg-hover',
+  var(--ant-color-error-bg-hover, #fff1f0)
+);
+@color-error-border: var(
+  ~'--@{custom-prefix}-color-error-border',
+  var(--ant-color-error-border, #ffccc7)
+);
+@color-error-border-hover: var(
+  ~'--@{custom-prefix}-color-error-border-hover',
+  var(--ant-color-error-border-hover, #ffa39e)
+);
+@color-error-hover: var(
+  ~'--@{custom-prefix}-color-error-hover',
+  var(--ant-color-error-hover, #ff7875)
+);
+@color-error-active: var(
+  ~'--@{custom-prefix}-color-error-active',
+  var(--ant-color-error-active, #d9363e)
+);
+@color-error-text: var(
+  ~'--@{custom-prefix}-color-error-text',
+  var(--ant-color-error-text, @seed-color-error)
+);
+@color-error-text-hover: var(
+  ~'--@{custom-prefix}-color-error-text-hover',
+  var(--ant-color-error-text-hover, #ff7875)
+);
+@color-error-text-active: var(
+  ~'--@{custom-prefix}-color-error-text-active',
+  var(--ant-color-error-text-active, #d9363e)
+);
 
 // -------------------- Info --------------------
-@color-info: var(--htd-color-info, @seed-color-info);
-@color-info-bg: var(--htd-color-info-bg, #e6f4ff);
-@color-info-bg-hover: var(--htd-color-info-bg-hover, #bae0ff);
-@color-info-border: var(--htd-color-info-border, #91caff);
-@color-info-border-hover: var(--htd-color-info-border-hover, #69b1ff);
-@color-info-hover: var(--htd-color-info-hover, #69b1ff);
-@color-info-active: var(--htd-color-info-active, #0958d9);
-@color-info-text: var(--htd-color-info-text, @seed-color-info);
-@color-info-text-hover: var(--htd-color-info-text-hover, #4096ff);
-@color-info-text-active: var(--htd-color-info-text-active, #0958d9);
+@color-info: var(
+  ~'--@{custom-prefix}-color-info',
+  var(--ant-color-info, @seed-color-info)
+);
+@color-info-bg: var(
+  ~'--@{custom-prefix}-color-info-bg',
+  var(--ant-color-info-bg, #e6f4ff)
+);
+@color-info-bg-hover: var(
+  ~'--@{custom-prefix}-color-info-bg-hover',
+  var(--ant-color-info-bg-hover, #bae0ff)
+);
+@color-info-border: var(
+  ~'--@{custom-prefix}-color-info-border',
+  var(--ant-color-info-border, #91caff)
+);
+@color-info-border-hover: var(
+  ~'--@{custom-prefix}-color-info-border-hover',
+  var(--ant-color-info-border-hover, #69b1ff)
+);
+@color-info-hover: var(
+  ~'--@{custom-prefix}-color-info-hover',
+  var(--ant-color-info-hover, #69b1ff)
+);
+@color-info-active: var(
+  ~'--@{custom-prefix}-color-info-active',
+  var(--ant-color-info-active, #0958d9)
+);
+@color-info-text: var(
+  ~'--@{custom-prefix}-color-info-text',
+  var(--ant-color-info-text, @seed-color-info)
+);
+@color-info-text-hover: var(
+  ~'--@{custom-prefix}-color-info-text-hover',
+  var(--ant-color-info-text-hover, #4096ff)
+);
+@color-info-text-active: var(
+  ~'--@{custom-prefix}-color-info-text-active',
+  var(--ant-color-info-text-active, #0958d9)
+);
 
 // -------------------- 文本与图标 --------------------
-@color-text: var(--htd-color-text, rgba(0, 0, 0, 88%));
-@color-text-secondary: var(--htd-color-text-secondary, rgba(0, 0, 0, 65%));
-@color-text-tertiary: var(--htd-color-text-tertiary, rgba(0, 0, 0, 45%));
-@color-text-quaternary: var(--htd-color-text-quaternary, rgba(0, 0, 0, 25%));
-@color-text-disabled: var(--htd-color-text-disabled, rgba(0, 0, 0, 25%));
-@color-icon: var(--htd-color-icon, rgba(0, 0, 0, 45%));
-@color-icon-hover: var(--htd-color-icon-hover, rgba(0, 0, 0, 88%));
+@color-text: var(
+  ~'--@{custom-prefix}-color-text',
+  var(--ant-color-text, rgba(0, 0, 0, 88%))
+);
+@color-text-secondary: var(
+  ~'--@{custom-prefix}-color-text-secondary',
+  var(--ant-color-text-secondary, rgba(0, 0, 0, 65%))
+);
+@color-text-tertiary: var(
+  ~'--@{custom-prefix}-color-text-tertiary',
+  var(--ant-color-text-tertiary, rgba(0, 0, 0, 45%))
+);
+@color-text-quaternary: var(
+  ~'--@{custom-prefix}-color-text-quaternary',
+  var(--ant-color-text-quaternary, rgba(0, 0, 0, 25%))
+);
+@color-text-disabled: var(
+  ~'--@{custom-prefix}-color-text-disabled',
+  var(--ant-color-text-disabled, rgba(0, 0, 0, 25%))
+);
+@color-icon: var(
+  ~'--@{custom-prefix}-color-icon',
+  var(--ant-color-icon, rgba(0, 0, 0, 45%))
+);
+@color-icon-hover: var(
+  ~'--@{custom-prefix}-color-icon-hover',
+  var(--ant-color-icon-hover, rgba(0, 0, 0, 88%))
+);
 
 // -------------------- 背景与填充 --------------------
-@color-bg-layout: var(--htd-color-bg-layout, #f5f5f5);
-@color-bg-container: var(--htd-color-bg-container, @seed-color-bg-base);
-@color-bg-elevated: var(--htd-color-bg-elevated, @seed-color-bg-base);
-@color-bg-spotlight: var(--htd-color-bg-spotlight, rgba(0, 0, 0, 85%));
-@color-bg-mask: var(--htd-color-bg-mask, rgba(0, 0, 0, 45%));
-@color-bg-container-disabled: var(
-  --htd-color-bg-container-disabled,
-  rgba(0, 0, 0, 4%)
+@color-bg-layout: var(
+  ~'--@{custom-prefix}-color-bg-layout',
+  var(--ant-color-bg-layout, #f5f5f5)
 );
-@color-fill: var(--htd-color-fill, rgba(0, 0, 0, 15%));
-@color-fill-secondary: var(--htd-color-fill-secondary, rgba(0, 0, 0, 6%));
-@color-fill-tertiary: var(--htd-color-fill-tertiary, rgba(0, 0, 0, 4%));
-@color-fill-quaternary: var(--htd-color-fill-quaternary, rgba(0, 0, 0, 2%));
+@color-bg-container: var(
+  ~'--@{custom-prefix}-color-bg-container',
+  var(--ant-color-bg-container, @seed-color-bg-base)
+);
+@color-bg-elevated: var(
+  ~'--@{custom-prefix}-color-bg-elevated',
+  var(--ant-color-bg-elevated, @seed-color-bg-base)
+);
+@color-bg-spotlight: var(
+  ~'--@{custom-prefix}-color-bg-spotlight',
+  var(--ant-color-bg-spotlight, rgba(0, 0, 0, 85%))
+);
+@color-bg-mask: var(
+  ~'--@{custom-prefix}-color-bg-mask',
+  var(--ant-color-bg-mask, rgba(0, 0, 0, 45%))
+);
+@color-bg-container-disabled: var(
+  ~'--@{custom-prefix}-color-bg-container-disabled',
+  var(--ant-color-bg-container-disabled, rgba(0, 0, 0, 4%))
+);
+@color-fill: var(
+  ~'--@{custom-prefix}-color-fill',
+  var(--ant-color-fill, rgba(0, 0, 0, 15%))
+);
+@color-fill-secondary: var(
+  ~'--@{custom-prefix}-color-fill-secondary',
+  var(--ant-color-fill-secondary, rgba(0, 0, 0, 6%))
+);
+@color-fill-tertiary: var(
+  ~'--@{custom-prefix}-color-fill-tertiary',
+  var(--ant-color-fill-tertiary, rgba(0, 0, 0, 4%))
+);
+@color-fill-quaternary: var(
+  ~'--@{custom-prefix}-color-fill-quaternary',
+  var(--ant-color-fill-quaternary, rgba(0, 0, 0, 2%))
+);
 
 // -------------------- 边界与链接 --------------------
-@color-border: var(--htd-color-border, #d9d9d9);
-@color-border-secondary: var(--htd-color-border-secondary, #f0f0f0);
-@color-split: var(--htd-color-split, rgba(5, 5, 5, 6%));
-@color-link: var(--htd-color-link, @seed-color-primary);
-@color-link-hover: var(--htd-color-link-hover, #69b1ff);
-@color-link-active: var(--htd-color-link-active, #0958d9);
-@color-white: var(--htd-color-white, @seed-color-bg-base);
+@color-border: var(
+  ~'--@{custom-prefix}-color-border',
+  var(--ant-color-border, #d9d9d9)
+);
+@color-border-secondary: var(
+  ~'--@{custom-prefix}-color-border-secondary',
+  var(--ant-color-border-secondary, #f0f0f0)
+);
+@color-split: var(
+  ~'--@{custom-prefix}-color-split',
+  var(--ant-color-split, rgba(5, 5, 5, 6%))
+);
+@color-link: var(
+  ~'--@{custom-prefix}-color-link',
+  var(--ant-color-link, @seed-color-primary)
+);
+@color-link-hover: var(
+  ~'--@{custom-prefix}-color-link-hover',
+  var(--ant-color-link-hover, #69b1ff)
+);
+@color-link-active: var(
+  ~'--@{custom-prefix}-color-link-active',
+  var(--ant-color-link-active, #0958d9)
+);
+@color-white: var(
+  ~'--@{custom-prefix}-color-white',
+  var(--ant-color-white, @seed-color-bg-base)
+);
 
 // -------------------- 间距 --------------------
-@size-xxs: var(--htd-size-xxs, 4px);
-@size-xs: var(--htd-size-xs, 8px);
-@size-sm: var(--htd-size-sm, 12px);
-@size: var(--htd-size, 16px);
-@size-ms: var(--htd-size-ms, 16px);
-@size-md: var(--htd-size-md, 20px);
-@size-lg: var(--htd-size-lg, 24px);
-@size-xl: var(--htd-size-xl, 32px);
-@size-xxl: var(--htd-size-xxl, 48px);
+@size-xxs: var(~'--@{custom-prefix}-size-xxs', var(--ant-size-xxs, 4px));
+@size-xs: var(~'--@{custom-prefix}-size-xs', var(--ant-size-xs, 8px));
+@size-sm: var(~'--@{custom-prefix}-size-sm', var(--ant-size-sm, 12px));
+@size: var(~'--@{custom-prefix}-size', var(--ant-size, 16px));
+@size-ms: var(~'--@{custom-prefix}-size-ms', var(--ant-size-ms, 16px));
+@size-md: var(~'--@{custom-prefix}-size-md', var(--ant-size-md, 20px));
+@size-lg: var(~'--@{custom-prefix}-size-lg', var(--ant-size-lg, 24px));
+@size-xl: var(~'--@{custom-prefix}-size-xl', var(--ant-size-xl, 32px));
+@size-xxl: var(~'--@{custom-prefix}-size-xxl', var(--ant-size-xxl, 48px));
 
 // -------------------- 圆角 --------------------
-@border-radius-xs: var(--htd-border-radius-xs, 2px);
-@border-radius-sm: var(--htd-border-radius-sm, 4px);
-@border-radius: var(--htd-border-radius, @seed-border-radius);
-@border-radius-lg: var(--htd-border-radius-lg, 8px);
-@border-radius-outer: var(--htd-border-radius-outer, 4px);
+@border-radius-xs: var(
+  ~'--@{custom-prefix}-border-radius-xs',
+  var(--ant-border-radius-xs, 2px)
+);
+@border-radius-sm: var(
+  ~'--@{custom-prefix}-border-radius-sm',
+  var(--ant-border-radius-sm, 4px)
+);
+@border-radius: var(
+  ~'--@{custom-prefix}-border-radius',
+  var(--ant-border-radius, @seed-border-radius)
+);
+@border-radius-lg: var(
+  ~'--@{custom-prefix}-border-radius-lg',
+  var(--ant-border-radius-lg, 8px)
+);
+@border-radius-outer: var(
+  ~'--@{custom-prefix}-border-radius-outer',
+  var(--ant-border-radius-outer, 4px)
+);
 
 // -------------------- 阴影 --------------------
 @box-shadow: var(
-  --htd-box-shadow,
-  0 6px 16px 0 rgba(0, 0, 0, 8%),
-  0 3px 6px -4px rgba(0, 0, 0, 12%),
-  0 9px 28px 8px rgba(0, 0, 0, 5%)
+  ~'--@{custom-prefix}-box-shadow',
+  var(
+    --ant-box-shadow,
+    0 6px 16px 0 rgba(0, 0, 0, 8%),
+    0 3px 6px -4px rgba(0, 0, 0, 12%),
+    0 9px 28px 8px rgba(0, 0, 0, 5%)
+  )
 );
 @box-shadow-secondary: var(
-  --htd-box-shadow-secondary,
-  0 6px 16px 0 rgba(0, 0, 0, 8%),
-  0 3px 6px -4px rgba(0, 0, 0, 12%),
-  0 9px 28px 8px rgba(0, 0, 0, 5%)
+  ~'--@{custom-prefix}-box-shadow-secondary',
+  var(
+    --ant-box-shadow-secondary,
+    0 6px 16px 0 rgba(0, 0, 0, 8%),
+    0 3px 6px -4px rgba(0, 0, 0, 12%),
+    0 9px 28px 8px rgba(0, 0, 0, 5%)
+  )
 );
 @box-shadow-tertiary: var(
-  --htd-box-shadow-tertiary,
-  0 1px 2px 0 rgba(0, 0, 0, 3%),
-  0 1px 6px -1px rgba(0, 0, 0, 2%),
-  0 2px 4px 0 rgba(0, 0, 0, 2%)
+  ~'--@{custom-prefix}-box-shadow-tertiary',
+  var(
+    --ant-box-shadow-tertiary,
+    0 1px 2px 0 rgba(0, 0, 0, 3%),
+    0 1px 6px -1px rgba(0, 0, 0, 2%),
+    0 2px 4px 0 rgba(0, 0, 0, 2%)
+  )
+);
+
+// -------------------- 动效 (Motion) --------------------
+@motion-duration-fast: var(
+  ~'--@{custom-prefix}-motion-duration-fast',
+  var(--ant-motion-duration-fast, 0.1s)
+);
+@motion-duration-mid: var(
+  ~'--@{custom-prefix}-motion-duration-mid',
+  var(--ant-motion-duration-mid, 0.2s)
+);
+@motion-duration-slow: var(
+  ~'--@{custom-prefix}-motion-duration-slow',
+  var(--ant-motion-duration-slow, 0.3s)
+);
+@motion-ease-in-out: var(
+  ~'--@{custom-prefix}-motion-ease-in-out',
+  cubic-bezier(0.645, 0.045, 0.355, 1)
+);
+@motion-ease-out-back: var(
+  ~'--@{custom-prefix}-motion-ease-out-back',
+  cubic-bezier(0.12, 0.4, 0.29, 1.46)
+);
+
+// -------------------- 层级 (Z-Index) --------------------
+@z-index-base: var(~'--@{custom-prefix}-z-index-base', 0);
+@z-index-dock: var(~'--@{custom-prefix}-z-index-dock', 1000);
+@z-index-modal: var(
+  ~'--@{custom-prefix}-z-index-modal',
+  var(--ant-z-index-modal, 1000)
+);
+@z-index-drawer: var(~'--@{custom-prefix}-z-index-drawer', 1000);
+@z-index-dropdown: var(
+  ~'--@{custom-prefix}-z-index-dropdown',
+  var(--ant-z-index-popover, 1050)
 );
