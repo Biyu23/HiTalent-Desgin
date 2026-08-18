@@ -27,13 +27,18 @@ textarea {
   transition: var(--htd-doc-transition);
 
   &:focus-visible {
-    outline: 3px solid var(--htd-doc-focus);
-    outline-offset: 2px;
+    outline: 2px solid var(--htd-doc-focus);
+    outline-offset: 1px;
   }
 }
 
 a {
-  text-underline-offset: 3px;
+  color: var(--htd-doc-brand);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--htd-doc-brand-hover);
+  }
 }
 
 button,
@@ -42,13 +47,13 @@ select {
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--htd-doc-border-strong);
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   border-radius: 99px;
   background-clip: padding-box;
 }

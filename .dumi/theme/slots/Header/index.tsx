@@ -43,9 +43,18 @@ const Header: FC = () => {
       onClick={() => setShowMenu(false)}
     >
       <div className="dumi-default-header-content htd-doc-header-content">
-        <section className="dumi-default-header-left htd-doc-header-brand">
-          <Logo />
-        </section>
+        <div className="htd-doc-header-left">
+          <section className="dumi-default-header-left htd-doc-header-brand">
+            <Logo />
+          </section>
+
+          <div
+            className="htd-doc-header-search"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <SearchBar />
+          </div>
+        </div>
 
         <section
           id="htd-doc-mobile-nav"
@@ -62,13 +71,6 @@ const Header: FC = () => {
             <HeaderExtra />
           </div>
         </section>
-
-        <div
-          className="htd-doc-header-search"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <SearchBar />
-        </div>
 
         <button
           type="button"

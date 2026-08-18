@@ -5,45 +5,50 @@
   font-family: var(--htd-doc-font-body);
 
   > main {
+    display: flex;
     max-width: var(--htd-doc-content-width);
-    padding: 0 32px;
+    margin: 0 auto;
+    padding: 0 24px;
+    box-sizing: border-box;
   }
 
   > main > .dumi-default-doc-layout-toc-wrapper {
-    top: calc(var(--htd-doc-header-height) + 28px);
+    position: sticky;
+    top: calc(var(--htd-doc-header-height) + 24px);
     width: var(--htd-doc-toc-width);
+    flex: 0 0 var(--htd-doc-toc-width);
+    max-height: calc(100vh - var(--htd-doc-header-height) - 48px);
     margin-inline-start: 32px;
+    overflow-y: auto;
 
     > h4 {
       margin-bottom: 12px;
+      padding-left: 12px;
       color: var(--htd-doc-text-muted);
       font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
+      font-weight: 500;
+      letter-spacing: 0.02em;
     }
   }
 }
 
 .dumi-default-content {
+  flex: 1;
+  min-width: 0;
   color: var(--htd-doc-text);
 
   &:not([data-no-sidebar]) {
-    margin-top: 24px;
-    padding: 48px 56px 0;
-    background: var(--htd-doc-surface);
-    border: 1px solid var(--htd-doc-border);
-    border-bottom: 0;
-    border-radius: var(--htd-doc-radius-lg) var(--htd-doc-radius-lg) 0 0;
+    margin: 0;
+    padding: 32px 48px 64px;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
     box-shadow: none;
   }
 }
 
 @media only screen and (max-width: 1199px) {
   .dumi-default-doc-layout {
-    > main {
-      max-width: 1120px;
-    }
-
     > main > .dumi-default-doc-layout-toc-wrapper {
       display: none;
     }
@@ -52,24 +57,25 @@
 
 @media only screen and (min-width: 768px) and (max-width: 1024px) {
   .dumi-default-doc-layout > main {
-    padding: 0 24px;
+    padding: 0 16px;
   }
 
   .dumi-default-content:not([data-no-sidebar]) {
-    padding: 40px 36px 0;
+    padding: 24px 28px 48px;
   }
 }
 
 @media only screen and (max-width: 767px) {
   .dumi-default-doc-layout {
     > main {
-      padding: 0 20px;
+      display: block;
+      padding: 0 16px;
     }
 
     &-mobile-bar {
-      top: 58px;
+      top: 56px;
       height: 40px;
-      padding: 0 20px;
+      padding: 0 16px;
       color: var(--htd-doc-text-secondary);
       background: color-mix(in srgb, var(--htd-doc-surface) 92%, transparent);
       border-color: var(--htd-doc-border);
@@ -78,8 +84,7 @@
   }
 
   .dumi-default-content:not([data-no-sidebar]) {
-    margin: 0 -20px;
-    padding: 30px 20px 0;
+    padding: 20px 0 40px;
     border: 0;
     border-radius: 0;
   }

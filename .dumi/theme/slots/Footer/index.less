@@ -1,10 +1,10 @@
 .htd-doc-footer {
-  margin-top: 72px;
-  padding: 28px 0 34px;
+  margin-top: 64px;
+  padding: 28px 0 36px;
   color: var(--htd-doc-text-secondary);
   background: transparent;
   border-top: 1px solid var(--htd-doc-border);
-  font-size: 12px;
+  font-size: 13px;
 
   > div {
     display: flex;
@@ -21,31 +21,30 @@
 
   > span {
     display: grid;
-    flex: 0 0 30px;
-    width: 30px;
-    height: 30px;
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
     place-items: center;
     color: #fff;
     background: var(--htd-doc-brand);
-    border-radius: 8px;
+    border-radius: 6px;
     font-family: var(--htd-doc-font-display);
-    font-size: 9px;
-    font-weight: 820;
-    letter-spacing: -0.06em;
+    font-size: 11px;
+    font-weight: 700;
   }
 
   strong {
     display: block;
     color: var(--htd-doc-text);
     font-family: var(--htd-doc-font-display);
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 600;
   }
 
   p {
-    margin: 3px 0 0;
+    margin: 2px 0 0;
     color: var(--htd-doc-text-muted);
-    font-size: 11px;
+    font-size: 12px;
   }
 }
 
@@ -77,8 +76,8 @@
 
 @media only screen and (max-width: 767px) {
   .htd-doc-footer {
-    margin-top: 54px;
-    padding-bottom: 28px;
+    margin-top: 48px;
+    padding-bottom: 24px;
 
     > div,
     .htd-doc-footer-meta {
@@ -87,15 +86,15 @@
     }
 
     > div {
-      gap: 24px;
+      gap: 20px;
     }
 
     .htd-doc-footer-meta {
-      gap: 10px;
+      gap: 8px;
     }
   }
 
   .dumi-default-content[data-no-sidebar] .htd-doc-footer {
-    width: calc(100vw - 40px);
+    width: calc(100vw - 32px);
   }
 }

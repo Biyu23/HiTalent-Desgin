@@ -1,7 +1,7 @@
 .htd-doc-home {
   max-width: none;
   margin: 0;
-  padding: 0 32px 72px;
+  padding: 0 32px 64px;
   overflow: visible;
   color: var(--htd-doc-text);
   background: var(--htd-doc-bg);
@@ -14,34 +14,33 @@
 }
 
 .htd-doc-home-section {
-  padding-top: 68px;
+  padding-top: 56px;
 }
 
 .htd-doc-home-heading {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 0.58fr);
-  gap: 48px;
+  gap: 40px;
   align-items: end;
-  margin-bottom: 26px;
+  margin-bottom: 24px;
 
   span {
     display: block;
-    margin-bottom: 9px;
+    margin-bottom: 8px;
     color: var(--htd-doc-brand);
     font-family: var(--htd-doc-font-mono);
-    font-size: 10px;
-    font-weight: 720;
-    letter-spacing: 0.12em;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
   }
 
   h2 {
     margin: 0;
     color: var(--htd-doc-text);
     font-family: var(--htd-doc-font-display);
-    font-size: clamp(28px, 3vw, 40px);
-    font-weight: 740;
-    line-height: 1.16;
-    letter-spacing: -0.035em;
+    font-size: clamp(24px, 2.5vw, 32px);
+    font-weight: 600;
+    line-height: 1.25;
   }
 
   > p {
@@ -55,69 +54,48 @@
 .htd-doc-capability-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  gap: 16px;
 }
 
 .htd-doc-capability {
   position: relative;
-  min-height: 252px;
+  min-height: 230px;
   padding: 24px;
   overflow: hidden;
   background: var(--htd-doc-surface);
   border: 1px solid var(--htd-doc-border);
   border-radius: var(--htd-doc-radius-md);
-  transition: border-color 170ms ease, transform 170ms ease,
-    box-shadow 170ms ease;
-
-  &::after {
-    position: absolute;
-    right: -24px;
-    bottom: -42px;
-    width: 132px;
-    height: 132px;
-    content: '';
-    background: radial-gradient(
-      circle,
-      color-mix(in srgb, var(--htd-doc-brand) 12%, transparent),
-      transparent 68%
-    );
-    pointer-events: none;
-  }
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    border-color: color-mix(
-      in srgb,
-      var(--htd-doc-brand) 52%,
-      var(--htd-doc-border)
-    );
-    box-shadow: 0 14px 34px
-      color-mix(in srgb, var(--htd-doc-brand) 8%, transparent);
+    border-color: var(--htd-doc-brand);
+    box-shadow: var(--htd-doc-shadow-card);
     transform: translateY(-2px);
   }
 
   h3 {
-    margin: 28px 0 9px;
+    margin: 20px 0 8px;
     color: var(--htd-doc-text);
     font-family: var(--htd-doc-font-display);
-    font-size: 19px;
-    font-weight: 710;
-    letter-spacing: -0.02em;
+    font-size: 17px;
+    font-weight: 600;
   }
 
   > p {
-    min-height: 66px;
+    min-height: 60px;
     margin: 0;
     color: var(--htd-doc-text-secondary);
     font-size: 13px;
-    line-height: 1.68;
+    line-height: 1.65;
   }
 
   > a {
     position: absolute;
-    bottom: 22px;
+    bottom: 20px;
     left: 24px;
     color: var(--htd-doc-brand);
     text-decoration: none;
+    font-weight: 500;
   }
 }
 
@@ -128,24 +106,24 @@
 
   i {
     display: grid;
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     place-items: center;
     color: var(--htd-doc-brand);
     background: var(--htd-doc-brand-soft);
-    border-radius: 9px;
+    border-radius: 6px;
     font-family: var(--htd-doc-font-mono);
-    font-size: 12px;
+    font-size: 13px;
     font-style: normal;
-    font-weight: 780;
+    font-weight: 600;
   }
 
   span {
     color: var(--htd-doc-text-muted);
     font-family: var(--htd-doc-font-mono);
-    font-size: 9px;
-    font-weight: 650;
-    letter-spacing: 0.07em;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
   }
 }
@@ -153,12 +131,11 @@
 .htd-doc-card-link {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-size: 12px;
-  font-weight: 680;
+  gap: 6px;
+  font-size: 13px;
 
   svg {
-    transition: transform 150ms ease;
+    transition: transform 0.15s ease;
   }
 
   &:hover svg {
@@ -171,19 +148,19 @@
   grid-template-columns: minmax(180px, 0.4fr) 1fr;
   gap: 30px;
   align-items: center;
-  margin-top: 68px;
-  padding: 22px 26px;
-  color: #eef2f8;
-  background: #182235;
-  border: 1px solid #2b3950;
+  margin-top: 56px;
+  padding: 20px 24px;
+  color: var(--htd-doc-text);
+  background: var(--htd-doc-surface);
+  border: 1px solid var(--htd-doc-border);
   border-radius: var(--htd-doc-radius-md);
 
   > span {
-    color: #9ba9bf;
+    color: var(--htd-doc-text-muted);
     font-family: var(--htd-doc-font-mono);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.11em;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
@@ -194,7 +171,7 @@
 
   article {
     padding: 2px 24px;
-    border-left: 1px solid #34435a;
+    border-left: 1px solid var(--htd-doc-border);
 
     strong,
     small {
@@ -202,33 +179,33 @@
     }
 
     strong {
-      color: #f4f7fb;
+      color: var(--htd-doc-text);
       font-family: var(--htd-doc-font-display);
-      font-size: 16px;
-      font-weight: 710;
+      font-size: 15px;
+      font-weight: 600;
     }
 
     small {
-      margin-top: 4px;
-      color: #9ba9bf;
-      font-size: 11px;
+      margin-top: 3px;
+      color: var(--htd-doc-text-secondary);
+      font-size: 12px;
     }
   }
 }
 
 .htd-doc-component-index {
-  padding-top: 82px;
+  padding-top: 64px;
 }
 
 .htd-doc-component-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 
   > a {
     position: relative;
     display: flex;
-    min-height: 154px;
+    min-height: 140px;
     flex-direction: column;
     padding: 18px;
     color: var(--htd-doc-text);
@@ -236,11 +213,12 @@
     border: 1px solid var(--htd-doc-border);
     border-radius: var(--htd-doc-radius-md);
     text-decoration: none;
-    transition: border-color 150ms ease, background-color 150ms ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
     &:hover {
-      background: var(--htd-doc-surface-raised);
+      background: var(--htd-doc-surface);
       border-color: var(--htd-doc-brand);
+      box-shadow: var(--htd-doc-shadow-card);
 
       > svg {
         color: var(--htd-doc-brand);
@@ -251,32 +229,31 @@
     > span {
       color: var(--htd-doc-text-muted);
       font-family: var(--htd-doc-font-mono);
-      font-size: 8px;
-      font-weight: 700;
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
     }
 
     > strong {
-      margin-top: 14px;
+      margin-top: 10px;
       font-family: var(--htd-doc-font-display);
       font-size: 15px;
-      font-weight: 710;
+      font-weight: 600;
     }
 
     > small {
-      margin-top: 6px;
+      margin-top: 4px;
       color: var(--htd-doc-text-secondary);
-      font-size: 11px;
+      font-size: 12px;
       line-height: 1.5;
     }
 
     > svg {
       position: absolute;
-      right: 18px;
-      bottom: 17px;
+      right: 16px;
+      bottom: 16px;
       color: var(--htd-doc-text-muted);
-      transition: color 150ms ease, transform 150ms ease;
+      transition: color 0.15s ease, transform 0.15s ease;
     }
   }
 }
@@ -284,12 +261,16 @@
 .htd-doc-component-action {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin-top: 24px;
   color: var(--htd-doc-brand);
-  font-size: 13px;
-  font-weight: 680;
+  font-size: 14px;
+  font-weight: 500;
   text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 @media only screen and (max-width: 1024px) {
@@ -300,17 +281,17 @@
 
 @media only screen and (max-width: 767px) {
   .htd-doc-home {
-    padding: 0 20px 54px;
+    padding: 0 16px 48px;
   }
 
   .htd-doc-home-section {
-    padding-top: 52px;
+    padding-top: 40px;
   }
 
   .htd-doc-home-heading {
     grid-template-columns: 1fr;
-    gap: 15px;
-    margin-bottom: 22px;
+    gap: 12px;
+    margin-bottom: 18px;
   }
 
   .htd-doc-capability-grid,
@@ -319,30 +300,30 @@
   }
 
   .htd-doc-capability {
-    min-height: 232px;
+    min-height: 200px;
   }
 
   .htd-doc-highlights {
     grid-template-columns: 1fr;
-    gap: 18px;
-    margin-top: 52px;
-    padding: 22px;
+    gap: 16px;
+    margin-top: 40px;
+    padding: 18px;
 
     > div {
       grid-template-columns: 1fr;
-      gap: 18px;
+      gap: 16px;
     }
 
     article {
-      padding: 0 0 0 16px;
+      padding: 0 0 0 14px;
     }
   }
 
   .htd-doc-component-index {
-    padding-top: 64px;
+    padding-top: 48px;
   }
 
   .htd-doc-component-grid > a {
-    min-height: 136px;
+    min-height: 120px;
   }
 }

@@ -44,7 +44,7 @@ export default defineConfig({
       switch: true,
     },
     theme: {
-      '@c-primary': '#4f46e5',
+      '@c-primary': '#1677ff',
     },
     nav: {
       'zh-CN': zhNav,
