@@ -1,5 +1,5 @@
 import { CloseCircleOutlined, DownOutlined } from '@ant-design/icons';
-import { Button, Popover, Typography } from 'antd';
+import { Button, Popover } from 'antd';
 import clsx from 'clsx';
 import React, { memo } from 'react';
 import { useNamespace } from '../../configProvider/usePrefixCls';
@@ -12,17 +12,20 @@ const Selector: React.FC<SelectorProps> = (props) => {
   const {
     prefixCls: customPrefixCls,
     content,
-    autoAdjustOverflow,
+    autoAdjustOverflow = true,
     rootClassName,
     openClassName,
     afterOpenChange,
+    placement = 'bottomLeft',
+    getPopupContainer,
+    destroyTooltipOnHide,
     children,
     open: openProp,
     onOpenChange: onOpenChangeProp,
-    ellipsis,
     allowClear = true,
     hasValue,
     showArrow = true,
+    disabled = false,
     onClear,
   } = props;
   const { e, em } = useNamespace('popover-select', customPrefixCls);
@@ -32,19 +35,19 @@ const Selector: React.FC<SelectorProps> = (props) => {
     onChange: onOpenChangeProp,
   });
 
+  const hasClear = Boolean(allowClear && hasValue && !disabled);
+
   const renderChildren = () => {
-    return (
-      <Typography.Paragraph className={e('selector-text')} ellipsis={ellipsis}>
-        {children}
-      </Typography.Paragraph>
-    );
+    return <span className={e('selector-text')}>{children}</span>;
   };
 
   const renderClearIcon = () => {
-    if (!allowClear || !hasValue) return null;
+    if (!hasClear) return null;
     return (
       <CloseCircleOutlined
-        className={e('selector-clear')}
+        className={clsx(e('selector-clear'), {
+          [em('selector-clear', 'overlay')]: showArrow,
+        })}
         onClick={(e) => {
           e.stopPropagation();
           onClear?.(e);
@@ -55,31 +58,56 @@ const Selector: React.FC<SelectorProps> = (props) => {
 
   const renderArrow = () => {
     if (!showArrow) return null;
-    return <DownOutlined className={e('selector-arrow')} />;
+    return (
+      <DownOutlined
+        className={clsx(e('selector-arrow'), {
+          [em('selector-arrow', 'has-clear')]: hasClear,
+        })}
+      />
+    );
+  };
+
+  const renderActions = () => {
+    const clearIcon = renderClearIcon();
+    const arrowIcon = renderArrow();
+    if (!clearIcon && !arrowIcon) return null;
+    return (
+      <span className={e('selector-actions')}>
+        {clearIcon}
+        {arrowIcon}
+      </span>
+    );
   };
 
   return withNativeProps(
     props,
     <Popover
       trigger="click"
+      placement={placement}
+      getPopupContainer={getPopupContainer}
+      destroyTooltipOnHide={destroyTooltipOnHide}
       autoAdjustOverflow={autoAdjustOverflow}
       rootClassName={clsx(e('selector'), rootClassName)}
       openClassName={clsx(openClassName, em('selector-btn', 'open'))}
       afterOpenChange={afterOpenChange}
-      open={open}
-      content={content()}
-      onOpenChange={onOpenChange}
+      open={disabled ? false : open}
+      content={
+        disabled ? null : typeof content === 'function' ? content() : content
+      }
+      onOpenChange={disabled ? undefined : onOpenChange}
     >
       <Button
         type="text"
+        disabled={disabled}
         className={clsx(e('selector-btn'), {
           [em('selector-btn', 'active')]: hasValue,
           [em('selector-btn', 'open')]: open,
+          [em('selector-btn', 'empty')]: !hasValue,
+          [em('selector-btn', 'disabled')]: disabled,
         })}
       >
         {renderChildren()}
-        {renderClearIcon()}
-        {renderArrow()}
+        {renderActions()}
       </Button>
     </Popover>,
   );

@@ -45,11 +45,13 @@ export function useMergeState<TOrigin, TResult = TOrigin>(
   // 判断是否为受控模式：外部传入了非 undefined 的 value 即为受控模式
   const isControlled = value !== undefined;
 
-  // 使用 useRef 缓存转换函数，防止外部传入内联函数导致无意义的重渲染
+  // 使用 useRef 缓存转换函数与回调，防止外部传入内联函数导致无意义的闭包依赖
   const transformOriginRef = useRef(transformToOrigin);
   const transformResultRef = useRef(transformToResult);
+  const onChangeRef = useRef(onChange);
   transformOriginRef.current = transformToOrigin;
   transformResultRef.current = transformToResult;
+  onChangeRef.current = onChange;
 
   // 缓存受控模式下的 origin 转换结果，避免相同 value 重新计算导致对象/数组引用发生无意义变化
   const prevControlledRef = useRef<{
@@ -86,26 +88,28 @@ export function useMergeState<TOrigin, TResult = TOrigin>(
     return transformToOrigin(initVal);
   });
 
+  // 当受控 value 变化时，保持内部 state 同步，避免受控转非受控（如清空为 undefined）时读取到陈旧内部状态
+  const prevValueRef = useRef(value);
+  if (isControlled && !Object.is(prevValueRef.current, value)) {
+    prevValueRef.current = value;
+    setInternalValue(controlledOriginValue);
+  }
+
   // 当前生效的内部值：受控模式直接使用受控值转换结果，非受控模式使用内部 state
   const mergedValue = isControlled ? controlledOriginValue : internalValue;
 
   const internalValueRef = useRef<TOrigin>(mergedValue);
   internalValueRef.current = mergedValue;
 
-  const triggerChange = useCallback(
-    (nextValue: TOrigin, ...args: any[]) => {
-      if (!isControlled) {
-        setInternalValue(nextValue);
-        internalValueRef.current = nextValue;
-      }
+  const triggerChange = useCallback((nextValue: TOrigin, ...args: any[]) => {
+    setInternalValue(nextValue);
+    internalValueRef.current = nextValue;
 
-      if (onChange) {
-        const resultValue = transformResultRef.current(nextValue);
-        onChange(resultValue, ...args);
-      }
-    },
-    [isControlled, onChange],
-  );
+    if (onChangeRef.current) {
+      const resultValue = transformResultRef.current(nextValue);
+      onChangeRef.current(resultValue, ...args);
+    }
+  }, []);
 
   const set = useCallback(
     (val: TOrigin | ((prev: TOrigin) => TOrigin), ...args: any[]) => {

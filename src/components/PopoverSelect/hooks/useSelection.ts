@@ -1,5 +1,5 @@
-import type { CheckboxChangeEvent, CheckboxProps } from 'antd';
-import React, { useCallback, useEffect, useState } from 'react';
+import type { CheckboxChangeEvent } from 'antd';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { RawValueType } from '../type';
 
 interface UseSelectionParams<
@@ -12,8 +12,12 @@ interface UseSelectionParams<
   realShowConfirm: boolean;
   /** 已确认的选中值（来自 useMergeState） */
   internalValue: ValueType[];
-  /** 映射后的选项列表 */
+  /** 映射后的完整选项列表 */
   options: MappedOption[];
+  /** 快速查找 Map */
+  optionMap: Map<ValueType, MappedOption>;
+  /** 搜索过滤后的显示选项列表（用于全选判断与操作） */
+  displayOptions: MappedOption[];
   /** Popover 开关状态 */
   open: boolean;
   /** Popover 开关控制 */
@@ -28,7 +32,7 @@ interface UseSelectionParams<
  * 选择状态管理与事件处理
  *
  * 管理草稿值（draftValue）、确认/单选模式下直接同步选中值的完整逻辑。
- * 所有 handler 通过 useRef 追踪最新状态，避免 React 18 自动批处理下的闭包陷阱。
+ * 所有 handler 通过 useRef 追踪最新状态，避免闭包陷阱与不必要重渲染。
  */
 export function useSelection<
   ValueType extends RawValueType = RawValueType,
@@ -38,7 +42,8 @@ export function useSelection<
     mode,
     realShowConfirm,
     internalValue,
-    options,
+    optionMap,
+    displayOptions,
     open,
     setOpen,
     setValue,
@@ -55,8 +60,10 @@ export function useSelection<
   realShowConfirmRef.current = realShowConfirm;
   const modeRef = React.useRef(mode);
   modeRef.current = mode;
-  const optionsRef = React.useRef(options);
-  optionsRef.current = options;
+  const optionMapRef = React.useRef(optionMap);
+  optionMapRef.current = optionMap;
+  const displayOptionsRef = React.useRef(displayOptions);
+  displayOptionsRef.current = displayOptions;
   const setValueRef = React.useRef(setValue);
   setValueRef.current = setValue;
   const clearValueRef = React.useRef(clearValue);
@@ -71,84 +78,101 @@ export function useSelection<
   }, [open]);
 
   const targetValueList = realShowConfirm ? draftValue : internalValue;
-  const enabledOptions = options.filter((o: MappedOption) => !o.disabled);
-  const isAllSelected =
-    enabledOptions.length > 0 &&
-    enabledOptions.every((o: MappedOption) =>
-      targetValueList.includes(o.value),
-    );
-  const isPartiallySelected =
-    enabledOptions.some((o: MappedOption) =>
-      targetValueList.includes(o.value),
-    ) && !isAllSelected;
+  const targetValueSet = useMemo(
+    () => new Set(targetValueList),
+    [targetValueList],
+  );
 
-  const handleValueToggle = useCallback((itemValue: ValueType) => {
-    const currentTargetList = realShowConfirmRef.current
-      ? draftValueRef.current
-      : internalValueRef.current;
-    let newValues: ValueType[];
+  const enabledDisplayOptions = useMemo(
+    () => displayOptions.filter((o: MappedOption) => !o.disabled),
+    [displayOptions],
+  );
 
-    if (modeRef.current === 'multiple') {
-      const isSelected = currentTargetList.includes(itemValue);
-      newValues = isSelected
-        ? currentTargetList.filter((v) => v !== itemValue)
-        : [...currentTargetList, itemValue];
-    } else {
-      newValues = [itemValue];
-    }
+  const isAllSelected = useMemo(
+    () =>
+      enabledDisplayOptions.length > 0 &&
+      enabledDisplayOptions.every((o: MappedOption) =>
+        targetValueSet.has(o.value),
+      ),
+    [enabledDisplayOptions, targetValueSet],
+  );
 
-    if (realShowConfirmRef.current) {
-      setDraftValue(newValues);
-    } else {
-      const newOptions = optionsRef.current.filter((opt: MappedOption) =>
-        newValues.includes(opt.value),
-      );
-      setValueRef.current(newValues, newOptions);
-      if (modeRef.current === 'single') {
-        setOpenRef.current(false);
+  const isPartiallySelected = useMemo(
+    () =>
+      !isAllSelected &&
+      enabledDisplayOptions.some((o: MappedOption) =>
+        targetValueSet.has(o.value),
+      ),
+    [enabledDisplayOptions, targetValueSet, isAllSelected],
+  );
+
+  const getSelectedOptionObjects = useCallback((values: ValueType[]) => {
+    return values
+      .map((val) => optionMapRef.current.get(val))
+      .filter(Boolean) as MappedOption[];
+  }, []);
+
+  const handleValueToggle = useCallback(
+    (itemValue: ValueType) => {
+      const currentTargetList = realShowConfirmRef.current
+        ? draftValueRef.current
+        : internalValueRef.current;
+      let newValues: ValueType[];
+
+      if (modeRef.current === 'multiple') {
+        const isSelected = currentTargetList.includes(itemValue);
+        newValues = isSelected
+          ? currentTargetList.filter((v) => v !== itemValue)
+          : [...currentTargetList, itemValue];
+      } else {
+        newValues = [itemValue];
       }
-    }
-  }, []);
 
-  const handleSelectAll = useCallback((e: CheckboxChangeEvent) => {
-    const checked = e.target.checked;
-    const enabledOpts = optionsRef.current.filter(
-      (o: MappedOption) => !o.disabled,
-    );
-    const enabledValues = enabledOpts.map((o: MappedOption) => o.value);
-    const currentTarget = realShowConfirmRef.current
-      ? draftValueRef.current
-      : internalValueRef.current;
-    let newValues: ValueType[];
-    if (checked) {
-      newValues = Array.from(new Set([...currentTarget, ...enabledValues]));
-    } else {
-      newValues = currentTarget.filter((v) => !enabledValues.includes(v));
-    }
-    if (realShowConfirmRef.current) {
-      setDraftValue(newValues);
-    } else {
-      const newOptions = optionsRef.current.filter((opt: MappedOption) =>
-        newValues.includes(opt.value),
-      );
-      setValueRef.current(newValues, newOptions);
-    }
-  }, []);
-
-  const handleChange: CheckboxProps['onChange'] = useCallback(
-    (event) => {
-      handleValueToggle(event.target.value as ValueType);
+      if (realShowConfirmRef.current) {
+        setDraftValue(newValues);
+      } else {
+        const newOptions = getSelectedOptionObjects(newValues);
+        setValueRef.current(newValues, newOptions);
+        if (modeRef.current === 'single') {
+          setOpenRef.current(false);
+        }
+      }
     },
-    [handleValueToggle],
+    [getSelectedOptionObjects],
+  );
+
+  const handleSelectAll = useCallback(
+    (e: CheckboxChangeEvent) => {
+      const checked = e.target.checked;
+      const enabledOpts = displayOptionsRef.current.filter(
+        (o: MappedOption) => !o.disabled,
+      );
+      const enabledValues = enabledOpts.map((o: MappedOption) => o.value);
+      const currentTarget = realShowConfirmRef.current
+        ? draftValueRef.current
+        : internalValueRef.current;
+      let newValues: ValueType[];
+      if (checked) {
+        newValues = Array.from(new Set([...currentTarget, ...enabledValues]));
+      } else {
+        const disabledSet = new Set(enabledValues);
+        newValues = currentTarget.filter((v) => !disabledSet.has(v));
+      }
+      if (realShowConfirmRef.current) {
+        setDraftValue(newValues);
+      } else {
+        const newOptions = getSelectedOptionObjects(newValues);
+        setValueRef.current(newValues, newOptions);
+      }
+    },
+    [getSelectedOptionObjects],
   );
 
   const handleConfirm = useCallback(() => {
-    const newOptions = optionsRef.current.filter((opt: MappedOption) =>
-      draftValueRef.current.includes(opt.value),
-    );
+    const newOptions = getSelectedOptionObjects(draftValueRef.current);
     setValueRef.current(draftValueRef.current, newOptions);
     setOpenRef.current(false);
-  }, []);
+  }, [getSelectedOptionObjects]);
 
   const handleCancel = useCallback(() => setOpenRef.current(false), []);
 
@@ -164,12 +188,12 @@ export function useSelection<
     draftValue,
     setDraftValue,
     targetValueList,
-    enabledOptions,
+    targetValueSet,
+    enabledDisplayOptions,
     isAllSelected,
     isPartiallySelected,
     handleSelectAll,
     handleValueToggle,
-    handleChange,
     handleConfirm,
     handleCancel,
     handleDraftClear,

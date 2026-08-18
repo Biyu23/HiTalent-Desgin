@@ -1,6 +1,7 @@
 import { Empty } from 'antd';
+import clsx from 'clsx';
 import VirtualList from 'rc-virtual-list';
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { useNamespace } from '../../../configProvider/usePrefixCls';
 import type { RawValueType } from '../type';
 import FooterActions from './FooterActions';
@@ -80,11 +81,24 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
 
   const { e } = useNamespace('popover-select', prefixCls);
 
+  const targetValueSet = useMemo(
+    () => new Set(targetValueList),
+    [targetValueList],
+  );
+
+  const isAllDisabled = useMemo(
+    () =>
+      displayOptions.length > 0 &&
+      displayOptions.every((item: Record<string, any>) => item.disabled),
+    [displayOptions],
+  );
+
   const renderItemInner = useCallback(
     (item: Record<string, any>) => {
-      const isChecked = targetValueList.includes(item.value);
+      const isChecked = targetValueSet.has(item.value);
       return (
         <ListItem
+          key={item.value}
           item={item}
           isChecked={isChecked}
           mode={mode}
@@ -94,7 +108,7 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
         />
       );
     },
-    [targetValueList, mode, prefixCls, optionRender, onItemToggle],
+    [targetValueSet, mode, prefixCls, optionRender, onItemToggle],
   );
 
   const renderMenu = useCallback(() => {
@@ -104,7 +118,12 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
       listHeight,
     );
     return (
-      <div className={e('menu')}>
+      <div
+        className={clsx(e('menu'), {
+          [e('menu-scroll')]: !virtual,
+        })}
+        style={!virtual ? { maxHeight: listHeight } : undefined}
+      >
         {virtual ? (
           <VirtualList
             className={e('menu-virtual-list')}
@@ -166,6 +185,7 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
           prefixCls={prefixCls}
           checked={isAllSelected}
           indeterminate={isPartiallySelected}
+          disabled={isAllDisabled}
           label={componentLocale.selectAll}
           onChange={onSelectAll}
         />

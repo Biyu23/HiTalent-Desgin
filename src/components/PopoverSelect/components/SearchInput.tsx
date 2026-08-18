@@ -22,7 +22,6 @@ const SearchInput = memo<SearchInputProps>(
           value={value}
           onChange={(e) => onChange(e.target.value)}
           allowClear
-          variant="borderless"
         />
       </div>
     );

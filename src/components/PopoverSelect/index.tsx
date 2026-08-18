@@ -53,21 +53,38 @@ const Component = <
     maxTagCount,
     virtual = true,
     listHeight = 150,
-    listItemHeight = 32,
+    listItemHeight = 34,
     valueType = 'string',
     valueSeparator = ',',
     showSearch = false,
     showSelectAll = false,
+    showArrow = true,
+    disabled = false,
+    ellipsis = true,
+    open: openProp,
+    onOpenChange: onOpenChangeProp,
+    afterOpenChange,
+    placement = 'bottomLeft',
+    getPopupContainer,
+    autoAdjustOverflow = true,
+    destroyTooltipOnHide,
   } = props;
 
   const [searchValue, setSearchValue] = useState('');
-  const [open, setOpen] = useState(false);
+  const [open, { set: setOpen }] = useMergeState<boolean>({
+    defaultValue: false,
+    value: openProp,
+    onChange: onOpenChangeProp,
+  });
+
   const { fieldNames, getFieldValue } = useFieldNames(customFieldNames);
   const realShowConfirm = mode === 'multiple' && showConfirm;
 
   useEffect(() => {
-    if (!open) setSearchValue('');
-  }, [open]);
+    if (!open && searchValue) {
+      setSearchValue('');
+    }
+  }, [open, searchValue]);
 
   const [internalValue, actions] = useMergeState<
     ValueType[],
@@ -101,10 +118,13 @@ const Component = <
     },
   });
 
-  const { options, displayOptions, hasOptions, hasDisplayOptions } = useOptions<
-    OptionType,
-    MappedOption
-  >(optionsProp, fieldNames, getFieldValue, searchValue);
+  const { options, optionMap, displayOptions, hasOptions, hasDisplayOptions } =
+    useOptions<OptionType, MappedOption>(
+      optionsProp,
+      fieldNames,
+      getFieldValue,
+      searchValue,
+    );
 
   const {
     isAllSelected,
@@ -121,6 +141,8 @@ const Component = <
     realShowConfirm,
     internalValue,
     options,
+    optionMap: optionMap as Map<ValueType, MappedOption>,
+    displayOptions,
     open,
     setOpen,
     setValue: actions.set,
@@ -131,10 +153,12 @@ const Component = <
     {
       internalValue,
       options,
+      optionMap: optionMap as Map<ValueType, MappedOption>,
       mode,
       maxTagCount,
       separator,
       placeholder,
+      ellipsis,
     },
   );
 
@@ -229,9 +253,16 @@ const Component = <
         open={open}
         rootClassName={e('selector')}
         onOpenChange={setOpen}
+        afterOpenChange={afterOpenChange}
+        placement={placement}
+        getPopupContainer={getPopupContainer}
+        autoAdjustOverflow={autoAdjustOverflow}
+        destroyTooltipOnHide={destroyTooltipOnHide}
         allowClear={allowClear}
         hasValue={hasValue}
         onClear={handleClear}
+        showArrow={showArrow}
+        disabled={disabled}
       >
         {displayTextNode}
       </Selector>

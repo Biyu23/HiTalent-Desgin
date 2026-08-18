@@ -1,69 +1,79 @@
 @import '../../style/variables.less';
 
-// ============================================================
-// PopoverSelect 样式
-// ============================================================
-
 .@{custom-prefix}-popover-select {
   display: inline-block;
-  width: 100%;
+  max-width: 100%;
 
   &-dropdown {
-    width: 100%;
-    min-width: 150px;
     display: flex;
     flex-direction: column;
+    width: 100%;
+    min-width: 150px;
   }
 
   &-menu {
-    width: 100%;
-    max-height: 400px;
-    min-width: 150px;
-    padding-bottom: @size-sm;
-    overflow-x: hidden;
-    overflow-y: auto;
-    flex: 1;
     display: flex;
+    flex: 1;
     flex-direction: column;
+    width: 100%;
+    min-width: 150px;
+    padding: @size-sm 0;
+    box-sizing: border-box;
 
-    .ant-checkbox-wrapper {
-      width: 100%;
-      overflow: hidden;
-      padding: @size-xxs @size;
-      color: @color-text;
-      transition: background-color 0.2s;
-
-      &:hover {
-        background-color: @color-primary-bg;
-      }
-
-      > span {
-        &:first-child {
-          flex-shrink: 0;
-        }
-
-        &:last-child {
-          flex: 1;
-          overflow: hidden;
-        }
-      }
+    &-scroll {
+      overflow-x: hidden;
+      overflow-y: auto;
     }
+  }
+
+  &-menu-item-text {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-align: left;
+    text-overflow: ellipsis;
   }
 
   &-menu-checkbox {
     display: flex;
-    padding: @size-xxs @size-sm;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
     margin: 0;
+    padding: @size-xs @size-sm;
+    color: @color-text;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: @color-fill-tertiary;
+    }
+
+    > span:first-child {
+      flex-shrink: 0;
+    }
+
+    > span:last-child {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
   }
 
   &-menu-radio {
-    flex: 1;
-    overflow: hidden;
-    padding: @size-xxs @size-sm;
-    cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: @size-xs @size-sm;
+    color: @color-text;
+    text-align: left;
+    cursor: pointer;
     transition: background-color 0.2s;
 
     &:hover {
@@ -71,20 +81,15 @@
     }
 
     &-disabled {
+      cursor: not-allowed;
       opacity: 0.5;
       pointer-events: none;
-      cursor: not-allowed;
     }
 
     &-active {
-      background-color: @color-primary-bg;
       color: @color-primary;
       font-weight: 600;
-    }
-
-    .ant-typography {
-      flex: 1;
-      overflow: hidden;
+      background-color: @color-primary-bg;
     }
   }
 
@@ -97,16 +102,12 @@
   &-footer {
     display: flex;
     justify-content: flex-end;
-    padding: @size-xs @size-sm;
+    padding: @size-sm @size-sm;
     border-top: 1px solid @color-border-secondary;
   }
 
   &-search {
-    .ant-input-affix-wrapper {
-      border-radius: 0;
-      padding: @size-xs @size-sm;
-      border-bottom: 1px solid @color-border-secondary;
-    }
+    padding: @size-xs @size-xs 0 @size-xs;
 
     .anticon {
       color: @color-text-quaternary;
@@ -114,7 +115,27 @@
   }
 
   &-select-all {
-    padding: @size-xxs @size;
+    padding: @size-xxs @size-sm;
+    border-bottom: 1px solid @color-border-secondary;
+
+    .ant-checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      margin: 0;
+
+      > span:first-child {
+        flex-shrink: 0;
+      }
+
+      > span:last-child {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+    }
   }
 
   &-empty {
@@ -137,7 +158,6 @@
     }
   }
 
-  // 弹窗浮层（根样式 rootClassName 为 htd-popover-select-selector）
   &-selector {
     .ant-popover-inner {
       padding: 0;
@@ -147,14 +167,17 @@
   // 选择器 Trigger 按钮样式
   &-selector-btn {
     display: flex;
-    width: 100%;
     gap: @size-xs;
     align-items: center;
     justify-content: space-between;
+    width: 100%;
+    box-sizing: border-box;
     padding: @size-xxs @size-sm;
-    border-radius: @border-radius-xs;
-    border: 1px solid transparent;
     color: @color-text;
+    text-align: left;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: @border-radius-xs;
     transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
 
     &:hover {
@@ -162,9 +185,9 @@
     }
 
     &-active {
+      color: @color-primary;
       background-color: @color-primary-bg;
       border: 1px solid @color-primary-border;
-      color: @color-primary;
     }
 
     &-open,
@@ -176,31 +199,100 @@
         transform: rotate(180deg);
       }
     }
+
+    &-empty {
+      color: @color-text-quaternary;
+    }
+
+    &-disabled,
+    &:disabled {
+      color: @color-text-disabled;
+      background-color: @color-bg-container-disabled;
+      cursor: not-allowed;
+      opacity: 0.5;
+
+      &:hover {
+        background-color: @color-bg-container-disabled;
+      }
+    }
+
+    // 当 hover 且存在清除按钮时，显示清除按钮，隐藏箭头
+    &:hover:not(&-disabled):not(:disabled) {
+      .@{custom-prefix}-popover-select-selector-clear-overlay {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .@{custom-prefix}-popover-select-selector-arrow-has-clear {
+        opacity: 0;
+      }
+    }
   }
 
   &-selector-text {
-    &.ant-typography,
-    & {
-      flex: 1;
-      margin-bottom: 0 !important;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: inherit;
+    line-height: inherit;
+    text-align: start;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    &.ant-typography {
       margin-top: 0 !important;
-      color: inherit;
-      text-align: start;
+      margin-bottom: 0 !important;
     }
+
+    > span {
+      display: inline-block;
+      max-width: 100%;
+      overflow: hidden;
+      vertical-align: bottom;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+
+  &-selector-actions {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    min-width: 14px;
+    height: 14px;
+    font-size: 12px;
+    line-height: 1;
   }
 
   &-selector-arrow {
     flex-shrink: 0;
+    color: @color-text-quaternary;
     font-size: 12px;
-    transition: transform 0.3s ease-in-out;
+    transition: transform 0.3s ease-in-out, opacity 0.2s;
+
+    &-has-clear {
+      transition: transform 0.3s ease-in-out, opacity 0.2s;
+    }
   }
 
   &-selector-clear {
-    cursor: pointer;
+    z-index: 1;
     flex-shrink: 0;
-    font-size: 12px;
     color: @color-text-quaternary;
-    transition: color 0.2s;
+    font-size: 12px;
+    cursor: pointer;
+    transition: color 0.2s, opacity 0.2s;
+
+    &-overlay {
+      position: absolute;
+      top: 50%;
+      right: 0;
+      transform: translateY(-50%);
+      opacity: 0;
+      pointer-events: none;
+    }
 
     &:hover {
       color: @color-text-tertiary;

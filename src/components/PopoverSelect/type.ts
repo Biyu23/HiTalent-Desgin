@@ -1,3 +1,4 @@
+import type { TooltipPlacement } from 'antd/es/tooltip';
 import React, { ReactNode } from 'react';
 import type { FieldNames } from '../../hooks/useFieldNames';
 import type { NativeProps } from '../../types';
@@ -105,7 +106,7 @@ export interface PopoverSelectProps<
   listHeight?: number;
   /**
    * @description 虚拟滚动每项高度（px）
-   * @default 32
+   * @default 34
    */
   listItemHeight?: number;
   /**
@@ -123,13 +124,59 @@ export interface PopoverSelectProps<
    * @default false
    */
   showSelectAll?: boolean;
+  /**
+   * @description 是否显示下拉箭头
+   * @default true
+   */
+  showArrow?: boolean;
+  /**
+   * @description 是否禁用
+   * @default false
+   */
+  disabled?: boolean;
+  /**
+   * @description 是否支持文本截断省略及 Tooltip 提示
+   * @default true
+   */
+  ellipsis?: boolean | { tooltip?: string };
+  /**
+   * @description 下拉弹窗展开状态（受控）
+   */
+  open?: boolean;
+  /**
+   * @description 下拉弹窗展开状态变化回调
+   */
+  onOpenChange?: (open: boolean) => void;
+  /**
+   * @description 下拉弹窗展开/关闭动画结束后的回调
+   */
+  afterOpenChange?: (open: boolean) => void;
+  /**
+   * @description 气泡框位置
+   * @default 'bottomLeft'
+   */
+  placement?: TooltipPlacement;
+  /**
+   * @description 浮层渲染父节点
+   */
+  getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
+  /**
+   * @description 气泡被遮挡时是否自动调整位置
+   * @default true
+   */
+  autoAdjustOverflow?: boolean;
+  /**
+   * @description 关闭后是否销毁 Popover
+   * @default false
+   */
+  destroyTooltipOnHide?: boolean;
 }
 
 export interface SelectorProps extends NativeProps {
   /** 样式类名前缀 */
   prefixCls?: string;
-  /** 下拉内容渲染函数，传递函数引用以配合 memo 优化 */
-  content: () => React.ReactNode;
+  /** 下拉内容渲染函数或节点 */
+  content: React.ReactNode | (() => React.ReactNode);
   autoAdjustOverflow?: boolean;
   rootClassName?: string;
   openClassName?: string;
@@ -137,9 +184,12 @@ export interface SelectorProps extends NativeProps {
   children?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  ellipsis?: boolean | { tooltip?: string };
   allowClear?: boolean;
   hasValue?: boolean;
   showArrow?: boolean;
+  disabled?: boolean;
   onClear?: (e: React.MouseEvent) => void;
+  placement?: TooltipPlacement;
+  getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
+  destroyTooltipOnHide?: boolean;
 }

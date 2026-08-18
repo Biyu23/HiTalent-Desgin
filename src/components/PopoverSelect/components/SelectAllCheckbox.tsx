@@ -8,18 +8,27 @@ interface SelectAllCheckboxProps {
   checked: boolean;
   indeterminate: boolean;
   label: string;
+  disabled?: boolean;
   onChange: (e: CheckboxChangeEvent) => void;
 }
 
 /** 全选复选框 */
 const SelectAllCheckbox = memo<SelectAllCheckboxProps>(
-  ({ prefixCls, checked, indeterminate, label, onChange }) => {
+  ({
+    prefixCls,
+    checked,
+    indeterminate,
+    label,
+    disabled = false,
+    onChange,
+  }) => {
     const { e } = useNamespace('popover-select', prefixCls);
     return (
       <div className={e('select-all')}>
         <Checkbox
           checked={checked}
           indeterminate={indeterminate}
+          disabled={disabled}
           onChange={onChange}
         >
           {label}
