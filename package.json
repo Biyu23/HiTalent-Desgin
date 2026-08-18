@@ -60,7 +60,6 @@
     "@dnd-kit/sortable": "^8.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "clsx": "^2.1.1",
-    "dayjs": "^1.11.21",
     "rc-virtual-list": "^3.0.0",
     "react-draggable": "^4.5.0"
   },
