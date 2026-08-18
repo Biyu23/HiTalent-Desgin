@@ -1,5 +1,5 @@
+import { Card, Space } from 'antd';
 import { createSvgIcon } from 'hi-talent-design';
-import { Space, Card } from 'antd';
 import React from 'react';
 
 // 使用 createSvgIcon 快速将 SVG 导出为 Antd 标准组件
@@ -9,7 +9,6 @@ export const BellIcon = createSvgIcon(
     <path d="M13.73 21a2 2 0 0 1-3.46 0" />
   </svg>,
   { color: '#1677ff' },
-  'BellIcon'
 );
 
 export const StarIcon = createSvgIcon(
@@ -17,7 +16,6 @@ export const StarIcon = createSvgIcon(
     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
   </svg>,
   { color: '#faad14' },
-  'StarIcon'
 );
 
 export default () => {

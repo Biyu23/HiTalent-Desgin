@@ -28,14 +28,22 @@ Designed to encapsulate and render arbitrary SVG icons provided by designers, re
 
 ### SvgIcon
 
-| Property | Description | Type | Default |
-| --- | --- | --- | --- |
-| children | Custom SVG element node (`<svg>...</svg>`) | `ReactNode` | - |
-| component | Custom SVG component | `ComponentType<CustomIconComponentProps>` | - |
-| size | Icon size in px (number) or CSS string | `number | string` | - |
-| color | Icon color | `string` | - |
-| spin | Whether to show spinning animation | `boolean` | `false` |
-| rotate | Rotation angle in degrees | `number` | - |
-| className | Custom class name | `string` | - |
-| style | Custom style object | `CSSProperties` | - |
-| onClick | Click event callback | `MouseEventHandler<HTMLSpanElement>` | - |
+| Property  | Description                                                                                 | Type                                                 | Default |
+| --------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ------- |
+| children  | Custom SVG element node (`<svg>...</svg>`)                                                  | `ReactNode`                                          | -       |
+| component | Custom SVG component                                                                        | `ComponentType<CustomIconComponentProps>`            | -       |
+| size      | Icon size, supports presets (`'small'`, `'middle'`, `'large'`), numbers (px), or CSS string | `'small' \| 'middle' \| 'large' \| number \| string` | -       |
+| color     | Icon color                                                                                  | `string`                                             | -       |
+| spin      | Whether to show spinning animation                                                          | `boolean`                                            | `false` |
+| rotate    | Rotation angle in degrees                                                                   | `number`                                             | -       |
+| className | Custom class name                                                                           | `string`                                             | -       |
+| style     | Custom style object                                                                         | `CSSProperties`                                      | -       |
+| onClick   | Click event callback (supports keyboard Enter/Space trigger)                                | `MouseEventHandler<HTMLSpanElement>`                 | -       |
+
+### createSvgIcon(SvgChild, defaultProps?, displayName?)
+
+| Parameter    | Description                                   | Type                            | Default           |
+| ------------ | --------------------------------------------- | ------------------------------- | ----------------- |
+| SvgChild     | SVG React element or Component to encapsulate | `ReactElement \| ComponentType` | -                 |
+| defaultProps | Default props injected into SvgIcon           | `Partial<SvgIconProps>`         | -                 |
+| displayName  | Component display name                        | `string`                        | `'CustomSvgIcon'` |

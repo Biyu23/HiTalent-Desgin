@@ -35,22 +35,22 @@ toc: content
 
 ### SvgIcon
 
-| 属性 | 说明 | 类型 | 默认值 |
-| --- | --- | --- | --- |
-| children | 自定义 SVG 元素节点（`<svg>...</svg>`） | `ReactNode` | - |
-| component | 自定义 SVG 组件函数 | `ComponentType<CustomIconComponentProps>` | - |
-| size | 图标尺寸，支持数字（px）或 CSS 尺寸字符串 | `number | string` | - |
-| color | 图标颜色（配合 SVG 的 `currentColor`） | `string` | - |
-| spin | 是否有旋转加载动画 | `boolean` | `false` |
-| rotate | 图标旋转角度 (deg) | `number` | - |
-| className | 自定义 CSS 类名 | `string` | - |
-| style | 自定义样式对象 | `CSSProperties` | - |
-| onClick | 点击事件回调 | `MouseEventHandler<HTMLSpanElement>` | - |
+| 属性      | 说明                                                                                  | 类型                                                 | 默认值  |
+| --------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------- | ------- |
+| children  | 自定义 SVG 元素节点（`<svg>...</svg>`）                                               | `ReactNode`                                          | -       |
+| component | 自定义 SVG 组件函数                                                                   | `ComponentType<CustomIconComponentProps>`            | -       |
+| size      | 图标尺寸，支持预设（`'small'` / `'middle'` / `'large'`）、数字（px）或 CSS 尺寸字符串 | `'small' \| 'middle' \| 'large' \| number \| string` | -       |
+| color     | 图标颜色（配合 SVG 的 `currentColor`）                                                | `string`                                             | -       |
+| spin      | 是否有旋转加载动画                                                                    | `boolean`                                            | `false` |
+| rotate    | 图标旋转角度 (deg)                                                                    | `number`                                             | -       |
+| className | 自定义 CSS 类名                                                                       | `string`                                             | -       |
+| style     | 自定义样式对象                                                                        | `CSSProperties`                                      | -       |
+| onClick   | 点击事件回调（支持键盘 Enter/Space 无障碍触发）                                       | `MouseEventHandler<HTMLSpanElement>`                 | -       |
 
 ### createSvgIcon(SvgChild, defaultProps?, displayName?)
 
-| 参数 | 说明 | 类型 | 默认值 |
-| --- | --- | --- | --- |
-| SvgChild | 需要封装的 SVG React 元素 | `ReactElement` | - |
-| defaultProps | 默认注入给 SvgIcon 的属性 | `Partial<SvgIconProps>` | - |
-| displayName | 组件的 displayName | `string` | `'CustomSvgIcon'` |
+| 参数         | 说明                            | 类型                            | 默认值            |
+| ------------ | ------------------------------- | ------------------------------- | ----------------- |
+| SvgChild     | 需要封装的 SVG React 元素或组件 | `ReactElement \| ComponentType` | -                 |
+| defaultProps | 默认注入给 SvgIcon 的属性       | `Partial<SvgIconProps>`         | -                 |
+| displayName  | 组件的 displayName              | `string`                        | `'CustomSvgIcon'` |

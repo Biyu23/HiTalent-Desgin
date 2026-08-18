@@ -1,7 +1,7 @@
 import type { TooltipProps } from 'antd';
 import { Button as AntdButton, Tooltip } from 'antd';
 import React, { memo, useEffect, useRef, useState } from 'react';
-import { usePrefixCls } from '../../configProvider/usePrefixCls';
+import { usePrefixCls } from '../../configProvider';
 import { isThenable, withNativeProps } from '../../util';
 import type { ButtonProps } from './type';
 import { isTooltipProps } from './utils/tooltip';

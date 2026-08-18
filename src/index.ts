@@ -34,3 +34,6 @@ export type {
   ResponsiveButtonGroupLocale,
   TableLocale,
 } from './locales';
+
+// Types
+export type { NativeProps } from './types';

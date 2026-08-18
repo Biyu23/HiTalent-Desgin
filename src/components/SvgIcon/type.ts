@@ -2,7 +2,14 @@ import type { CustomIconComponentProps } from '@ant-design/icons/lib/components/
 import type React from 'react';
 import type { NativeProps } from '../../types';
 
-export interface SvgIconProps extends NativeProps {
+export type SvgIconSize = 'small' | 'middle' | 'large' | number | string;
+
+export interface SvgIconProps
+  extends NativeProps,
+    Omit<
+      React.HTMLAttributes<HTMLSpanElement>,
+      'color' | 'style' | 'className' | 'children'
+    > {
   /**
    * @description 自定义 SVG 元素节点，直接放置 <svg>...</svg>
    */
@@ -16,14 +23,24 @@ export interface SvgIconProps extends NativeProps {
   >;
 
   /**
-   * @description 图标尺寸，支持数字（默认单位 px）或 CSS 尺寸字符串（如 '20px', '1.5em'）
+   * @description 图标尺寸，支持预设 ('small' | 'middle' | 'large')、数字（默认单位 px）或 CSS 尺寸字符串（如 '20px', '1.5em'）
    */
-  size?: number | string;
+  size?: SvgIconSize;
 
   /**
    * @description 图标颜色，设置后会作为字体颜色生效（配合 SVG 的 currentColor）
    */
   color?: string;
+
+  /**
+   * @description SVG 填充颜色（显式覆盖 SVG fill）
+   */
+  fill?: string;
+
+  /**
+   * @description SVG 描边颜色（显式覆盖 SVG stroke）
+   */
+  stroke?: string;
 
   /**
    * @description 是否有旋转加载动画
