@@ -1,17 +1,15 @@
-import type { TooltipProps } from 'antd';
 import { Button as AntdButton, Tooltip } from 'antd';
+import clsx from 'clsx';
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { usePrefixCls } from '../../configProvider';
-import { isThenable, withNativeProps } from '../../util';
-import type { ButtonProps } from './type';
-import { isTooltipProps } from './utils/tooltip';
+import { isThenable } from '../../util';
+import type { ButtonProps, ButtonRef, CompoundedButton } from './type';
+import { parseTooltipConfig } from './utils/tooltip';
 
-const Button = React.forwardRef<
-  React.ComponentRef<typeof AntdButton>,
-  ButtonProps
->((props, ref) => {
+const Button = React.forwardRef<ButtonRef, ButtonProps>((props, ref) => {
   const {
     prefixCls: customPrefixCls,
+    className,
     autoLoading = true,
     throttle = 0,
     onClick,
@@ -19,6 +17,7 @@ const Button = React.forwardRef<
     disabled,
     tooltip,
     loading: propsLoading,
+    block,
     ...restProps
   } = props;
 
@@ -32,29 +31,19 @@ const Button = React.forwardRef<
     isUnmounted.current = false;
     return () => {
       isUnmounted.current = true;
-      // 清理未完成的节流定时器，避免卸载后副作用
       if (throttleTimerRef.current) {
         clearTimeout(throttleTimerRef.current);
       }
+      isThrottling.current = false;
     };
   }, []);
 
-  const combinedLoading = propsLoading || innerLoading;
-  const needTooltip = !!tooltip;
-
-  let tooltipTitle: React.ReactNode = undefined;
-  let tooltipProps: Omit<TooltipProps, 'children' | 'title'> = {};
-
-  if (needTooltip && isTooltipProps(tooltip)) {
-    const { title, ...rest } = tooltip;
-    tooltipTitle = title;
-    tooltipProps = rest;
-  } else if (needTooltip) {
-    tooltipTitle = tooltip;
-  }
+  const combinedLoading = innerLoading ? true : propsLoading;
+  const { needTooltip, tooltipTitle, tooltipProps } =
+    parseTooltipConfig(tooltip);
 
   const executeClick = async (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
-    if (!onClick) return;
+    if (!onClick || disabled) return;
     const ret = onClick(e);
     if (autoLoading && isThenable(ret)) {
       setInnerLoading(true);
@@ -69,8 +58,10 @@ const Button = React.forwardRef<
   };
 
   const handleClick = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
-    if (combinedLoading) return;
-    if (throttle > 0) {
+    const isBusy = Boolean(innerLoading || propsLoading);
+    if (isBusy || disabled) return;
+
+    if (typeof throttle === 'number' && throttle > 0) {
       if (isThrottling.current) return;
       isThrottling.current = true;
       throttleTimerRef.current = setTimeout(() => {
@@ -84,26 +75,32 @@ const Button = React.forwardRef<
   const buttonElement = (
     <AntdButton
       ref={ref}
-      prefixCls={customPrefixCls ? prefixCls : undefined}
-      {...restProps}
+      className={clsx(prefixCls, className)}
+      block={block}
       disabled={disabled}
       loading={combinedLoading}
       onClick={handleClick}
+      {...restProps}
     >
       {children}
     </AntdButton>
   );
 
-  return withNativeProps(
-    props,
-    needTooltip ? (
-      <Tooltip title={tooltipTitle} {...tooltipProps}>
-        {buttonElement}
-      </Tooltip>
-    ) : (
-      buttonElement
-    ),
+  if (!needTooltip) {
+    return buttonElement;
+  }
+
+  return (
+    <Tooltip title={tooltipTitle} {...tooltipProps}>
+      {buttonElement}
+    </Tooltip>
   );
 });
 
-export default memo(Button);
+Button.displayName = 'Button';
+
+const ExportedButton = memo(Button) as CompoundedButton;
+ExportedButton.Group = AntdButton.Group;
+ExportedButton.__ANT_BUTTON = true;
+
+export default ExportedButton;

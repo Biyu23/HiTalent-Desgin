@@ -5,7 +5,7 @@ export { default as PopoverSelect } from './PopoverSelect';
 export type { PopoverSelectProps } from './PopoverSelect/type';
 
 export { default as Button } from './Button';
-export type { ButtonProps } from './Button/type';
+export type { ButtonProps, ButtonRef } from './Button/type';
 
 export { default as ResponsiveButtonGroup } from './ResponsiveButtonGroup';
 export type {

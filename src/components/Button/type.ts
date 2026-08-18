@@ -1,4 +1,11 @@
-import type { ButtonProps as AntdButtonProps, TooltipProps } from 'antd';
+import type {
+  Button as AntdButton,
+  ButtonProps as AntdButtonProps,
+  TooltipProps,
+} from 'antd';
+import type React from 'react';
+
+export type ButtonRef = React.ComponentRef<typeof AntdButton>;
 
 export interface ButtonProps extends AntdButtonProps {
   /**
@@ -29,3 +36,10 @@ export interface ButtonProps extends AntdButtonProps {
     event: React.MouseEvent<HTMLElement, MouseEvent>,
   ) => void | Promise<unknown>;
 }
+
+export type CompoundedButton = React.MemoExoticComponent<
+  React.ForwardRefExoticComponent<ButtonProps & React.RefAttributes<ButtonRef>>
+> & {
+  Group: typeof AntdButton.Group;
+  __ANT_BUTTON?: boolean;
+};
