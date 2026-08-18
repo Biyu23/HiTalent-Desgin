@@ -138,45 +138,66 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     onSizeChange: handleSizeChange,
   });
 
-  const {
-    dragger: draggerClassName,
-    minimizeButton: minimizeButtonClassName,
-    minimizedDock: minimizedDockClassName,
-    wrapper: userWrapperClassName,
-    ...antdClassNames
-  } = classNames || {};
-  const {
-    dragger: draggerStyle,
-    minimizeButton: minimizeButtonStyle,
-    minimizedDock: minimizedDockStyle,
-    wrapper: userWrapperStyle,
-    ...antdStyles
-  } = styles || {};
+  const draggerClassName = classNames?.dragger;
+  const minimizeButtonClassName = classNames?.minimizeButton;
+  const minimizedDockClassName = classNames?.minimizedDock;
+  const draggerStyle = styles?.dragger;
+  const minimizeButtonStyle = styles?.minimizeButton;
+  const minimizedDockStyle = styles?.minimizedDock;
 
-  const mergedClassNames = useMemo(
-    () => ({
+  const mergedClassNames = useMemo(() => {
+    if (!classNames) {
+      return {
+        wrapper: clsx(e('wrapper'), {
+          [em('wrapper', 'resizing')]: isResizing,
+          [em('wrapper', 'horizontal')]: axis === 'horizontal',
+          [em('wrapper', 'vertical')]: axis === 'vertical',
+        }),
+      };
+    }
+    const antdClassNames: Record<string, string | undefined> = {
+      ...classNames,
+    };
+    delete antdClassNames.dragger;
+    delete antdClassNames.minimizeButton;
+    delete antdClassNames.minimizedDock;
+    delete antdClassNames.wrapper;
+
+    return {
       ...antdClassNames,
-      wrapper: clsx(userWrapperClassName, e('wrapper'), {
+      wrapper: clsx(classNames.wrapper, e('wrapper'), {
         [em('wrapper', 'resizing')]: isResizing,
         [em('wrapper', 'horizontal')]: axis === 'horizontal',
         [em('wrapper', 'vertical')]: axis === 'vertical',
       }),
-    }),
-    [antdClassNames, axis, e, em, isResizing, userWrapperClassName],
-  );
+    };
+  }, [classNames, axis, e, em, isResizing]);
 
-  const mergedStyles = useMemo(
-    () => ({
+  const mergedStyles = useMemo(() => {
+    if (!styles) {
+      return {
+        wrapper:
+          axis === 'horizontal' ? { maxWidth: '100%' } : { maxHeight: '100%' },
+      };
+    }
+    const antdStyles: Record<string, React.CSSProperties | undefined> = {
+      ...styles,
+    };
+    delete antdStyles.dragger;
+    delete antdStyles.minimizeButton;
+    delete antdStyles.minimizedDock;
+    delete antdStyles.wrapper;
+
+    return {
       ...antdStyles,
       wrapper: {
         ...(axis === 'horizontal'
           ? { maxWidth: '100%' }
           : { maxHeight: '100%' }),
-        ...userWrapperStyle,
+        ...styles.wrapper,
       },
-    }),
-    [antdStyles, axis, userWrapperStyle],
-  );
+    };
+  }, [styles, axis]);
 
   const mergedExtra = useMemo(
     () =>
@@ -265,8 +286,8 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
         extra={mergedExtra}
         closable={mergedClosable}
         closeIcon={closeIcon}
-        destroyOnClose={minimizable ? false : destroyOnClose}
-        destroyOnHidden={minimizable ? false : destroyOnHidden}
+        destroyOnClose={isMinimized ? false : destroyOnClose}
+        destroyOnHidden={isMinimized ? false : destroyOnHidden}
         onClose={handleClose}
         rootClassName={clsx(prefixCls, rootClassName)}
         classNames={mergedClassNames}

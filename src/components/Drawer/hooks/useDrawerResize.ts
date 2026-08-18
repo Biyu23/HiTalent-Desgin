@@ -103,6 +103,7 @@ export const useDrawerResize = ({
 
       const handleEl = event.currentTarget;
       const contentWrapper =
+        handleEl.closest<HTMLElement>('[class*="-drawer-content-wrapper"]') ??
         handleEl.closest<HTMLElement>('.ant-drawer-content-wrapper') ??
         handleEl.parentElement;
       if (!contentWrapper) return;
@@ -115,7 +116,9 @@ export const useDrawerResize = ({
       );
 
       // 测量抽屉根容器或视口容器尺寸
-      const drawerRoot = handleEl.closest<HTMLElement>('.ant-drawer');
+      const drawerRoot =
+        handleEl.closest<HTMLElement>('[class*="-drawer"]') ??
+        handleEl.closest<HTMLElement>('.ant-drawer');
       const rootRect = drawerRoot?.getBoundingClientRect();
       const parentRect = drawerRoot?.parentElement?.getBoundingClientRect();
 

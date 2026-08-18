@@ -76,6 +76,7 @@ export default () => {
         minimizable
         resizable
         onClose={() => setOpen(false)}
+        destroyOnHidden
         footer={
           <Flex justify="flex-end" gap={8}>
             <Button onClick={() => setOpen(false)}>{t('close')}</Button>
