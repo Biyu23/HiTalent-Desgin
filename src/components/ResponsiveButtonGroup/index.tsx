@@ -13,7 +13,7 @@ import React, {
 import { ConfigContext } from '../../configProvider/context';
 import { useLocale } from '../../configProvider/useLocale';
 import { useNamespace } from '../../configProvider/usePrefixCls';
-import { areArraysEqual, withNativeProps } from '../../util';
+import { areArraysEqual, isThenable, withNativeProps } from '../../util';
 import Button from '../Button';
 import OverflowMenu from './components/OverflowMenu';
 import { useItemAction } from './hooks/useItemAction';
@@ -124,22 +124,26 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
       overflowWidths,
     ],
   );
-  const visibleKeySet = useMemo(
-    () => new Set(layout.visibleKeys),
-    [layout.visibleKeys],
-  );
-  const collapsedKeySet = useMemo(
-    () => new Set(layout.collapsedKeys),
-    [layout.collapsedKeys],
-  );
-  const visibleItems = useMemo(
-    () => items.filter((item) => visibleKeySet.has(item.key)),
-    [items, visibleKeySet],
-  );
-  const collapsedItems = useMemo(
-    () => items.filter((item) => collapsedKeySet.has(item.key)),
-    [items, collapsedKeySet],
-  );
+  const { visibleItems, collapsedItems } = useMemo(() => {
+    if (layout.collapsedKeys.length === 0) {
+      return { visibleItems: items, collapsedItems: [] };
+    }
+    if (layout.visibleKeys.length === 0) {
+      return { visibleItems: [], collapsedItems: items };
+    }
+    const collapsedKeySet = new Set(layout.collapsedKeys);
+    const visible: ResponsiveButtonGroupItem[] = [];
+    const collapsed: ResponsiveButtonGroupItem[] = [];
+    items.forEach((item) => {
+      if (collapsedKeySet.has(item.key)) {
+        collapsed.push(item);
+      } else {
+        visible.push(item);
+      }
+    });
+    return { visibleItems: visible, collapsedItems: collapsed };
+  }, [items, layout.visibleKeys.length, layout.collapsedKeys]);
+
   const maxCollapsedCount = items.length - minVisibleCount;
   const measuredCollapsedItems = useMemo(() => {
     const collapseOrder = getCollapseOrder(items, direction);
@@ -149,13 +153,25 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
       return items.filter((_, itemIndex) => collapsedIndexes.has(itemIndex));
     });
   }, [items, maxCollapsedCount, direction]);
-  const measurementReady =
-    mode !== 'responsive' ||
-    (containerWidth !== null &&
-      items.every((item) => itemWidths.has(item.key)) &&
-      Array.from({ length: maxCollapsedCount }, (_, index) => index + 1).every(
-        (count) => overflowWidths.has(count),
-      ));
+
+  const measurementReady = useMemo(() => {
+    if (mode !== 'responsive') return true;
+    if (containerWidth === null) return false;
+    for (let i = 0; i < items.length; i += 1) {
+      if (!itemWidths.has(items[i].key)) return false;
+    }
+    for (let count = 1; count <= maxCollapsedCount; count += 1) {
+      if (!overflowWidths.has(count)) return false;
+    }
+    return true;
+  }, [
+    mode,
+    containerWidth,
+    items,
+    itemWidths,
+    maxCollapsedCount,
+    overflowWidths,
+  ]);
 
   useEffect(() => {
     if (process.env.NODE_ENV === 'production') return;
@@ -211,6 +227,10 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
     NonNullable<DropdownProps['onOpenChange']>
   >(
     (nextOpen, info) => {
+      // 菜单项点击的收起动作由 handleOverflowItemClick 精确接管（支持异步 loading 保持展开）
+      if (!nextOpen && info?.source === 'menu') {
+        return;
+      }
       if (overflowDropdownProps?.open === undefined) setInnerOpen(nextOpen);
       overflowDropdownProps?.onOpenChange?.(nextOpen, info);
     },
@@ -229,6 +249,7 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
 
       return (
         <Button
+          key={item.key}
           {...currentButtonProps}
           {...currentItemButtonProps}
           autoLoading={false}
@@ -318,6 +339,31 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
     ],
   );
 
+  const handleOverflowItemClick = useCallback(
+    async (
+      item: ResponsiveButtonGroupItem,
+      event: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
+    ) => {
+      const result = executeItemAction(item, 'overflow', event);
+      if (isThenable(result)) {
+        try {
+          await result;
+        } finally {
+          if (overflowDropdownProps?.open === undefined) {
+            setInnerOpen(false);
+          }
+          overflowDropdownProps?.onOpenChange?.(false, { source: 'trigger' });
+        }
+      } else {
+        if (overflowDropdownProps?.open === undefined) {
+          setInnerOpen(false);
+        }
+        overflowDropdownProps?.onOpenChange?.(false, { source: 'menu' });
+      }
+    },
+    [executeItemAction, overflowDropdownProps],
+  );
+
   const overflowNode =
     collapsedItems.length > 0 ? (
       <OverflowMenu
@@ -328,9 +374,7 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
         menuProps={overflowMenuProps}
         open={open}
         onOpenChange={handleOpenChange}
-        onItemClick={(item, event) =>
-          executeItemAction(item, 'overflow', event)
-        }
+        onItemClick={handleOverflowItemClick}
       >
         {renderOverflowTrigger(collapsedItems, open)}
       </OverflowMenu>
@@ -345,11 +389,7 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
       dir={direction}
     >
       <div ref={visibleContainerRef} className={e('visible')} style={{ gap }}>
-        {visibleItems.map((item) => (
-          <React.Fragment key={item.key}>
-            {renderItemButton(item)}
-          </React.Fragment>
-        ))}
+        {visibleItems.map((item) => renderItemButton(item))}
         {overflowNode}
       </div>
 
@@ -364,16 +404,15 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
               {renderItemButton(item, true)}
             </span>
           ))}
-          {Array.from({ length: maxCollapsedCount }, (_, index) => {
+          {measuredCollapsedItems.map((currentMeasuredItems, index) => {
             const count = index + 1;
-            const currentMeasuredItems = measuredCollapsedItems[index];
             return (
               <span
                 key={`overflow-${count}`}
                 ref={getOverflowMeasureRef(count)}
                 className={e('measure-item')}
               >
-                {renderOverflowTrigger(currentMeasuredItems, open, true)}
+                {renderOverflowTrigger(currentMeasuredItems, false, true)}
               </span>
             );
           })}

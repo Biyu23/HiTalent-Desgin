@@ -1,97 +1,137 @@
 /**
- * description: 拖动滑块改变容器宽度，观察按钮按 priority 从低到高收起；同权重时左侧按钮先收起。
+ * description: 动态拖动宽度滑块或切换模式，体验自适应计算、优先级排版、异步 Promise Loading 保持面板展开及 Tooltip/禁用等完整特性。
  */
 import {
+  CloudDownloadOutlined,
   CopyOutlined,
   DeleteOutlined,
   EditOutlined,
-  ExportOutlined,
   PlusOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
+import { Flex, Radio, Slider, message } from 'antd';
+import type {
+  ResponsiveButtonGroupItem,
+  ResponsiveButtonGroupMode,
+} from 'hi-talent-design';
 import { ResponsiveButtonGroup } from 'hi-talent-design';
-import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React, { useMemo, useState } from 'react';
 
-const messages = {
-  'zh-CN': {
-    width: '容器宽度',
-    add: '新增',
-    edit: '编辑',
-    copy: '复制',
-    export: '导出',
-    delete: '删除',
-    refresh: '刷新',
-  },
-  'en-US': {
-    width: 'Container width',
-    add: 'Add',
-    edit: 'Edit',
-    copy: 'Copy',
-    export: 'Export',
-    delete: 'Delete',
-    refresh: 'Refresh',
-  },
-};
-
 export default () => {
-  const { t } = useDemoIntl(messages);
-  const [width, setWidth] = useState(560);
-  const items = useMemo(
+  const [width, setWidth] = useState(480);
+  const [mode, setMode] = useState<ResponsiveButtonGroupMode>('responsive');
+
+  const wait = (ms = 1500) =>
+    new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+
+  const items: ResponsiveButtonGroupItem[] = useMemo(
     () => [
-      { key: 'add', label: t('add'), icon: <PlusOutlined />, priority: 100 },
-      { key: 'edit', label: t('edit'), icon: <EditOutlined />, priority: 50 },
-      { key: 'copy', label: t('copy'), icon: <CopyOutlined />, priority: 0 },
       {
-        key: 'export',
-        label: t('export'),
-        icon: <ExportOutlined />,
-        priority: 0,
+        key: 'add',
+        label: '新建项目',
+        icon: <PlusOutlined />,
+        priority: 100,
+        buttonProps: { type: 'primary' as const },
+        onClick: () => {
+          message.success('点击新建');
+        },
+      },
+      {
+        key: 'edit',
+        label: '编辑信息',
+        icon: <EditOutlined />,
+        priority: 80,
+        tooltip: '编辑当前项目详细配置',
+        onClick: () => {
+          message.info('点击编辑');
+        },
       },
       {
         key: 'delete',
-        label: t('delete'),
+        label: '批量删除',
         icon: <DeleteOutlined />,
-        priority: 80,
+        priority: 60,
         danger: true,
+        onClick: () => {
+          message.warning('触发删除');
+        },
+      },
+      {
+        key: 'copy',
+        label: '复制副本',
+        icon: <CopyOutlined />,
+        priority: 30,
+        onClick: () => {
+          message.info('复制成功');
+        },
+      },
+      {
+        key: 'download',
+        label: '导出报表 (异步等待)',
+        icon: <CloudDownloadOutlined />,
+        priority: 15,
+        onClick: async () => {
+          await wait(1500);
+          message.success('导出完成，面板自动收起');
+        },
       },
       {
         key: 'refresh',
-        label: t('refresh'),
+        label: '刷新同步',
         icon: <ReloadOutlined />,
-        priority: 20,
+        priority: 10,
+        disabled: true,
       },
     ],
-    [t],
+    [],
   );
 
   return (
-    <div>
-      <label style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span>
-          {t('width')}: {width}px
-        </span>
-        <input
-          type="range"
-          min={140}
-          max={720}
-          value={width}
-          style={{ width: 260 }}
-          onChange={(event) => setWidth(Number(event.target.value))}
-        />
-      </label>
+    <Flex vertical gap={16}>
+      <Flex align="center" gap={24} wrap>
+        <Flex align="center" gap={8} style={{ width: 320 }}>
+          <span style={{ fontSize: 13, color: '#666', whiteSpace: 'nowrap' }}>
+            容器宽度 ({width}px):
+          </span>
+          <Slider
+            min={120}
+            max={650}
+            value={width}
+            onChange={setWidth}
+            style={{ flex: 1 }}
+          />
+        </Flex>
+        <Flex align="center" gap={8}>
+          <span style={{ fontSize: 13, color: '#666' }}>模式:</span>
+          <Radio.Group
+            size="small"
+            value={mode}
+            onChange={(e) => setMode(e.target.value)}
+            optionType="button"
+            buttonStyle="solid"
+            options={[
+              { label: '自适应 (responsive)', value: 'responsive' },
+              { label: '全部展开 (expanded)', value: 'expanded' },
+              { label: '全部收起 (collapsed)', value: 'collapsed' },
+            ]}
+          />
+        </Flex>
+      </Flex>
+
       <div
         style={{
           width,
           maxWidth: '100%',
-          marginTop: 16,
           padding: 12,
-          border: '1px dashed #bfbfbf',
-          overflow: 'auto',
+          border: '1px dashed #d9d9d9',
+          borderRadius: 6,
+          background: '#fafafa',
         }}
       >
-        <ResponsiveButtonGroup items={items} minVisibleCount={1} />
+        <ResponsiveButtonGroup mode={mode} items={items} minVisibleCount={1} />
       </div>
-    </div>
+    </Flex>
   );
 };
