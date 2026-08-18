@@ -34,6 +34,16 @@ export const useModalWindowState = (): ModalWindowState => {
     updateResizing(resizing);
   }, []);
 
+  const resetPosition = useCallback(() => {
+    const initialPosition = { x: 0, y: 0 };
+    positionRef.current = initialPosition;
+    updatePosition(initialPosition);
+  }, []);
+
+  const resetSize = useCallback(() => {
+    updateSize(null);
+  }, []);
+
   return {
     position,
     positionRef,
@@ -42,5 +52,7 @@ export const useModalWindowState = (): ModalWindowState => {
     setPosition,
     setSize,
     setResizing,
+    resetPosition,
+    resetSize,
   };
 };

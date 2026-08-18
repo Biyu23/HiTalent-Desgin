@@ -137,16 +137,12 @@
   &-maximized {
     // 覆盖 antd Modal 默认的 top:100px，JS 端通过 style prop 传入 top:0
     // 此处 CSS 兜底：确保内部结构填满整个视口高度
+    top: 0 !important;
     width: 100% !important;
     height: 100vh;
     max-width: 100vw !important;
     margin: 0 !important;
     padding-bottom: 0 !important;
-
-    // antd 的 top:100px 写在内层 .ant-modal 上，需 CSS 覆盖
-    .ant-modal {
-      top: 0 !important;
-    }
 
     .ant-modal-content {
       height: 100vh;

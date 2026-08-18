@@ -47,7 +47,7 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
     setModalContent((current) =>
       current === (content || null) ? current : content || null,
     );
-  }, [children]);
+  }, [children, open]);
 
   if (!draggable && !resizable) return <>{children}</>;
 

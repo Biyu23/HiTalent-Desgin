@@ -18,4 +18,6 @@ export interface ModalWindowState {
   setPosition: (position: ModalWindowPosition) => void;
   setSize: (size: ModalWindowSize) => void;
   setResizing: (resizing: boolean) => void;
+  resetPosition: () => void;
+  resetSize: () => void;
 }

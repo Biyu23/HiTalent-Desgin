@@ -82,19 +82,20 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
       className={clsx(e('header'), className, {
         [em('header', 'draggable')]: draggable,
       })}
-      role={draggable ? 'button' : undefined}
-      aria-label={draggable ? modalLocale.dragHandle : undefined}
+      onDoubleClick={maximizable ? onToggleMaximize : undefined}
     >
       <div className={e('title')}>{title}</div>
-      <Flex
-        hidden={actions.length === 0}
-        className={e('actions')}
-        gap={8}
-        align="center"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {actions}
-      </Flex>
+      {actions.length > 0 && (
+        <Flex
+          className={e('actions')}
+          gap={8}
+          align="center"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {actions}
+        </Flex>
+      )}
     </div>
   );
 });

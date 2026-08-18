@@ -37,6 +37,10 @@ export interface ModalContextValue {
   setWindowSize: (size: ModalWindowSize) => void;
   /** 更新 resize 交互状态 */
   setResizing: (resizing: boolean) => void;
+  /** 重置普通窗口位置 */
+  resetPosition: () => void;
+  /** 重置手动调整后的尺寸 */
+  resetSize: () => void;
   /** 最小化 */
   onMinimize: () => void;
   /** 切换最大化/还原 */

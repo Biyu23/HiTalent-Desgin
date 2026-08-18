@@ -16,15 +16,19 @@ export interface ModalRef {
   unmaximize: () => void;
   /** 最小化弹窗 */
   minimize: () => void;
+  /** 重置拖拽位置居中 */
+  resetPosition?: () => void;
+  /** 重置手动调整的尺寸 */
+  resetSize?: () => void;
 }
 
 /**
  * Modal 组件暴露的静态方法
  */
-export interface ModalStaticMethods {
+export type ModalStaticMethods = {
   /** 销毁所有已打开的 Modal 实例（包括最小化状态的弹窗） */
   destroyAll: () => void;
-}
+};
 
 /**
  * Modal 缩放配置

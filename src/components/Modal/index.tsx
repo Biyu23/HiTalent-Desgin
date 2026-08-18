@@ -92,16 +92,18 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     setPosition: setWindowPosition,
     setSize: setWindowSize,
     setResizing,
+    resetPosition: resetWindowPosition,
+    resetSize: resetWindowSize,
   } = useModalWindowState();
 
-  // minimizable 模式下关闭不销毁 DOM，保留表单数据
-  const resolvedDestroyOnClose = minimizable ? false : destroyOnClose;
-  const resolvedDestroyOnHidden = minimizable ? false : destroyOnHidden;
+  // 最小化模式下隐藏时保留 DOM，防止表单数据丢失；彻底关闭时遵循传入配置
+  const resolvedDestroyOnClose = isMinimized ? false : destroyOnClose;
+  const resolvedDestroyOnHidden = isMinimized ? false : destroyOnHidden;
 
   const handleClose = useCallback(
     (e?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>) => {
       if (isMinimized) handleRestore();
-      if (isMaximized) onMaximizedChange?.(false);
+      if (isMaximized) handleUnmaximize();
       handleReset();
       onCancel?.(e);
     },
@@ -110,8 +112,8 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       isMinimized,
       isMaximized,
       handleRestore,
+      handleUnmaximize,
       handleReset,
-      onMaximizedChange,
     ],
   );
 
@@ -128,8 +130,17 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       },
       unmaximize: handleUnmaximize,
       minimize: handleMinimize,
+      resetPosition: resetWindowPosition,
+      resetSize: resetWindowSize,
     }),
-    [handleRestore, handleMinimize, handleMaximize, handleUnmaximize],
+    [
+      handleRestore,
+      handleMinimize,
+      handleMaximize,
+      handleUnmaximize,
+      resetWindowPosition,
+      resetWindowSize,
+    ],
   );
 
   const finalModalRender = useCallback(
@@ -184,6 +195,8 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       setWindowPosition,
       setWindowSize,
       setResizing,
+      resetPosition: resetWindowPosition,
+      resetSize: resetWindowSize,
       onMinimize: handleMinimize,
       onToggleMaximize: handleToggleMaximize,
       onClose: handleClose,
@@ -206,6 +219,8 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       setWindowPosition,
       setWindowSize,
       setResizing,
+      resetWindowPosition,
+      resetWindowSize,
       handleMinimize,
       handleToggleMaximize,
       handleClose,
@@ -263,14 +278,12 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
 
 /**
  * 组装静态方法到 memo 包装后的组件上。
- * destroyAll() 依次调用每个活跃实例的 handleClose，
- * 适用于路由切换、页面跳转等一键清理场景。
+ * destroyAll() 依次调用每个活跃实例的 handleClose。
  */
 const ModalWithStatics: React.MemoExoticComponent<
   React.ForwardRefExoticComponent<ModalProps & React.RefAttributes<ModalRef>>
 > &
   ModalStaticMethods = memo(Modal) as any;
-
 ModalWithStatics.destroyAll = () => {
   const fns = destroyFns.splice(0);
   fns.forEach((fn) => fn());
