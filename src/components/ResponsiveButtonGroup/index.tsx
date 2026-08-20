@@ -18,7 +18,7 @@ import Button from '../Button';
 import OverflowMenu from './components/OverflowMenu';
 import { useItemAction } from './hooks/useItemAction';
 import { useItemMeasurements } from './hooks/useItemMeasurements';
-import './index.less';
+import { useStyle } from './style';
 import type {
   ResponsiveButtonGroupItem,
   ResponsiveButtonGroupOverflowRenderInfo,
@@ -55,6 +55,7 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
     customPrefixCls,
   );
   const locale = useLocale('ResponsiveButtonGroup');
+  const { wrapSSR, hashId } = useStyle(prefixCls);
   const { direction } = useContext(ConfigContext);
   const gap = normalizeGap(gapProp);
   const minVisibleCount = normalizeMinVisibleCount(
@@ -69,6 +70,8 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
   const [innerOpen, setInnerOpen] = useState(false);
   const visibleContainerRef = useRef<HTMLDivElement | null>(null);
   const previousCollapsedCountRef = useRef<number | null>(null);
+  const onOpenChangeRef = useRef(overflowDropdownProps?.onOpenChange);
+  onOpenChangeRef.current = overflowDropdownProps?.onOpenChange;
   const lastLayoutRef = useRef<{
     visibleKeys: React.Key[];
     collapsedKeys: React.Key[];
@@ -180,9 +183,9 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
       const normalizedKey = String(item.key);
       if (keys.has(normalizedKey)) {
         console.warn(
-          `[ResponsiveButtonGroup] item key “${String(
+          `[ResponsiveButtonGroup] item key "${String(
             item.key,
-          )}” 重复，key 必须唯一。`,
+          )}" 重复，key 必须唯一。`,
         );
       }
       keys.add(normalizedKey);
@@ -199,13 +202,8 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
       ?.querySelector<HTMLElement>('button:not(:disabled), a[href]')
       ?.focus();
     if (overflowDropdownProps?.open === undefined) setInnerOpen(false);
-    overflowDropdownProps?.onOpenChange?.(false, { source: 'trigger' });
-  }, [
-    collapsedItems.length,
-    open,
-    overflowDropdownProps?.open,
-    overflowDropdownProps?.onOpenChange,
-  ]);
+    onOpenChangeRef.current?.(false, { source: 'trigger' });
+  }, [collapsedItems.length, open, overflowDropdownProps?.open]);
 
   useEffect(() => {
     if (!measurementReady || !onVisibleChange) return;
@@ -232,9 +230,9 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
         return;
       }
       if (overflowDropdownProps?.open === undefined) setInnerOpen(nextOpen);
-      overflowDropdownProps?.onOpenChange?.(nextOpen, info);
+      onOpenChangeRef.current?.(nextOpen, info);
     },
-    [overflowDropdownProps],
+    [overflowDropdownProps?.open],
   );
 
   const renderItemButton = useCallback(
@@ -352,16 +350,16 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
           if (overflowDropdownProps?.open === undefined) {
             setInnerOpen(false);
           }
-          overflowDropdownProps?.onOpenChange?.(false, { source: 'trigger' });
+          onOpenChangeRef.current?.(false, { source: 'trigger' });
         }
       } else {
         if (overflowDropdownProps?.open === undefined) {
           setInnerOpen(false);
         }
-        overflowDropdownProps?.onOpenChange?.(false, { source: 'menu' });
+        onOpenChangeRef.current?.(false, { source: 'menu' });
       }
     },
-    [executeItemAction, overflowDropdownProps],
+    [executeItemAction, overflowDropdownProps?.open],
   );
 
   const overflowNode =
@@ -380,45 +378,51 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
       </OverflowMenu>
     ) : null;
 
-  return withNativeProps(
-    props,
-    <div
-      ref={setContainerRef}
-      className={prefixCls}
-      role="group"
-      dir={direction}
-    >
-      <div ref={visibleContainerRef} className={e('visible')} style={{ gap }}>
-        {visibleItems.map((item) => renderItemButton(item))}
-        {overflowNode}
-      </div>
-
-      {mode === 'responsive' && items.length > 0 && (
-        <div className={e('measure')} aria-hidden="true">
-          {items.map((item) => (
-            <span
-              key={`item-${String(item.key)}`}
-              ref={getItemMeasureRef(item.key)}
-              className={e('measure-item')}
-            >
-              {renderItemButton(item, true)}
-            </span>
-          ))}
-          {measuredCollapsedItems.map((currentMeasuredItems, index) => {
-            const count = index + 1;
-            return (
-              <span
-                key={`overflow-${count}`}
-                ref={getOverflowMeasureRef(count)}
-                className={e('measure-item')}
-              >
-                {renderOverflowTrigger(currentMeasuredItems, false, true)}
-              </span>
-            );
-          })}
+  return wrapSSR(
+    withNativeProps(
+      props,
+      <div
+        ref={setContainerRef}
+        className={clsx(prefixCls, hashId)}
+        role="group"
+        dir={direction}
+      >
+        <div
+          ref={visibleContainerRef}
+          className={clsx(e('visible'), hashId)}
+          style={{ gap }}
+        >
+          {visibleItems.map((item) => renderItemButton(item))}
+          {overflowNode}
         </div>
-      )}
-    </div>,
+
+        {mode === 'responsive' && items.length > 0 && (
+          <div className={clsx(e('measure'), hashId)} aria-hidden="true">
+            {items.map((item) => (
+              <span
+                key={`item-${String(item.key)}`}
+                ref={getItemMeasureRef(item.key)}
+                className={clsx(e('measure-item'), hashId)}
+              >
+                {renderItemButton(item, true)}
+              </span>
+            ))}
+            {measuredCollapsedItems.map((currentMeasuredItems, index) => {
+              const count = index + 1;
+              return (
+                <span
+                  key={`overflow-${count}`}
+                  ref={getOverflowMeasureRef(count)}
+                  className={clsx(e('measure-item'), hashId)}
+                >
+                  {renderOverflowTrigger(currentMeasuredItems, false, true)}
+                </span>
+              );
+            })}
+          </div>
+        )}
+      </div>,
+    ),
   );
 };
 

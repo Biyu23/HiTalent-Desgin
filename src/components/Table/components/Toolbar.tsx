@@ -1,5 +1,7 @@
-import React, { memo } from 'react';
+import clsx from 'clsx';
+import React, { memo, useContext } from 'react';
 import { useNamespace } from '../../../configProvider/usePrefixCls';
+import TableContext from '../TableContext';
 import type { ColumnId, EnhancedColumnType } from '../type';
 import ColumnSettingPopover from './ColumnSettingPopover';
 
@@ -26,14 +28,15 @@ function Toolbar<RecordType = Record<string, unknown>>(
     columnSettingLoading,
   } = props;
   const { e } = useNamespace('table');
+  const { hashId } = useContext(TableContext);
 
   if (!showColumnSetting && !toolbarExtra) return null;
 
   return (
-    <div className={e('toolbar')}>
-      <div className={e('toolbar-extra')}>{toolbarExtra}</div>
+    <div className={clsx(e('toolbar'), hashId)}>
+      <div className={clsx(e('toolbar-extra'), hashId)}>{toolbarExtra}</div>
       {showColumnSetting && (
-        <div className={e('toolbar-setting')}>
+        <div className={clsx(e('toolbar-setting'), hashId)}>
           <ColumnSettingPopover
             columns={columns}
             visibleIds={visibleIds}

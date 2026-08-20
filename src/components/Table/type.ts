@@ -93,6 +93,10 @@ export interface RowDragConfig<RecordType = Record<string, unknown>> {
 }
 
 export interface TableContextValue {
+  /** CSS-in-JS hash id，所有子组件需附加到 className 上以匹配样式规则 */
+  hashId?: string;
+  /** 组件类名前缀（如 'htd-table'） */
+  prefixCls?: string;
   columnWidths: Readonly<Record<ColumnId, number>>;
   onColumnWidthChange: (columnId: ColumnId, width: number) => void;
   onColumnResizeEnd?: (columnId: ColumnId, width: number) => void;

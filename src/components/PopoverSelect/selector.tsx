@@ -5,7 +5,7 @@ import React, { memo } from 'react';
 import { useNamespace } from '../../configProvider/usePrefixCls';
 import { useMergeState } from '../../hooks';
 import { withNativeProps } from '../../util';
-import './index.less';
+import { useStyle } from './style';
 import type { SelectorProps } from './type';
 
 const Selector: React.FC<SelectorProps> = (props) => {
@@ -28,7 +28,8 @@ const Selector: React.FC<SelectorProps> = (props) => {
     disabled = false,
     onClear,
   } = props;
-  const { e, em } = useNamespace('popover-select', customPrefixCls);
+  const { prefixCls, e, em } = useNamespace('popover-select', customPrefixCls);
+  const { wrapSSR, hashId } = useStyle(prefixCls);
   const [open, { set: onOpenChange }] = useMergeState<boolean>({
     defaultValue: false,
     value: openProp,
@@ -38,14 +39,14 @@ const Selector: React.FC<SelectorProps> = (props) => {
   const hasClear = Boolean(allowClear && hasValue && !disabled);
 
   const renderChildren = () => {
-    return <span className={e('selector-text')}>{children}</span>;
+    return <span className={clsx(e('selector-text'), hashId)}>{children}</span>;
   };
 
   const renderClearIcon = () => {
     if (!hasClear) return null;
     return (
       <CloseCircleOutlined
-        className={clsx(e('selector-clear'), {
+        className={clsx(e('selector-clear'), hashId, {
           [em('selector-clear', 'overlay')]: showArrow,
         })}
         onClick={(e) => {
@@ -60,7 +61,7 @@ const Selector: React.FC<SelectorProps> = (props) => {
     if (!showArrow) return null;
     return (
       <DownOutlined
-        className={clsx(e('selector-arrow'), {
+        className={clsx(e('selector-arrow'), hashId, {
           [em('selector-arrow', 'has-clear')]: hasClear,
         })}
       />
@@ -72,44 +73,46 @@ const Selector: React.FC<SelectorProps> = (props) => {
     const arrowIcon = renderArrow();
     if (!clearIcon && !arrowIcon) return null;
     return (
-      <span className={e('selector-actions')}>
+      <span className={clsx(e('selector-actions'), hashId)}>
         {clearIcon}
         {arrowIcon}
       </span>
     );
   };
 
-  return withNativeProps(
-    props,
-    <Popover
-      trigger="click"
-      placement={placement}
-      getPopupContainer={getPopupContainer}
-      destroyTooltipOnHide={destroyTooltipOnHide}
-      autoAdjustOverflow={autoAdjustOverflow}
-      rootClassName={clsx(e('selector'), rootClassName)}
-      openClassName={clsx(openClassName, em('selector-btn', 'open'))}
-      afterOpenChange={afterOpenChange}
-      open={disabled ? false : open}
-      content={
-        disabled ? null : typeof content === 'function' ? content() : content
-      }
-      onOpenChange={disabled ? undefined : onOpenChange}
-    >
-      <Button
-        type="text"
-        disabled={disabled}
-        className={clsx(e('selector-btn'), {
-          [em('selector-btn', 'active')]: hasValue,
-          [em('selector-btn', 'open')]: open,
-          [em('selector-btn', 'empty')]: !hasValue,
-          [em('selector-btn', 'disabled')]: disabled,
-        })}
+  return wrapSSR(
+    withNativeProps(
+      props,
+      <Popover
+        trigger="click"
+        placement={placement}
+        getPopupContainer={getPopupContainer}
+        destroyTooltipOnHide={destroyTooltipOnHide}
+        autoAdjustOverflow={autoAdjustOverflow}
+        rootClassName={clsx(e('selector'), hashId, rootClassName)}
+        openClassName={openClassName}
+        afterOpenChange={afterOpenChange}
+        open={disabled ? false : open}
+        content={
+          disabled ? null : typeof content === 'function' ? content() : content
+        }
+        onOpenChange={disabled ? undefined : onOpenChange}
       >
-        {renderChildren()}
-        {renderActions()}
-      </Button>
-    </Popover>,
+        <Button
+          type="text"
+          disabled={disabled}
+          className={clsx(e('selector-btn'), hashId, {
+            [em('selector-btn', 'active')]: hasValue,
+            [em('selector-btn', 'open')]: open,
+            [em('selector-btn', 'empty')]: !hasValue,
+            [em('selector-btn', 'disabled')]: disabled,
+          })}
+        >
+          {renderChildren()}
+          {renderActions()}
+        </Button>
+      </Popover>,
+    ),
   );
 };
 

@@ -90,7 +90,7 @@ export default defineConfig({
               link: '/components/responsive-button-group',
             },
             {
-              title: 'SvgIcon 自定义图标',
+              title: 'SvgIcon 自定义图标【废弃】',
               link: '/components/svg-icon',
             },
           ],
@@ -139,7 +139,7 @@ export default defineConfig({
               link: '/en-US/components/responsive-button-group',
             },
             {
-              title: 'SvgIcon',
+              title: 'SvgIcon【废弃】',
               link: '/en-US/components/svg-icon',
             },
           ],

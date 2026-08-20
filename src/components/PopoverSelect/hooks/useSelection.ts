@@ -155,8 +155,8 @@ export function useSelection<
       if (checked) {
         newValues = Array.from(new Set([...currentTarget, ...enabledValues]));
       } else {
-        const disabledSet = new Set(enabledValues);
-        newValues = currentTarget.filter((v) => !disabledSet.has(v));
+        const enabledValueSet = new Set(enabledValues);
+        newValues = currentTarget.filter((v) => !enabledValueSet.has(v));
       }
       if (realShowConfirmRef.current) {
         setDraftValue(newValues);

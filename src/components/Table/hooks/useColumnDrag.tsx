@@ -25,6 +25,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import clsx from 'clsx';
 import React, {
   useCallback,
   useContext,
@@ -40,6 +41,7 @@ import {
   useNamespace,
   usePrefixCls,
 } from '../../../configProvider/usePrefixCls';
+import TableContext from '../TableContext';
 import type { ColumnId } from '../type';
 import { moveColumnItem } from '../utils/columnDrag';
 
@@ -126,13 +128,14 @@ const SortableHeaderItem: React.FC<SortableHeaderItemProps> = ({
   }, [transformValue, transition, isDragging, tableId, token]);
 
   const { e } = useNamespace('table', prefixCls);
+  const { hashId } = useContext(TableContext);
 
   return (
     <div
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      className={e('drag-container')}
+      className={clsx(e('drag-container'), hashId)}
       style={{
         transform: transformValue,
         transition,
@@ -175,6 +178,7 @@ const InternalColumnDragContext: React.FC<InternalColumnDragContextProps> = ({
   contextId,
 }) => {
   const { e } = useNamespace('table', prefixCls);
+  const { hashId } = useContext(TableContext);
   const [activeId, setActiveId] = useState<ColumnId | null>(null);
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -241,7 +245,7 @@ const InternalColumnDragContext: React.FC<InternalColumnDragContextProps> = ({
               }),
             }}
           >
-            <div className={e('drag-overlay')}>
+            <div className={clsx(e('drag-overlay'), hashId)}>
               <table>
                 <thead>
                   <tr>

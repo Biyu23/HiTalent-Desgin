@@ -7,7 +7,7 @@ import type React from 'react';
 
 export type ButtonRef = React.ComponentRef<typeof AntdButton>;
 
-export interface ButtonProps extends AntdButtonProps {
+export interface ButtonProps extends Omit<AntdButtonProps, 'onClick'> {
   /**
    * @description 是否自动控制 loading 状态——当 onClick 返回 Promise 时
    *              自动进入 loading 态，Promise 落定后自动退出

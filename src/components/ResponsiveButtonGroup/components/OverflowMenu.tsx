@@ -1,8 +1,10 @@
 import { LoadingOutlined } from '@ant-design/icons';
-import type { DropdownProps, MenuProps } from 'antd';
+import type { DropdownProps, MenuProps, TooltipProps } from 'antd';
 import { Dropdown, Tooltip } from 'antd';
+import clsx from 'clsx';
 import React, { memo, useMemo } from 'react';
 import { useNamespace } from '../../../configProvider/usePrefixCls';
+import { useStyle } from '../style';
 import type {
   ResponsiveButtonGroupItem,
   ResponsiveButtonGroupRenderInfo,
@@ -36,6 +38,7 @@ const OverflowMenu: React.FC<OverflowMenuProps> = (props) => {
     onItemClick,
   } = props;
   const { e } = useNamespace('responsive-button-group', prefixCls);
+  const { hashId } = useStyle(prefixCls);
 
   const itemMap = useMemo(() => {
     const map = new Map<string, ResponsiveButtonGroupItem>();
@@ -68,12 +71,20 @@ const OverflowMenu: React.FC<OverflowMenuProps> = (props) => {
       if (item.renderCollapsedItem) {
         node = item.renderCollapsedItem(renderInfo);
       } else if (item.tooltip) {
-        const tooltipProps =
+        const tooltipProps: TooltipProps =
           typeof item.tooltip === 'string' || React.isValidElement(item.tooltip)
             ? { title: item.tooltip }
             : item.tooltip;
         node = (
-          <Tooltip {...tooltipProps} placement="right">
+          <Tooltip
+            {...tooltipProps}
+            placement="right"
+            // 防止 Tooltip 浮层遮挡菜单项的点击事件
+            overlayStyle={{
+              pointerEvents: 'none',
+              ...tooltipProps.overlayStyle,
+            }}
+          >
             {defaultNode}
           </Tooltip>
         );
@@ -100,6 +111,11 @@ const OverflowMenu: React.FC<OverflowMenuProps> = (props) => {
     <Dropdown
       trigger={['click']}
       {...dropdownProps}
+      overlayClassName={clsx(
+        prefixCls,
+        hashId,
+        dropdownProps?.overlayClassName,
+      )}
       open={open}
       menu={{ ...menuProps, items: menuItems, onClick: handleMenuClick }}
       onOpenChange={onOpenChange}

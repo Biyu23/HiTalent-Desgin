@@ -8,15 +8,15 @@ import React, {
   useMemo,
 } from 'react';
 import { useLocale } from '../../configProvider/useLocale';
-import { useNamespace, usePrefixCls } from '../../configProvider/usePrefixCls';
+import { useNamespace } from '../../configProvider/usePrefixCls';
 import MinimizedDock from '../_util/minimize/MinimizedDock';
 import ModalHeader from './components/ModalHeader';
 import ModalWindowWrapper from './components/ModalWindowWrapper';
 import { useDestroyRegister } from './hooks/useDestroyRegister';
 import { useModalState } from './hooks/useModalState';
 import { useModalWindowState } from './hooks/useModalWindowState';
-import './index.less';
 import ModalContext, { ModalContextValue } from './ModalContext';
+import { useStyle } from './style';
 import type { ModalProps, ModalRef, ModalStaticMethods } from './type';
 import destroyFns from './utils/destroyFns';
 
@@ -61,8 +61,8 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   } = props;
 
   const { prefixCls, e, m, em } = useNamespace('modal', customPrefixCls);
-  const dockPrefixCls = usePrefixCls('minimize');
   const modalLocale = useLocale('Modal');
+  const { wrapSSR, hashId } = useStyle(prefixCls);
 
   const { minimizedDock: minimizedDockClassName, ...antdClassNames } =
     classNames || {};
@@ -179,6 +179,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   const contextValue: ModalContextValue = useMemo(
     () => ({
       prefixCls,
+      hashId,
       draggable,
       resizable,
       minimizable,
@@ -203,6 +204,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     }),
     [
       prefixCls,
+      hashId,
       draggable,
       resizable,
       minimizable,
@@ -227,7 +229,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     ],
   );
 
-  return (
+  return wrapSSR(
     <ModalContext.Provider value={contextValue}>
       <AntdModal
         {...restProps}
@@ -243,11 +245,11 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
         onCancel={handleClose}
         style={mergedStyle}
         styles={mergedStyles}
-        wrapClassName={clsx(wrapClassName, e('wrap'), {
+        wrapClassName={clsx(wrapClassName, e('wrap'), hashId, {
           [em('wrap', 'constrained')]:
             draggable || Boolean(resizable) || isMaximized || !!windowSize,
         })}
-        className={clsx(prefixCls, className, {
+        className={clsx(prefixCls, hashId, className, {
           [m('maximized')]: isMaximized,
           [m('manual-size')]: !!windowSize && !isMaximized,
           [m('resizing')]: isResizing,
@@ -264,15 +266,13 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
         minimized={isMinimized}
         title={title}
         position={minimizePosition}
-        dockPrefixCls={dockPrefixCls}
-        sourcePrefixCls={prefixCls}
-        className={clsx(rootClassName, className, minimizedDockClassName)}
+        className={minimizedDockClassName}
         style={minimizedDockStyle}
         locale={modalLocale}
         onRestore={handleRestore}
         onClose={handleClose}
       />
-    </ModalContext.Provider>
+    </ModalContext.Provider>,
   );
 });
 

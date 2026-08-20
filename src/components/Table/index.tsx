@@ -16,7 +16,7 @@ import Toolbar from './components/Toolbar';
 import { useColumnConfig } from './hooks/useColumnConfig';
 import { SortableBodyCell, useColumnDrag } from './hooks/useColumnDrag';
 import { RowDragHandle, useRowDrag } from './hooks/useRowDrag';
-import './index.less';
+import { useStyle } from './style';
 import TableContext from './TableContext';
 import type {
   EnhancedColumnType,
@@ -70,6 +70,7 @@ function InternalTable<RecordType = Record<string, unknown>>(
     ...restProps
   } = props;
   const { prefixCls, e, m } = useNamespace('table', customPrefixCls);
+  const { wrapSSR, hashId } = useStyle(prefixCls);
   const locale = useLocale('Table');
   const antdTableRef = useRef<AntdTableRef>(null);
   const controlled = 'columnState' in props;
@@ -278,11 +279,13 @@ function InternalTable<RecordType = Record<string, unknown>>(
 
   const contextValue = useMemo(
     () => ({
+      hashId,
+      prefixCls,
       columnWidths,
       onColumnWidthChange: previewColumnWidth,
       onColumnResizeEnd: commitColumnWidth,
     }),
-    [columnWidths, commitColumnWidth, previewColumnWidth],
+    [hashId, prefixCls, columnWidths, commitColumnWidth, previewColumnWidth],
   );
   const defaultToolbar = useMemo(
     () => (
@@ -322,14 +325,14 @@ function InternalTable<RecordType = Record<string, unknown>>(
     [resetColumnState],
   );
 
-  const mergedClassName = clsx(prefixCls, className, {
+  const mergedClassName = clsx(prefixCls, hashId, className, {
     [m('zebra')]: zebraStripe,
     [m('no-hover')]: !hoverHighlight,
   });
 
-  return (
+  return wrapSSR(
     <TableContext.Provider value={contextValue}>
-      <div className={e('wrapper')}>
+      <div className={clsx(e('wrapper'), hashId)}>
         {finalToolbar}
         <ColumnDragContextWrapper>
           <RowDragContextWrapper>
@@ -347,7 +350,7 @@ function InternalTable<RecordType = Record<string, unknown>>(
           </RowDragContextWrapper>
         </ColumnDragContextWrapper>
       </div>
-    </TableContext.Provider>
+    </TableContext.Provider>,
   );
 }
 

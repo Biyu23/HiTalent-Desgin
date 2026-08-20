@@ -13,8 +13,8 @@ import DropdownContent from './components/DropdownContent';
 import { useDisplayText } from './hooks/useDisplayText';
 import { useOptions } from './hooks/useOptions';
 import { useSelection } from './hooks/useSelection';
-import './index.less';
 import Selector from './selector';
+import { useStyle } from './style';
 import type {
   DefaultOptionType,
   PopoverSelectProps,
@@ -29,6 +29,8 @@ const Component = <
 ) => {
   const { prefixCls, e } = useNamespace('popover-select', props.prefixCls);
   const componentLocale = useLocale('PopoverSelect');
+  // 样式注册由内部 Selector 负责，此处只取 hashId 用于子元素 className
+  const { hashId } = useStyle(prefixCls);
 
   type MappedOption = OptionType & {
     label: React.ReactNode;
@@ -44,8 +46,6 @@ const Component = <
     placeholder = componentLocale.placeholder,
     allowClear = false,
     showConfirm = mode === 'multiple',
-    className,
-    style,
     showCancelBtn = false,
     showClearBtn = false,
     optionRender,
@@ -199,6 +199,7 @@ const Component = <
     () => (
       <DropdownContent
         prefixCls={prefixCls}
+        hashId={hashId}
         componentLocale={componentLocale}
         hasOptions={hasOptions}
         hasDisplayOptions={hasDisplayOptions}
@@ -223,6 +224,7 @@ const Component = <
     ),
     [
       prefixCls,
+      hashId,
       componentLocale,
       hasOptions,
       hasDisplayOptions,
@@ -247,11 +249,11 @@ const Component = <
 
   return withNativeProps(
     props,
-    <div className={clsx(prefixCls, className)} style={style}>
+    <div className={clsx(prefixCls, hashId)}>
       <Selector
         content={renderContent}
         open={open}
-        rootClassName={e('selector')}
+        rootClassName={clsx(e('selector'), hashId)}
         onOpenChange={setOpen}
         afterOpenChange={afterOpenChange}
         placement={placement}

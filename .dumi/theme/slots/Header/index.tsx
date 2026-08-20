@@ -1,6 +1,5 @@
 import { CloseOutlined, MenuOutlined } from '@ant-design/icons';
 import { useLocale, useRouteMeta, useSiteData } from 'dumi';
-import ColorSwitch from 'dumi/theme/slots/ColorSwitch';
 import HeaderExtra from 'dumi/theme/slots/HeaderExtra';
 import LangSwitch from 'dumi/theme/slots/LangSwitch';
 import Logo from 'dumi/theme/slots/Logo';
@@ -10,6 +9,7 @@ import SearchBar from 'dumi/theme/slots/SearchBar';
 import SocialIcon from 'dumi/theme/slots/SocialIcon';
 import type { FC } from 'react';
 import React, { useMemo, useState } from 'react';
+import ColorSwitch from '../ColorSwitch';
 import './index.less';
 
 const Header: FC = () => {
@@ -47,19 +47,18 @@ const Header: FC = () => {
           <section className="dumi-default-header-left htd-doc-header-brand">
             <Logo />
           </section>
-
-          <div
-            className="htd-doc-header-search"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <SearchBar />
-          </div>
         </div>
 
         <section
           id="htd-doc-mobile-nav"
           className="dumi-default-header-right htd-doc-header-nav"
         >
+          <div
+            className="htd-doc-header-search"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <SearchBar />
+          </div>
           <Navbar />
           <div className="dumi-default-header-right-aside htd-doc-header-aside">
             <LangSwitch />

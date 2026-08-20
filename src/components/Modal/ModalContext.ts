@@ -5,6 +5,8 @@ import type { ModalWindowPosition, ModalWindowSize } from './types/internal';
 export interface ModalContextValue {
   /** 组件类名前缀（如 'htd-modal'） */
   prefixCls: string;
+  /** CSS-in-JS hash id，所有子组件需附加到 className 上以匹配样式规则 */
+  hashId: string;
   /** 是否开启拖拽 */
   draggable: boolean;
   /** 是否开启尺寸调整 */

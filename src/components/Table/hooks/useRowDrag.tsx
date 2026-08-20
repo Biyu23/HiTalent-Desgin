@@ -40,6 +40,7 @@ import {
   useNamespace,
   usePrefixCls,
 } from '../../../configProvider/usePrefixCls';
+import TableContext from '../TableContext';
 import type { RowDragConfig, RowDragResult } from '../type';
 import type { RowKeyGetter, RowRegistry } from '../types/internal';
 import {
@@ -56,6 +57,7 @@ interface RowDragHandleContextValue {
   dragHandleLabel: string;
   draggable: boolean;
   prefixCls: string;
+  hashId?: string;
 }
 
 const RowDragHandleContext =
@@ -75,11 +77,12 @@ export const RowDragHandle: React.FC = () => {
     setActivatorNodeRef,
     dragHandleLabel,
     draggable,
+    hashId,
   } = context;
 
   return (
     <div
-      className={e('row-drag-handle-wrapper')}
+      className={clsx(e('row-drag-handle-wrapper'), hashId)}
       onPointerDown={stopRowEvent}
       onClick={stopRowEvent}
       onDoubleClick={stopRowEvent}
@@ -87,7 +90,7 @@ export const RowDragHandle: React.FC = () => {
     >
       <span
         ref={draggable ? setActivatorNodeRef : undefined}
-        className={clsx(e('row-drag-handle'), {
+        className={clsx(e('row-drag-handle'), hashId, {
           [em('row-drag-handle', 'disabled')]: !draggable,
         })}
         aria-label={dragHandleLabel}
@@ -148,6 +151,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
   const treeMode = dragState.treeMode;
   const isTarget = candidate?.targetKey === id;
   const { e } = useNamespace('table', prefixCls);
+  const { hashId } = useContext(TableContext);
   const dropClass =
     isTarget && treeMode ? e(`row-drag-over-${candidate.position}`) : undefined;
 
@@ -159,6 +163,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
       dragHandleLabel,
       draggable,
       prefixCls,
+      hashId,
     }),
     [
       attributes,
@@ -167,6 +172,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
       dragHandleLabel,
       draggable,
       prefixCls,
+      hashId,
     ],
   );
 
@@ -181,7 +187,9 @@ const SortableRow: React.FC<SortableRowProps> = ({
           transition,
           ...(isDragging ? { opacity: treeMode ? 0.3 : 0, zIndex: 9999 } : {}),
         }}
-        className={[rowProps.className, dropClass].filter(Boolean).join(' ')}
+        className={[rowProps.className, dropClass, hashId]
+          .filter(Boolean)
+          .join(' ')}
       >
         {rowProps.children}
       </tr>
@@ -217,6 +225,7 @@ const InternalRowDragContext = <RecordType,>({
   contextId,
 }: InternalRowDragContextProps<RecordType>) => {
   const { e } = useNamespace('table', prefixCls);
+  const { hashId } = useContext(TableContext);
   const [activeKey, setActiveKey] = useState<React.Key | null>(null);
   const [candidate, setCandidate] = useState<RowDragResult<RecordType> | null>(
     null,
@@ -324,7 +333,7 @@ const InternalRowDragContext = <RecordType,>({
               }),
             }}
           >
-            <div className={e('drag-overlay')}>
+            <div className={clsx(e('drag-overlay'), hashId)}>
               <table>
                 <tbody>
                   <tr>

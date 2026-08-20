@@ -39,17 +39,39 @@ export const getExistingScrollWrapper = (
 export const ensureScrollWrapper = (
   position: MinimizePosition,
   dockPrefixCls: string,
+  hashId?: string,
 ): HTMLElement | null => {
   if (typeof document === 'undefined') return null;
   const existing = getExistingScrollWrapper(position, dockPrefixCls);
-  if (existing) return existing;
+  if (existing) {
+    if (hashId) {
+      if (!existing.classList.contains(hashId)) {
+        existing.classList.add(hashId);
+      }
+      if (
+        existing.parentElement &&
+        !existing.parentElement.classList.contains(hashId)
+      ) {
+        existing.parentElement.classList.add(hashId);
+      }
+    }
+    return existing;
+  }
 
   const container = document.createElement('div');
   container.id = getContainerId(position, dockPrefixCls);
-  container.className = `${dockPrefixCls}-container ${dockPrefixCls}-container-${position}`;
+  container.className = [
+    `${dockPrefixCls}-container`,
+    `${dockPrefixCls}-container-${position}`,
+    hashId,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const scrollWrapper = document.createElement('div');
-  scrollWrapper.className = `${dockPrefixCls}-scroll-wrapper`;
+  scrollWrapper.className = [`${dockPrefixCls}-scroll-wrapper`, hashId]
+    .filter(Boolean)
+    .join(' ');
   container.appendChild(scrollWrapper);
 
   document.body.appendChild(container);

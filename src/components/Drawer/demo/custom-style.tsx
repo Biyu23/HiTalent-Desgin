@@ -1,6 +1,7 @@
 /**
- * description: 使用 Less 样式文件配合 `rootClassName` 或 `classNames` 精准覆盖头部、主体、底部、遮罩、内容区、拖拽把手及最小化操作按钮等样式。
+ * description: 使用 CSS-in-JS 样式配合 `rootClassName` 或 `classNames` 精准覆盖头部、主体、底部、遮罩、内容区、拖拽把手及最小化操作按钮等样式。
  */
+import { useStyleRegister } from '@ant-design/cssinjs';
 import {
   AppstoreOutlined,
   BgColorsOutlined,
@@ -8,69 +9,257 @@ import {
   CodeOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
-import { Button, Card, Descriptions, Flex, Radio, Space, Tag } from 'antd';
+import {
+  Button,
+  Card,
+  Descriptions,
+  Flex,
+  Radio,
+  Space,
+  Tag,
+  theme as antdTheme,
+} from 'antd';
 import { Drawer } from 'hi-talent-design';
 import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React, { useState } from 'react';
-import './custom-style.less';
 
 type ThemeKey = 'tech-dark-drawer' | 'aurora-glass-drawer' | 'warm-card-drawer';
 
 const messages = {
   'zh-CN': {
-    'style.open': '打开 Less 样式抽屉',
-    'style.theme': 'Less 主题预设',
+    'style.open': '打开定制样式抽屉',
+    'style.theme': '主题预设',
     'style.techDark': '科技暗黑 (tech-dark-drawer)',
     'style.auroraGlass': '极光磨砂 (aurora-glass-drawer)',
     'style.warmCard': '温暖卡片 (warm-card-drawer)',
-    'style.title': 'Less 定制抽屉',
-    'style.badge': 'Less 控制',
-    'style.customSlots': 'Less 样式控制插槽',
+    'style.title': '定制抽屉',
+    'style.badge': '样式定制',
+    'style.customSlots': '样式控制插槽',
     'style.slotMask': '遮罩层 (.ant-drawer-mask)',
     'style.slotContent': '内容容器 (.ant-drawer-content)',
     'style.slotHeader': '标题头部 (.ant-drawer-header)',
     'style.slotBody': '主体区域 (.ant-drawer-body)',
     'style.slotFooter': '底部操作 (.ant-drawer-footer)',
-    'style.slotDragger': '拖拽把手 (.ht-drawer-resize-handle)',
-    'style.slotMinimize': '最小化按钮 (.ht-drawer-header-actions)',
-    'style.slotDock': '最小化悬浮卡片 (&.ht-minimize-dock)',
+    'style.slotDragger': '拖拽把手 (.htd-drawer-resize-handle)',
+    'style.slotMinimize': '最小化按钮 (.htd-drawer-header-actions)',
+    'style.slotDock': '最小化悬浮卡片 (&.htd-minimize-dock)',
     'style.close': '关闭',
     'style.submit': '确认',
     'style.info':
-      '通过向 Drawer 传入 rootClassName，在外部 Less 文件中嵌套选择器即可完成全方位的样式定制。',
+      '通过向 Drawer 传入 rootClassName，在 CSS-in-JS 中嵌套选择器即可完成全方位的样式定制。',
   },
   'en-US': {
-    'style.open': 'Open Less Styled Drawer',
-    'style.theme': 'Less Theme Preset',
+    'style.open': 'Open Styled Drawer',
+    'style.theme': 'Theme Preset',
     'style.techDark': 'Tech Dark (tech-dark-drawer)',
     'style.auroraGlass': 'Aurora Glass (aurora-glass-drawer)',
     'style.warmCard': 'Warm Card (warm-card-drawer)',
-    'style.title': 'Less Styled Drawer',
-    'style.badge': 'Controlled by Less',
-    'style.customSlots': 'Less Style Controlled Slots',
+    'style.title': 'Styled Drawer',
+    'style.badge': 'Custom Styled',
+    'style.customSlots': 'Style Controlled Slots',
     'style.slotMask': 'Mask Layer (.ant-drawer-mask)',
     'style.slotContent': 'Content Container (.ant-drawer-content)',
     'style.slotHeader': 'Header (.ant-drawer-header)',
     'style.slotBody': 'Body Area (.ant-drawer-body)',
     'style.slotFooter': 'Footer Actions (.ant-drawer-footer)',
-    'style.slotDragger': 'Resize Handle (.ht-drawer-resize-handle)',
-    'style.slotMinimize': 'Minimize Button (.ht-drawer-header-actions)',
-    'style.slotDock': 'Minimized Dock Card (&.ht-minimize-dock)',
+    'style.slotDragger': 'Resize Handle (.htd-drawer-resize-handle)',
+    'style.slotMinimize': 'Minimize Button (.htd-drawer-header-actions)',
+    'style.slotDock': 'Minimized Dock Card (&.htd-minimize-dock)',
     'style.close': 'Close',
     'style.submit': 'Confirm',
     'style.info':
-      'Pass rootClassName to Drawer and nest selectors in an external Less file for full-featured styling.',
+      'Pass rootClassName to Drawer and nest selectors in CSS-in-JS for full-featured styling.',
   },
 };
+
+const genDemoThemeStyle = () => ({
+  '.tech-dark-drawer': {
+    '.ant-drawer-mask': {
+      backdropFilter: 'blur(6px)',
+      backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    },
+    '.ant-drawer-content': {
+      backgroundColor: '#0f172a',
+      borderRadius: '16px 0 0 16px',
+      boxShadow: '-8px 0 32px rgba(0, 0, 0, 0.5)',
+      color: '#f8fafc',
+    },
+    '.ant-drawer-header': {
+      background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+      borderBottom: '1px solid rgba(51, 65, 85, 0.7)',
+      padding: '16px 24px',
+      '.ant-drawer-title': {
+        color: '#38bdf8',
+      },
+    },
+    '.ant-drawer-body': {
+      backgroundColor: '#090d16',
+      padding: 24,
+      color: '#cbd5e1',
+    },
+    '.ant-drawer-footer': {
+      backgroundColor: '#0f172a',
+      borderTop: '1px solid rgba(51, 65, 85, 0.7)',
+      padding: '12px 24px',
+    },
+    '.htd-drawer-resize-handle': {
+      backgroundColor: '#38bdf8',
+      boxShadow: '0 0 8px rgba(56, 189, 248, 0.6)',
+    },
+    '.htd-drawer-header-actions .ant-btn': {
+      color: '#38bdf8',
+      '&:hover': {
+        backgroundColor: 'rgba(56, 189, 248, 0.15)',
+        color: '#7dd3fc',
+      },
+    },
+    '&.htd-minimize-dock': {
+      backgroundColor: '#1e293b',
+      border: '1px solid #38bdf8',
+      borderRadius: 10,
+      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
+      '.htd-minimize-title': {
+        color: '#38bdf8',
+        fontWeight: 500,
+      },
+      '.htd-minimize-actions .ant-btn': {
+        color: '#38bdf8',
+        '&:hover': {
+          backgroundColor: 'rgba(56, 189, 248, 0.15)',
+          color: '#7dd3fc',
+        },
+      },
+    },
+  },
+  '.aurora-glass-drawer': {
+    '.ant-drawer-mask': {
+      backdropFilter: 'blur(8px)',
+      backgroundColor: 'rgba(30, 27, 75, 0.3)',
+    },
+    '.ant-drawer-content': {
+      backgroundColor: 'rgba(255, 255, 255, 0.85)',
+      backdropFilter: 'blur(16px)',
+      borderRadius: '16px 0 0 16px',
+      borderLeft: '1px solid rgba(255, 255, 255, 0.6)',
+      boxShadow: '-8px 0 32px rgba(99, 102, 241, 0.18)',
+    },
+    '.ant-drawer-header': {
+      background: 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)',
+      borderBottom: '1px solid #c7d2fe',
+      padding: '16px 24px',
+      '.ant-drawer-title': {
+        color: '#4338ca',
+      },
+    },
+    '.ant-drawer-body': {
+      backgroundColor: 'transparent',
+      padding: 24,
+    },
+    '.ant-drawer-footer': {
+      backgroundColor: '#eef2ff',
+      borderTop: '1px solid #c7d2fe',
+      padding: '14px 24px',
+    },
+    '.htd-drawer-resize-handle': {
+      backgroundColor: '#6366f1',
+    },
+    '.htd-drawer-header-actions .ant-btn': {
+      color: '#6366f1',
+      '&:hover': {
+        backgroundColor: 'rgba(99, 102, 241, 0.12)',
+        color: '#4338ca',
+      },
+    },
+    '&.htd-minimize-dock': {
+      backgroundColor: 'rgba(255, 255, 255, 0.85)',
+      backdropFilter: 'blur(16px)',
+      border: '1px solid #c7d2fe',
+      borderRadius: 10,
+      boxShadow: '0 8px 24px rgba(99, 102, 241, 0.2)',
+      '.htd-minimize-title': {
+        color: '#4338ca',
+        fontWeight: 500,
+      },
+      '.htd-minimize-actions .ant-btn': {
+        color: '#6366f1',
+        '&:hover': {
+          backgroundColor: 'rgba(99, 102, 241, 0.12)',
+          color: '#4338ca',
+        },
+      },
+    },
+  },
+  '.warm-card-drawer': {
+    '.ant-drawer-mask': {
+      backdropFilter: 'blur(4px)',
+      backgroundColor: 'rgba(68, 64, 60, 0.25)',
+    },
+    '.ant-drawer-content': {
+      backgroundColor: '#fff',
+      borderRadius: '20px 0 0 20px',
+      borderLeft: '1px solid #fde68a',
+      boxShadow: '-10px 0 35px rgba(217, 119, 6, 0.12)',
+    },
+    '.ant-drawer-header': {
+      background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+      borderBottom: '1px solid #fde68a',
+      padding: '16px 24px',
+      '.ant-drawer-title': {
+        color: '#b45309',
+      },
+    },
+    '.ant-drawer-body': {
+      backgroundColor: '#fffdfa',
+      padding: 24,
+    },
+    '.ant-drawer-footer': {
+      backgroundColor: '#fffbeb',
+      borderTop: '1px solid #fde68a',
+      padding: '14px 24px',
+    },
+    '.htd-drawer-resize-handle': {
+      backgroundColor: '#f59e0b',
+    },
+    '.htd-drawer-header-actions .ant-btn': {
+      color: '#d97706',
+      '&:hover': {
+        backgroundColor: 'rgba(245, 158, 11, 0.15)',
+        color: '#b45309',
+      },
+    },
+    '&.htd-minimize-dock': {
+      backgroundColor: '#fff',
+      border: '1px solid #fde68a',
+      borderRadius: 10,
+      boxShadow: '0 8px 24px rgba(217, 119, 6, 0.15)',
+      '.htd-minimize-title': {
+        color: '#b45309',
+        fontWeight: 500,
+      },
+      '.htd-minimize-actions .ant-btn': {
+        color: '#d97706',
+        '&:hover': {
+          backgroundColor: 'rgba(245, 158, 11, 0.15)',
+          color: '#b45309',
+        },
+      },
+    },
+  },
+});
 
 export default () => {
   const { t } = useDemoIntl(messages);
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<ThemeKey>('tech-dark-drawer');
+  const { theme: tokenTheme, token, hashId } = antdTheme.useToken();
+  const wrapSSR = useStyleRegister(
+    { theme: tokenTheme as any, token, hashId, path: ['demo-drawer-themes'] },
+    () => [genDemoThemeStyle()],
+  );
 
   const isDark = theme === 'tech-dark-drawer';
 
-  return (
+  return wrapSSR(
     <Space direction="vertical" size="middle" style={{ width: '100%' }}>
       <Flex gap={12} align="center" wrap="wrap">
         <Radio.Group
@@ -206,6 +395,6 @@ export default () => {
           </div>
         </Space>
       </Drawer>
-    </Space>
+    </Space>,
   );
 };

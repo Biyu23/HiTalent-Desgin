@@ -27,6 +27,7 @@ export interface ModalHeaderProps {
 const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
   const {
     prefixCls,
+    hashId,
     isMaximized,
     draggable,
     minimizable,
@@ -79,15 +80,15 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
 
   return (
     <div
-      className={clsx(e('header'), className, {
+      className={clsx(e('header'), hashId, className, {
         [em('header', 'draggable')]: draggable,
       })}
       onDoubleClick={maximizable ? onToggleMaximize : undefined}
     >
-      <div className={e('title')}>{title}</div>
+      <div className={clsx(e('title'), hashId)}>{title}</div>
       {actions.length > 0 && (
         <Flex
-          className={e('actions')}
+          className={clsx(e('actions'), hashId)}
           gap={8}
           align="center"
           onMouseDown={(e) => e.stopPropagation()}

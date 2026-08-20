@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { DrawerPlacement, DrawerResizableConfig } from '../type';
 import { getDrawerAxis } from '../utils/placement';
 import {
   clampSize,
+  DEFAULT_DRAWER_SIZE,
   DEFAULT_MIN_DRAWER_SIZE,
   getAxisSize,
   getPointerPosition,
@@ -16,6 +17,8 @@ interface UseDrawerResizeOptions {
   maxSize?: number;
   active: boolean;
   config: DrawerResizableConfig;
+  panelRef?: React.RefObject<HTMLDivElement | null>;
+  currentSize?: number | string;
   onSizeChange: (size: number) => void;
 }
 
@@ -40,6 +43,8 @@ export const useDrawerResize = ({
   maxSize,
   active,
   config,
+  panelRef,
+  currentSize,
   onSizeChange,
 }: UseDrawerResizeOptions) => {
   const [isResizing, setIsResizing] = useState(false);
@@ -49,6 +54,8 @@ export const useDrawerResize = ({
     minSize,
     maxSize,
     config,
+    panelRef,
+    currentSize,
     onSizeChange,
   });
   optionsRef.current = {
@@ -56,6 +63,8 @@ export const useDrawerResize = ({
     minSize,
     maxSize,
     config,
+    panelRef,
+    currentSize,
     onSizeChange,
   };
 
@@ -100,43 +109,52 @@ export const useDrawerResize = ({
   const handlePointerDown = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
       if (!active || resizeStateRef.current) return;
-
       const handleEl = event.currentTarget;
-      const contentWrapper =
-        handleEl.closest<HTMLElement>('[class*="-drawer-content-wrapper"]') ??
-        handleEl.closest<HTMLElement>('.ant-drawer-content-wrapper') ??
-        handleEl.parentElement;
-      if (!contentWrapper) return;
-
+      //当前面板的打开方式
       const currentPlacement = optionsRef.current.placement;
       const axis = getDrawerAxis(currentPlacement);
-      const wrapperSize = getAxisSize(
-        contentWrapper.getBoundingClientRect(),
-        axis,
-      );
 
-      // 测量抽屉根容器或视口容器尺寸
-      const drawerRoot =
-        handleEl.closest<HTMLElement>('[class*="-drawer"]') ??
-        handleEl.closest<HTMLElement>('.ant-drawer');
-      const rootRect = drawerRoot?.getBoundingClientRect();
-      const parentRect = drawerRoot?.parentElement?.getBoundingClientRect();
+      const contentWrapper = optionsRef.current.panelRef?.current;
 
-      const measuredContainerSize =
-        rootRect && rootRect.width > 0 && rootRect.height > 0
-          ? getAxisSize(rootRect, axis)
-          : parentRect && parentRect.width > 0 && parentRect.height > 0
-          ? getAxisSize(parentRect, axis)
+      const rawWrapperRect = contentWrapper?.getBoundingClientRect();
+      const rawWrapperSize = rawWrapperRect
+        ? getAxisSize(rawWrapperRect, axis)
+        : undefined;
+
+      const numericCurrentSize =
+        typeof optionsRef.current.currentSize === 'number'
+          ? optionsRef.current.currentSize
           : undefined;
 
+      const wrapperSize =
+        rawWrapperSize && rawWrapperSize > 20
+          ? rawWrapperSize
+          : numericCurrentSize ?? DEFAULT_DRAWER_SIZE;
+      // 测量抽屉可用的最大容器尺寸。
+      // contentWrapper 是 .ant-drawer-content，其 offsetParent 是
+      // .ant-drawer-content-wrapper（抽屉面板自身，宽度即当前抽屉宽度），
+      // 再往上一层才是 .ant-drawer 根节点——全屏抽屉时为视口，
+      // 局部挂载(getContainer={false})时为宿主容器。
+      const wrapperEl = contentWrapper?.offsetParent as HTMLElement | null;
+      const containerEl =
+        (wrapperEl?.offsetParent as HTMLElement | null) ??
+        wrapperEl?.parentElement ??
+        document.documentElement;
+
+      const containerRect = containerEl?.getBoundingClientRect();
       const fallbackContainerSize =
         axis === 'horizontal'
-          ? document.documentElement.clientWidth
-          : document.documentElement.clientHeight;
-      const containerSize =
-        toValidNumber(measuredContainerSize) || fallbackContainerSize;
+          ? window.innerWidth || document.documentElement.clientWidth
+          : window.innerHeight || document.documentElement.clientHeight;
 
-      if (toValidNumber(wrapperSize) === undefined || !containerSize) return;
+      const measuredContainerSize = containerRect
+        ? getAxisSize(containerRect, axis)
+        : undefined;
+
+      const containerSize =
+        measuredContainerSize && measuredContainerSize > 50
+          ? measuredContainerSize
+          : fallbackContainerSize;
 
       event.preventDefault();
       event.stopPropagation();
@@ -146,12 +164,25 @@ export const useDrawerResize = ({
         rawMinSize !== undefined && rawMinSize > 0
           ? rawMinSize
           : DEFAULT_MIN_DRAWER_SIZE;
-      const configuredMaxSize = toValidNumber(optionsRef.current.maxSize);
-      const effectiveMaxSize = Math.min(
-        configuredMaxSize ?? containerSize,
-        containerSize,
+
+      const rawMaxSize = toValidNumber(optionsRef.current.maxSize);
+      const configuredMaxSize =
+        rawMaxSize !== undefined && rawMaxSize > 0 ? rawMaxSize : containerSize;
+
+      const effectiveMinSize = Math.max(
+        10,
+        Math.min(configuredMinSize, containerSize),
       );
-      const effectiveMinSize = Math.min(configuredMinSize, effectiveMaxSize);
+      const effectiveMaxSize = Math.max(
+        effectiveMinSize,
+        Math.min(configuredMaxSize, containerSize),
+      );
+      const startSize = clampSize(
+        wrapperSize,
+        effectiveMinSize,
+        effectiveMaxSize,
+      );
+
       const handlePointerUp = (pointerEvent: PointerEvent) => {
         if (pointerEvent.pointerId === event.pointerId) finishResize();
       };
@@ -167,10 +198,10 @@ export const useDrawerResize = ({
         handleEl,
         pointerId: event.pointerId,
         startPosition: getPointerPosition(event.nativeEvent, axis),
-        startSize: wrapperSize,
+        startSize,
         minSize: effectiveMinSize,
         maxSize: effectiveMaxSize,
-        lastSize: wrapperSize,
+        lastSize: startSize,
         bodyUserSelect: document.body.style.userSelect,
         bodyCursor: document.body.style.cursor,
         cleanupListeners,

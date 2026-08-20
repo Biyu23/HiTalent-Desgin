@@ -4,7 +4,10 @@ import clsx from 'clsx';
 import React, { memo, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import ReactDraggable from 'react-draggable';
-import { useNamespace } from '../../../configProvider/usePrefixCls';
+import {
+  useNamespace,
+  usePrefixCls,
+} from '../../../configProvider/usePrefixCls';
 import useDragBounds from '../../../hooks/useDragBounds';
 import {
   decrementRefCount,
@@ -13,24 +16,16 @@ import {
   getMinimizeContainerId,
   incrementRefCount,
 } from './dockContainer';
-import './index.less';
+import { useStyle } from './style';
 import type { MinimizedDockProps } from './type';
 
 const Draggable = ReactDraggable as any;
 
 const MinimizedDockInner = memo<MinimizedDockProps>(
-  ({
-    title,
-    position,
-    dockPrefixCls,
-    sourcePrefixCls,
-    className,
-    style,
-    locale,
-    onRestore,
-    onClose,
-  }) => {
+  ({ title, position, className, style, locale, onRestore, onClose }) => {
+    const dockPrefixCls = usePrefixCls('minimize');
     const { e } = useNamespace('minimize', dockPrefixCls);
+    const { wrapSSR, hashId } = useStyle(dockPrefixCls);
     const { dragRef, bounds, onStart } = useDragBounds();
     const [scrollWrapperEl, setScrollWrapperEl] = useState<HTMLElement | null>(
       () => getExistingScrollWrapper(position, dockPrefixCls),
@@ -38,7 +33,7 @@ const MinimizedDockInner = memo<MinimizedDockProps>(
 
     useLayoutEffect(() => {
       const containerId = getMinimizeContainerId(position, dockPrefixCls);
-      const element = ensureScrollWrapper(position, dockPrefixCls);
+      const element = ensureScrollWrapper(position, dockPrefixCls, hashId);
       setScrollWrapperEl(element);
       incrementRefCount(containerId);
 
@@ -47,72 +42,53 @@ const MinimizedDockInner = memo<MinimizedDockProps>(
           document.getElementById(containerId)?.remove();
         }
       };
-    }, [dockPrefixCls, position]);
+    }, [dockPrefixCls, hashId, position]);
 
     if (!scrollWrapperEl) return null;
 
-    return createPortal(
-      <Draggable
-        key={`${dockPrefixCls}-${position}`}
-        nodeRef={dragRef}
-        bounds={bounds}
-        onStart={onStart}
-        handle={`.${e('header')}`}
-      >
-        <div
-          ref={dragRef}
-          className={clsx(
-            e('dock'),
-            sourcePrefixCls && `${sourcePrefixCls}-minimized-dock`,
-            className,
-          )}
-          style={style}
-          role="group"
-          aria-label={locale.minimizedDockLabel}
+    return wrapSSR(
+      createPortal(
+        <Draggable
+          key={`${dockPrefixCls}-${position}`}
+          nodeRef={dragRef}
+          bounds={bounds}
+          onStart={onStart}
+          handle={`.${e('header')}`}
         >
           <div
-            className={clsx(
-              e('header'),
-              sourcePrefixCls && `${sourcePrefixCls}-minimized-header`,
-            )}
+            ref={dragRef}
+            className={clsx(e('dock'), hashId, className)}
+            style={style}
             role="group"
-            aria-label={locale.minimizedDockDragHandle}
+            aria-label={locale.minimizedDockLabel}
           >
             <div
-              className={clsx(
-                e('title'),
-                sourcePrefixCls && `${sourcePrefixCls}-title`,
-              )}
+              className={e('header')}
+              role="group"
+              aria-label={locale.minimizedDockDragHandle}
             >
-              {title}
+              <div className={e('title')}>{title}</div>
+              <Flex gap={8} align="center" className={e('actions')}>
+                <Button
+                  size="small"
+                  type="text"
+                  onClick={() => onRestore()}
+                  icon={<ExpandOutlined />}
+                  aria-label={locale.restore}
+                />
+                <Button
+                  size="small"
+                  type="text"
+                  onClick={() => onClose()}
+                  icon={<CloseOutlined />}
+                  aria-label={locale.close}
+                />
+              </Flex>
             </div>
-            <Flex
-              gap={8}
-              align="center"
-              className={clsx(
-                e('actions'),
-                sourcePrefixCls && `${sourcePrefixCls}-minimized-actions`,
-              )}
-            >
-              <Button
-                size="small"
-                type="text"
-                onClick={() => onRestore()}
-                icon={<ExpandOutlined />}
-                aria-label={locale.restore}
-              />
-              <Button
-                size="small"
-                type="text"
-                onClick={() => onClose()}
-                icon={<CloseOutlined />}
-                aria-label={locale.close}
-              />
-            </Flex>
           </div>
-        </div>
-      </Draggable>,
-      scrollWrapperEl,
+        </Draggable>,
+        scrollWrapperEl,
+      ),
     );
   },
 );

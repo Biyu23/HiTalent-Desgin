@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import React, { memo, useContext } from 'react';
 import { useNamespace } from '../../../configProvider/usePrefixCls';
 import { useColumnResize } from '../hooks/useColumnResize';
@@ -36,6 +37,7 @@ function EnhancedHeaderCell<RecordType = unknown>(
 
   const { e } = useNamespace('table');
   const context = useContext(TableContext);
+  const { hashId } = context;
   const currentControlledWidth =
     context.columnWidths[columnId] ??
     (typeof column.width === 'number' && Number.isFinite(column.width)
@@ -53,8 +55,8 @@ function EnhancedHeaderCell<RecordType = unknown>(
   const showResizeHandle = enableColumnResize && column.resizable !== false;
 
   const cellContent = (
-    <div className={e('header-cell')}>
-      <span className={e('header-cell-title')}>{children}</span>
+    <div className={clsx(e('header-cell'), hashId)}>
+      <span className={clsx(e('header-cell-title'), hashId)}>{children}</span>
     </div>
   );
 
@@ -64,15 +66,18 @@ function EnhancedHeaderCell<RecordType = unknown>(
     cellContent
   );
 
-  const mergedClassName = [className, showResizeHandle ? e('resizable-th') : '']
-    .filter(Boolean)
-    .join(' ');
+  const mergedClassName = clsx(
+    className,
+    hashId,
+    showResizeHandle ? e('resizable-th') : '',
+  );
 
   return (
     <CellComponent className={mergedClassName} {...restThProps}>
       {wrappedContent}
       {showResizeHandle && (
         <ResizeHandle
+          hashId={hashId}
           isResizing={isResizing}
           onPointerDown={handlePointerDown}
         />

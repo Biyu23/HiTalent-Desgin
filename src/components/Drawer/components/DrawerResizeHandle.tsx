@@ -6,6 +6,7 @@ import type { DrawerPlacement } from '../type';
 
 interface DrawerResizeHandleProps {
   prefixCls: string;
+  hashId?: string;
   placement: DrawerPlacement;
   className?: string;
   style?: React.CSSProperties;
@@ -14,7 +15,15 @@ interface DrawerResizeHandleProps {
 }
 
 const DrawerResizeHandle = memo<DrawerResizeHandleProps>(
-  ({ prefixCls, placement, className, style, resizing, onPointerDown }) => {
+  ({
+    prefixCls,
+    hashId,
+    placement,
+    className,
+    style,
+    resizing,
+    onPointerDown,
+  }) => {
     const { e, em } = useNamespace('drawer', prefixCls);
     const drawerLocale = useLocale('Drawer');
     const horizontal = placement === 'left' || placement === 'right';
@@ -30,6 +39,7 @@ const DrawerResizeHandle = memo<DrawerResizeHandleProps>(
         className={clsx(
           e('resize-handle'),
           em('resize-handle', placement),
+          hashId,
           { [em('resize-handle', 'resizing')]: resizing },
           className,
         )}

@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import React, { memo, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { DraggableData, DraggableEvent } from 'react-draggable';
@@ -16,6 +17,7 @@ const Draggable = ReactDraggable as any;
 const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
   const {
     prefixCls,
+    hashId,
     draggable,
     resizable,
     open,
@@ -96,7 +98,7 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
     >
       <div
         ref={dragRef}
-        className={e('window')}
+        className={clsx(e('window'), hashId)}
         data-dragging={draggable && !isMaximized ? 'true' : undefined}
       >
         {children}
@@ -104,6 +106,7 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
           ? createPortal(
               <ModalResizeHandle
                 prefixCls={prefixCls}
+                hashId={hashId}
                 onPointerDown={handlePointerDown}
               />,
               modalContent,

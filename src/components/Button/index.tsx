@@ -61,7 +61,7 @@ const Button = React.forwardRef<ButtonRef, ButtonProps>((props, ref) => {
     const isBusy = Boolean(innerLoading || propsLoading);
     if (isBusy || disabled) return;
 
-    if (typeof throttle === 'number' && throttle > 0) {
+    if (Number.isFinite(throttle) && throttle > 0) {
       if (isThrottling.current) return;
       isThrottling.current = true;
       throttleTimerRef.current = setTimeout(() => {
@@ -96,8 +96,6 @@ const Button = React.forwardRef<ButtonRef, ButtonProps>((props, ref) => {
     </Tooltip>
   );
 });
-
-Button.displayName = 'Button';
 
 const ExportedButton = memo(Button) as CompoundedButton;
 ExportedButton.Group = AntdButton.Group;

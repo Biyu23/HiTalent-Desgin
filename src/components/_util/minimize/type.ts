@@ -22,8 +22,6 @@ export interface MinimizedDockProps {
   minimized: boolean;
   title?: React.ReactNode;
   position: MinimizePosition;
-  dockPrefixCls: string;
-  sourcePrefixCls?: string;
   className?: string;
   style?: React.CSSProperties;
   locale: MinimizeLocale;

@@ -1,10 +1,12 @@
 import type { CheckboxChangeEvent } from 'antd';
 import { Checkbox } from 'antd';
+import clsx from 'clsx';
 import React, { memo } from 'react';
 import { useNamespace } from '../../../configProvider/usePrefixCls';
 
 interface SelectAllCheckboxProps {
   prefixCls: string;
+  hashId?: string;
   checked: boolean;
   indeterminate: boolean;
   label: string;
@@ -16,6 +18,7 @@ interface SelectAllCheckboxProps {
 const SelectAllCheckbox = memo<SelectAllCheckboxProps>(
   ({
     prefixCls,
+    hashId,
     checked,
     indeterminate,
     label,
@@ -24,7 +27,7 @@ const SelectAllCheckbox = memo<SelectAllCheckboxProps>(
   }) => {
     const { e } = useNamespace('popover-select', prefixCls);
     return (
-      <div className={e('select-all')}>
+      <div className={clsx(e('select-all'), hashId)}>
         <Checkbox
           checked={checked}
           indeterminate={indeterminate}
