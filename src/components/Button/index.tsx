@@ -1,15 +1,11 @@
 import { Button as AntdButton, Tooltip } from 'antd';
-import clsx from 'clsx';
 import React, { memo, useEffect, useRef, useState } from 'react';
-import { usePrefixCls } from '../../configProvider';
 import { isThenable } from '../../util';
 import type { ButtonProps, ButtonRef, CompoundedButton } from './type';
 import { parseTooltipConfig } from './utils/tooltip';
 
 const Button = React.forwardRef<ButtonRef, ButtonProps>((props, ref) => {
   const {
-    prefixCls: customPrefixCls,
-    className,
     autoLoading = true,
     throttle = 0,
     onClick,
@@ -20,8 +16,6 @@ const Button = React.forwardRef<ButtonRef, ButtonProps>((props, ref) => {
     block,
     ...restProps
   } = props;
-
-  const prefixCls = usePrefixCls('btn', customPrefixCls);
   const [innerLoading, setInnerLoading] = useState(false);
   const isUnmounted = useRef(false);
   const isThrottling = useRef(false);
@@ -75,7 +69,6 @@ const Button = React.forwardRef<ButtonRef, ButtonProps>((props, ref) => {
   const buttonElement = (
     <AntdButton
       ref={ref}
-      className={clsx(prefixCls, className)}
       block={block}
       disabled={disabled}
       loading={combinedLoading}
