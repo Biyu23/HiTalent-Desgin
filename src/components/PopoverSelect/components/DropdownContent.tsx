@@ -12,8 +12,6 @@ import SelectAllCheckbox from './SelectAllCheckbox';
 interface DropdownContentProps<ValueType extends RawValueType = RawValueType> {
   /** CSS 前缀 */
   prefixCls: string;
-  /** CSS-in-JS hash id，需附加到所有子元素 className 上 */
-  hashId?: string;
   /** 国际化文案 */
   componentLocale: Record<string, any>;
   /** 是否有原始选项 */
@@ -59,7 +57,6 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
 ) {
   const {
     prefixCls,
-    hashId,
     componentLocale,
     hasOptions,
     hasDisplayOptions,
@@ -106,13 +103,12 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
           isChecked={isChecked}
           mode={mode}
           prefixCls={prefixCls}
-          hashId={hashId}
           optionRender={optionRender}
           onToggle={onItemToggle}
         />
       );
     },
-    [targetValueSet, mode, prefixCls, hashId, optionRender, onItemToggle],
+    [targetValueSet, mode, prefixCls, optionRender, onItemToggle],
   );
 
   const renderMenu = useCallback(() => {
@@ -123,14 +119,14 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
     );
     return (
       <div
-        className={clsx(e('menu'), hashId, {
+        className={clsx(e('menu'), {
           [e('menu-scroll')]: !virtual,
         })}
         style={!virtual ? { maxHeight: listHeight } : undefined}
       >
         {virtual ? (
           <VirtualList
-            className={clsx(e('menu-virtual-list'), hashId)}
+            className={e('menu-virtual-list')}
             data={displayOptions}
             height={actualHeight}
             itemHeight={listItemHeight}
@@ -151,15 +147,14 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
     listItemHeight,
     listHeight,
     e,
-    hashId,
     virtual,
     renderItemInner,
   ]);
 
   if (!hasOptions) {
     return (
-      <div className={clsx(e('dropdown'), hashId)}>
-        <div className={clsx(e('empty'), hashId)}>
+      <div className={e('dropdown')}>
+        <div className={e('empty')}>
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={componentLocale.noData}
@@ -175,11 +170,10 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
     : menuNode;
 
   return (
-    <div className={clsx(e('dropdown'), hashId)}>
+    <div className={e('dropdown')}>
       {showSearch && (
         <SearchInput
           prefixCls={prefixCls}
-          hashId={hashId}
           placeholder={componentLocale.searchPlaceholder}
           value={searchValue}
           onChange={onSearchChange}
@@ -189,7 +183,6 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
       {mode === 'multiple' && showSelectAll && hasDisplayOptions && (
         <SelectAllCheckbox
           prefixCls={prefixCls}
-          hashId={hashId}
           checked={isAllSelected}
           indeterminate={isPartiallySelected}
           disabled={isAllDisabled}
@@ -201,7 +194,7 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
       {hasDisplayOptions ? (
         finalMenuNode
       ) : (
-        <div className={clsx(e('empty'), hashId)}>
+        <div className={e('empty')}>
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={componentLocale.noMatch}
@@ -209,11 +202,7 @@ function DropdownContentInner<ValueType extends RawValueType = RawValueType>(
         </div>
       )}
 
-      <FooterActions
-        prefixCls={prefixCls}
-        hashId={hashId}
-        actions={footerActions}
-      />
+      <FooterActions prefixCls={prefixCls} actions={footerActions} />
     </div>
   );
 }

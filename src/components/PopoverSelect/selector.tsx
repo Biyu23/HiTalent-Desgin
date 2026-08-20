@@ -8,13 +8,12 @@ import { withNativeProps } from '../../util';
 import { useStyle } from './style';
 import type { SelectorProps } from './type';
 
-const Selector: React.FC<SelectorProps> = (props) => {
+const Selector = React.forwardRef<HTMLElement, SelectorProps>((props, ref) => {
   const {
     prefixCls: customPrefixCls,
     content,
     autoAdjustOverflow = true,
     rootClassName,
-    openClassName,
     afterOpenChange,
     placement = 'bottomLeft',
     getPopupContainer,
@@ -80,40 +79,42 @@ const Selector: React.FC<SelectorProps> = (props) => {
     );
   };
 
-  return wrapSSR(
-    withNativeProps(
-      props,
-      <Popover
-        trigger="click"
-        placement={placement}
-        getPopupContainer={getPopupContainer}
-        destroyTooltipOnHide={destroyTooltipOnHide}
-        autoAdjustOverflow={autoAdjustOverflow}
-        rootClassName={clsx(e('selector'), hashId, rootClassName)}
-        openClassName={openClassName}
-        afterOpenChange={afterOpenChange}
-        open={disabled ? false : open}
-        content={
-          disabled ? null : typeof content === 'function' ? content() : content
-        }
-        onOpenChange={disabled ? undefined : onOpenChange}
-      >
-        <Button
-          type="text"
-          disabled={disabled}
-          className={clsx(e('selector-btn'), hashId, {
-            [em('selector-btn', 'active')]: hasValue,
-            [em('selector-btn', 'open')]: open,
-            [em('selector-btn', 'empty')]: !hasValue,
-            [em('selector-btn', 'disabled')]: disabled,
-          })}
-        >
-          {renderChildren()}
-          {renderActions()}
-        </Button>
-      </Popover>,
-    ),
+  const triggerButton = withNativeProps(
+    props,
+    <Button
+      ref={ref as any}
+      type="text"
+      disabled={disabled}
+      className={clsx(e('selector-btn'), hashId, {
+        [em('selector-btn', 'active')]: hasValue,
+        [em('selector-btn', 'open')]: open,
+        [em('selector-btn', 'empty')]: !hasValue,
+        [em('selector-btn', 'disabled')]: disabled,
+      })}
+    >
+      {renderChildren()}
+      {renderActions()}
+    </Button>,
   );
-};
+
+  return wrapSSR(
+    <Popover
+      trigger="click"
+      placement={placement}
+      getPopupContainer={getPopupContainer}
+      destroyTooltipOnHide={destroyTooltipOnHide}
+      autoAdjustOverflow={autoAdjustOverflow}
+      rootClassName={clsx(e('selector'), hashId, rootClassName)}
+      afterOpenChange={afterOpenChange}
+      open={disabled ? false : open}
+      content={
+        disabled ? null : typeof content === 'function' ? content() : content
+      }
+      onOpenChange={disabled ? undefined : onOpenChange}
+    >
+      {triggerButton}
+    </Popover>,
+  );
+});
 
 export default memo(Selector);

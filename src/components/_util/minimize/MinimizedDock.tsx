@@ -4,10 +4,7 @@ import clsx from 'clsx';
 import React, { memo, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import ReactDraggable from 'react-draggable';
-import {
-  useNamespace,
-  usePrefixCls,
-} from '../../../configProvider/usePrefixCls';
+import { useNamespace } from '../../../configProvider/usePrefixCls';
 import useDragBounds from '../../../hooks/useDragBounds';
 import {
   decrementRefCount,
@@ -23,8 +20,7 @@ const Draggable = ReactDraggable as any;
 
 const MinimizedDockInner = memo<MinimizedDockProps>(
   ({ title, position, className, style, locale, onRestore, onClose }) => {
-    const dockPrefixCls = usePrefixCls('minimize');
-    const { e } = useNamespace('minimize', dockPrefixCls);
+    const { prefixCls: dockPrefixCls, e } = useNamespace('minimize');
     const { wrapSSR, hashId } = useStyle(dockPrefixCls);
     const { dragRef, bounds, onStart } = useDragBounds();
     const [scrollWrapperEl, setScrollWrapperEl] = useState<HTMLElement | null>(

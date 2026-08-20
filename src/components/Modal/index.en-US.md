@@ -6,11 +6,15 @@ toc: content
 
 # Modal
 
-Enhances Ant Design Modal with dragging, double-click maximization, bottom-right resizing, minimization to global Dock (preserving input state), imperative Ref controls, and batch destruction.
+Enhances Ant Design Modal with dragging (`draggable`), double-click maximization (`maximizable`), free resizing (`resizable`), minimization to global Dock (`minimizable`), and controlled states.
 
 ## Demos
 
-<code src="./demo/basic.tsx" title="Enhanced Window Capabilities" description="Showcases dragging, double-click title bar to maximize, bottom-right resizing, minimization to Dock (preserving form state), imperative Ref controls, and destroyAll."></code>
+<code src="./demo/draggable.tsx">Draggable</code>
+<code src="./demo/resizable.tsx">Resizable</code>
+<code src="./demo/maximizable.tsx">Maximizable</code>
+<code src="./demo/minimizable.tsx">Minimizable & Dock Position</code>
+<code src="./demo/controlled.tsx">Controlled State & Ref</code>
 
 ## API
 
@@ -54,9 +58,3 @@ Imperative methods exposed via `ref`:
 | `minimize`      | Minimizes the dialog into the Dock              | `() => void` |
 | `resetPosition` | Resets window position back to center           | `() => void` |
 | `resetSize`     | Resets manually resized dimensions              | `() => void` |
-
-### ModalStaticMethods
-
-| Method       | Description                                                  | Type         |
-| ------------ | ------------------------------------------------------------ | ------------ |
-| `destroyAll` | Destroys all open Modal instances (including minimized ones) | `() => void` |

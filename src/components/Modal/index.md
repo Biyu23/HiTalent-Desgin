@@ -1,16 +1,20 @@
 ---
 category: Components
-title: Modal 高级弹窗
+title: Modal 增强弹窗
 toc: content
 ---
 
-# Modal 高级弹窗
+# Modal 增强弹窗
 
-在 Ant Design Modal 基础上增加拖拽移动、双击最大化、右下角自由缩放、最小化至全局 Dock 悬浮窗（保留输入状态）、命令式 Ref 操作与批量销毁能力。
+在 Ant Design Modal 基础上增强了拖拽移动（draggable）、双击最大化（maximizable）、自由缩放（resizable）、最小化至全局 Dock（minimizable）及受控状态控制。
 
 ## 代码演示
 
-<code src="./demo/basic.tsx" title="窗口增强功能演示" description="综合演示拖拽移动、双击标题栏最大化、右下角缩放、最小化至全局 Dock 悬浮窗（保留表单输入）、命令式 Ref 控制与 destroyAll 销毁。"></code>
+<code src="./demo/draggable.tsx">拖拽移动</code>
+<code src="./demo/resizable.tsx">自由缩放</code>
+<code src="./demo/maximizable.tsx">最大化</code>
+<code src="./demo/minimizable.tsx">最小化与停靠</code>
+<code src="./demo/controlled.tsx">受控与 Ref 控制</code>
 
 ## API
 
@@ -54,9 +58,3 @@ toc: content
 | `minimize`      | 最小化弹窗至 Dock 悬浮窗 | `() => void` |
 | `resetPosition` | 重置拖拽位置居中         | `() => void` |
 | `resetSize`     | 重置手动调整过的宽高尺寸 | `() => void` |
-
-### ModalStaticMethods (静态方法)
-
-| 方法         | 说明                                              | 类型         |
-| ------------ | ------------------------------------------------- | ------------ |
-| `destroyAll` | 一键销毁全部已打开的 Modal 实例（包括最小化状态） | `() => void` |

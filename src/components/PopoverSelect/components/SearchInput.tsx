@@ -1,12 +1,10 @@
 import { SearchOutlined } from '@ant-design/icons';
 import { Input } from 'antd';
-import clsx from 'clsx';
 import React, { memo } from 'react';
 import { useNamespace } from '../../../configProvider/usePrefixCls';
 
 interface SearchInputProps {
   prefixCls: string;
-  hashId?: string;
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
@@ -14,10 +12,10 @@ interface SearchInputProps {
 
 /** 搜索输入框 */
 const SearchInput = memo<SearchInputProps>(
-  ({ prefixCls, hashId, placeholder, value, onChange }) => {
+  ({ prefixCls, placeholder, value, onChange }) => {
     const { e } = useNamespace('popover-select', prefixCls);
     return (
-      <div className={clsx(e('search'), hashId)}>
+      <div className={e('search')}>
         <Input
           prefix={<SearchOutlined />}
           placeholder={placeholder}

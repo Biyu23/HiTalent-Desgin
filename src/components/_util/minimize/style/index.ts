@@ -1,8 +1,7 @@
-import { CSSObject, Keyframes, useStyleRegister } from '@ant-design/cssinjs';
-import { theme } from 'antd';
+import type { CSSObject } from '@ant-design/cssinjs';
+import { Keyframes } from '@ant-design/cssinjs';
 import type { GlobalToken } from 'antd/es/theme/interface';
-
-const { useToken } = theme;
+import { useComponentStyle } from '../../../../styles';
 
 const minimizeDockIn = new Keyframes('minimizeDockIn', {
   from: {
@@ -173,19 +172,5 @@ export const genMinimizeStyle = (
 };
 
 export function useStyle(prefixCls: string) {
-  const { theme, token, hashId } = useToken();
-  const wrapSSR = useStyleRegister(
-    {
-      theme: theme as any,
-      token,
-      hashId,
-      path: ['@hi-talent/design', prefixCls],
-    },
-    () => [genMinimizeStyle(token, prefixCls)],
-  );
-  return {
-    wrapSSR,
-    hashId,
-    token,
-  };
+  return useComponentStyle('MinimizedDock', prefixCls, genMinimizeStyle);
 }

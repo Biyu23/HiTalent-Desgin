@@ -12,24 +12,12 @@ import { useNamespace } from '../../configProvider/usePrefixCls';
 import MinimizedDock from '../_util/minimize/MinimizedDock';
 import ModalHeader from './components/ModalHeader';
 import ModalWindowWrapper from './components/ModalWindowWrapper';
-import { useDestroyRegister } from './hooks/useDestroyRegister';
 import { useModalState } from './hooks/useModalState';
 import { useModalWindowState } from './hooks/useModalWindowState';
 import ModalContext, { ModalContextValue } from './ModalContext';
 import { useStyle } from './style';
 import type { ModalProps, ModalRef, ModalStaticMethods } from './type';
-import destroyFns from './utils/destroyFns';
 
-/**
- * Modal 组件
- *
- * 在 Ant Design Modal 基础上增强：
- * - 拖拽移动（draggable）
- * - 最小化至全局角落悬浮窗（minimizable）
- * - 最大化全屏（maximizable）
- * - 命令式 ref 控制（ModalRef）
- * - 静态方法 destroyAll 一键销毁所有实例
- */
 const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   const {
     prefixCls: customPrefixCls,
@@ -116,9 +104,6 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       handleReset,
     ],
   );
-
-  // 注册销毁回调，供 destroyAll 使用
-  useDestroyRegister(!!open, handleClose);
 
   useImperativeHandle(
     ref,
@@ -276,17 +261,19 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   );
 });
 
-/**
- * 组装静态方法到 memo 包装后的组件上。
- * destroyAll() 依次调用每个活跃实例的 handleClose。
- */
 const ModalWithStatics: React.MemoExoticComponent<
   React.ForwardRefExoticComponent<ModalProps & React.RefAttributes<ModalRef>>
 > &
   ModalStaticMethods = memo(Modal) as any;
-ModalWithStatics.destroyAll = () => {
-  const fns = destroyFns.splice(0);
-  fns.forEach((fn) => fn());
-};
+
+ModalWithStatics.info = AntdModal.info;
+ModalWithStatics.success = AntdModal.success;
+ModalWithStatics.error = AntdModal.error;
+ModalWithStatics.warning = AntdModal.warning;
+ModalWithStatics.warn = AntdModal.warn;
+ModalWithStatics.confirm = AntdModal.confirm;
+ModalWithStatics.useModal = AntdModal.useModal;
+ModalWithStatics.destroyAll = AntdModal.destroyAll;
+ModalWithStatics.config = AntdModal.config;
 
 export default ModalWithStatics;

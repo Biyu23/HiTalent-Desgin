@@ -1,8 +1,6 @@
-import { CSSObject, useStyleRegister } from '@ant-design/cssinjs';
-import { theme } from 'antd';
+import type { CSSObject } from '@ant-design/cssinjs';
 import type { GlobalToken } from 'antd/es/theme/interface';
-
-const { useToken } = theme;
+import { useComponentStyle } from '../../../styles';
 
 export const genResponsiveButtonGroupStyle = (
   token: GlobalToken,
@@ -83,14 +81,9 @@ export const genResponsiveButtonGroupStyle = (
 };
 
 export function useStyle(prefixCls: string) {
-  const { theme, token, hashId } = useToken();
-  const wrapSSR = useStyleRegister(
-    { theme, token, hashId, path: ['@hi-talent/design', prefixCls] },
-    () => [genResponsiveButtonGroupStyle(token, prefixCls)],
+  return useComponentStyle(
+    'ResponsiveButtonGroup',
+    prefixCls,
+    genResponsiveButtonGroupStyle,
   );
-  return {
-    wrapSSR,
-    hashId,
-    token,
-  };
 }

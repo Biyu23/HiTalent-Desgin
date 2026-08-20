@@ -9,7 +9,6 @@ interface ListItemProps<ValueType extends RawValueType = RawValueType> {
   isChecked: boolean;
   mode: 'single' | 'multiple';
   prefixCls: string;
-  hashId?: string;
   optionRender?: (item: any) => React.ReactNode;
   onToggle: (value: ValueType) => void;
 }
@@ -22,8 +21,7 @@ interface ListItemProps<ValueType extends RawValueType = RawValueType> {
 function ListItemInner<ValueType extends RawValueType = RawValueType>(
   props: ListItemProps<ValueType>,
 ) {
-  const { item, isChecked, mode, prefixCls, hashId, optionRender, onToggle } =
-    props;
+  const { item, isChecked, mode, prefixCls, optionRender, onToggle } = props;
   const { e, em } = useNamespace('popover-select', prefixCls);
 
   const handleCheckboxChange = useCallback(() => {
@@ -40,7 +38,7 @@ function ListItemInner<ValueType extends RawValueType = RawValueType>(
     optionRender(item)
   ) : (
     <span
-      className={clsx(e('menu-item-text'), hashId)}
+      className={e('menu-item-text')}
       title={typeof item.label === 'string' ? item.label : undefined}
     >
       {item.label}
@@ -54,7 +52,7 @@ function ListItemInner<ValueType extends RawValueType = RawValueType>(
         checked={isChecked}
         disabled={item?.disabled}
         onChange={handleCheckboxChange}
-        className={clsx(e('menu-checkbox'), hashId)}
+        className={e('menu-checkbox')}
       >
         {labelNode}
       </Checkbox>
@@ -64,7 +62,7 @@ function ListItemInner<ValueType extends RawValueType = RawValueType>(
   return (
     <div
       onClick={handleRadioClick}
-      className={clsx(e('menu-radio'), hashId, {
+      className={clsx(e('menu-radio'), {
         [em('menu-radio', 'disabled')]: item?.disabled,
         [em('menu-radio', 'active')]: isChecked,
       })}

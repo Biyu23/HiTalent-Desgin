@@ -1,6 +1,13 @@
 import { Button } from 'antd';
 import clsx from 'clsx';
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  forwardRef,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useLocale } from '../../configProvider/useLocale';
 import { useNamespace } from '../../configProvider/usePrefixCls';
 import { useFieldNames, useMergeState } from '../../hooks';
@@ -21,16 +28,16 @@ import type {
   RawValueType,
 } from './type';
 
-const Component = <
+const InternalPopoverSelect = <
   ValueType extends RawValueType = RawValueType,
   OptionType extends Record<string, any> = DefaultOptionType,
 >(
   props: PopoverSelectProps<ValueType, OptionType>,
+  ref: React.Ref<HTMLDivElement>,
 ) => {
-  const { prefixCls, e } = useNamespace('popover-select', props.prefixCls);
+  const { prefixCls } = useNamespace('popover-select', props.prefixCls);
   const componentLocale = useLocale('PopoverSelect');
-  // 样式注册由内部 Selector 负责，此处只取 hashId 用于子元素 className
-  const { hashId } = useStyle(prefixCls);
+  const { wrapSSR, hashId } = useStyle(prefixCls);
 
   type MappedOption = OptionType & {
     label: React.ReactNode;
@@ -68,6 +75,7 @@ const Component = <
     getPopupContainer,
     autoAdjustOverflow = true,
     destroyTooltipOnHide,
+    rootClassName,
   } = props;
 
   const [searchValue, setSearchValue] = useState('');
@@ -199,7 +207,6 @@ const Component = <
     () => (
       <DropdownContent
         prefixCls={prefixCls}
-        hashId={hashId}
         componentLocale={componentLocale}
         hasOptions={hasOptions}
         hasDisplayOptions={hasDisplayOptions}
@@ -224,7 +231,6 @@ const Component = <
     ),
     [
       prefixCls,
-      hashId,
       componentLocale,
       hasOptions,
       hasDisplayOptions,
@@ -247,31 +253,42 @@ const Component = <
     ],
   );
 
-  return withNativeProps(
-    props,
-    <div className={clsx(prefixCls, hashId)}>
-      <Selector
-        content={renderContent}
-        open={open}
-        rootClassName={clsx(e('selector'), hashId)}
-        onOpenChange={setOpen}
-        afterOpenChange={afterOpenChange}
-        placement={placement}
-        getPopupContainer={getPopupContainer}
-        autoAdjustOverflow={autoAdjustOverflow}
-        destroyTooltipOnHide={destroyTooltipOnHide}
-        allowClear={allowClear}
-        hasValue={hasValue}
-        onClear={handleClear}
-        showArrow={showArrow}
-        disabled={disabled}
-      >
-        {displayTextNode}
-      </Selector>
-    </div>,
+  return wrapSSR(
+    withNativeProps(
+      props,
+      <div ref={ref} className={clsx(prefixCls, hashId)}>
+        <Selector
+          content={renderContent}
+          open={open}
+          onOpenChange={setOpen}
+          afterOpenChange={afterOpenChange}
+          placement={placement}
+          getPopupContainer={getPopupContainer}
+          autoAdjustOverflow={autoAdjustOverflow}
+          destroyTooltipOnHide={destroyTooltipOnHide}
+          rootClassName={rootClassName}
+          allowClear={allowClear}
+          hasValue={hasValue}
+          onClear={handleClear}
+          showArrow={showArrow}
+          disabled={disabled}
+        >
+          {displayTextNode}
+        </Selector>
+      </div>,
+    ),
   );
 };
 
-const Select = memo(Component) as typeof Component;
+const ForwardRefPopoverSelect = forwardRef(InternalPopoverSelect) as <
+  ValueType extends RawValueType = RawValueType,
+  OptionType extends Record<string, any> = DefaultOptionType,
+>(
+  props: PopoverSelectProps<ValueType, OptionType> & {
+    ref?: React.Ref<HTMLDivElement>;
+  },
+) => React.ReactElement | null;
+
+const Select = memo(ForwardRefPopoverSelect) as typeof ForwardRefPopoverSelect;
 const PopoverSelector = attachPropertiesToComponent(Select, { Selector });
 export default PopoverSelector;

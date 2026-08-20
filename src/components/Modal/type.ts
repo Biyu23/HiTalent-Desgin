@@ -1,4 +1,4 @@
-import type { ModalProps as AntdModalProps } from 'antd';
+import type { Modal as AntdModal, ModalProps as AntdModalProps } from 'antd';
 import React from 'react';
 import type { MinimizePosition } from '../_util/minimize/type';
 
@@ -25,10 +25,18 @@ export interface ModalRef {
 /**
  * Modal 组件暴露的静态方法
  */
-export type ModalStaticMethods = {
-  /** 销毁所有已打开的 Modal 实例（包括最小化状态的弹窗） */
-  destroyAll: () => void;
-};
+export type ModalStaticMethods = Pick<
+  typeof AntdModal,
+  | 'info'
+  | 'success'
+  | 'error'
+  | 'warning'
+  | 'warn'
+  | 'confirm'
+  | 'useModal'
+  | 'destroyAll'
+  | 'config'
+>;
 
 /**
  * Modal 缩放配置

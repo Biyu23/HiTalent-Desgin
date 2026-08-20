@@ -18,12 +18,6 @@ export interface ModalHeaderProps {
   className?: string;
 }
 
-/**
- * Modal 标题栏组件。
- *
- * 通过 useModalContext 自动获取父级 Modal 的所有共享状态与操作，
- * 无需手动传递 props，彻底消除 Props Drilling。
- */
 const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
   const {
     prefixCls,
@@ -89,6 +83,7 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
       {actions.length > 0 && (
         <Flex
           className={clsx(e('actions'), hashId)}
+          data-modal-no-drag
           gap={8}
           align="center"
           onMouseDown={(e) => e.stopPropagation()}

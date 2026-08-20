@@ -1,8 +1,6 @@
-import { CSSObject, useStyleRegister } from '@ant-design/cssinjs';
-import { theme } from 'antd';
+import type { CSSObject } from '@ant-design/cssinjs';
 import type { GlobalToken } from 'antd/es/theme/interface';
-
-const { useToken } = theme;
+import { useComponentStyle } from '../../../styles';
 
 export const genModalStyle = (
   token: GlobalToken,
@@ -132,19 +130,5 @@ export const genModalStyle = (
 };
 
 export function useStyle(prefixCls: string) {
-  const { theme, token, hashId } = useToken();
-  const wrapSSR = useStyleRegister(
-    {
-      theme: theme as any,
-      token,
-      hashId,
-      path: ['@hi-talent/design', prefixCls],
-    },
-    () => [genModalStyle(token, prefixCls)],
-  );
-  return {
-    wrapSSR,
-    hashId,
-    token,
-  };
+  return useComponentStyle('Modal', prefixCls, genModalStyle);
 }

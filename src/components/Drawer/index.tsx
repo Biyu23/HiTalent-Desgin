@@ -47,7 +47,6 @@ const resolveMinimizableClosable = (
   return { placement: 'end' };
 };
 
-/** 在 Ant Design 5 Drawer 基础上增加尺寸调整和最小化能力。 */
 const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
   const {
     prefixCls: customPrefixCls,
@@ -325,7 +324,5 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     </>,
   );
 });
-
-Drawer.displayName = 'Drawer';
 
 export default memo(Drawer);

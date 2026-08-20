@@ -170,6 +170,10 @@ export interface PopoverSelectProps<
    * @default false
    */
   destroyTooltipOnHide?: boolean;
+  /**
+   * @description 弹出浮层根节点类名
+   */
+  rootClassName?: string;
 }
 
 export interface SelectorProps extends NativeProps {
@@ -177,9 +181,11 @@ export interface SelectorProps extends NativeProps {
   prefixCls?: string;
   /** 下拉内容渲染函数或节点 */
   content: React.ReactNode | (() => React.ReactNode);
+  /** 气泡被遮挡时是否自动调整位置 */
   autoAdjustOverflow?: boolean;
+  /** 弹出浮层根节点类名 */
   rootClassName?: string;
-  openClassName?: string;
+  /** 下拉弹窗展开/关闭动画结束后的回调 */
   afterOpenChange?: (open: boolean) => void;
   children?: React.ReactNode;
   open?: boolean;

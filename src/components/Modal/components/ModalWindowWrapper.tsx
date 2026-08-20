@@ -57,24 +57,8 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
     setWindowPosition({ x: data.x, y: data.y });
   };
   const handleSelector = `.${e('header')}, .ant-modal-footer`;
-  const cancelSelector = [
-    `.${e('actions')}`,
-    `.${e('resize-handle')}`,
-    '[data-modal-no-drag]',
-    'button',
-    'a',
-    'input',
-    'textarea',
-    'select',
-    '[contenteditable]',
-    '.ant-checkbox-wrapper',
-    '.ant-radio-wrapper',
-    '.ant-select',
-    '.ant-picker',
-    '.ant-upload',
-    '.ant-slider',
-    '.ant-switch',
-  ].join(', ');
+  const cancelSelector =
+    '[data-modal-no-drag], button, a, input, textarea, select, [contenteditable]';
 
   const handleDragStart = (event: DraggableEvent): boolean | void => {
     const target = event.target;

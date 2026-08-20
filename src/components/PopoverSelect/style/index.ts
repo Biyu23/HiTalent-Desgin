@@ -1,8 +1,6 @@
-﻿import { CSSObject, useStyleRegister } from '@ant-design/cssinjs';
-import { theme } from 'antd';
+import type { CSSObject } from '@ant-design/cssinjs';
 import type { GlobalToken } from 'antd/es/theme/interface';
-
-const { useToken } = theme;
+import { useComponentStyle } from '../../../styles';
 
 export const genPopoverSelectStyle = (
   token: GlobalToken,
@@ -16,18 +14,18 @@ export const genPopoverSelectStyle = (
 
     [`.${prefixCls}-selector-btn`]: {
       display: 'flex',
-      gap: token.sizeXS,
+      gap: token.paddingXS,
       alignItems: 'center',
       justifyContent: 'space-between',
       width: '100%',
       boxSizing: 'border-box',
-      padding: `${token.sizeXXS}px ${token.sizeSM}px`,
+      padding: `${token.paddingXXS}px ${token.paddingSM}px`,
       color: token.colorText,
       textAlign: 'left',
       backgroundColor: 'transparent',
       border: '1px solid transparent',
       borderRadius: token.borderRadiusXS,
-      transition: 'all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1)',
+      transition: `color ${token.motionDurationMid} ${token.motionEaseInOut}, background-color ${token.motionDurationMid} ${token.motionEaseInOut}, border-color ${token.motionDurationMid} ${token.motionEaseInOut}`,
       '&:hover': {
         backgroundColor: token.colorFillTertiary,
       },
@@ -38,6 +36,9 @@ export const genPopoverSelectStyle = (
       },
       [`&.${prefixCls}-selector-btn-open`]: {
         backgroundColor: token.colorFillTertiary,
+        [`.${prefixCls}-selector-arrow`]: {
+          transform: 'rotate(180deg)',
+        },
       },
       [`&.${prefixCls}-selector-btn-disabled`]: {
         color: token.colorTextDisabled,
@@ -57,8 +58,8 @@ export const genPopoverSelectStyle = (
       whiteSpace: 'nowrap',
       textOverflow: 'ellipsis',
       '.ant-typography': {
-        marginTop: '0 !important',
-        marginBottom: '0 !important',
+        margin: 0,
+        padding: 0,
       },
       '> span': {
         display: 'inline-block',
@@ -76,26 +77,26 @@ export const genPopoverSelectStyle = (
       flexShrink: 0,
       alignItems: 'center',
       justifyContent: 'center',
-      minWidth: 14,
-      height: 14,
-      fontSize: 12,
+      minWidth: token.fontSizeSM,
+      height: token.fontSizeSM,
+      fontSize: token.fontSizeSM,
       lineHeight: 1,
     },
 
     [`.${prefixCls}-selector-arrow`]: {
       flexShrink: 0,
       color: token.colorTextQuaternary,
-      fontSize: 12,
-      transition: 'transform 0.3s ease-in-out, opacity 0.2s',
+      fontSize: token.fontSizeSM,
+      transition: `transform ${token.motionDurationMid} ${token.motionEaseInOut}, opacity ${token.motionDurationMid}`,
     },
 
     [`.${prefixCls}-selector-clear`]: {
       zIndex: 1,
       flexShrink: 0,
       color: token.colorTextQuaternary,
-      fontSize: 12,
+      fontSize: token.fontSizeSM,
       cursor: 'pointer',
-      transition: 'color 0.2s, opacity 0.2s',
+      transition: `color ${token.motionDurationMid}, opacity ${token.motionDurationMid}`,
       [`&.${prefixCls}-selector-clear-overlay`]: {
         position: 'absolute',
         top: '50%',
@@ -114,6 +115,11 @@ export const genPopoverSelectStyle = (
       pointerEvents: 'auto',
     },
 
+    [`.${prefixCls}-selector-btn:hover .${prefixCls}-selector-arrow-has-clear`]:
+      {
+        opacity: 0,
+      },
+
     [`.${prefixCls}-selector`]: {
       '.ant-popover-inner': {
         padding: 0,
@@ -128,7 +134,6 @@ export const genPopoverSelectStyle = (
         display: 'flex',
         flex: 1,
         flexDirection: 'column',
-        overflowY: 'auto',
       },
       [`.${prefixCls}-menu-scroll`]: {
         overflowY: 'auto',
@@ -139,10 +144,10 @@ export const genPopoverSelectStyle = (
       [`.${prefixCls}-menu-radio`]: {
         display: 'flex',
         alignItems: 'center',
-        padding: `${token.sizeXXS}px ${token.sizeSM}px`,
+        padding: `${token.paddingXXS}px ${token.paddingSM}px`,
         cursor: 'pointer',
         color: token.colorText,
-        transition: 'background-color 0.2s',
+        transition: `background-color ${token.motionDurationMid}`,
         userSelect: 'none',
         '&:hover': {
           backgroundColor: token.colorFillTertiary,
@@ -150,6 +155,9 @@ export const genPopoverSelectStyle = (
         [`&.${prefixCls}-menu-radio-active`]: {
           color: token.colorPrimary,
           backgroundColor: token.colorPrimaryBg,
+          '&:hover': {
+            backgroundColor: token.colorPrimaryBgHover || token.colorPrimaryBg,
+          },
         },
         [`&.${prefixCls}-menu-radio-disabled`]: {
           color: token.colorTextDisabled,
@@ -164,11 +172,17 @@ export const genPopoverSelectStyle = (
         alignItems: 'center',
         width: '100%',
         margin: 0,
-        padding: `${token.sizeXXS}px ${token.sizeSM}px`,
+        padding: `${token.paddingXXS}px ${token.paddingSM}px`,
         color: token.colorText,
-        transition: 'background-color 0.2s',
+        transition: `background-color ${token.motionDurationMid}`,
         '&:hover': {
           backgroundColor: token.colorFillTertiary,
+        },
+        '&.ant-checkbox-wrapper-disabled, &[disabled]': {
+          cursor: 'not-allowed',
+          '&:hover': {
+            backgroundColor: 'transparent',
+          },
         },
         '> span:last-child': {
           flex: 1,
@@ -186,17 +200,17 @@ export const genPopoverSelectStyle = (
       [`.${prefixCls}-footer`]: {
         display: 'flex',
         justifyContent: 'flex-end',
-        padding: `${token.sizeSM}px`,
+        padding: token.paddingSM,
         borderTop: `1px solid ${token.colorBorderSecondary}`,
       },
       [`.${prefixCls}-search`]: {
-        padding: `${token.sizeXS}px ${token.sizeXS}px 0 ${token.sizeXS}px`,
+        padding: `${token.paddingXS}px ${token.paddingXS}px 0 ${token.paddingXS}px`,
         '.ant-input-affix-wrapper .anticon': {
           color: token.colorTextQuaternary,
         },
       },
       [`.${prefixCls}-select-all`]: {
-        padding: `${token.sizeXXS}px ${token.sizeSM}px`,
+        padding: `${token.paddingXXS}px ${token.paddingSM}px`,
         borderBottom: `1px solid ${token.colorBorderSecondary}`,
         '.ant-checkbox-wrapper': {
           display: 'flex',
@@ -216,11 +230,11 @@ export const genPopoverSelectStyle = (
         },
       },
       [`.${prefixCls}-empty`]: {
-        padding: `${token.sizeLG}px ${token.sizeSM}px`,
+        padding: `${token.paddingLG}px ${token.paddingSM}px`,
         textAlign: 'center',
         '.ant-empty-image': {
           height: 40,
-          marginBottom: token.sizeXS,
+          marginBottom: token.marginXS,
           '.ant-empty-img-simple': {
             width: 40,
             height: 40,
@@ -228,7 +242,7 @@ export const genPopoverSelectStyle = (
         },
         '.ant-empty-description': {
           color: token.colorText,
-          fontSize: 13,
+          fontSize: token.fontSizeSM,
         },
       },
     },
@@ -236,19 +250,5 @@ export const genPopoverSelectStyle = (
 };
 
 export function useStyle(prefixCls: string) {
-  const { theme, token, hashId } = useToken();
-  const wrapSSR = useStyleRegister(
-    {
-      theme: theme as any,
-      token,
-      hashId,
-      path: ['@hi-talent/design', prefixCls],
-    },
-    () => [genPopoverSelectStyle(token, prefixCls)],
-  );
-  return {
-    wrapSSR,
-    hashId,
-    token,
-  };
+  return useComponentStyle('PopoverSelect', prefixCls, genPopoverSelectStyle);
 }

@@ -1,7 +1,6 @@
 import clsx from 'clsx';
 import React, { memo } from 'react';
 import { useLocale } from '../../../configProvider/useLocale';
-import { useNamespace } from '../../../configProvider/usePrefixCls';
 import type { DrawerPlacement } from '../type';
 
 interface DrawerResizeHandleProps {
@@ -24,9 +23,9 @@ const DrawerResizeHandle = memo<DrawerResizeHandleProps>(
     resizing,
     onPointerDown,
   }) => {
-    const { e, em } = useNamespace('drawer', prefixCls);
     const drawerLocale = useLocale('Drawer');
     const horizontal = placement === 'left' || placement === 'right';
+    const handleCls = `${prefixCls}-resize-handle`;
     const ariaLabels = {
       left: drawerLocale.resizeLeft,
       right: drawerLocale.resizeRight,
@@ -37,10 +36,10 @@ const DrawerResizeHandle = memo<DrawerResizeHandleProps>(
     return (
       <div
         className={clsx(
-          e('resize-handle'),
-          em('resize-handle', placement),
+          handleCls,
+          `${handleCls}-${placement}`,
           hashId,
-          { [em('resize-handle', 'resizing')]: resizing },
+          { [`${handleCls}-resizing`]: resizing },
           className,
         )}
         style={style}
