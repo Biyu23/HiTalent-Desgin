@@ -1,6 +1,7 @@
 import { Button as AntdButton, Tooltip } from 'antd';
-import React, { memo, useEffect, useRef, useState } from 'react';
-import { isThenable } from '../../util';
+import clsx from 'clsx';
+import React, { memo } from 'react';
+import { useActionRunner } from '../_util/useActionRunner';
 import type { ButtonProps, ButtonRef, CompoundedButton } from './type';
 import { parseTooltipConfig } from './utils/tooltip';
 
@@ -14,56 +15,24 @@ const Button = React.forwardRef<ButtonRef, ButtonProps>((props, ref) => {
     tooltip,
     loading: propsLoading,
     block,
+    className,
+    style,
+    rootClassName,
+    classNames,
+    styles,
     ...restProps
   } = props;
-  const [innerLoading, setInnerLoading] = useState(false);
-  const isUnmounted = useRef(false);
-  const isThrottling = useRef(false);
-  const throttleTimerRef = useRef<ReturnType<typeof setTimeout>>();
-
-  useEffect(() => {
-    isUnmounted.current = false;
-    return () => {
-      isUnmounted.current = true;
-      if (throttleTimerRef.current) {
-        clearTimeout(throttleTimerRef.current);
-      }
-      isThrottling.current = false;
-    };
-  }, []);
-
-  const combinedLoading = innerLoading ? true : propsLoading;
+  const { pending, run } = useActionRunner<
+    [React.MouseEvent<HTMLElement, MouseEvent>]
+  >({ throttle, trackPending: autoLoading });
+  const combinedLoading = pending ? true : propsLoading;
   const { needTooltip, tooltipTitle, tooltipProps } =
     parseTooltipConfig(tooltip);
 
-  const executeClick = async (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
-    if (!onClick || disabled) return;
-    const ret = onClick(e);
-    if (autoLoading && isThenable(ret)) {
-      setInnerLoading(true);
-      try {
-        await ret;
-      } finally {
-        if (!isUnmounted.current) {
-          setInnerLoading(false);
-        }
-      }
-    }
-  };
-
   const handleClick = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
-    const isBusy = Boolean(innerLoading || propsLoading);
+    const isBusy = Boolean(pending || propsLoading);
     if (isBusy || disabled) return;
-
-    if (Number.isFinite(throttle) && throttle > 0) {
-      if (isThrottling.current) return;
-      isThrottling.current = true;
-      throttleTimerRef.current = setTimeout(() => {
-        isThrottling.current = false;
-      }, throttle);
-    }
-
-    executeClick(e);
+    if (onClick) run(onClick, e);
   };
 
   const buttonElement = (
@@ -73,9 +42,13 @@ const Button = React.forwardRef<ButtonRef, ButtonProps>((props, ref) => {
       disabled={disabled}
       loading={combinedLoading}
       onClick={handleClick}
+      className={clsx(rootClassName, classNames?.root, className)}
+      style={{ ...styles?.root, ...style }}
       {...restProps}
     >
-      {children}
+      <span className={classNames?.content} style={styles?.content}>
+        {children}
+      </span>
     </AntdButton>
   );
 

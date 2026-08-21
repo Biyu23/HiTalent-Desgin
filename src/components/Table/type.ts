@@ -6,6 +6,11 @@ import type {
 } from 'antd/es/table';
 import type React from 'react';
 import type { NativeProps } from '../../types';
+import type {
+  SemanticClassNames,
+  SemanticStyleProps,
+  SemanticStyles,
+} from '../_util/semanticStyles';
 
 export type ColumnId = string;
 
@@ -97,6 +102,8 @@ export interface TableContextValue {
   hashId?: string;
   /** 组件类名前缀（如 'htd-table'） */
   prefixCls?: string;
+  classNames?: TableClassNames;
+  styles?: TableStyles;
   columnWidths: Readonly<Record<ColumnId, number>>;
   onColumnWidthChange: (columnId: ColumnId, width: number) => void;
   onColumnResizeEnd?: (columnId: ColumnId, width: number) => void;
@@ -116,6 +123,21 @@ interface TableOwnProps<RecordType> {
   toolbarRender?: (defaultToolbar: React.ReactNode) => React.ReactNode;
   toolbarExtra?: React.ReactNode;
 }
+
+export type TableSlot =
+  | 'root'
+  | 'toolbar'
+  | 'toolbarExtra'
+  | 'settingTrigger'
+  | 'settingPopup'
+  | 'table'
+  | 'headerCell'
+  | 'resizeHandle'
+  | 'rowDragHandle'
+  | 'dragOverlay';
+
+export type TableClassNames = SemanticClassNames<TableSlot>;
+export type TableStyles = SemanticStyles<TableSlot>;
 
 type ControlledColumnStateProps = {
   columnState: ColumnState;
@@ -138,9 +160,10 @@ export type ColumnStateProps =
 
 export type TableProps<RecordType = Record<string, unknown>> = Omit<
   AntdTableProps<RecordType>,
-  'columns' | 'className' | 'style'
+  'columns' | 'className' | 'style' | 'rootClassName' | 'classNames' | 'styles'
 > &
   NativeProps &
+  SemanticStyleProps<TableSlot> &
   TableOwnProps<RecordType> &
   (ControlledColumnStateProps | UncontrolledColumnStateProps);
 

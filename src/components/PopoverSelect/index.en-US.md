@@ -13,7 +13,7 @@ Uses a Popover-hosted selection panel with virtual scrolling, select all, field 
 - A large option set needs virtual scrolling to keep opening, searching, and scrolling responsive.
 - Backend records do not use a fixed `label` / `value` shape.
 - Multi-select needs confirm, cancel, clear, or select-all behavior scoped to current search results.
-- A legacy API stores comma-separated strings while the component should work with arrays internally.
+- An API requires a string field while option values must retain their original number or string types.
 
 Use Ant Design Select directly for small, straightforward option sets that need no extra panel behavior.
 
@@ -21,7 +21,7 @@ Use Ant Design Select directly for small, straightforward option sets that need 
 
 - `rc-virtual-list` keeps 10,000+ options responsive.
 - `fieldNames` reads backend records directly without a preprocessing `map`.
-- `valueType` converts between arrays and delimited strings.
+- `valueType="string"` uses a JSON-array string protocol that preserves number and string values without ambiguity.
 - Single select, multiple select, select all, and confirmation share one state model.
 - `optionRender` and `dropdownRender` extend option and panel content.
 
@@ -29,7 +29,9 @@ Use Ant Design Select directly for small, straightforward option sets that need 
 
 <code src="./demo/multiple.tsx" title="Multiple Select with Confirmation" description="Multiple mode confirms before committing and supports cancel, clear, and maxTagCount ellipsis."></code>
 
-<code src="./demo/string-value.tsx" title="String Value and Select All" description="valueType='string' converts between a delimited string and an array; select all follows the current search results."></code>
+<code src="./demo/string-value.tsx" title="Type-safe String Submission" description="valueType='string' preserves number and string value types in a JSON-array string; select all follows the current search results."></code>
+
+<code src="./demo/semantic-styles.tsx" title="Semantic Styles and Portal" description="Customize trigger, menu item, and popup-root slots while the portal inherits the active namespace."></code>
 
 ## API
 
@@ -56,8 +58,7 @@ The component also accepts `NativeProps`, including `className`, `style`, and CS
 | `virtual`              | Enables virtual scrolling                   | `boolean`                              | `true`         |
 | `listHeight`           | Maximum list height in pixels               | `number`                               | `150`          |
 | `listItemHeight`       | Virtual-list item height in pixels          | `number`                               | `34`           |
-| `valueType`            | Submits an array or a delimited string      | `string \| array`                      | `string`       |
-| `valueSeparator`       | Separator for string submission             | `string`                               | `,`            |
+| `valueType`            | Submits an array or JSON-array string       | `string \| array`                      | -              |
 | `showSelectAll`        | Shows select all in multiple mode           | `boolean`                              | `false`        |
 | `showArrow`            | Whether to show dropdown arrow              | `boolean`                              | `true`         |
 | `disabled`             | Whether the component is disabled           | `boolean`                              | `false`        |
@@ -74,5 +75,13 @@ The component also accepts `NativeProps`, including `className`, `style`, and CS
 
 - Provide stable, unique values for large option sets.
 - `fieldNames` changes how fields are read; it does not mutate source records.
-- In string mode, the separator must match the backend contract and option values must not contain that separator.
+- String-mode input and output are JSON-array strings such as `[1,"PM"]`, preserving number and string types.
 - Keep custom option heights stable so virtual-list measurement remains accurate.
+
+## Value contracts and semantic styles
+
+Single selection uses `mode="single"` (or omits `mode`) and emits a scalar or `undefined`. Multiple selection must explicitly choose `valueType="array"` or `valueType="string"`; the callback result is an array or string respectively.
+
+String mode uses an unambiguous JSON-array codec, so async options, numeric values, and look-alike string values retain the correct type.
+
+Styling is exposed through `rootClassName`, `classNames`, and `styles`. Slots are `root`, `trigger`, `triggerText`, `actions`, `popup`, `search`, `selectAll`, `menu`, `item`, `footer`, and `empty`. The `popup` slot targets the portal root and automatically receives the active namespace and CSS-in-JS hash.

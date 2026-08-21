@@ -29,7 +29,7 @@ export function useComponentStyle(
   const { theme: antdTheme, token, hashId } = useToken();
   const wrapSSR = useStyleRegister(
     {
-      theme: antdTheme as any,
+      theme: antdTheme,
       token,
       hashId,
       path: [PACKAGE_NAME, componentName, prefixCls],

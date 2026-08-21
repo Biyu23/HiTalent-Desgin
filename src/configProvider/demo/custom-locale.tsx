@@ -49,6 +49,7 @@ export default () => {
           <p style={captionStyle}>{t('locale.full')}</p>
           <PopoverSelect
             mode="multiple"
+            valueType="array"
             options={demoOptions}
             showConfirm
             style={{ width: 280 }}
@@ -67,6 +68,7 @@ export default () => {
             <p style={captionStyle}>{t('locale.override')}</p>
             <PopoverSelect
               mode="multiple"
+              valueType="array"
               options={demoOptions}
               showConfirm
               style={{ width: 280 }}
@@ -79,6 +81,7 @@ export default () => {
             <p style={captionStyle}>{t('locale.rtl')}</p>
             <PopoverSelect
               mode="multiple"
+              valueType="array"
               options={demoOptions}
               showConfirm
               style={{ width: 280 }}

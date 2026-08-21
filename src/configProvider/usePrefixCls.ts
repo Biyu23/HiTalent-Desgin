@@ -1,3 +1,4 @@
+import type { ClassValue } from 'clsx';
 import clsx from 'clsx';
 import { useCallback, useContext, useMemo } from 'react';
 import { ConfigContext, defaultPrefixCls } from './context';
@@ -35,7 +36,7 @@ export interface UseNamespaceResult {
   /** 状态修饰符：is('active', true) -> 'is-active' */
   is: (name: string, state?: boolean) => string;
   /** clsx 包装器，自动将 prefixCls 作为基准类名 */
-  cls: (...args: any[]) => string;
+  cls: (...args: ClassValue[]) => string;
 }
 
 /**
@@ -95,7 +96,7 @@ export const useNamespace = (
   }, []);
 
   const cls = useCallback(
-    (...args: any[]) => clsx(prefixCls, ...args),
+    (...args: ClassValue[]) => clsx(prefixCls, ...args),
     [prefixCls],
   );
 

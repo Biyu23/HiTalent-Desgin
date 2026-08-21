@@ -37,10 +37,7 @@ import React, {
 } from 'react';
 import ReactDOM from 'react-dom';
 import { useLocale } from '../../../configProvider/useLocale';
-import {
-  useNamespace,
-  usePrefixCls,
-} from '../../../configProvider/usePrefixCls';
+import { useComponentNamespace } from '../../_util/namespace';
 import TableContext from '../TableContext';
 import type { ColumnId } from '../type';
 import { moveColumnItem } from '../utils/columnDrag';
@@ -55,17 +52,18 @@ interface ColumnDragItem {
 interface TableDragContextValue {
   tableId: string;
   tokenMap: ReadonlyMap<ColumnId, string>;
+  rootRef: React.RefObject<HTMLElement>;
 }
 
 export const TableDragContext = React.createContext<TableDragContextValue>({
   tableId: '',
   tokenMap: new Map(),
+  rootRef: { current: null },
 });
 
 interface SortableHeaderItemProps {
   id: ColumnId;
   children: React.ReactNode;
-  prefixCls: string;
   dragHandleLabel: string;
   isFixed: boolean;
 }
@@ -73,7 +71,6 @@ interface SortableHeaderItemProps {
 const SortableHeaderItem: React.FC<SortableHeaderItemProps> = ({
   id,
   children,
-  prefixCls,
   dragHandleLabel,
   isFixed,
 }) => {
@@ -92,28 +89,14 @@ const SortableHeaderItem: React.FC<SortableHeaderItemProps> = ({
       return defaultAnimateLayoutChanges(args);
     },
   });
-  const { tableId, tokenMap } = useContext(TableDragContext);
+  const { tableId, tokenMap, rootRef } = useContext(TableDragContext);
   const token = tokenMap.get(id);
   const transformValue = CSS.Translate.toString(transform);
 
-  useEffect(() => {
-    if (!token || !tableId) return undefined;
-    const styleElement = document.createElement('style');
-    styleElement.dataset.dragStyleFor = `${tableId}-${token}`;
-    styleElement.textContent = `
-      td[data-table-id="${tableId}"][data-col-drag-token="${token}"] {
-        transform: var(--col-transform-${tableId}-${token}, none) !important;
-        transition: var(--col-transition-${tableId}-${token}, none) !important;
-        z-index: var(--col-zindex-${tableId}-${token}, auto) !important;
-      }
-    `;
-    document.head.appendChild(styleElement);
-    return () => styleElement.remove();
-  }, [tableId, token]);
-
   useLayoutEffect(() => {
     if (!token || !tableId) return undefined;
-    const rootStyle = document.documentElement.style;
+    const rootStyle = rootRef.current?.style;
+    if (!rootStyle) return undefined;
     const transformName = `--col-transform-${tableId}-${token}`;
     const transitionName = `--col-transition-${tableId}-${token}`;
     const zIndexName = `--col-zindex-${tableId}-${token}`;
@@ -125,9 +108,9 @@ const SortableHeaderItem: React.FC<SortableHeaderItemProps> = ({
       rootStyle.removeProperty(transitionName);
       rootStyle.removeProperty(zIndexName);
     };
-  }, [transformValue, transition, isDragging, tableId, token]);
+  }, [transformValue, transition, isDragging, rootRef, tableId, token]);
 
-  const { e } = useNamespace('table', prefixCls);
+  const { element: e } = useComponentNamespace();
   const { hashId } = useContext(TableContext);
 
   return (
@@ -154,6 +137,7 @@ const SortableHeaderItem: React.FC<SortableHeaderItemProps> = ({
 };
 
 interface UseColumnDragOptions {
+  rootRef: React.RefObject<HTMLElement>;
   orderedIds: readonly ColumnId[];
   onPreview: (ids: readonly ColumnId[]) => void;
   onCommit: (ids: readonly ColumnId[]) => void;
@@ -165,7 +149,6 @@ interface UseColumnDragOptions {
 interface InternalColumnDragContextProps {
   children: React.ReactNode;
   optionsRef: React.MutableRefObject<UseColumnDragOptions>;
-  prefixCls: string;
   sensors: SensorDescriptor<SensorOptions>[];
   contextId: string;
 }
@@ -173,12 +156,11 @@ interface InternalColumnDragContextProps {
 const InternalColumnDragContext: React.FC<InternalColumnDragContextProps> = ({
   children,
   optionsRef,
-  prefixCls,
   sensors,
   contextId,
 }) => {
-  const { e } = useNamespace('table', prefixCls);
-  const { hashId } = useContext(TableContext);
+  const { element: e } = useComponentNamespace();
+  const { hashId, classNames, styles } = useContext(TableContext);
   const [activeId, setActiveId] = useState<ColumnId | null>(null);
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -245,7 +227,14 @@ const InternalColumnDragContext: React.FC<InternalColumnDragContextProps> = ({
               }),
             }}
           >
-            <div className={clsx(e('drag-overlay'), hashId)}>
+            <div
+              className={clsx(
+                e('drag-overlay'),
+                hashId,
+                classNames?.dragOverlay,
+              )}
+              style={styles?.dragOverlay}
+            >
               <table>
                 <thead>
                   <tr>
@@ -285,7 +274,6 @@ export const SortableBodyCell: React.FC<
 };
 
 export function useColumnDrag(options: UseColumnDragOptions) {
-  const prefixCls = usePrefixCls('table');
   const locale = useLocale('Table');
   const tableId = useMemo(() => Math.random().toString(36).slice(2, 10), []);
   const optionsRef = useRef(options);
@@ -316,9 +304,28 @@ export function useColumnDrag(options: UseColumnDragOptions) {
   );
 
   const contextValue = useMemo(
-    () => ({ tableId, tokenMap }),
-    [tableId, tokenMap],
+    () => ({ tableId, tokenMap, rootRef: options.rootRef }),
+    [options.rootRef, tableId, tokenMap],
   );
+
+  useEffect(() => {
+    if (!options.enabled || !tableId) return undefined;
+    const styleElement = document.createElement('style');
+    styleElement.dataset.dragStyleFor = tableId;
+    styleElement.textContent = Array.from(tokenMap.values())
+      .map(
+        (token) => `
+          [data-htd-table-id="${tableId}"] td[data-col-drag-token="${token}"] {
+            transform: var(--col-transform-${tableId}-${token}, none) !important;
+            transition: var(--col-transition-${tableId}-${token}, none) !important;
+            z-index: var(--col-zindex-${tableId}-${token}, auto) !important;
+          }
+        `,
+      )
+      .join('');
+    document.head.appendChild(styleElement);
+    return () => styleElement.remove();
+  }, [options.enabled, tableId, tokenMap]);
 
   const ColumnDragContextWrapper: React.FC<{ children: React.ReactNode }> =
     useCallback(
@@ -328,7 +335,6 @@ export function useColumnDrag(options: UseColumnDragOptions) {
           <TableDragContext.Provider value={contextValue}>
             <InternalColumnDragContext
               optionsRef={optionsRef}
-              prefixCls={prefixCls}
               sensors={sensors}
               contextId={`column-drag-${tableId}`}
             >
@@ -337,7 +343,7 @@ export function useColumnDrag(options: UseColumnDragOptions) {
           </TableDragContext.Provider>
         );
       },
-      [prefixCls, sensors, tableId, tokenMap],
+      [contextValue, sensors, tableId],
     );
 
   const HeaderCellWrapper: React.FC<{
@@ -352,7 +358,6 @@ export function useColumnDrag(options: UseColumnDragOptions) {
       return (
         <SortableHeaderItem
           id={columnId}
-          prefixCls={prefixCls}
           dragHandleLabel={locale.dragHandle}
           isFixed={column.fixed}
         >
@@ -360,8 +365,8 @@ export function useColumnDrag(options: UseColumnDragOptions) {
         </SortableHeaderItem>
       );
     },
-    [locale.dragHandle, prefixCls],
+    [locale.dragHandle],
   );
 
-  return { HeaderCellWrapper, ColumnDragContextWrapper };
+  return { HeaderCellWrapper, ColumnDragContextWrapper, tableId };
 }

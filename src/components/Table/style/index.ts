@@ -5,6 +5,7 @@ import { useComponentStyle } from '../../../styles';
 export const genTableStyle = (
   token: GlobalToken,
   prefixCls: string,
+  antdPrefixCls = 'ant',
 ): CSSObject => {
   return {
     [`.${prefixCls}-wrapper`]: {
@@ -33,18 +34,21 @@ export const genTableStyle = (
 
     [`.${prefixCls}`]: {
       [`&&.${prefixCls}-zebra`]: {
-        ['.ant-table-tbody > tr.ant-table-row:nth-child(even) > td']: {
-          backgroundColor: token.colorFillQuaternary,
-        },
-        ['.ant-table-tbody > tr.ant-table-row:hover > td']: {
-          backgroundColor: token.colorFillTertiary,
-        },
+        [`.${antdPrefixCls}-table-tbody > tr.${antdPrefixCls}-table-row:nth-child(even) > td`]:
+          {
+            backgroundColor: token.colorFillQuaternary,
+          },
+        [`.${antdPrefixCls}-table-tbody > tr.${antdPrefixCls}-table-row:hover > td`]:
+          {
+            backgroundColor: token.colorFillTertiary,
+          },
       },
 
       [`&&.${prefixCls}-no-hover`]: {
-        ['.ant-table-tbody > tr.ant-table-row:hover > td']: {
-          backgroundColor: 'inherit',
-        },
+        [`.${antdPrefixCls}-table-tbody > tr.${antdPrefixCls}-table-row:hover > td`]:
+          {
+            backgroundColor: 'inherit',
+          },
       },
 
       [`.${prefixCls}-resizable-th`]: {
@@ -105,7 +109,7 @@ export const genTableStyle = (
         },
       },
 
-      ['.ant-table-thead > tr > th:hover']: {
+      [`.${antdPrefixCls}-table-thead > tr > th:hover`]: {
         [`.${prefixCls}-drag-handle-wrapper`]: {
           visibility: 'visible',
         },
@@ -180,7 +184,7 @@ export const genTableStyle = (
 
     [`.${prefixCls}-column-setting-popover-body`]: {
       padding: 0,
-      '.ant-popover-title': {
+      [`.${antdPrefixCls}-popover-title`]: {
         fontWeight: 400,
         marginBottom: 0,
         fontSize: 14,
@@ -200,13 +204,13 @@ export const genTableStyle = (
       display: 'flex',
       flexDirection: 'column',
 
-      '.ant-checkbox-group': {
+      [`.${antdPrefixCls}-checkbox-group`]: {
         padding: `${token.sizeXXS}px 0`,
         display: 'flex',
         flexDirection: 'column',
       },
 
-      '.ant-checkbox-wrapper': {
+      [`.${antdPrefixCls}-checkbox-wrapper`]: {
         width: '100%',
         padding: `${token.sizeXXS}px ${token.size}px`,
         color: token.colorText,
@@ -226,7 +230,7 @@ export const genTableStyle = (
       '&:hover': {
         backgroundColor: token.colorFillTertiary,
       },
-      '.ant-checkbox-wrapper': {
+      [`.${antdPrefixCls}-checkbox-wrapper`]: {
         width: '100%',
         whiteSpace: 'nowrap',
         overflow: 'hidden',
@@ -258,6 +262,8 @@ export const genTableStyle = (
   };
 };
 
-export function useStyle(prefixCls: string) {
-  return useComponentStyle('Table', prefixCls, genTableStyle);
+export function useStyle(prefixCls: string, antdPrefixCls = 'ant') {
+  return useComponentStyle('Table', prefixCls, (token, currentPrefixCls) =>
+    genTableStyle(token, currentPrefixCls, antdPrefixCls),
+  );
 }

@@ -36,4 +36,8 @@ export type {
 } from './locales';
 
 // Types
-export type { NativeProps } from './types';
+export type {
+  CSSPropertiesWithVars,
+  CSSVariableName,
+  NativeProps,
+} from './types';

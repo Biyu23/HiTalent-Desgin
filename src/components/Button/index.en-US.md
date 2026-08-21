@@ -22,6 +22,8 @@ Extends Ant Design Button with async loading, click throttling, and tooltip capa
 
 <code src="./demo/tooltip.tsx" title="Tooltip" description="Attaches tooltip hints via string title or full TooltipProps object."></code>
 
+<code src="./demo/semantic-styles.tsx" title="Semantic Styles" description="Customize the strongly typed root and content slots with predictable consumer override precedence."></code>
+
 ## API
 
 ### Button
@@ -34,3 +36,7 @@ Inherits all properties from [Ant Design Button](https://ant.design/components/b
 | throttle    | Click cooldown in milliseconds. The first click executes immediately, subsequent clicks within cooldown are ignored | `number`                                                             | `0`     |
 | tooltip     | Tooltip configuration. Supports ReactNode title or full `TooltipProps` (excluding children)                         | `ReactNode \| Omit<TooltipProps, 'children'>`                        | -       |
 | onClick     | Click handler supporting async Promise for `autoLoading`                                                            | `(event: React.MouseEvent<HTMLElement>) => void \| Promise<unknown>` | -       |
+
+## Semantic styles
+
+`className` and `style` target the button element. `rootClassName`, `classNames`, and `styles` provide Ant Design-style semantic customization with the `root` and `content` slots. Consumer inline styles are merged last.

@@ -5,17 +5,23 @@ import React, {
   forwardRef,
   memo,
   useCallback,
+  useContext,
   useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from 'react';
+import { ConfigContext } from '../../configProvider/context';
 import { useLocale } from '../../configProvider/useLocale';
-import { useNamespace } from '../../configProvider/usePrefixCls';
+import { usePrefixCls } from '../../configProvider/usePrefixCls';
 import MinimizedDock from '../_util/minimize/MinimizedDock';
 import { useMinimizeState } from '../_util/minimize/useMinimizeState';
+import {
+  ComponentNamespaceProvider,
+  useResolvedComponentNamespace,
+} from '../_util/namespace';
 import DrawerResizeHandle from './components/DrawerResizeHandle';
-import { useDrawerResize } from './hooks/useDrawerResize';
+import { useDrawerPointerResize } from './hooks/useDrawerPointerResize';
 import { useStyle } from './style';
 import type { DrawerProps, DrawerRef, DrawerResizableConfig } from './type';
 import { getDrawerAxis } from './utils/placement';
@@ -75,10 +81,12 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     styles,
     panelRef: forwardedPanelRef,
     drawerRender: userDrawerRender,
+    rootStyle,
     ...restProps
   } = props;
 
-  const { prefixCls, e, em } = useNamespace('drawer', customPrefixCls);
+  const prefixCls = usePrefixCls('drawer', customPrefixCls);
+  const { antdPrefixCls } = useContext(ConfigContext);
   const drawerLocale = useLocale('Drawer');
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [manualSizes, setManualSizes] = useState<ManualSizes>({});
@@ -86,7 +94,13 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     minimized: controlledMinimized,
     onMinimizeChange,
   });
-  const { wrapSSR, hashId } = useStyle(prefixCls);
+  const { wrapSSR, hashId } = useStyle(prefixCls, antdPrefixCls);
+  const namespace = useResolvedComponentNamespace(
+    'drawer',
+    customPrefixCls,
+    hashId,
+  );
+  const { element: e, elementModifier: em } = namespace;
 
   const axis = getDrawerAxis(placement);
   const legacySize = axis === 'horizontal' ? width : height;
@@ -129,7 +143,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     [axis, isControlled],
   );
 
-  const { isResizing, handlePointerDown } = useDrawerResize({
+  const { isResizing, handlePointerDown } = useDrawerPointerResize({
     placement,
     minSize,
     maxSize,
@@ -165,6 +179,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     delete antdClassNames.dragger;
     delete antdClassNames.minimizeButton;
     delete antdClassNames.minimizedDock;
+    delete antdClassNames.root;
     delete antdClassNames.wrapper;
 
     return {
@@ -194,6 +209,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     delete antdStyles.dragger;
     delete antdStyles.minimizeButton;
     delete antdStyles.minimizedDock;
+    delete antdStyles.root;
     delete antdStyles.wrapper;
 
     return {
@@ -279,6 +295,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
       draggerClassName,
       draggerStyle,
       handlePointerDown,
+      hashId,
       isMinimized,
       isResizing,
       open,
@@ -290,7 +307,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
   );
 
   return wrapSSR(
-    <>
+    <ComponentNamespaceProvider value={namespace}>
       <AntdDrawer
         {...restProps}
         open={open && !isMinimized}
@@ -304,7 +321,8 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
         destroyOnClose={isMinimized ? false : destroyOnClose}
         destroyOnHidden={isMinimized ? false : destroyOnHidden}
         onClose={handleClose}
-        rootClassName={clsx(prefixCls, hashId, rootClassName)}
+        rootClassName={clsx(prefixCls, hashId, rootClassName, classNames?.root)}
+        rootStyle={{ ...rootStyle, ...styles?.root }}
         classNames={mergedClassNames}
         styles={mergedStyles}
         panelRef={handlePanelRef}
@@ -321,7 +339,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
         onRestore={restore}
         onClose={handleClose}
       />
-    </>,
+    </ComponentNamespaceProvider>,
   );
 });
 

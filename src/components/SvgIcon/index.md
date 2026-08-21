@@ -31,6 +31,8 @@ toc: content
 
 <code src="./demo/button-usage.tsx" title="配合 Button 与 Space 使用" description="与 Ant Design 的 Button、Space 等组件无缝搭配。"></code>
 
+<code src="./demo/semantic-styles.tsx" title="语义化样式" description="分别定制图标包装元素与实际 SVG 插槽。"></code>
+
 ## API
 
 ### SvgIcon
@@ -54,3 +56,7 @@ toc: content
 | SvgChild     | 需要封装的 SVG React 元素或组件 | `ReactElement \| ComponentType` | -                 |
 | defaultProps | 默认注入给 SvgIcon 的属性       | `Partial<SvgIconProps>`         | -                 |
 | displayName  | 组件的 displayName              | `string`                        | `'CustomSvgIcon'` |
+
+## 语义化样式
+
+`className` 和 `style` 作用于可聚焦图标包装元素。`rootClassName`、`classNames` 与 `styles` 支持 `root`、`svg` 两个强类型插槽，可分别设置包装元素和实际 SVG。

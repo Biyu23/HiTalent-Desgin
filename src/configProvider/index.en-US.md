@@ -32,6 +32,8 @@ Uses React Context to provide a shared CSS prefix, Ant Design prefix coordinatio
 
 <code src="./demo/custom-locale.tsx" title="Locale, Overrides, and RTL" description="Pass a complete locale, inherit it through nested providers, then override selected copy or change direction."></code>
 
+<code src="./demo/semantic-prefixes.tsx" title="Custom Prefixes and Portals" description="Verify that custom components, Ant Design children, and portal content inherit the configured namespaces."></code>
+
 ## API
 
 | Property          | Description                                       | Type              | Default                 |

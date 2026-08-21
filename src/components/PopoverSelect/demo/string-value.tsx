@@ -1,5 +1,5 @@
 /**
- * description: 极其适合老旧后端的 `varchar` 字段。配置 `valueType="string"` 后，组件的内外数据交互将自动转换为按逗号拼接的字符串。全选按钮会智能匹配当前的搜索结果。
+ * description: 配置 `valueType="string"` 后，组件以 JSON 数组字符串提交，完整保留字符串与数字选项值的类型；全选联动当前搜索结果。
  */
 import { PopoverSelect } from 'hi-talent-design';
 import { useDemoIntl } from 'hi-talent-design/demoIntl';
@@ -23,17 +23,17 @@ const messages = {
 
 export default () => {
   const { t } = useDemoIntl(messages);
-  const [values, setValues] = useState<string>('FE,PM');
+  const [values, setValues] = useState<string>(JSON.stringify([1, 'PM']));
+  const options = [{ label: 'Numeric ID 1', value: 1 }, ...standardOptions];
 
   return (
     <div style={{ width: 300 }}>
       <PopoverSelect
         mode="multiple"
-        options={standardOptions}
+        options={options}
         value={values}
-        onChange={(val) => setValues(val as string)}
+        onChange={setValues}
         valueType="string"
-        valueSeparator=","
         showSearch
         showSelectAll
         placeholder={t('str.placeholder')}

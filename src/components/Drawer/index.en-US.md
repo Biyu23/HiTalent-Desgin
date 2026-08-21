@@ -29,6 +29,8 @@ Extends Ant Design Drawer with directional resize handles, minimization to a glo
 
 <code src="./demo/custom-style.tsx" title="Custom Styles" description="Deeply customize header, body, footer, mask, content, resize handle, and minimized dock via styles and classNames."></code>
 
+<code src="./demo/semantic-styles.tsx" title="Semantic Styles" description="Customize the Drawer, resize handle, and minimized dock through strongly typed slots."></code>
+
 ## API
 
 Fully compatible with Ant Design `DrawerProps` in addition to the enhancements below.
@@ -73,3 +75,9 @@ Imperative control handle via `ref`. Panel DOM element remains accessible via `p
 - **State Persistence**: When `minimizable` is enabled, `destroyOnHidden: false` is maintained internally so that DOM nodes and form state remain intact during minimization.
 - **Controlled vs Uncontrolled**: When `size` is omitted, the component operates in uncontrolled mode and remembers resized dimensions across open/close cycles; in controlled mode, update `size` via `onResize`.
 - **Local Container**: With `getContainer={false}`, ensure the parent element has relative positioning (e.g. `position: relative`); drawer dimensions will be bounded by the parent container.
+
+## Semantic styles
+
+`rootClassName` targets the Drawer root boundary. `classNames` and `styles` expose `root`, `mask`, `wrapper`, `content`, `header`, `body`, `footer`, `dragger`, `minimizeButton`, and `minimizedDock`. The minimized dock is a separate portal that automatically inherits the current namespace and CSS-in-JS hash.
+
+Resize uses Pointer Events. Global listeners exist only during an active interaction and are removed on commit, cancellation, window blur, or unmount.

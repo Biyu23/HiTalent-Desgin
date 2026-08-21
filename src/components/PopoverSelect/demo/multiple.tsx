@@ -19,9 +19,10 @@ export default () => {
     <div style={{ width: 300 }}>
       <PopoverSelect
         mode="multiple"
+        valueType="array"
         options={standardOptions}
         value={values}
-        onChange={(val) => setValues(val as string[])}
+        onChange={setValues}
         placeholder={t('multiple.placeholder')}
         showConfirm
         showCancelBtn

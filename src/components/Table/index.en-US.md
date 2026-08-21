@@ -35,6 +35,8 @@ Sorting, filtering, pagination, selection, and expansion continue to use the nat
 
 <code src="./demo/sort.tsx" title="Header Sorting" description="Reuse Ant Design sorter and onChange for local ordering and controlled remote-sort state."></code>
 
+<code src="./demo/semantic-styles.tsx" title="Semantic Styles" description="Customize the table boundary, toolbar, settings panel, drag handles, and drag overlay."></code>
+
 ## API
 
 ### TableProps
@@ -107,3 +109,9 @@ All Ant Design `TableProps` remain available, with enhanced `columns` and additi
 | Inline-edit extension                | Ant Design `render` / `onCell` + Form + controlled data |
 
 `TableRef` also preserves Ant Design `nativeElement` and `scrollTo`.
+
+## Root boundary and semantic styles
+
+The Table `root` is the outer boundary containing both the toolbar and the Ant Design Table. `className` and `style` target the Ant Design Table, while `rootClassName` targets the outer boundary.
+
+`classNames` and `styles` expose `root`, `toolbar`, `toolbarExtra`, `settingTrigger`, `settingPopup`, `table`, `headerCell`, `resizeHandle`, `rowDragHandle`, and `dragOverlay`. Settings and drag overlays render in portals but still receive the active prefix and CSS-in-JS hash.

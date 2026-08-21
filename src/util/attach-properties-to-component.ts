@@ -10,7 +10,7 @@ export function attachPropertiesToComponent<C, P extends object>(
   const ret = component as C & P;
   for (const key in properties) {
     if (Object.prototype.hasOwnProperty.call(properties, key)) {
-      (ret as any)[key] = properties[key];
+      Object.assign(ret, { [key]: properties[key] });
     }
   }
 

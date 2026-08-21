@@ -5,11 +5,12 @@ import { useComponentStyle } from '../../../styles';
 export const genDrawerStyle = (
   token: GlobalToken,
   prefixCls: string,
+  antdPrefixCls = 'ant',
 ): CSSObject => {
   return {
     [`.${prefixCls}`]: {
       [`.${prefixCls}-header-actions`]: {
-        '.ant-btn': {
+        [`.${antdPrefixCls}-btn`]: {
           color: token.colorTextSecondary,
         },
       },
@@ -107,6 +108,8 @@ export const genDrawerStyle = (
   };
 };
 
-export function useStyle(prefixCls: string) {
-  return useComponentStyle('Drawer', prefixCls, genDrawerStyle);
+export function useStyle(prefixCls: string, antdPrefixCls = 'ant') {
+  return useComponentStyle('Drawer', prefixCls, (token, currentPrefixCls) =>
+    genDrawerStyle(token, currentPrefixCls, antdPrefixCls),
+  );
 }

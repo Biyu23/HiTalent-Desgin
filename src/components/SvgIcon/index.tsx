@@ -10,7 +10,6 @@ import React, {
   useMemo,
 } from 'react';
 import { usePrefixCls } from '../../configProvider';
-import { withNativeProps } from '../../util';
 import type { SvgIconProps } from './type';
 
 const PRESET_SIZES: Record<string, number> = {
@@ -34,7 +33,12 @@ function parseAbsoluteDimension(val: unknown): number | null {
 function normalizeSvgElement(
   svgChild: React.ReactElement<React.SVGProps<SVGSVGElement>>,
   extraProps: CustomIconComponentProps | React.SVGProps<SVGSVGElement>,
-  overrideProps?: { fill?: string; stroke?: string },
+  overrideProps?: {
+    fill?: string;
+    stroke?: string;
+    className?: string;
+    style?: React.CSSProperties;
+  },
 ): React.ReactElement {
   if (!isValidElement(svgChild)) return svgChild;
 
@@ -58,14 +62,15 @@ function normalizeSvgElement(
     }
   }
 
-  const restExtraProps = { ...(extraProps || {}) } as Record<string, any>;
+  const restExtraProps = { ...(extraProps || {}) };
   const extraFill = restExtraProps.fill;
   const extraStyle = restExtraProps.style;
+  const extraClassName = restExtraProps.className;
   delete restExtraProps.width;
   delete restExtraProps.height;
   delete restExtraProps.fill;
   delete restExtraProps.style;
-  delete restExtraProps.children;
+  delete restExtraProps.className;
 
   let finalFill: string | undefined;
 
@@ -92,9 +97,11 @@ function normalizeSvgElement(
         height="1em"
         {...(finalFill !== undefined ? { fill: finalFill } : {})}
         {...(finalStroke !== undefined ? { stroke: finalStroke } : {})}
+        className={clsx(extraClassName, overrideProps?.className)}
         style={{
           ...childStyle,
           ...extraStyle,
+          ...overrideProps?.style,
         }}
       >
         {svgChild}
@@ -112,9 +119,15 @@ function normalizeSvgElement(
       height: '1em',
       ...(finalFill !== undefined ? { fill: finalFill } : {}),
       ...(finalStroke !== undefined ? { stroke: finalStroke } : {}),
+      className: clsx(
+        restChildProps.className,
+        extraClassName,
+        overrideProps?.className,
+      ),
       style: {
         ...childStyle,
         ...extraStyle,
+        ...overrideProps?.style,
       },
     },
     svgChildren,
@@ -132,6 +145,10 @@ const SvgIcon = forwardRef<HTMLSpanElement, SvgIconProps>((props, ref) => {
     spin,
     rotate,
     prefixCls: customPrefixCls,
+    rootClassName,
+    classNames,
+    styles,
+    className,
     style,
     tabIndex,
     onClick,
@@ -140,8 +157,6 @@ const SvgIcon = forwardRef<HTMLSpanElement, SvgIconProps>((props, ref) => {
     title,
     ...restProps
   } = props;
-
-  delete (restProps as Record<string, any>).className;
 
   const prefixCls = usePrefixCls('svg-icon', customPrefixCls);
 
@@ -171,7 +186,7 @@ const SvgIcon = forwardRef<HTMLSpanElement, SvgIconProps>((props, ref) => {
     (e: React.KeyboardEvent<HTMLSpanElement>) => {
       if (isClickable && (e.key === 'Enter' || e.key === ' ')) {
         e.preventDefault();
-        onClick?.(e as unknown as React.MouseEvent<HTMLSpanElement>);
+        e.currentTarget.click();
       }
       onKeyDown?.(e);
     },
@@ -180,17 +195,30 @@ const SvgIcon = forwardRef<HTMLSpanElement, SvgIconProps>((props, ref) => {
 
   const RenderSvg = useMemo(() => {
     if (CustomComponent) {
-      return CustomComponent;
+      const ComponentWithSlots: React.FC<
+        CustomIconComponentProps | React.SVGProps<SVGSVGElement>
+      > = (svgProps) =>
+        React.createElement(CustomComponent, {
+          ...(svgProps as CustomIconComponentProps),
+          className: clsx(svgProps.className, classNames?.svg),
+          style: { ...svgProps.style, ...styles?.svg },
+        });
+      return ComponentWithSlots;
     }
     if (isValidElement<React.SVGProps<SVGSVGElement>>(children)) {
       const ComponentFromChild: React.FC<
         CustomIconComponentProps | React.SVGProps<SVGSVGElement>
       > = (svgProps) =>
-        normalizeSvgElement(children, svgProps, { fill, stroke });
+        normalizeSvgElement(children, svgProps, {
+          fill,
+          stroke,
+          className: classNames?.svg,
+          style: styles?.svg,
+        });
       return ComponentFromChild;
     }
     return undefined;
-  }, [CustomComponent, children, fill, stroke]);
+  }, [CustomComponent, children, classNames?.svg, fill, stroke, styles?.svg]);
 
   if (!RenderSvg) {
     return null;
@@ -202,8 +230,8 @@ const SvgIcon = forwardRef<HTMLSpanElement, SvgIconProps>((props, ref) => {
       component={RenderSvg}
       spin={spin}
       rotate={rotate}
-      className={prefixCls}
-      style={mergedStyle}
+      className={clsx(prefixCls, rootClassName, classNames?.root, className)}
+      style={{ ...styles?.root, ...mergedStyle }}
       role={isClickable ? 'button' : isDecorative ? undefined : 'img'}
       tabIndex={isClickable ? tabIndex ?? 0 : tabIndex}
       aria-hidden={isDecorative ? true : undefined}
@@ -215,7 +243,7 @@ const SvgIcon = forwardRef<HTMLSpanElement, SvgIconProps>((props, ref) => {
     />
   );
 
-  return withNativeProps(props, iconElement);
+  return iconElement;
 });
 
 SvgIcon.displayName = 'SvgIcon';
@@ -223,7 +251,7 @@ SvgIcon.displayName = 'SvgIcon';
 export function createSvgIcon(
   SvgChild:
     | React.ReactElement<React.SVGProps<SVGSVGElement>>
-    | React.ComponentType<any>,
+    | React.ComponentType<CustomIconComponentProps>,
   defaultProps?: Partial<SvgIconProps>,
   displayName?: string,
 ) {
@@ -241,7 +269,9 @@ export function createSvgIcon(
       <SvgIcon
         ref={ref}
         component={
-          isComponent ? (SvgChild as React.ComponentType<any>) : undefined
+          isComponent
+            ? (SvgChild as React.ComponentType<CustomIconComponentProps>)
+            : undefined
         }
         {...defaultProps}
         {...rest}

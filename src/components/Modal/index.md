@@ -15,6 +15,7 @@ toc: content
 <code src="./demo/maximizable.tsx">最大化</code>
 <code src="./demo/minimizable.tsx">最小化与停靠</code>
 <code src="./demo/controlled.tsx">受控与 Ref 控制</code>
+<code src="./demo/semantic-styles.tsx">语义化样式与 Portal 根节点</code>
 
 ## API
 
@@ -58,3 +59,9 @@ toc: content
 | `minimize`      | 最小化弹窗至 Dock 悬浮窗 | `() => void` |
 | `resetPosition` | 重置拖拽位置居中         | `() => void` |
 | `resetSize`     | 重置手动调整过的宽高尺寸 | `() => void` |
+
+## 语义化样式
+
+`rootClassName` 作用于 Modal 根边界。`classNames` 与 `styles` 支持 `root`、`mask`、`wrapper`、`content`、`header`、`title`、`actions`、`body`、`footer`、`resizeHandle`、`minimizedDock` 插槽。`root` 行内样式通过实例级 CSS-in-JS 规则应用到 Portal 根节点。
+
+标题操作上下文与位置、尺寸等高频状态相互独立，拖拽或缩放不会使标题操作区因窗口坐标变化而重复渲染。

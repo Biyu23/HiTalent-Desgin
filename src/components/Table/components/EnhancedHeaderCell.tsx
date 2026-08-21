@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import React, { memo, useContext } from 'react';
-import { useNamespace } from '../../../configProvider/usePrefixCls';
-import { useColumnResize } from '../hooks/useColumnResize';
+import { useComponentNamespace } from '../../_util/namespace';
+import { useColumnPointerResize } from '../hooks/useColumnPointerResize';
 import TableContext from '../TableContext';
 import type { EnhancedLeafColumnType } from '../type';
 import ResizeHandle from './ResizeHandle';
@@ -35,7 +35,8 @@ function EnhancedHeaderCell<RecordType = unknown>(
     ...restThProps
   } = props;
 
-  const { e } = useNamespace('table');
+  const namespace = useComponentNamespace();
+  const e = namespace.element;
   const context = useContext(TableContext);
   const { hashId } = context;
   const currentControlledWidth =
@@ -44,7 +45,7 @@ function EnhancedHeaderCell<RecordType = unknown>(
       ? column.width
       : undefined);
 
-  const { isResizing, handlePointerDown } = useColumnResize({
+  const { isResizing, handlePointerDown } = useColumnPointerResize({
     columnId,
     minWidth: column.minWidth ?? 80,
     currentWidth: currentControlledWidth,
@@ -55,7 +56,10 @@ function EnhancedHeaderCell<RecordType = unknown>(
   const showResizeHandle = enableColumnResize && column.resizable !== false;
 
   const cellContent = (
-    <div className={clsx(e('header-cell'), hashId)}>
+    <div
+      className={clsx(e('header-cell'), hashId, context.classNames?.headerCell)}
+      style={context.styles?.headerCell}
+    >
       <span className={clsx(e('header-cell-title'), hashId)}>{children}</span>
     </div>
   );
@@ -77,7 +81,6 @@ function EnhancedHeaderCell<RecordType = unknown>(
       {wrappedContent}
       {showResizeHandle && (
         <ResizeHandle
-          hashId={hashId}
           isResizing={isResizing}
           onPointerDown={handlePointerDown}
         />

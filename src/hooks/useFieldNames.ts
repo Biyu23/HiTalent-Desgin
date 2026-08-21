@@ -29,9 +29,9 @@ export function useFieldNames(customFieldNames?: FieldNames) {
   }, [customFieldNames]);
 
   const getFieldValue = useCallback(
-    <T extends Record<string, any>>(item: T, field: keyof FieldNames) => {
+    <T extends object>(item: T, field: keyof FieldNames) => {
       const targetKey = fieldNames[field];
-      return item[targetKey];
+      return (item as Record<string, unknown>)[targetKey];
     },
     [fieldNames],
   );

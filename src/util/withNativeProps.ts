@@ -12,7 +12,7 @@ export function withNativeProps<P extends NativeProps>(
   props: P,
   element: ReactElement,
 ): ReactElement {
-  const p: Record<string, any> = { ...element.props };
+  const p: Record<string, unknown> = { ...element.props };
 
   if (props.className) {
     p.className = clsx(element.props.className, props.className);
@@ -20,7 +20,7 @@ export function withNativeProps<P extends NativeProps>(
 
   if (props.style) {
     p.style = {
-      ...p.style,
+      ...(p.style as React.CSSProperties | undefined),
       ...props.style,
     };
   }

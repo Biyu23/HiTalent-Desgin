@@ -4,41 +4,44 @@ import clsx from 'clsx';
 import React, { memo, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import ReactDraggable from 'react-draggable';
-import { useNamespace } from '../../../configProvider/usePrefixCls';
 import useDragBounds from '../../../hooks/useDragBounds';
-import {
-  decrementRefCount,
-  ensureScrollWrapper,
-  getExistingScrollWrapper,
-  getMinimizeContainerId,
-  incrementRefCount,
-} from './dockContainer';
+import { useComponentNamespace } from '../namespace';
+import { acquireDockContainer } from './dockRegistry';
 import { useStyle } from './style';
 import type { MinimizedDockProps } from './type';
 
-const Draggable = ReactDraggable as any;
+const Draggable = ReactDraggable;
 
 const MinimizedDockInner = memo<MinimizedDockProps>(
   ({ title, position, className, style, locale, onRestore, onClose }) => {
-    const { prefixCls: dockPrefixCls, e } = useNamespace('minimize');
-    const { wrapSSR, hashId } = useStyle(dockPrefixCls);
+    const ownerNamespace = useComponentNamespace();
+    const dockPrefixCls = `${ownerNamespace.rootPrefixCls}-minimize`;
+    const e = (element: string) => `${dockPrefixCls}-${element}`;
+    const { wrapSSR, hashId } = useStyle(
+      dockPrefixCls,
+      ownerNamespace.antdPrefixCls,
+    );
     const { dragRef, bounds, onStart } = useDragBounds();
     const [scrollWrapperEl, setScrollWrapperEl] = useState<HTMLElement | null>(
-      () => getExistingScrollWrapper(position, dockPrefixCls),
+      null,
     );
 
     useLayoutEffect(() => {
-      const containerId = getMinimizeContainerId(position, dockPrefixCls);
-      const element = ensureScrollWrapper(position, dockPrefixCls, hashId);
-      setScrollWrapperEl(element);
-      incrementRefCount(containerId);
-
-      return () => {
-        if (decrementRefCount(containerId) <= 0) {
-          document.getElementById(containerId)?.remove();
-        }
-      };
-    }, [dockPrefixCls, hashId, position]);
+      const entry = acquireDockContainer({
+        namespace: ownerNamespace.rootPrefixCls,
+        dockPrefixCls,
+        hashId: clsx(ownerNamespace.hashId, hashId),
+        position,
+      });
+      setScrollWrapperEl(entry.scrollWrapper);
+      return entry.release;
+    }, [
+      dockPrefixCls,
+      hashId,
+      ownerNamespace.hashId,
+      ownerNamespace.rootPrefixCls,
+      position,
+    ]);
 
     if (!scrollWrapperEl) return null;
 
@@ -53,7 +56,13 @@ const MinimizedDockInner = memo<MinimizedDockProps>(
         >
           <div
             ref={dragRef}
-            className={clsx(e('dock'), hashId, className)}
+            className={clsx(
+              e('dock'),
+              ownerNamespace.prefixCls,
+              ownerNamespace.hashId,
+              hashId,
+              className,
+            )}
             style={style}
             role="group"
             aria-label={locale.minimizedDockLabel}

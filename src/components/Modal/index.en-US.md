@@ -15,6 +15,7 @@ Enhances Ant Design Modal with dragging (`draggable`), double-click maximization
 <code src="./demo/maximizable.tsx">Maximizable</code>
 <code src="./demo/minimizable.tsx">Minimizable & Dock Position</code>
 <code src="./demo/controlled.tsx">Controlled State & Ref</code>
+<code src="./demo/semantic-styles.tsx">Semantic Styles and Portal Root</code>
 
 ## API
 
@@ -58,3 +59,9 @@ Imperative methods exposed via `ref`:
 | `minimize`      | Minimizes the dialog into the Dock              | `() => void` |
 | `resetPosition` | Resets window position back to center           | `() => void` |
 | `resetSize`     | Resets manually resized dimensions              | `() => void` |
+
+## Semantic styles
+
+`rootClassName` targets the Modal root boundary. `classNames` and `styles` expose `root`, `mask`, `wrapper`, `content`, `header`, `title`, `actions`, `body`, `footer`, `resizeHandle`, and `minimizedDock`. Inline styles for `root` are applied to the portal root through an instance-scoped CSS-in-JS rule.
+
+Header operations are isolated from high-frequency position and size state, so moving or resizing the window does not repeatedly render the action area.

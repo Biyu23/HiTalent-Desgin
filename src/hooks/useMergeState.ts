@@ -1,6 +1,10 @@
 import { useCallback, useRef, useState } from 'react';
 
-export interface UseMergeStateProps<TOrigin, TResult = TOrigin> {
+export interface UseMergeStateProps<
+  TOrigin,
+  TResult = TOrigin,
+  ChangeArgs extends unknown[] = unknown[],
+> {
   /**
    * 外部传入的值 (受控)。
    * 当 value !== undefined 时为受控模式；当 value === undefined 时为非受控模式。
@@ -15,7 +19,7 @@ export interface UseMergeStateProps<TOrigin, TResult = TOrigin> {
   /**
    * 值改变时的回调
    */
-  onChange?: (value: TResult, ...args: any[]) => void;
+  onChange?: (value: TResult, ...args: ChangeArgs) => void;
 
   /**
    * 将外部传入的 TResult 转换为组件内部使用的 TOrigin
@@ -28,9 +32,11 @@ export interface UseMergeStateProps<TOrigin, TResult = TOrigin> {
   transformToResult?: (value: TOrigin) => TResult;
 }
 
-export function useMergeState<TOrigin, TResult = TOrigin>(
-  props: UseMergeStateProps<TOrigin, TResult> = {},
-) {
+export function useMergeState<
+  TOrigin,
+  TResult = TOrigin,
+  ChangeArgs extends unknown[] = unknown[],
+>(props: UseMergeStateProps<TOrigin, TResult, ChangeArgs> = {}) {
   const {
     value,
     defaultValue,
@@ -101,18 +107,21 @@ export function useMergeState<TOrigin, TResult = TOrigin>(
   const internalValueRef = useRef<TOrigin>(mergedValue);
   internalValueRef.current = mergedValue;
 
-  const triggerChange = useCallback((nextValue: TOrigin, ...args: any[]) => {
-    setInternalValue(nextValue);
-    internalValueRef.current = nextValue;
+  const triggerChange = useCallback(
+    (nextValue: TOrigin, ...args: ChangeArgs) => {
+      setInternalValue(nextValue);
+      internalValueRef.current = nextValue;
 
-    if (onChangeRef.current) {
-      const resultValue = transformResultRef.current(nextValue);
-      onChangeRef.current(resultValue, ...args);
-    }
-  }, []);
+      if (onChangeRef.current) {
+        const resultValue = transformResultRef.current(nextValue);
+        onChangeRef.current(resultValue, ...args);
+      }
+    },
+    [],
+  );
 
   const set = useCallback(
-    (val: TOrigin | ((prev: TOrigin) => TOrigin), ...args: any[]) => {
+    (val: TOrigin | ((prev: TOrigin) => TOrigin), ...args: ChangeArgs) => {
       const nextValue =
         typeof val === 'function'
           ? (val as (prev: TOrigin) => TOrigin)(internalValueRef.current)
@@ -123,7 +132,7 @@ export function useMergeState<TOrigin, TResult = TOrigin>(
   );
 
   const merge = useCallback(
-    (patch: Partial<TOrigin>, ...args: any[]) => {
+    (patch: Partial<TOrigin>, ...args: ChangeArgs) => {
       const current = internalValueRef.current;
       const nextValue =
         typeof current === 'object' &&
@@ -138,14 +147,14 @@ export function useMergeState<TOrigin, TResult = TOrigin>(
   );
 
   const clear = useCallback(
-    (emptyValue?: TOrigin, ...args: any[]) => {
+    (emptyValue?: TOrigin, ...args: ChangeArgs) => {
       triggerChange(emptyValue as TOrigin, ...args);
     },
     [triggerChange],
   );
 
   const refresh = useCallback(
-    (...args: any[]) => {
+    (...args: ChangeArgs) => {
       triggerChange(internalValueRef.current, ...args);
     },
     [triggerChange],

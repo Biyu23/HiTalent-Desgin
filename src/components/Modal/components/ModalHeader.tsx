@@ -8,8 +8,8 @@ import { Button, Flex } from 'antd';
 import clsx from 'clsx';
 import React, { memo } from 'react';
 import { useLocale } from '../../../configProvider/useLocale';
-import { useNamespace } from '../../../configProvider/usePrefixCls';
-import { useModalContext } from '../ModalContext';
+import { useComponentNamespace } from '../../_util/namespace';
+import { useModalOperations } from '../contexts';
 
 export interface ModalHeaderProps {
   /** 弹窗标题（ReactNode 以支持富文本标题） */
@@ -20,8 +20,6 @@ export interface ModalHeaderProps {
 
 const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
   const {
-    prefixCls,
-    hashId,
     isMaximized,
     draggable,
     minimizable,
@@ -30,14 +28,14 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
     onMinimize,
     onToggleMaximize,
     onClose,
-  } = useModalContext();
+    classNames,
+    styles,
+  } = useModalOperations();
 
-  const { e, em } = useNamespace('modal', prefixCls);
+  const namespace = useComponentNamespace();
+  const e = namespace.element;
+  const em = namespace.elementModifier;
   const modalLocale = useLocale('Modal');
-
-  const needCustomHeader = draggable || minimizable || maximizable || closable;
-
-  if (!needCustomHeader) return <>{title}</>;
 
   const actions = [
     minimizable && (
@@ -74,15 +72,28 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
 
   return (
     <div
-      className={clsx(e('header'), hashId, className, {
-        [em('header', 'draggable')]: draggable,
-      })}
+      className={clsx(
+        e('header'),
+        namespace.hashId,
+        classNames?.header,
+        className,
+        {
+          [em('header', 'draggable')]: draggable,
+        },
+      )}
+      style={styles?.header}
       onDoubleClick={maximizable ? onToggleMaximize : undefined}
     >
-      <div className={clsx(e('title'), hashId)}>{title}</div>
+      <div
+        className={clsx(e('title'), namespace.hashId, classNames?.title)}
+        style={styles?.title}
+      >
+        {title}
+      </div>
       {actions.length > 0 && (
         <Flex
-          className={clsx(e('actions'), hashId)}
+          className={clsx(e('actions'), namespace.hashId, classNames?.actions)}
+          style={styles?.actions}
           data-modal-no-drag
           gap={8}
           align="center"

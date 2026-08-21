@@ -18,6 +18,8 @@ Automatically calculates available space based on container width and smoothly c
 
 <code src="./demo/basic.tsx" title="Comprehensive Responsive Button Group" description="Drag the slider to experience container responsiveness, priority layout, async loading panel persistence, and mode switching."></code>
 
+<code src="./demo/semantic-styles.tsx" title="Semantic Styles" description="Customize the visible area, overflow trigger, menu portal, and menu item slots."></code>
+
 ## API
 
 ### ResponsiveButtonGroupProps
@@ -37,13 +39,14 @@ Automatically calculates available space based on container width and smoothly c
 | `overflowMenuProps`     | Props forwarded to Menu                                | `MenuProps`                                 | -                      |
 | `renderOverflowButton`  | Custom render for More button                          | `(info) => ReactNode`                       | -                      |
 | `onItemClick`           | Unified click callback for all actions                 | `(info) => void \| Promise<unknown>`        | -                      |
+| `onActionError`         | Rejected async action callback                         | `(error, info) => void`                     | -                      |
 | `onVisibleChange`       | Callback when visible/collapsed keys change            | `(visibleKeys, collapsedKeys) => void`      | -                      |
 
 ### ResponsiveButtonGroupItem
 
 | Property              | Description                                                                             | Type                                 | Default |
 | --------------------- | --------------------------------------------------------------------------------------- | ------------------------------------ | ------- |
-| `key`                 | Unique key                                                                              | `React.Key`                          | -       |
+| `key`                 | Unique string key                                                                       | `string`                             | -       |
 | `label`               | Label for button and menu item                                                          | `ReactNode`                          | -       |
 | `icon`                | Icon for button and menu item                                                           | `ReactNode`                          | -       |
 | `priority`            | Collapse priority; lower values collapse earlier                                        | `number`                             | `0`     |
@@ -54,3 +57,9 @@ Automatically calculates available space based on container width and smoothly c
 | `buttonProps`         | Item-specific Button props                                                              | `ResponsiveButtonGroupButtonProps`   | -       |
 | `renderCollapsedItem` | Custom render for collapsed menu item                                                   | `(info) => ReactNode`                | -       |
 | `onClick`             | Click handler; returns Promise to automatically show Loading and delay dropdown closing | `(info) => void \| Promise<unknown>` | -       |
+
+## Semantic styles
+
+Every item `key` must be a unique string. `rootClassName`, `classNames`, and `styles` expose the `root`, `visible`, `overflowTrigger`, `popup`, and `menuItem` slots. `popup` targets the overflow menu portal root.
+
+Responsive measurement renders each action once plus a single candidate overflow trigger; it does not render every collapsed combination.

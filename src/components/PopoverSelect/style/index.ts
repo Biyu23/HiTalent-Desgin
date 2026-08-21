@@ -5,6 +5,7 @@ import { useComponentStyle } from '../../../styles';
 export const genPopoverSelectStyle = (
   token: GlobalToken,
   prefixCls: string,
+  antdPrefixCls = 'ant',
 ): CSSObject => {
   return {
     [`.${prefixCls}`]: {
@@ -57,7 +58,7 @@ export const genPopoverSelectStyle = (
       textAlign: 'start',
       whiteSpace: 'nowrap',
       textOverflow: 'ellipsis',
-      '.ant-typography': {
+      [`.${antdPrefixCls}-typography`]: {
         margin: 0,
         padding: 0,
       },
@@ -121,7 +122,7 @@ export const genPopoverSelectStyle = (
       },
 
     [`.${prefixCls}-selector`]: {
-      '.ant-popover-inner': {
+      [`.${antdPrefixCls}-popover-inner`]: {
         padding: 0,
       },
       [`.${prefixCls}-dropdown`]: {
@@ -178,7 +179,7 @@ export const genPopoverSelectStyle = (
         '&:hover': {
           backgroundColor: token.colorFillTertiary,
         },
-        '&.ant-checkbox-wrapper-disabled, &[disabled]': {
+        [`&.${antdPrefixCls}-checkbox-wrapper-disabled, &[disabled]`]: {
           cursor: 'not-allowed',
           '&:hover': {
             backgroundColor: 'transparent',
@@ -205,14 +206,14 @@ export const genPopoverSelectStyle = (
       },
       [`.${prefixCls}-search`]: {
         padding: `${token.paddingXS}px ${token.paddingXS}px 0 ${token.paddingXS}px`,
-        '.ant-input-affix-wrapper .anticon': {
+        [`.${antdPrefixCls}-input-affix-wrapper svg`]: {
           color: token.colorTextQuaternary,
         },
       },
       [`.${prefixCls}-select-all`]: {
         padding: `${token.paddingXXS}px ${token.paddingSM}px`,
         borderBottom: `1px solid ${token.colorBorderSecondary}`,
-        '.ant-checkbox-wrapper': {
+        [`.${antdPrefixCls}-checkbox-wrapper`]: {
           display: 'flex',
           alignItems: 'center',
           width: '100%',
@@ -232,15 +233,15 @@ export const genPopoverSelectStyle = (
       [`.${prefixCls}-empty`]: {
         padding: `${token.paddingLG}px ${token.paddingSM}px`,
         textAlign: 'center',
-        '.ant-empty-image': {
+        [`.${antdPrefixCls}-empty-image`]: {
           height: 40,
           marginBottom: token.marginXS,
-          '.ant-empty-img-simple': {
+          [`.${antdPrefixCls}-empty-img-simple`]: {
             width: 40,
             height: 40,
           },
         },
-        '.ant-empty-description': {
+        [`.${antdPrefixCls}-empty-description`]: {
           color: token.colorText,
           fontSize: token.fontSizeSM,
         },
@@ -249,6 +250,11 @@ export const genPopoverSelectStyle = (
   };
 };
 
-export function useStyle(prefixCls: string) {
-  return useComponentStyle('PopoverSelect', prefixCls, genPopoverSelectStyle);
+export function useStyle(prefixCls: string, antdPrefixCls = 'ant') {
+  return useComponentStyle(
+    'PopoverSelect',
+    prefixCls,
+    (token, currentPrefixCls) =>
+      genPopoverSelectStyle(token, currentPrefixCls, antdPrefixCls),
+  );
 }

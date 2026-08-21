@@ -2,13 +2,18 @@ import type { DropdownProps, MenuProps } from 'antd';
 import type React from 'react';
 import type { NativeProps } from '../../types';
 import type { ButtonProps } from '../Button/type';
+import type {
+  SemanticClassNames,
+  SemanticStyleProps,
+  SemanticStyles,
+} from '../_util/semanticStyles';
 
 export type ResponsiveButtonGroupMode = 'responsive' | 'expanded' | 'collapsed';
 
 export type ResponsiveButtonGroupItemSource = 'button' | 'overflow';
 
 export interface ResponsiveButtonGroupClickInfo {
-  key: React.Key;
+  key: string;
   item: ResponsiveButtonGroupItem;
   source: ResponsiveButtonGroupItemSource;
   event: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>;
@@ -48,7 +53,7 @@ export type ResponsiveButtonGroupButtonProps = Omit<
 >;
 
 export interface ResponsiveButtonGroupItem {
-  key: React.Key;
+  key: string;
   label: React.ReactNode;
   icon?: React.ReactNode;
   /** 数值越小越早收起；相同权重时左侧项先收起。 */
@@ -64,7 +69,21 @@ export interface ResponsiveButtonGroupItem {
   onClick?: (info: ResponsiveButtonGroupClickInfo) => void | Promise<unknown>;
 }
 
-export interface ResponsiveButtonGroupProps extends NativeProps {
+export type ResponsiveButtonGroupSlot =
+  | 'root'
+  | 'visible'
+  | 'overflowTrigger'
+  | 'popup'
+  | 'menuItem';
+
+export type ResponsiveButtonGroupClassNames =
+  SemanticClassNames<ResponsiveButtonGroupSlot>;
+export type ResponsiveButtonGroupStyles =
+  SemanticStyles<ResponsiveButtonGroupSlot>;
+
+export interface ResponsiveButtonGroupProps
+  extends NativeProps,
+    SemanticStyleProps<ResponsiveButtonGroupSlot> {
   /** 样式类名前缀 */
   prefixCls?: string;
   items: readonly ResponsiveButtonGroupItem[];
@@ -99,8 +118,9 @@ export interface ResponsiveButtonGroupProps extends NativeProps {
   onItemClick?: (
     info: ResponsiveButtonGroupClickInfo,
   ) => void | Promise<unknown>;
-  onVisibleChange?: (
-    visibleKeys: React.Key[],
-    collapsedKeys: React.Key[],
+  onActionError?: (
+    error: unknown,
+    info: ResponsiveButtonGroupClickInfo,
   ) => void;
+  onVisibleChange?: (visibleKeys: string[], collapsedKeys: string[]) => void;
 }

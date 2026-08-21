@@ -3,7 +3,7 @@ import { Button, Checkbox, Empty, Popover, Spin } from 'antd';
 import clsx from 'clsx';
 import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
 import { useLocale } from '../../../configProvider/useLocale';
-import { useNamespace } from '../../../configProvider/usePrefixCls';
+import { useComponentNamespace } from '../../_util/namespace';
 import TableContext from '../TableContext';
 import type { ColumnId, EnhancedColumnType } from '../type';
 import { collectColumnMeta } from '../utils/columnHelpers';
@@ -26,8 +26,13 @@ function ColumnSettingPopover<RecordType = Record<string, unknown>>(
     loading = false,
     title: titleProp,
   } = props;
-  const { prefixCls, e } = useNamespace('table');
-  const { hashId: resolvedHashId } = useContext(TableContext);
+  const namespace = useComponentNamespace();
+  const { prefixCls, element: e } = namespace;
+  const {
+    hashId: resolvedHashId,
+    classNames,
+    styles,
+  } = useContext(TableContext);
   const locale = useLocale('Table');
   const [open, setOpen] = useState(false);
   const [checkValue, setCheckValue] = useState<ColumnId[]>([...visibleIds]);
@@ -126,7 +131,8 @@ function ColumnSettingPopover<RecordType = Record<string, unknown>>(
       onOpenChange={setOpen}
       content={renderContent()}
       title={title}
-      rootClassName={clsx(prefixCls, resolvedHashId)}
+      rootClassName={clsx(prefixCls, resolvedHashId, classNames?.settingPopup)}
+      styles={{ root: styles?.settingPopup }}
       classNames={{
         root: clsx(e('column-setting-popover'), resolvedHashId),
         body: clsx(e('column-setting-popover-body'), resolvedHashId),
@@ -134,6 +140,8 @@ function ColumnSettingPopover<RecordType = Record<string, unknown>>(
     >
       <Button
         type="text"
+        className={classNames?.settingTrigger}
+        style={styles?.settingTrigger}
         icon={<SettingOutlined />}
         aria-label={String(locale.columnSetting)}
       />

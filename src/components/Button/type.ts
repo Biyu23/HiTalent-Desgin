@@ -4,10 +4,24 @@ import type {
   TooltipProps,
 } from 'antd';
 import type React from 'react';
+import type {
+  SemanticClassNames,
+  SemanticStyleProps,
+  SemanticStyles,
+} from '../_util/semanticStyles';
 
 export type ButtonRef = React.ComponentRef<typeof AntdButton>;
 
-export interface ButtonProps extends Omit<AntdButtonProps, 'onClick'> {
+export type ButtonSlot = 'root' | 'content';
+export type ButtonClassNames = SemanticClassNames<ButtonSlot>;
+export type ButtonStyles = SemanticStyles<ButtonSlot>;
+
+export interface ButtonProps
+  extends Omit<
+      AntdButtonProps,
+      'onClick' | 'rootClassName' | 'classNames' | 'styles'
+    >,
+    SemanticStyleProps<ButtonSlot> {
   /**
    * @description 是否自动控制 loading 状态——当 onClick 返回 Promise 时
    *              自动进入 loading 态，Promise 落定后自动退出

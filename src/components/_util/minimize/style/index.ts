@@ -17,6 +17,7 @@ const minimizeDockIn = new Keyframes('minimizeDockIn', {
 export const genMinimizeStyle = (
   token: GlobalToken,
   prefixCls: string,
+  antdPrefixCls = 'ant',
 ): CSSObject => {
   return {
     [`.${prefixCls}-container`]: {
@@ -163,7 +164,7 @@ export const genMinimizeStyle = (
 
       [`& .${prefixCls}-actions`]: {
         flexShrink: 0,
-        '.ant-btn': {
+        [`.${antdPrefixCls}-btn`]: {
           color: token.colorTextSecondary,
         },
       },
@@ -171,6 +172,11 @@ export const genMinimizeStyle = (
   };
 };
 
-export function useStyle(prefixCls: string) {
-  return useComponentStyle('MinimizedDock', prefixCls, genMinimizeStyle);
+export function useStyle(prefixCls: string, antdPrefixCls = 'ant') {
+  return useComponentStyle(
+    'MinimizedDock',
+    prefixCls,
+    (token, currentPrefixCls) =>
+      genMinimizeStyle(token, currentPrefixCls, antdPrefixCls),
+  );
 }

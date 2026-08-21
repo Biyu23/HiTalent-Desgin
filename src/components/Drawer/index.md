@@ -29,6 +29,8 @@ toc: content
 
 <code src="./demo/custom-style.tsx" title="自定义样式" description="通过 styles 和 classNames 深度定制头部、主体、底部、遮罩、内容区、拖拽把手及最小化卡片等各层级样式。"></code>
 
+<code src="./demo/semantic-styles.tsx" title="语义化样式" description="通过强类型插槽定制 Drawer、缩放把手和最小化 Dock。"></code>
+
 ## API
 
 除下列增强属性外，完全兼容 Ant Design `DrawerProps`。
@@ -73,3 +75,9 @@ toc: content
 - **状态保留机制**：开启 `minimizable` 时内部会保持 `destroyOnHidden: false`，最小化时抽屉隐藏但 DOM 节点与表单输入状态完全保留。
 - **受控与非受控**：未传 `size` 时为非受控模式，拖拽尺寸由组件内部持久记录，同一实例关闭重开仍会保留；传入 `size` 时需在 `onResize` 回调中同步更新。
 - **局部容器**：使用 `getContainer={false}` 时，请确保父容器具有相对定位（如 `position: relative`），抽屉尺寸将受限于父容器。
+
+## 语义化样式
+
+`rootClassName` 作用于 Drawer 根边界。`classNames` 与 `styles` 提供 `root`、`mask`、`wrapper`、`content`、`header`、`body`、`footer`、`dragger`、`minimizeButton`、`minimizedDock` 插槽。最小化 Dock 是独立 Portal，但会自动继承当前命名空间和 CSS-in-JS hash。
+
+调整尺寸使用 Pointer Events；全局监听仅在活动拖拽期间注册，并在结束、取消、窗口失焦或卸载时清理。

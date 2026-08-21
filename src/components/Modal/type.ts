@@ -1,6 +1,11 @@
 import type { Modal as AntdModal, ModalProps as AntdModalProps } from 'antd';
 import React from 'react';
 import type { MinimizePosition } from '../_util/minimize/type';
+import type {
+  SemanticClassNames,
+  SemanticStyleProps,
+  SemanticStyles,
+} from '../_util/semanticStyles';
 
 export type { MinimizePosition } from '../_util/minimize/type';
 
@@ -58,22 +63,45 @@ export interface ModalResizableConfig {
   onResizeEnd?: () => void;
 }
 
-export interface ModalClassNames
+interface AntdModalClassNames
   extends NonNullable<AntdModalProps['classNames']> {
   /** 最小化 Dock 卡片的 className */
   minimizedDock?: string;
 }
 
-export interface ModalStyles extends NonNullable<AntdModalProps['styles']> {
+interface AntdModalStyles extends NonNullable<AntdModalProps['styles']> {
   /** 最小化 Dock 卡片的行内样式 */
   minimizedDock?: React.CSSProperties;
 }
 
+export type ModalSlot =
+  | 'root'
+  | 'mask'
+  | 'wrapper'
+  | 'content'
+  | 'header'
+  | 'title'
+  | 'actions'
+  | 'body'
+  | 'footer'
+  | 'resizeHandle'
+  | 'minimizedDock';
+
+export type ModalClassNames = SemanticClassNames<ModalSlot> &
+  AntdModalClassNames;
+export type ModalStyles = SemanticStyles<ModalSlot> & AntdModalStyles;
+
 export interface ModalProps
   extends Omit<
-    AntdModalProps,
-    'closable' | 'title' | 'onCancel' | 'classNames' | 'styles'
-  > {
+      AntdModalProps,
+      | 'closable'
+      | 'title'
+      | 'onCancel'
+      | 'classNames'
+      | 'styles'
+      | 'rootClassName'
+    >,
+    SemanticStyleProps<ModalSlot> {
   classNames?: ModalClassNames;
   styles?: ModalStyles;
   /**

@@ -5,11 +5,12 @@ import { useComponentStyle } from '../../../styles';
 export const genModalStyle = (
   token: GlobalToken,
   prefixCls: string,
+  antdPrefixCls = 'ant',
 ): CSSObject => {
-  const modalContent = '.ant-modal-content';
-  const modalHeader = '.ant-modal-header';
-  const modalFooter = '.ant-modal-footer';
-  const modalBody = '.ant-modal-body';
+  const modalContent = `.${antdPrefixCls}-modal-content`;
+  const modalHeader = `.${antdPrefixCls}-modal-header`;
+  const modalFooter = `.${antdPrefixCls}-modal-footer`;
+  const modalBody = `.${antdPrefixCls}-modal-body`;
 
   return {
     [`.${prefixCls}-wrap-constrained`]: {
@@ -42,7 +43,7 @@ export const genModalStyle = (
       },
       [`.${prefixCls}-actions`]: {
         flexShrink: 0,
-        '.ant-btn': {
+        [`.${antdPrefixCls}-btn`]: {
           color: token.colorTextSecondary,
         },
       },
@@ -129,6 +130,8 @@ export const genModalStyle = (
   };
 };
 
-export function useStyle(prefixCls: string) {
-  return useComponentStyle('Modal', prefixCls, genModalStyle);
+export function useStyle(prefixCls: string, antdPrefixCls = 'ant') {
+  return useComponentStyle('Modal', prefixCls, (token, currentPrefixCls) =>
+    genModalStyle(token, currentPrefixCls, antdPrefixCls),
+  );
 }

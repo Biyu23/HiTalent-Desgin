@@ -1,11 +1,12 @@
 import clsx from 'clsx';
 import React, { memo } from 'react';
 import { useLocale } from '../../../configProvider/useLocale';
+import { useComponentNamespace } from '../../_util/namespace';
 
 interface ModalResizeHandleProps {
-  prefixCls: string;
-  hashId?: string;
   onPointerDown: (event: React.PointerEvent<HTMLDivElement>) => void;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
 const stopMouseDownPropagation = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -14,12 +15,18 @@ const stopMouseDownPropagation = (event: React.MouseEvent<HTMLDivElement>) => {
 };
 
 const ModalResizeHandle = memo<ModalResizeHandleProps>(
-  ({ prefixCls, hashId, onPointerDown }) => {
+  ({ onPointerDown, className, style }) => {
     const modalLocale = useLocale('Modal');
+    const namespace = useComponentNamespace();
 
     return (
       <div
-        className={clsx(`${prefixCls}-resize-handle`, hashId)}
+        className={clsx(
+          namespace.element('resize-handle'),
+          namespace.hashId,
+          className,
+        )}
+        style={style}
         data-modal-no-drag
         role="separator"
         aria-label={modalLocale.resizeBottomRight}

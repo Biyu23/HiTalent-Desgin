@@ -13,7 +13,7 @@ toc: content
 - 选项数量大，需要虚拟滚动保持打开、搜索和滚动流畅。
 - 后端字段并非固定的 `label` / `value` 结构。
 - 多选需要确认、取消、清空或针对当前搜索结果全选。
-- 旧接口使用逗号分隔字符串，而组件内部仍希望以数组操作。
+- 接口要求字符串字段，同时选项值需要保留数字或字符串的原始类型。
 
 简单、少量且无需定制的选项可以直接使用 Ant Design Select。
 
@@ -21,7 +21,7 @@ toc: content
 
 - 基于 `rc-virtual-list` 处理万级选项。
 - `fieldNames` 直接适配后端数据，无需先执行 `map`。
-- `valueType` 在数组和分隔字符串之间转换。
+- `valueType="string"` 使用 JSON 数组字符串协议，无歧义保留数字与字符串值。
 - 单选、多选、全选和确认机制共享一致状态模型。
 - `optionRender` 与 `dropdownRender` 扩展选项和面板内容。
 
@@ -29,7 +29,9 @@ toc: content
 
 <code src="./demo/multiple.tsx" title="多选确认与标签截断" description="multiple 模式支持确认/取消/清空草稿操作，并可通过 maxTagCount 实现超出自动 +N 截断展示。"></code>
 
-<code src="./demo/string-value.tsx" title="字符串提交与智能全选" description="valueType='string' 自动在逗号拼接字符串与数组间双向转换，全选联动当前搜索过滤结果。"></code>
+<code src="./demo/string-value.tsx" title="类型安全的字符串提交" description="valueType='string' 使用 JSON 数组字符串保留数字与字符串值类型，全选联动当前搜索过滤结果。"></code>
+
+<code src="./demo/semantic-styles.tsx" title="语义化样式与 Portal" description="定制触发器、菜单项和弹层根节点，Portal 自动继承命名空间。"></code>
 
 ## API
 
@@ -56,8 +58,7 @@ toc: content
 | `virtual`              | 是否启用虚拟滚动           | `boolean`                              | `true`         |
 | `listHeight`           | 列表最大高度，单位 px      | `number`                               | `150`          |
 | `listItemHeight`       | 虚拟列表单项高度，单位 px  | `number`                               | `34`           |
-| `valueType`            | 提交数组或分隔字符串       | `string \| array`                      | `string`       |
-| `valueSeparator`       | 字符串提交格式的分隔符     | `string`                               | `,`            |
+| `valueType`            | 提交数组或 JSON 数组字符串 | `string \| array`                      | -              |
 | `showSelectAll`        | 多选时是否显示全选         | `boolean`                              | `false`        |
 | `showArrow`            | 是否显示下拉箭头           | `boolean`                              | `true`         |
 | `disabled`             | 是否禁用组件               | `boolean`                              | `false`        |
@@ -74,5 +75,13 @@ toc: content
 
 - 大数据量下应为 `value` 字段提供稳定且唯一的值。
 - `fieldNames` 只负责读取字段，不会修改原始数据。
-- 字符串模式的分隔符必须与后端约定一致，选项值本身不应包含同一分隔符。
+- 字符串模式输入输出均为 JSON 数组字符串，例如 `[1,"PM"]`，可保留数字与字符串类型。
 - 自定义渲染应保持选项高度稳定，以免影响虚拟列表测量。
+
+## 值类型与语义化样式
+
+单选使用 `mode="single"`（或省略 `mode`），变更结果为标量或 `undefined`。多选必须显式选择 `valueType="array"` 或 `valueType="string"`，回调结果分别为数组或字符串。
+
+字符串模式使用 JSON 数组字符串进行无歧义编解码，因此异步选项、数字值与同形字符串值都能保持正确类型。
+
+所有样式入口统一为 `rootClassName`、`classNames`、`styles`。插槽包括：`root`、`trigger`、`triggerText`、`actions`、`popup`、`search`、`selectAll`、`menu`、`item`、`footer`、`empty`。其中 `popup` 作用于 Portal 根节点，并自动携带当前组件前缀和 CSS-in-JS hash。

@@ -1,6 +1,11 @@
 import type { DrawerProps as AntdDrawerProps } from 'antd';
 import type React from 'react';
 import type { MinimizePosition } from '../_util/minimize/type';
+import type {
+  SemanticClassNames,
+  SemanticStyleProps,
+  SemanticStyles,
+} from '../_util/semanticStyles';
 
 export type DrawerPlacement = 'left' | 'right' | 'top' | 'bottom';
 export type DrawerAxis = 'horizontal' | 'vertical';
@@ -22,7 +27,7 @@ export interface DrawerResizableConfig {
   onResizeEnd?: () => void;
 }
 
-export interface DrawerClassNames
+interface AntdDrawerClassNames
   extends NonNullable<AntdDrawerProps['classNames']> {
   /** 最小化按钮的 className */
   minimizeButton?: string;
@@ -32,7 +37,7 @@ export interface DrawerClassNames
   dragger?: string;
 }
 
-export interface DrawerStyles extends NonNullable<AntdDrawerProps['styles']> {
+interface AntdDrawerStyles extends NonNullable<AntdDrawerProps['styles']> {
   /** 最小化按钮的行内样式 */
   minimizeButton?: React.CSSProperties;
   /** 最小化 Dock 卡片的行内样式 */
@@ -41,11 +46,34 @@ export interface DrawerStyles extends NonNullable<AntdDrawerProps['styles']> {
   dragger?: React.CSSProperties;
 }
 
+export type DrawerSlot =
+  | 'root'
+  | 'mask'
+  | 'wrapper'
+  | 'content'
+  | 'header'
+  | 'body'
+  | 'footer'
+  | 'dragger'
+  | 'minimizeButton'
+  | 'minimizedDock';
+
+export type DrawerClassNames = SemanticClassNames<DrawerSlot> &
+  AntdDrawerClassNames;
+export type DrawerStyles = SemanticStyles<DrawerSlot> & AntdDrawerStyles;
+
 export interface DrawerProps
   extends Omit<
-    AntdDrawerProps,
-    'size' | 'width' | 'height' | 'classNames' | 'styles' | 'onClose'
-  > {
+      AntdDrawerProps,
+      | 'size'
+      | 'width'
+      | 'height'
+      | 'classNames'
+      | 'styles'
+      | 'onClose'
+      | 'rootClassName'
+    >,
+    SemanticStyleProps<DrawerSlot> {
   /**
    * Drawer 的轴向尺寸。left/right 表示宽度，top/bottom 表示高度。
    * 传入时为受控模式。

@@ -1,6 +1,11 @@
 import type React from 'react';
 import type { AriaAttributes } from 'react';
 
+export type CSSVariableName = `--${string}`;
+
+export type CSSPropertiesWithVars = React.CSSProperties &
+  Partial<Record<CSSVariableName, string | number | undefined>>;
+
 /**
  * 原生属性接口
  *
@@ -11,9 +16,9 @@ import type { AriaAttributes } from 'react';
  * - data-* 的值放宽为 `string | number | boolean | undefined`，
  *   兼容 React 实际允许的 data 属性值范围。
  */
-export type NativeProps<S extends string = never> = {
+export type NativeProps = {
   className?: string;
-  style?: React.CSSProperties & Partial<Record<S, string>>;
+  style?: CSSPropertiesWithVars;
   tabIndex?: number;
   [key: `data-${string}`]: string | number | boolean | undefined;
 } & AriaAttributes;

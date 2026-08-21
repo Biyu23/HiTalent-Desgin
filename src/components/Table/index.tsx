@@ -5,12 +5,18 @@ import clsx from 'clsx';
 import React, {
   forwardRef,
   memo,
+  useContext,
   useImperativeHandle,
   useMemo,
   useRef,
 } from 'react';
+import { ConfigContext } from '../../configProvider/context';
 import { useLocale } from '../../configProvider/useLocale';
-import { useNamespace } from '../../configProvider/usePrefixCls';
+import { usePrefixCls } from '../../configProvider/usePrefixCls';
+import {
+  ComponentNamespaceProvider,
+  useResolvedComponentNamespace,
+} from '../_util/namespace';
 import EnhancedHeaderCell from './components/EnhancedHeaderCell';
 import Toolbar from './components/Toolbar';
 import { useColumnConfig } from './hooks/useColumnConfig';
@@ -64,15 +70,26 @@ function InternalTable<RecordType = Record<string, unknown>>(
     prefixCls: customPrefixCls,
     className,
     style,
+    rootClassName,
+    classNames,
+    styles,
     rowKey: rowKeyProp,
     dataSource,
     components: userComponents,
     ...restProps
   } = props;
-  const { prefixCls, e, m } = useNamespace('table', customPrefixCls);
-  const { wrapSSR, hashId } = useStyle(prefixCls);
+  const prefixCls = usePrefixCls('table', customPrefixCls);
+  const { antdPrefixCls } = useContext(ConfigContext);
+  const { wrapSSR, hashId } = useStyle(prefixCls, antdPrefixCls);
+  const namespace = useResolvedComponentNamespace(
+    'table',
+    customPrefixCls,
+    hashId,
+  );
+  const { element: e, modifier: m } = namespace;
   const locale = useLocale('Table');
   const antdTableRef = useRef<AntdTableRef>(null);
+  const tableRootRef = useRef<HTMLDivElement>(null);
   const controlled = 'columnState' in props;
 
   const {
@@ -110,14 +127,16 @@ function InternalTable<RecordType = Record<string, unknown>>(
     [columnMeta],
   );
 
-  const { HeaderCellWrapper, ColumnDragContextWrapper } = useColumnDrag({
-    orderedIds,
-    onPreview: previewColumnOrder,
-    onCommit: commitColumnOrder,
-    onCancel: cancelColumnOrder,
-    columns: columnDragItems,
-    enabled: enableColumnDrag,
-  });
+  const { HeaderCellWrapper, ColumnDragContextWrapper, tableId } =
+    useColumnDrag({
+      rootRef: tableRootRef,
+      orderedIds,
+      onPreview: previewColumnOrder,
+      onCommit: commitColumnOrder,
+      onCancel: cancelColumnOrder,
+      columns: columnDragItems,
+      enabled: enableColumnDrag,
+    });
 
   const rowDragConfig = useMemo<RowDragConfig<RecordType>>(() => {
     return typeof enableRowDragProp === 'object'
@@ -281,11 +300,21 @@ function InternalTable<RecordType = Record<string, unknown>>(
     () => ({
       hashId,
       prefixCls,
+      classNames,
+      styles,
       columnWidths,
       onColumnWidthChange: previewColumnWidth,
       onColumnResizeEnd: commitColumnWidth,
     }),
-    [hashId, prefixCls, columnWidths, commitColumnWidth, previewColumnWidth],
+    [
+      classNames,
+      hashId,
+      prefixCls,
+      styles,
+      columnWidths,
+      commitColumnWidth,
+      previewColumnWidth,
+    ],
   );
   const defaultToolbar = useMemo(
     () => (
@@ -325,32 +354,52 @@ function InternalTable<RecordType = Record<string, unknown>>(
     [resetColumnState],
   );
 
-  const mergedClassName = clsx(prefixCls, hashId, className, {
-    [m('zebra')]: zebraStripe,
-    [m('no-hover')]: !hoverHighlight,
-  });
+  const mergedClassName = clsx(
+    prefixCls,
+    hashId,
+    classNames?.table,
+    className,
+    {
+      [m('zebra')]: zebraStripe,
+      [m('no-hover')]: !hoverHighlight,
+    },
+  );
 
   return wrapSSR(
-    <TableContext.Provider value={contextValue}>
-      <div className={clsx(e('wrapper'), hashId)}>
-        {finalToolbar}
-        <ColumnDragContextWrapper>
-          <RowDragContextWrapper>
-            <AntdTable<RecordType>
-              {...restProps}
-              ref={antdTableRef}
-              className={mergedClassName}
-              style={style}
-              columns={processedColumns}
-              rowKey={rowKey}
-              dataSource={dataSource}
-              components={tableComponents}
-              tableLayout={enableColumnResize ? 'fixed' : restProps.tableLayout}
-            />
-          </RowDragContextWrapper>
-        </ColumnDragContextWrapper>
-      </div>
-    </TableContext.Provider>,
+    <ComponentNamespaceProvider value={namespace}>
+      <TableContext.Provider value={contextValue}>
+        <div
+          ref={tableRootRef}
+          data-htd-table-id={tableId}
+          className={clsx(
+            e('wrapper'),
+            hashId,
+            rootClassName,
+            classNames?.root,
+          )}
+          style={styles?.root}
+        >
+          {finalToolbar}
+          <ColumnDragContextWrapper>
+            <RowDragContextWrapper>
+              <AntdTable<RecordType>
+                {...restProps}
+                ref={antdTableRef}
+                className={mergedClassName}
+                style={{ ...styles?.table, ...style }}
+                columns={processedColumns}
+                rowKey={rowKey}
+                dataSource={dataSource}
+                components={tableComponents}
+                tableLayout={
+                  enableColumnResize ? 'fixed' : restProps.tableLayout
+                }
+              />
+            </RowDragContextWrapper>
+          </ColumnDragContextWrapper>
+        </div>
+      </TableContext.Provider>
+    </ComponentNamespaceProvider>,
   );
 }
 

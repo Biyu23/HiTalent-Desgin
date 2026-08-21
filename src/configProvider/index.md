@@ -32,6 +32,8 @@ toc: content
 
 <code src="./demo/custom-locale.tsx" title="语言、局部覆盖与 RTL" description="传入完整语言包，嵌套 Provider 继承配置，并分别覆盖文案或切换文字方向。"></code>
 
+<code src="./demo/semantic-prefixes.tsx" title="自定义前缀与 Portal" description="验证自研组件、Ant Design 子组件及 Portal 内容统一继承自定义命名空间。"></code>
+
 ## API
 
 | 属性              | 说明                                         | 类型              | 默认值         |

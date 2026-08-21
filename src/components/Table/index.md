@@ -35,6 +35,8 @@ toc: content
 
 <code src="./demo/sort.tsx" title="表头排序" description="复用 Ant Design sorter 和 onChange，演示前端排序与远程排序状态。"></code>
 
+<code src="./demo/semantic-styles.tsx" title="语义化样式" description="定制表格外层、工具栏、设置面板、拖拽把手与拖拽浮层。"></code>
+
 ## API
 
 ### TableProps
@@ -107,3 +109,9 @@ toc: content
 | 行内编辑扩展                         | Ant Design `render` / `onCell` + Form + 受控 `dataSource` |
 
 `TableRef` 同时保留 Ant Design 的 `nativeElement` 和 `scrollTo`。
+
+## 根节点与语义化样式
+
+Table 的 `root` 是同时包含工具栏和 Ant Design Table 的外层边界。`className`、`style` 作用于 Ant Design Table，`rootClassName` 作用于外层边界。
+
+`classNames` 与 `styles` 支持 `root`、`toolbar`、`toolbarExtra`、`settingTrigger`、`settingPopup`、`table`、`headerCell`、`resizeHandle`、`rowDragHandle`、`dragOverlay` 插槽。设置弹层和拖拽浮层位于 Portal 中，但仍自动携带当前前缀与 CSS-in-JS hash。

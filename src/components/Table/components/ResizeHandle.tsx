@@ -1,24 +1,32 @@
 import clsx from 'clsx';
-import React, { memo } from 'react';
-import { useNamespace } from '../../../configProvider/usePrefixCls';
+import React, { memo, useContext } from 'react';
+import { useComponentNamespace } from '../../_util/namespace';
+import TableContext from '../TableContext';
 
 interface ResizeHandleProps {
-  hashId?: string;
   isResizing: boolean;
   onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => void;
 }
 
 const ResizeHandle: React.FC<ResizeHandleProps> = ({
-  hashId,
   isResizing,
   onPointerDown,
 }) => {
-  const { e, em } = useNamespace('table');
+  const namespace = useComponentNamespace();
+  const context = useContext(TableContext);
+  const e = namespace.element;
+  const em = namespace.elementModifier;
   return (
     <div
-      className={clsx(e('resize-handle'), hashId, {
-        [em('resize-handle', 'active')]: isResizing,
-      })}
+      className={clsx(
+        e('resize-handle'),
+        namespace.hashId,
+        context.classNames?.resizeHandle,
+        {
+          [em('resize-handle', 'active')]: isResizing,
+        },
+      )}
+      style={context.styles?.resizeHandle}
       onPointerDown={onPointerDown}
       onClick={(e) => e.stopPropagation()}
       role="separator"
