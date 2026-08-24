@@ -1,7 +1,4 @@
-/**
- * description: 使用 minimized 和 onMinimizeChange 受控管理最小化状态，并支持 8 个全局停靠方位。
- */
-import { Alert, Button, Flex, Radio, Space, Tag, Typography } from 'antd';
+import { Button, Flex, Radio, Space, Tag, Typography } from 'antd';
 import type { MinimizePosition } from 'hi-talent-design';
 import { Drawer } from 'hi-talent-design';
 import { useDemoIntl } from 'hi-talent-design/demoIntl';
@@ -24,25 +21,21 @@ const messages = {
     minimize: '直接最小化',
     restore: '恢复展开',
     position: '停靠方位',
-    title: '受控最小化抽屉',
-    content: '通过父组件 state 统一控制 open、minimized 与停靠方位。',
+    title: '受控最小化与停靠方位',
     openState: '展开状态',
     minState: '最小化状态',
-    posState: '停靠位置',
-    hint: '支持自由切换 8 个停靠方位，切换后点击「最小化」观察 Dock 卡片的停靠效果。',
+    content: '通过 state 受控管理 minimized 状态与 8 个全局停靠方位。',
   },
   'en-US': {
     open: 'Open Drawer',
     minimize: 'Minimize Directly',
     restore: 'Restore',
     position: 'Dock Position',
-    title: 'Controlled Minimize Drawer',
+    title: 'Controlled Minimize & Positions',
+    openState: 'Open',
+    minState: 'Minimized',
     content:
-      'Parent component uniformly controls open, minimized, and dock position states.',
-    openState: 'Open State',
-    minState: 'Minimized State',
-    posState: 'Dock Position',
-    hint: 'Switch between 8 dock positions and click "Minimize Directly" to observe where the card docks.',
+      'Manage minimized state and 8 global dock positions via controlled props.',
   },
 };
 
@@ -51,11 +44,6 @@ export default () => {
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [position, setPosition] = useState<MinimizePosition>('bottom-right');
-
-  const handleClose = () => {
-    setMinimized(false);
-    setOpen(false);
-  };
 
   return (
     <Space direction="vertical" size="middle" style={{ width: '100%' }}>
@@ -94,7 +82,7 @@ export default () => {
           optionType="button"
           buttonStyle="solid"
           value={position}
-          onChange={(event) => setPosition(event.target.value)}
+          onChange={(e) => setPosition(e.target.value)}
         >
           {positions.map((item) => (
             <Radio.Button key={item} value={item}>
@@ -111,9 +99,7 @@ export default () => {
         <Tag color={minimized ? 'gold' : 'default'}>
           {t('minState')}: {String(minimized)}
         </Tag>
-        <Tag color="cyan">
-          {t('posState')}: {position}
-        </Tag>
+        <Tag color="cyan">{position}</Tag>
       </Flex>
 
       <Drawer
@@ -123,12 +109,12 @@ export default () => {
         minimized={minimized}
         minimizePosition={position}
         onMinimizeChange={setMinimized}
-        onClose={handleClose}
+        onClose={() => {
+          setMinimized(false);
+          setOpen(false);
+        }}
       >
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-          <Alert type="info" showIcon message={t('hint')} />
-          <Typography.Paragraph>{t('content')}</Typography.Paragraph>
-        </Space>
+        <Typography.Paragraph>{t('content')}</Typography.Paragraph>
       </Drawer>
     </Space>
   );

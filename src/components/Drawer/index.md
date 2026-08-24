@@ -6,51 +6,46 @@ toc: content
 
 # Drawer 抽屉
 
-在 Ant Design Drawer 基础上，增加按展开方向调整尺寸与最小化到全局 Dock 的能力，支持状态暂存与多窗口协同。
+在 Ant Design Drawer 基础上，扩展了内侧边缘拖拽调整尺寸与最小化到全局 Dock 的能力，支持状态暂存与多窗口协同。
 
-## 核心特性
+## 何时使用
 
-- **自适应方向缩放**：根据 `placement` 在内侧边缘渲染拖拽把手（`left`/`right` 调整宽度，`top`/`bottom` 调整高度），支持 `minSize`（默认 100px 防塌陷）与 `maxSize` 边界限制。
-- **全局 Dock 最小化**：支持 8 个全局停靠方位与多实例排列，最小化期间持久保留 DOM、表单输入、滚动位置与调整后的尺寸。
-- **双模式尺寸控制**：支持受控 `size` 与非受控 `defaultSize`，并兼容 `default`（378px）、`large`（736px）及自定义像素或百分比。
-- **命令式控制与协同**：通过 `DrawerRef` 可在外部执行 `minimize` / `restore`，并与 Modal 共用全局 Dock。
+- 需要根据内容动态调整抽屉宽度或高度（支持上下左右 4 个展开方向）。
+- 用户正在进行复杂表单输入或任务处理，需要临时最小化到全局 Dock 并在稍后完整恢复。
+- 需要在页面中同时协同管理多个抽屉或与 Modal 共享统一的悬浮任务栏。
 
 ## 代码演示
 
-<code src="./demo/resizable-body.tsx" title="基础与尺寸调整" description="拖拽内侧边缘调整宽度或高度，支持 4 个展开方向并限制最小/最大尺寸。"></code>
+<code src="./demo/resizable.tsx" title="拖拽调整尺寸" description="拖拽内侧边缘调整宽度或高度，支持 4 个展开方向并限制最小/最大尺寸。"></code>
 
-<code src="./demo/minimize.tsx" title="最小化与任务暂存" description="从标题栏或通过 DrawerRef 最小化到全局 Dock，恢复后持久保留表单与调整后的尺寸。"></code>
+<code src="./demo/minimizable.tsx" title="最小化与任务暂存" description="从标题栏或通过 DrawerRef 最小化到全局 Dock，恢复后完整保留表单输入与调整后的尺寸。"></code>
 
-<code src="./demo/controlled-minimize.tsx" title="受控停靠方位" description="受控管理 minimized 状态，并在 8 个全局停靠方位间切换。"></code>
+<code src="./demo/controlled.tsx" title="受控停靠方位" description="受控管理 minimized 状态，并在 8 个全局停靠方位间切换。"></code>
 
-<code src="./demo/resizable.tsx" title="局部容器渲染" description="在局部父容器中挂载抽屉，尺寸调整自动限制在父容器边界内。"></code>
+<code src="./demo/shared-dock.tsx" title="与 Modal 共享 Dock" description="抽屉与弹窗可同时停靠在同一全局 Dock 中，并支持独立恢复与关闭。"></code>
 
-<code src="./demo/shared-dock.tsx" title="Modal 与 Drawer 共享 Dock" description="弹窗与抽屉可同时停靠在同一全局 Dock 中，并支持独立恢复与关闭。"></code>
-
-<code src="./demo/custom-style.tsx" title="自定义样式" description="通过 styles 和 classNames 深度定制头部、主体、底部、遮罩、内容区、拖拽把手及最小化卡片等各层级样式。"></code>
-
-<code src="./demo/semantic-styles.tsx" title="语义化样式" description="通过强类型插槽定制 Drawer、缩放把手和最小化 Dock。"></code>
+<code src="./demo/custom-style.tsx" title="自定义样式" description="通过 styles 和 classNames 定制拖拽把手及最小化卡片等层级样式。"></code>
 
 ## API
 
-除下列增强属性外，完全兼容 Ant Design `DrawerProps`。
+继承 [Ant Design Drawer](https://ant.design/components/drawer-cn#api) 的所有原生属性，新增以下扩展属性：
 
 ### DrawerProps
 
-| 属性               | 说明                                                                      | 类型                                                                                     | 默认值         |
-| ------------------ | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------- |
-| `resizable`        | 是否允许拖拽调整尺寸，或提供 resize 生命周期回调                          | `boolean \| DrawerResizableConfig`                                                       | `false`        |
-| `minSize`          | 调整尺寸允许的最小像素值（防止抽屉塌陷为 0 导致无法重新拖拽）             | `number`                                                                                 | `100`          |
-| `maxSize`          | 调整尺寸允许的最大像素值，同时受限于实际容器可用边界                      | `number`                                                                                 | 容器尺寸       |
-| `size`             | 轴向受控尺寸（水平方向为宽，垂直方向为高）                                | `'default' \| 'large' \| number \| string`                                               | -              |
-| `defaultSize`      | 非受控模式下的初始轴向尺寸                                                | `number \| string`                                                                       | `378`          |
-| `minimizable`      | 是否允许最小化到全局 Dock（自动保留 DOM 与表单状态）                      | `boolean`                                                                                | `false`        |
-| `minimized`        | 受控最小化状态                                                            | `boolean`                                                                                | -              |
-| `minimizePosition` | 最小化卡片停靠位置                                                        | `top-left \| top-right \| bottom-left \| bottom-right \| top \| bottom \| left \| right` | `bottom-right` |
-| `onMinimizeChange` | 最小化或恢复状态变更回调                                                  | `(minimized: boolean) => void`                                                           | -              |
-| `onClose`          | 点击关闭、ESC 或从 Dock 卡片关闭的回调（程序化关闭时 event 为 undefined） | `(event?) => void`                                                                       | -              |
-| `classNames`       | 语义化 class，扩展 `dragger`、`minimizeButton`、`minimizedDock`           | `DrawerClassNames`                                                                       | -              |
-| `styles`           | 主要节点 style，扩展 `dragger`、`minimizedDock`                           | `DrawerStyles`                                                                           | -              |
+| 属性               | 说明                                                              | 类型                                                                                                     | 默认值           |
+| ------------------ | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------- |
+| `size`             | 轴向受控尺寸（水平方向为宽，垂直方向为高）                        | `'default' \| 'large' \| number \| string`                                                               | -                |
+| `defaultSize`      | 非受控模式下的初始轴向尺寸                                        | `number \| string`                                                                                       | `378`            |
+| `minSize`          | 调整尺寸允许的最小像素值（防止抽屉塌陷为 0）                      | `number`                                                                                                 | `100`            |
+| `maxSize`          | 调整尺寸允许的最大像素值，同时受限于实际容器可用边界              | `number`                                                                                                 | 容器尺寸         |
+| `resizable`        | 是否允许拖拽调整尺寸，或提供 resize 生命周期回调配置              | `boolean \| DrawerResizableConfig`                                                                       | `false`          |
+| `minimizable`      | 是否支持最小化到全局 Dock（自动保留 DOM 与表单状态）              | `boolean`                                                                                                | `false`          |
+| `minimized`        | 受控最小化状态                                                    | `boolean`                                                                                                | -                |
+| `minimizePosition` | 最小化卡片停靠位置                                                | `'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right' \| 'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom-right'` |
+| `onMinimizeChange` | 最小化或恢复状态变更回调                                          | `(minimized: boolean) => void`                                                                           | -                |
+| `onClose`          | 关闭回调（从 Dock 卡片程序化关闭时 event 为 undefined）           | `(event?: React.MouseEvent \| React.KeyboardEvent) => void`                                              | -                |
+| `classNames`       | 自定义类名配置，扩展 `dragger`、`minimizeButton`、`minimizedDock` | `DrawerClassNames`                                                                                       | -                |
+| `styles`           | 自定义样式配置，扩展 `dragger`、`minimizedDock`                   | `DrawerStyles`                                                                                           | -                |
 
 ### DrawerRef
 
@@ -69,15 +64,28 @@ toc: content
 | `onResize`      | 调整尺寸过程中触发，参数为当前轴向像素值 | `(size: number) => void` |
 | `onResizeEnd`   | 结束调整尺寸时触发                       | `() => void`             |
 
+### DrawerClassNames
+
+继承 Ant Design `DrawerProps['classNames']`，扩展以下字段：
+
+| 属性             | 说明                         | 类型     |
+| ---------------- | ---------------------------- | -------- |
+| `minimizeButton` | 标题栏最小化按钮的 className | `string` |
+| `minimizedDock`  | 最小化 Dock 卡片的 className | `string` |
+| `dragger`        | 拖拽调整尺寸把手的 className | `string` |
+
+### DrawerStyles
+
+继承 Ant Design `DrawerProps['styles']`，扩展以下字段：
+
+| 属性            | 说明                       | 类型                  |
+| --------------- | -------------------------- | --------------------- |
+| `minimizedDock` | 最小化 Dock 卡片的行内样式 | `React.CSSProperties` |
+| `dragger`       | 拖拽调整尺寸把手的行内样式 | `React.CSSProperties` |
+
 ## 注意事项
 
 - **最小尺寸与边界保护**：`minSize` 默认保底为 100px，防止抽屉被拖拽折叠至 0px 导致把手不可抓取；`maxSize` 始终会自动与宿主容器可用尺寸取较小值。
 - **状态保留机制**：开启 `minimizable` 时内部会保持 `destroyOnHidden: false`，最小化时抽屉隐藏但 DOM 节点与表单输入状态完全保留。
-- **受控与非受控**：未传 `size` 时为非受控模式，拖拽尺寸由组件内部持久记录，同一实例关闭重开仍会保留；传入 `size` 时需在 `onResize` 回调中同步更新。
-- **局部容器**：使用 `getContainer={false}` 时，请确保父容器具有相对定位（如 `position: relative`），抽屉尺寸将受限于父容器。
-
-## 语义化样式
-
-`rootClassName` 作用于 Drawer 根边界。`classNames` 提供 `root`、`mask`、`wrapper`、`content`、`header`、`body`、`footer`、`dragger`、`minimizeButton`、`minimizedDock`；`styles` 仅提供主要节点 `root`、`mask`、`wrapper`、`content`、`header`、`body`、`footer`、`dragger`、`minimizedDock`。最小化 Dock 是独立 Portal，但会自动继承当前命名空间和 CSS-in-JS hash。
-
-调整尺寸使用 Pointer Events；全局监听仅在活动拖拽期间注册，并在结束、取消、窗口失焦或卸载时清理。
+- **受控与非受控**：未传 `size` 时为非受控模式，拖拽尺寸由组件内部持久记录；传入 `size` 时需在 `onResize` 回调中同步更新。
+- **全局 Dock 协同**：与 Modal 共用相同的全局悬浮 Dock 管理器，多个弹窗和抽屉卡片会自动流式排列。

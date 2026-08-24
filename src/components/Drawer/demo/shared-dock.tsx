@@ -1,7 +1,4 @@
-/**
- * description: Modal 与 Drawer 共用同一套全局 Dock；它们可以停靠在同一方位并独立恢复或关闭。
- */
-import { Alert, Button, Flex, Space, Tag, Typography } from 'antd';
+import { Alert, Button, Flex, Space, Typography } from 'antd';
 import { Drawer, Modal } from 'hi-talent-design';
 import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React, { useState } from 'react';
@@ -9,31 +6,25 @@ import React, { useState } from 'react';
 const messages = {
   'zh-CN': {
     openBoth: '打开全部窗口',
-    openModal: '仅打开 Modal',
-    openDrawer: '仅打开 Drawer',
-    minimizeBoth: '全部最小化到 Dock',
-    modalTitle: '审批任务弹窗',
-    drawerTitle: '文档协作抽屉',
-    modalContent:
-      '这是一个 Modal 任务窗口。点击右上角最小化按钮，它会进入全局 Dock。',
-    drawerContent:
-      '这是一个 Drawer 抽屉窗口。它与 Modal 共享右下角同一个全局 Dock，多卡片会自动堆叠与排列。',
-    sharedHint:
-      'Modal 与 Drawer 共用同一套全局 Dock 体系，支持各自独立拖动、恢复与关闭。',
+    openModal: '打开 Modal',
+    openDrawer: '打开 Drawer',
+    modalTitle: '审批弹窗',
+    drawerTitle: '详情抽屉',
+    modalContent: '这是一个可最小化的 Modal。',
+    drawerContent: '这是一个可最小化的 Drawer，与 Modal 共享全局 Dock。',
+    sharedHint: 'Modal 与 Drawer 共用同一全局 Dock，支持独立停靠、恢复与关闭。',
   },
   'en-US': {
-    openBoth: 'Open Both Windows',
-    openModal: 'Open Modal Only',
-    openDrawer: 'Open Drawer Only',
-    minimizeBoth: 'Minimize Both to Dock',
-    modalTitle: 'Approval Task Modal',
-    drawerTitle: 'Document Collaboration Drawer',
-    modalContent:
-      'This is a Modal task window. Click its top-right minimize button to send it to the global Dock.',
+    openBoth: 'Open Both',
+    openModal: 'Open Modal',
+    openDrawer: 'Open Drawer',
+    modalTitle: 'Approval Modal',
+    drawerTitle: 'Details Drawer',
+    modalContent: 'This is a minimizable Modal.',
     drawerContent:
-      'This is a Drawer window. It shares the same global Dock with Modal; cards stack and order automatically.',
+      'This is a minimizable Drawer, sharing the same global Dock.',
     sharedHint:
-      'Modals and Drawers share the same global Dock system with independent dragging, restoring, and closing.',
+      'Modal and Drawer share the unified global Dock with independent restore and close.',
   },
 };
 
@@ -48,23 +39,6 @@ export default () => {
     setModalOpen(true);
     setDrawerOpen(true);
     setModalMinimized(false);
-    setDrawerMinimized(false);
-  };
-
-  const minimizeBoth = () => {
-    setModalOpen(true);
-    setDrawerOpen(true);
-    setModalMinimized(true);
-    setDrawerMinimized(true);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-    setModalMinimized(false);
-  };
-
-  const closeDrawer = () => {
-    setDrawerOpen(false);
     setDrawerMinimized(false);
   };
 
@@ -90,7 +64,6 @@ export default () => {
         >
           {t('openDrawer')}
         </Button>
-        <Button onClick={minimizeBoth}>{t('minimizeBoth')}</Button>
       </Flex>
 
       <Modal
@@ -99,30 +72,37 @@ export default () => {
         minimizable
         minimized={modalMinimized}
         onMinimizeChange={setModalMinimized}
-        onCancel={closeModal}
-        onOk={closeModal}
+        onCancel={() => {
+          setModalOpen(false);
+          setModalMinimized(false);
+        }}
+        onOk={() => {
+          setModalOpen(false);
+          setModalMinimized(false);
+        }}
       >
         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
           <Alert type="info" showIcon message={t('sharedHint')} />
           <Typography.Paragraph>{t('modalContent')}</Typography.Paragraph>
-          <Tag color="blue">Modal Task Active</Tag>
         </Space>
       </Modal>
 
       <Drawer
         title={t('drawerTitle')}
         open={drawerOpen}
-        defaultSize={450}
+        defaultSize={420}
         minimizable
         resizable
         minimized={drawerMinimized}
         onMinimizeChange={setDrawerMinimized}
-        onClose={closeDrawer}
+        onClose={() => {
+          setDrawerOpen(false);
+          setDrawerMinimized(false);
+        }}
       >
         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
           <Alert type="success" showIcon message={t('sharedHint')} />
           <Typography.Paragraph>{t('drawerContent')}</Typography.Paragraph>
-          <Tag color="green">Drawer Task Active</Tag>
         </Space>
       </Drawer>
     </Space>

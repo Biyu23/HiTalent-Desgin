@@ -35,8 +35,8 @@ interface ManualSizes {
 const setRef = <T,>(ref: React.Ref<T> | undefined, value: T | null) => {
   if (typeof ref === 'function') {
     ref(value);
-  } else if (ref) {
-    (ref as { current: T | null }).current = value;
+  } else if (ref && typeof ref === 'object' && 'current' in ref) {
+    (ref as React.MutableRefObject<T | null>).current = value;
   }
 };
 
@@ -178,8 +178,6 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     delete antdClassNames.dragger;
     delete antdClassNames.minimizeButton;
     delete antdClassNames.minimizedDock;
-    delete antdClassNames.root;
-    delete antdClassNames.wrapper;
 
     return {
       ...antdClassNames,
@@ -208,8 +206,6 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     delete antdStyles.dragger;
     delete antdStyles.minimizeButton;
     delete antdStyles.minimizedDock;
-    delete antdStyles.root;
-    delete antdStyles.wrapper;
 
     return {
       ...antdStyles,
@@ -318,8 +314,8 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
         destroyOnClose={isMinimized ? false : destroyOnClose}
         destroyOnHidden={isMinimized ? false : destroyOnHidden}
         onClose={handleClose}
-        rootClassName={clsx(prefixCls, hashId, rootClassName, classNames?.root)}
-        rootStyle={{ ...rootStyle, ...styles?.root }}
+        rootClassName={clsx(prefixCls, hashId, rootClassName)}
+        rootStyle={rootStyle}
         classNames={mergedClassNames}
         styles={mergedStyles}
         panelRef={handlePanelRef}

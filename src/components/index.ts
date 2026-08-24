@@ -46,15 +46,12 @@ export type {
 export { default as Drawer } from './Drawer';
 export type {
   DrawerAxis,
-  DrawerClassNameSlot,
   DrawerClassNames,
   DrawerPlacement,
   DrawerProps,
   DrawerRef,
   DrawerResizableConfig,
   DrawerSize,
-  DrawerSlot,
-  DrawerStyleSlot,
   DrawerStyles,
 } from './Drawer/type';
 
