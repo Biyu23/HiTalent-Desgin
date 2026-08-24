@@ -1,6 +1,3 @@
-/**
- * description: 默认 `throttle` 为 `0`（不开启节流）。设置为正数毫秒值后，第一次点击立即触发，冷却期内后续点击被忽略，有效防止重复提交。
- */
 import { Space } from 'antd';
 import { Button } from 'hi-talent-design';
 import { useDemoIntl } from 'hi-talent-design/demoIntl';

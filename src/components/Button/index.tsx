@@ -1,8 +1,7 @@
 import { Button as AntdButton, Tooltip } from 'antd';
-import clsx from 'clsx';
 import React, { memo } from 'react';
 import { useActionRunner } from '../_util/useActionRunner';
-import type { ButtonProps, ButtonRef, CompoundedButton } from './type';
+import type { ButtonProps, ButtonRef } from './type';
 import { parseTooltipConfig } from './utils/tooltip';
 
 const Button = React.forwardRef<ButtonRef, ButtonProps>((props, ref) => {
@@ -15,11 +14,6 @@ const Button = React.forwardRef<ButtonRef, ButtonProps>((props, ref) => {
     tooltip,
     loading: propsLoading,
     block,
-    className,
-    style,
-    rootClassName,
-    classNames,
-    styles,
     ...restProps
   } = props;
   const { pending, run } = useActionRunner<
@@ -42,11 +36,6 @@ const Button = React.forwardRef<ButtonRef, ButtonProps>((props, ref) => {
       disabled={disabled}
       loading={combinedLoading}
       onClick={handleClick}
-      rootClassName={rootClassName}
-      className={clsx(classNames?.root, className)}
-      style={{ ...styles?.root, ...style }}
-      classNames={classNames?.icon ? { icon: classNames.icon } : undefined}
-      styles={styles?.icon ? { icon: styles.icon } : undefined}
       {...restProps}
     >
       {children}
@@ -57,14 +46,36 @@ const Button = React.forwardRef<ButtonRef, ButtonProps>((props, ref) => {
     return buttonElement;
   }
 
+  // 当按钮处于禁用态时，由于原生 button 禁用会阻止鼠标事件，需外层包裹容器以触发 Tooltip
+  const wrappedElement = disabled ? (
+    <span
+      style={{
+        display: block ? 'block' : 'inline-block',
+        width: block ? '100%' : undefined,
+        cursor: 'not-allowed',
+      }}
+    >
+      {buttonElement}
+    </span>
+  ) : (
+    buttonElement
+  );
+
   return (
     <Tooltip title={tooltipTitle} {...tooltipProps}>
-      {buttonElement}
+      {wrappedElement}
     </Tooltip>
   );
 });
 
-const ExportedButton = memo(Button) as CompoundedButton;
+type CompoundedComponent = React.MemoExoticComponent<
+  React.ForwardRefExoticComponent<ButtonProps & React.RefAttributes<ButtonRef>>
+> & {
+  Group: typeof AntdButton.Group;
+  __ANT_BUTTON?: boolean;
+};
+
+const ExportedButton = memo(Button) as CompoundedComponent;
 ExportedButton.Group = AntdButton.Group;
 ExportedButton.__ANT_BUTTON = true;
 

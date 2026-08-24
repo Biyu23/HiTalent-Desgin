@@ -1,6 +1,3 @@
-/**
- * description: 默认开启 `autoLoading`。当 `onClick` 返回一个 `Promise` 时，按钮自动进入 `loading` 状态，并拦截重复点击，直到 Promise 决议后恢复。
- */
 import { Button } from 'hi-talent-design';
 import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React, { useState } from 'react';

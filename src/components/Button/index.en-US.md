@@ -20,9 +20,7 @@ Extends Ant Design Button with async loading, click throttling, and tooltip capa
 
 <code src="./demo/throttle.tsx" title="Throttle Clicks" description="Sets throttle in milliseconds. The first click runs immediately, repeated clicks within cooldown are ignored."></code>
 
-<code src="./demo/tooltip.tsx" title="Tooltip" description="Attaches tooltip hints via string title or full TooltipProps object."></code>
-
-<code src="./demo/semantic-styles.tsx" title="Semantic Styles" description="Customize the strongly typed root and icon slots with predictable consumer override precedence."></code>
+<code src="./demo/tooltip.tsx" title="Tooltip" description="Attaches tooltip hints via ReactNode title or full TooltipProps object."></code>
 
 ## API
 
@@ -30,13 +28,9 @@ Extends Ant Design Button with async loading, click throttling, and tooltip capa
 
 Inherits all properties from [Ant Design Button](https://ant.design/components/button#api), with the following extended properties:
 
-| Property    | Description                                                                                                         | Type                                                                 | Default |
-| ----------- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------- |
-| autoLoading | Automatically enters loading state when `onClick` returns a Promise, settling when resolved/rejected                | `boolean`                                                            | `true`  |
-| throttle    | Click cooldown in milliseconds. The first click executes immediately, subsequent clicks within cooldown are ignored | `number`                                                             | `0`     |
-| tooltip     | Tooltip configuration. Supports ReactNode title or full `TooltipProps` (excluding children)                         | `ReactNode \| Omit<TooltipProps, 'children'>`                        | -       |
-| onClick     | Click handler supporting async Promise for `autoLoading`                                                            | `(event: React.MouseEvent<HTMLElement>) => void \| Promise<unknown>` | -       |
-
-## Semantic styles
-
-`className` and `style` target the button element, and `rootClassName` targets the same root node. `classNames` and `styles` expose the `root` and `icon` slots. `style` is merged after `styles.root`, so it wins for duplicate inline properties. Button content retains Ant Design's original DOM semantics without an extra wrapper.
+| Property    | Description                                                                                                         | Type                                                                             | Default |
+| ----------- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ------- |
+| autoLoading | Automatically enters loading state when `onClick` returns a Promise, settling when resolved/rejected                | `boolean`                                                                        | `true`  |
+| throttle    | Click cooldown in milliseconds. The first click executes immediately, subsequent clicks within cooldown are ignored | `number`                                                                         | `0`     |
+| tooltip     | Tooltip configuration. Supports ReactNode title or full `TooltipProps` (excluding children)                         | `ReactNode \| Omit<TooltipProps, 'children'>`                                    | -       |
+| onClick     | Click handler supporting async Promise for `autoLoading`                                                            | `(event: React.MouseEvent<HTMLElement, MouseEvent>) => void \| Promise<unknown>` | -       |

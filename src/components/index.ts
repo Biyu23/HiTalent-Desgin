@@ -24,13 +24,7 @@ export type {
 } from './PopoverSelect/publicTypes';
 
 export { default as Button } from './Button';
-export type {
-  ButtonClassNames,
-  ButtonProps,
-  ButtonRef,
-  ButtonSlot,
-  ButtonStyles,
-} from './Button/type';
+export type { ButtonProps, ButtonRef } from './Button/type';
 
 export { default as ResponsiveButtonGroup } from './ResponsiveButtonGroup';
 export type {
