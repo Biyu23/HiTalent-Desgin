@@ -6,7 +6,8 @@ export interface ModalOperationsContextValue {
   draggable: boolean;
   minimizable: boolean;
   maximizable: boolean;
-  closable: boolean;
+  closable?: ModalProps['closable'];
+  closeIcon?: ModalProps['closeIcon'];
   isMaximized: boolean;
   onMinimize: () => void;
   onToggleMaximize: () => void;

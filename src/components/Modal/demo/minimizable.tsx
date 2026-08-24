@@ -11,7 +11,10 @@ const messages = {
     content:
       '点击右上角最小化图标，窗口将折叠到页面停靠栏中，不销毁 DOM 状态。',
     positionLabel: '停靠位置',
-    close: '关闭',
+    bottomRight: '右下 (Bottom Right)',
+    bottomLeft: '左下 (Bottom Left)',
+    topRight: '右上 (Top Right)',
+    topLeft: '左上 (Top Left)',
   },
   'en-US': {
     open: 'Open Minimizable Modal',
@@ -19,7 +22,10 @@ const messages = {
     content:
       'Click the minimize icon in the top-right corner to fold the window into the Dock without destroying DOM state.',
     positionLabel: 'Dock Position',
-    close: 'Close',
+    bottomRight: 'Bottom Right',
+    bottomLeft: 'Bottom Left',
+    topRight: 'Top Right',
+    topLeft: 'Top Left',
   },
 };
 
@@ -38,10 +44,10 @@ export default () => {
           optionType="button"
           buttonStyle="solid"
           options={[
-            { label: 'Bottom Right (右下)', value: 'bottom-right' },
-            { label: 'Bottom Left (左下)', value: 'bottom-left' },
-            { label: 'Top Right (右上)', value: 'top-right' },
-            { label: 'Top Left (左上)', value: 'top-left' },
+            { label: t('bottomRight'), value: 'bottom-right' },
+            { label: t('bottomLeft'), value: 'bottom-left' },
+            { label: t('topRight'), value: 'top-right' },
+            { label: t('topLeft'), value: 'top-left' },
           ]}
         />
       </Flex>

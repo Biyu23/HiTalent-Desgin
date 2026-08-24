@@ -14,6 +14,7 @@ import React, {
 import { ConfigContext } from '../../configProvider/context';
 import { useLocale } from '../../configProvider/useLocale';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
+import { isNullOrBlank, setRef } from '../../util';
 import MinimizedDock from '../_util/minimize/MinimizedDock';
 import { useMinimizeState } from '../_util/minimize/useMinimizeState';
 import {
@@ -32,14 +33,9 @@ interface ManualSizes {
   vertical?: number;
 }
 
-const setRef = <T,>(ref: React.Ref<T> | undefined, value: T | null): void => {
-  if (typeof ref === 'function') {
-    ref(value);
-  } else if (ref && typeof ref === 'object' && 'current' in ref) {
-    (ref as React.MutableRefObject<T | null>).current = value;
-  }
-};
-
+/**
+ * 解析抽屉最小化模式下的 closable 配置，保证关闭按钮靠右对齐 (placement: 'end')
+ */
 const resolveMinimizableClosable = (
   closable: DrawerProps['closable'],
   closeIcon: DrawerProps['closeIcon'],
@@ -257,15 +253,13 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     [closable, closeIcon, minimizable],
   );
 
-  const mergedTitle = useMemo(
-    () =>
-      minimizable && !title ? (
-        <span className={clsx(e('empty-title'), hashId)} aria-hidden />
-      ) : (
-        title
-      ),
-    [e, hashId, minimizable, title],
-  );
+  const mergedTitle = useMemo(() => {
+    if (title === null) return null;
+    if (minimizable && isNullOrBlank(title)) {
+      return <span className={clsx(e('empty-title'), hashId)} aria-hidden />;
+    }
+    return title;
+  }, [e, hashId, minimizable, title]);
 
   const finalDrawerRender = useCallback(
     (drawerNode: React.ReactNode) => (

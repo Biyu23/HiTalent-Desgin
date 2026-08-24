@@ -58,14 +58,11 @@ export type {
 export { default as Modal } from './Modal';
 export type {
   MinimizePosition,
-  ModalClassNameSlot,
   ModalClassNames,
   ModalProps,
   ModalRef,
   ModalResizableConfig,
-  ModalSlot,
   ModalStaticMethods,
-  ModalStyleSlot,
   ModalStyles,
 } from './Modal/type';
 

@@ -9,7 +9,6 @@ const messages = {
     title: '可缩放弹窗',
     content: '拖动弹窗右下角的把手图标，可自由调整弹窗的宽度和高度。',
     sizeLabel: '当前尺寸',
-    close: '关闭',
   },
   'en-US': {
     open: 'Open Resizable Modal',
@@ -17,7 +16,6 @@ const messages = {
     content:
       'Drag the handle in the bottom-right corner to resize width and height.',
     sizeLabel: 'Current Size',
-    close: 'Close',
   },
 };
 

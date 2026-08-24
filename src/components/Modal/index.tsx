@@ -16,7 +16,6 @@ import {
   ComponentNamespaceProvider,
   useResolvedComponentNamespace,
 } from '../_util/namespace';
-import { useSemanticRootStyle } from '../_util/useSemanticRootStyle';
 import ModalHeader from './components/ModalHeader';
 import ModalWindowWrapper from './components/ModalWindowWrapper';
 import {
@@ -29,6 +28,7 @@ import { useModalState } from './hooks/useModalState';
 import { useModalWindowState } from './hooks/useModalWindowState';
 import { useStyle } from './style';
 import type { ModalProps, ModalRef, ModalStaticMethods } from './type';
+import { shouldRenderHeader } from './utils/header';
 
 const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   const {
@@ -45,6 +45,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     maximized: controlledMaximized,
     minimizePosition = 'bottom-right',
     closable = true,
+    closeIcon,
     className,
     rootClassName,
     wrapClassName,
@@ -57,6 +58,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     modalRender,
     onMinimizeChange,
     onMaximizedChange,
+    onMaximizeChange,
     ...restProps
   } = props;
 
@@ -70,30 +72,32 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     hashId,
   );
   const { element: e, modifier: m, elementModifier: em } = namespace;
-  const semanticRoot = useSemanticRootStyle('Modal', prefixCls, styles?.root);
 
   const minimizedDockClassName = classNames?.minimizedDock;
   const minimizedDockStyle = styles?.minimizedDock;
-  const antdClassNames = useMemo(
-    () => ({
-      mask: classNames?.mask,
-      wrapper: classNames?.wrapper,
-      content: classNames?.content,
-      body: classNames?.body,
-      footer: classNames?.footer,
-    }),
-    [classNames],
-  );
-  const antdStyles = useMemo(
-    () => ({
-      mask: styles?.mask,
-      wrapper: styles?.wrapper,
-      content: styles?.content,
-      body: styles?.body,
-      footer: styles?.footer,
-    }),
-    [styles],
-  );
+
+  const antdClassNames = useMemo(() => {
+    if (!classNames) return undefined;
+    const next = { ...classNames } as Record<string, string | undefined>;
+    delete next.title;
+    delete next.actions;
+    delete next.resizeHandle;
+    delete next.minimizedDock;
+    return next;
+  }, [classNames]);
+
+  const antdStyles = useMemo(() => {
+    if (!styles) return undefined;
+    const next = { ...styles } as Record<
+      string,
+      React.CSSProperties | undefined
+    >;
+    delete next.resizeHandle;
+    delete next.minimizedDock;
+    return next;
+  }, [styles]);
+
+  const mergedOnMaximizeChange = onMaximizedChange || onMaximizeChange;
 
   const {
     isMinimized,
@@ -108,7 +112,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     minimized: controlledMinimized,
     maximized: controlledMaximized,
     onMinimizeChange,
-    onMaximizedChange,
+    onMaximizedChange: mergedOnMaximizeChange,
   });
 
   const {
@@ -205,6 +209,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       minimizable,
       maximizable,
       closable,
+      closeIcon,
       isMaximized,
       onMinimize: handleMinimize,
       onToggleMaximize: handleToggleMaximize,
@@ -217,6 +222,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       minimizable,
       maximizable,
       closable,
+      closeIcon,
       isMaximized,
       handleMinimize,
       handleToggleMaximize,
@@ -257,75 +263,76 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     ],
   );
 
-  return semanticRoot.wrapSSR(
-    wrapSSR(
-      <ComponentNamespaceProvider value={namespace}>
-        <ModalOperationsContext.Provider value={operationsValue}>
-          <ModalWindowContext.Provider value={windowValue}>
-            <AntdModal
-              {...restProps}
-              rootClassName={clsx(
-                prefixCls,
-                hashId,
-                rootClassName,
-                classNames?.root,
-                semanticRoot.className,
-              )}
-              classNames={antdClassNames}
-              destroyOnClose={resolvedDestroyOnClose}
-              destroyOnHidden={resolvedDestroyOnHidden}
-              width={modalWidth}
-              centered={centered}
-              open={open && !isMinimized}
-              closable={false}
-              modalRender={finalModalRender}
-              onCancel={handleClose}
-              style={mergedStyle}
-              styles={mergedStyles}
-              wrapClassName={clsx(wrapClassName, e('wrap'), hashId, {
-                [em('wrap', 'constrained')]:
-                  draggable ||
-                  Boolean(resizable) ||
-                  isMaximized ||
-                  !!windowSize,
-              })}
-              className={clsx(prefixCls, hashId, className, {
-                [m('maximized')]: isMaximized,
-                [m('manual-size')]: !!windowSize && !isMaximized,
-                [m('resizing')]: isResizing,
-                [m('draggable')]: draggable && !isMaximized,
-                [m('resizable')]: Boolean(resizable) && !isMaximized,
-                [m('transition-active')]: !isResizing,
-              })}
-              title={<ModalHeader title={title} />}
-            >
-              {children}
-            </AntdModal>
-            <MinimizedDock
-              open={open}
-              minimized={isMinimized}
-              title={title}
-              position={minimizePosition}
-              className={minimizedDockClassName}
-              style={minimizedDockStyle}
-              locale={modalLocale}
-              onRestore={handleRestore}
-              onClose={handleClose}
-            />
-          </ModalWindowContext.Provider>
-        </ModalOperationsContext.Provider>
-      </ComponentNamespaceProvider>,
-    ),
+  const hasHeader = shouldRenderHeader({
+    title,
+    minimizable,
+    maximizable,
+    draggable,
+    closable,
+    closeIcon,
+  });
+
+  const resolvedTitle = hasHeader ? (
+    <ModalHeader title={title} />
+  ) : title === null ? null : undefined;
+
+  return wrapSSR(
+    <ComponentNamespaceProvider value={namespace}>
+      <ModalOperationsContext.Provider value={operationsValue}>
+        <ModalWindowContext.Provider value={windowValue}>
+          <AntdModal
+            {...restProps}
+            rootClassName={clsx(prefixCls, hashId, rootClassName)}
+            classNames={antdClassNames}
+            destroyOnClose={resolvedDestroyOnClose}
+            destroyOnHidden={resolvedDestroyOnHidden}
+            width={modalWidth}
+            centered={centered}
+            open={open && !isMinimized}
+            closable={false}
+            modalRender={finalModalRender}
+            onCancel={handleClose}
+            style={mergedStyle}
+            styles={mergedStyles}
+            wrapClassName={clsx(wrapClassName, e('wrap'), hashId, {
+              [em('wrap', 'constrained')]:
+                draggable || Boolean(resizable) || isMaximized || !!windowSize,
+            })}
+            className={clsx(prefixCls, hashId, className, {
+              [m('maximized')]: isMaximized,
+              [m('manual-size')]: !!windowSize && !isMaximized,
+              [m('resizing')]: isResizing,
+              [m('draggable')]: draggable && !isMaximized,
+              [m('resizable')]: Boolean(resizable) && !isMaximized,
+              [m('transition-active')]: !isResizing,
+            })}
+            title={resolvedTitle}
+          >
+            {children}
+          </AntdModal>
+          <MinimizedDock
+            open={open}
+            minimized={isMinimized}
+            title={title}
+            position={minimizePosition}
+            className={minimizedDockClassName}
+            style={minimizedDockStyle}
+            locale={modalLocale}
+            onRestore={handleRestore}
+            onClose={handleClose}
+          />
+        </ModalWindowContext.Provider>
+      </ModalOperationsContext.Provider>
+    </ComponentNamespaceProvider>,
   );
 });
 
-const ModalWithStatics: React.MemoExoticComponent<
-  React.ForwardRefExoticComponent<ModalProps & React.RefAttributes<ModalRef>>
-> &
-  ModalStaticMethods = memo(Modal) as unknown as React.MemoExoticComponent<
+type CompoundedModal = React.MemoExoticComponent<
   React.ForwardRefExoticComponent<ModalProps & React.RefAttributes<ModalRef>>
 > &
   ModalStaticMethods;
+
+const ModalWithStatics = memo(Modal) as CompoundedModal;
 
 ModalWithStatics.info = AntdModal.info;
 ModalWithStatics.success = AntdModal.success;

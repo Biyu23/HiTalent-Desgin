@@ -1,11 +1,6 @@
 import type { Modal as AntdModal, ModalProps as AntdModalProps } from 'antd';
-import React from 'react';
+import type React from 'react';
 import type { MinimizePosition } from '../_util/minimize/type';
-import type {
-  SemanticClassNames,
-  SemanticStyleProps,
-  SemanticStyles,
-} from '../_util/semanticStyles';
 
 export type { MinimizePosition } from '../_util/minimize/type';
 
@@ -13,18 +8,30 @@ export type { MinimizePosition } from '../_util/minimize/type';
  * Modal 组件暴露的命令式方法
  */
 export interface ModalRef {
-  /** 恢复最小化的弹窗 */
+  /**
+   * @description 恢复最小化的弹窗
+   */
   restore: () => void;
-  /** 最大化弹窗 */
+  /**
+   * @description 最大化弹窗
+   */
   maximize: () => void;
-  /** 取消最大化（恢复普通尺寸） */
+  /**
+   * @description 取消最大化（恢复普通尺寸）
+   */
   unmaximize: () => void;
-  /** 最小化弹窗 */
+  /**
+   * @description 最小化弹窗
+   */
   minimize: () => void;
-  /** 重置拖拽位置居中 */
-  resetPosition?: () => void;
-  /** 重置手动调整的尺寸 */
-  resetSize?: () => void;
+  /**
+   * @description 重置拖拽位置居中
+   */
+  resetPosition: () => void;
+  /**
+   * @description 重置手动调整的尺寸
+   */
+  resetSize: () => void;
 }
 
 /**
@@ -47,71 +54,93 @@ export type ModalStaticMethods = Pick<
  * Modal 缩放配置
  */
 export interface ModalResizableConfig {
-  /** 最小宽度，单位 px @default 320 */
+  /**
+   * @description 最小宽度，单位 px
+   * @default 320
+   */
   minWidth?: number;
-  /** 最小高度，单位 px @default 200 */
+  /**
+   * @description 最小高度，单位 px
+   * @default 200
+   */
   minHeight?: number;
-  /** 最大宽度，单位 px */
+  /**
+   * @description 最大宽度，单位 px，受视口与容器限制
+   */
   maxWidth?: number;
-  /** 最大高度，单位 px */
+  /**
+   * @description 最大高度，单位 px，受视口与容器限制
+   */
   maxHeight?: number;
-  /** 开始缩放时触发 */
+  /**
+   * @description 开始缩放拖动时触发
+   */
   onResizeStart?: () => void;
-  /** 缩放过程中触发 */
+  /**
+   * @description 缩放过程中的实时回调
+   */
   onResize?: (size: { width: number; height: number }) => void;
-  /** 结束缩放时触发 */
+  /**
+   * @description 结束缩放拖动时触发
+   */
   onResizeEnd?: () => void;
 }
 
-interface AntdModalClassNames
+/**
+ * Modal 自定义类名配置
+ */
+export interface ModalClassNames
   extends NonNullable<AntdModalProps['classNames']> {
-  /** 最小化 Dock 卡片的 className */
+  /**
+   * @description 弹窗标题区域的 className
+   */
+  title?: string;
+  /**
+   * @description 标题栏操作按钮区域的 className
+   */
+  actions?: string;
+  /**
+   * @description 拖拽调整尺寸把手的 className
+   */
+  resizeHandle?: string;
+  /**
+   * @description 最小化 Dock 卡片的 className
+   */
   minimizedDock?: string;
 }
 
-interface AntdModalStyles extends NonNullable<AntdModalProps['styles']> {
-  /** 最小化 Dock 卡片的行内样式 */
+/**
+ * Modal 自定义样式配置
+ */
+export interface ModalStyles extends NonNullable<AntdModalProps['styles']> {
+  /**
+   * @description 拖拽调整尺寸把手的行内样式
+   */
+  resizeHandle?: React.CSSProperties;
+  /**
+   * @description 最小化 Dock 卡片的行内样式
+   */
   minimizedDock?: React.CSSProperties;
 }
 
-export type ModalClassNameSlot =
-  | 'root'
-  | 'mask'
-  | 'wrapper'
-  | 'content'
-  | 'header'
-  | 'title'
-  | 'actions'
-  | 'body'
-  | 'footer'
-  | 'resizeHandle'
-  | 'minimizedDock';
-
-export type ModalStyleSlot = Exclude<ModalClassNameSlot, 'title' | 'actions'>;
-export type ModalSlot = ModalClassNameSlot;
-
-export type ModalClassNames = SemanticClassNames<ModalClassNameSlot> &
-  AntdModalClassNames;
-export type ModalStyles = SemanticStyles<ModalStyleSlot> & AntdModalStyles;
-
+/**
+ * Modal 组件属性
+ */
 export interface ModalProps
-  extends Omit<
-      AntdModalProps,
-      | 'closable'
-      | 'title'
-      | 'onCancel'
-      | 'classNames'
-      | 'styles'
-      | 'rootClassName'
-    >,
-    SemanticStyleProps<ModalClassNameSlot, ModalStyleSlot> {
+  extends Omit<AntdModalProps, 'title' | 'onCancel' | 'classNames' | 'styles'> {
+  /**
+   * @description 自定义类名配置，扩展 `title`、`actions`、`resizeHandle`、`minimizedDock`
+   */
   classNames?: ModalClassNames;
+  /**
+   * @description 自定义样式配置，扩展 `resizeHandle`、`minimizedDock`
+   */
   styles?: ModalStyles;
   /**
-   * @description 是否显示关闭按钮
+   * @description 是否显示右上角的关闭按钮，或提供配置对象
    * @default true
    */
-  closable?: boolean;
+  closable?: AntdModalProps['closable'];
   /**
    * @description 弹窗标题
    */
@@ -124,7 +153,7 @@ export interface ModalProps
     e?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
   ) => void;
   /**
-   * @description 是否允许拖拽（把手为标题栏）
+   * @description 是否允许拖拽（把手为标题栏与底部）
    * @default false
    */
   draggable?: boolean;
@@ -164,4 +193,8 @@ export interface ModalProps
    * @description 最大化状态变化回调
    */
   onMaximizedChange?: (maximized: boolean) => void;
+  /**
+   * @description 最大化状态变化回调（同 `onMaximizedChange`）
+   */
+  onMaximizeChange?: (maximized: boolean) => void;
 }

@@ -8,13 +8,11 @@ const messages = {
     open: '打开可拖拽弹窗',
     title: '可拖拽弹窗',
     content: '按住标题栏或底部空白区域可自由拖拽移动窗口位置。',
-    close: '关闭',
   },
   'en-US': {
     open: 'Open Draggable Modal',
     title: 'Draggable Modal',
     content: 'Drag by the title bar or footer area to move the window.',
-    close: 'Close',
   },
 };
 

@@ -9,15 +9,21 @@ const messages = {
     open: '打开抽屉',
     title: '拖拽调整尺寸',
     currentSize: '当前尺寸',
-    close: '关闭',
     content: '拖拽内侧边缘可调整抽屉尺寸。',
+    right: '右侧 (Right)',
+    left: '左侧 (Left)',
+    top: '顶部 (Top)',
+    bottom: '底部 (Bottom)',
   },
   'en-US': {
     open: 'Open Drawer',
     title: 'Resizable Drawer',
     currentSize: 'Current Size',
-    close: 'Close',
     content: 'Drag the inner edge to resize the drawer.',
+    right: 'Right',
+    left: 'Left',
+    top: 'Top',
+    bottom: 'Bottom',
   },
 };
 
@@ -42,10 +48,10 @@ export default (): React.ReactElement => {
           value={placement}
           onChange={(e) => handlePlacementChange(e.target.value)}
           options={[
-            { label: 'Right', value: 'right' },
-            { label: 'Left', value: 'left' },
-            { label: 'Top', value: 'top' },
-            { label: 'Bottom', value: 'bottom' },
+            { label: t('right'), value: 'right' },
+            { label: t('left'), value: 'left' },
+            { label: t('top'), value: 'top' },
+            { label: t('bottom'), value: 'bottom' },
           ]}
         />
         <Button type="primary" onClick={() => setOpen(true)}>
@@ -65,11 +71,6 @@ export default (): React.ReactElement => {
         maxSize={800}
         resizable={{ onResize: setSize }}
         onClose={() => setOpen(false)}
-        extra={
-          <Button size="small" onClick={() => setOpen(false)}>
-            {t('close')}
-          </Button>
-        }
       >
         <p>{t('content')}</p>
       </Drawer>

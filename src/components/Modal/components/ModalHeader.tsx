@@ -10,6 +10,7 @@ import React, { memo } from 'react';
 import { useLocale } from '../../../configProvider/useLocale';
 import { useComponentNamespace } from '../../_util/namespace';
 import { useModalOperations } from '../contexts';
+import { resolveClosable } from '../utils/header';
 
 export interface ModalHeaderProps {
   /** 弹窗标题（ReactNode 以支持富文本标题） */
@@ -25,17 +26,24 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
     minimizable,
     maximizable,
     closable,
+    closeIcon,
     onMinimize,
     onToggleMaximize,
     onClose,
     classNames,
-    styles,
   } = useModalOperations();
 
   const namespace = useComponentNamespace();
   const e = namespace.element;
   const em = namespace.elementModifier;
   const modalLocale = useLocale('Modal');
+
+  const {
+    showClose,
+    closeIcon: resolvedCloseIcon,
+    disabled: closeDisabled,
+    ariaLabel: closeAriaLabel,
+  } = resolveClosable(closable, closeIcon);
 
   const actions = [
     minimizable && (
@@ -58,30 +66,24 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
         aria-label={isMaximized ? modalLocale.unmaximize : modalLocale.maximize}
       />
     ),
-    closable && (
+    showClose && (
       <Button
         key="close"
         size="small"
         type="text"
+        disabled={closeDisabled}
         onClick={onClose}
-        icon={<CloseOutlined />}
-        aria-label={modalLocale.close}
+        icon={resolvedCloseIcon || <CloseOutlined />}
+        aria-label={closeAriaLabel}
       />
     ),
   ].filter(Boolean);
 
   return (
     <div
-      className={clsx(
-        e('header'),
-        namespace.hashId,
-        classNames?.header,
-        className,
-        {
-          [em('header', 'draggable')]: draggable,
-        },
-      )}
-      style={styles?.header}
+      className={clsx(e('header'), namespace.hashId, className, {
+        [em('header', 'draggable')]: draggable,
+      })}
       onDoubleClick={maximizable ? onToggleMaximize : undefined}
     >
       <div className={clsx(e('title'), namespace.hashId, classNames?.title)}>
@@ -95,6 +97,7 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
           align="center"
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()}
         >
           {actions}
         </Flex>

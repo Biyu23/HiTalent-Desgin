@@ -6,62 +6,89 @@ toc: content
 
 # Modal
 
-Enhances Ant Design Modal with dragging (`draggable`), double-click maximization (`maximizable`), free resizing (`resizable`), minimization to global Dock (`minimizable`), and controlled states.
+Enhances Ant Design Modal with dragging (`draggable`), free resizing (`resizable`), fullscreen maximization (`maximizable`), minimization to global Dock (`minimizable`), and controlled state / imperative Ref methods.
 
-## Demos
+## When To Use
 
-<code src="./demo/draggable.tsx">Draggable</code>
-<code src="./demo/resizable.tsx">Resizable</code>
-<code src="./demo/maximizable.tsx">Maximizable</code>
-<code src="./demo/minimizable.tsx">Minimizable & Dock Position</code>
-<code src="./demo/controlled.tsx">Controlled State & Ref</code>
-<code src="./demo/semantic-styles.tsx">Semantic Styles and Portal Root</code>
+- Need to freely drag modal position or resize modal width and height.
+- The modal contains rich content, large tables, or charts that require one-click fullscreen expansion.
+- Users need to temporarily suspend current task by minimizing into global Dock and seamlessly restore later without losing DOM or form state.
+- Need to precisely control minimize, maximize, and position/size reset via external state or imperative Ref.
+
+## Examples
+
+<code src="./demo/draggable.tsx" title="Draggable" description="Enable draggable prop to move the modal by dragging from the title bar or footer area."></code>
+
+<code src="./demo/resizable.tsx" title="Resizable" description="Enable resizable prop to adjust modal dimensions via the bottom-right handle, supporting minWidth/minHeight constraints and onResize callback."></code>
+
+<code src="./demo/maximizable.tsx" title="Maximizable" description="Enable maximizable prop to toggle fullscreen mode via top-right maximize icon or double-clicking the title bar."></code>
+
+<code src="./demo/minimizable.tsx" title="Minimizable & Global Dock" description="Enable minimizable prop to fold the modal into global Dock with 8 placement options, preserving DOM and form state."></code>
+
+<code src="./demo/controlled.tsx" title="Controlled State & Ref" description="Precisely control modal states via minimized/maximized props and imperative ModalRef methods."></code>
 
 ## API
 
-All standard properties are inherited from Ant Design [ModalProps](https://ant.design/components/modal#api). Only enhanced properties and methods unique to this component are listed below.
+Inherits all properties from [Ant Design Modal](https://ant.design/components/modal#api), with the following enhanced properties:
 
-### ModalProps (Enhanced Props)
+### ModalProps
 
-| Property            | Description                                                                                        | Type                                                                                                     | Default          |
-| ------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------- |
-| `draggable`         | Enables dragging from the title bar or footer (supports double-click title bar to toggle maximize) | `boolean`                                                                                                | `false`          |
-| `resizable`         | Enables free resizing from the bottom-right corner, or provides resize constraints                 | `boolean \| ModalResizableConfig`                                                                        | `false`          |
-| `maximizable`       | Supports fullscreen maximization                                                                   | `boolean`                                                                                                | `false`          |
-| `minimizable`       | Supports minimizing to the global Dock (preserves DOM and form inputs)                             | `boolean`                                                                                                | `false`          |
-| `minimizePosition`  | Dock placement position for minimized floating card                                                | `'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right' \| 'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom-right'` |
-| `minimized`         | Controlled minimized state                                                                         | `boolean`                                                                                                | -                |
-| `maximized`         | Controlled maximized state                                                                         | `boolean`                                                                                                | -                |
-| `onMinimizeChange`  | Callback fired when minimized state changes                                                        | `(minimized: boolean) => void`                                                                           | -                |
-| `onMaximizedChange` | Callback fired when maximized state changes                                                        | `(maximized: boolean) => void`                                                                           | -                |
+| Property            | Description                                                                                         | Type                                                                                                     | Default          |
+| ------------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------- |
+| `draggable`         | Whether to allow dragging (handle is title bar and footer)                                          | `boolean`                                                                                                | `false`          |
+| `resizable`         | Whether to allow resizing, or provide resize configuration                                          | `boolean \| ModalResizableConfig`                                                                        | `false`          |
+| `maximizable`       | Whether to support fullscreen maximization                                                          | `boolean`                                                                                                | `false`          |
+| `minimizable`       | Whether to support minimizing to global Dock (preserves DOM and form inputs)                        | `boolean`                                                                                                | `false`          |
+| `minimizePosition`  | Placement position for minimized floating Dock card                                                 | `'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right' \| 'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom-right'` |
+| `minimized`         | Controlled minimized state                                                                          | `boolean`                                                                                                | -                |
+| `maximized`         | Controlled maximized state                                                                          | `boolean`                                                                                                | -                |
+| `onMinimizeChange`  | Callback fired when minimized state changes                                                         | `(minimized: boolean) => void`                                                                           | -                |
+| `onMaximizeChange`  | Callback fired when maximized state changes                                                         | `(maximized: boolean) => void`                                                                           | -                |
+| `onMaximizedChange` | Callback fired when maximized state changes (alias of `onMaximizeChange`)                           | `(maximized: boolean) => void`                                                                           | -                |
+| `classNames`        | Custom class names configuration, extended with `title`, `actions`, `resizeHandle`, `minimizedDock` | `ModalClassNames`                                                                                        | -                |
+| `styles`            | Custom styles configuration, extended with `resizeHandle`, `minimizedDock`                          | `ModalStyles`                                                                                            | -                |
 
 ### ModalResizableConfig
 
-| Property        | Description                                              | Type                                                | Default |
-| --------------- | -------------------------------------------------------- | --------------------------------------------------- | ------- |
-| `minWidth`      | Minimum width in pixels                                  | `number`                                            | `320`   |
-| `minHeight`     | Minimum height in pixels                                 | `number`                                            | `200`   |
-| `maxWidth`      | Maximum width (still bounded by viewport and container)  | `number`                                            | -       |
-| `maxHeight`     | Maximum height (still bounded by viewport and container) | `number`                                            | -       |
-| `onResizeStart` | Callback fired when resize interaction starts            | `() => void`                                        | -       |
-| `onResize`      | Real-time callback fired during resizing                 | `(size: { width: number; height: number }) => void` | -       |
-| `onResizeEnd`   | Callback fired when resize interaction ends              | `() => void`                                        | -       |
+| Property        | Description                                                  | Type                                                | Default |
+| --------------- | ------------------------------------------------------------ | --------------------------------------------------- | ------- |
+| `minWidth`      | Minimum width in pixels                                      | `number`                                            | `320`   |
+| `minHeight`     | Minimum height in pixels                                     | `number`                                            | `200`   |
+| `maxWidth`      | Maximum width in pixels (bounded by viewport and container)  | `number`                                            | -       |
+| `maxHeight`     | Maximum height in pixels (bounded by viewport and container) | `number`                                            | -       |
+| `onResizeStart` | Callback fired when resize interaction starts                | `() => void`                                        | -       |
+| `onResize`      | Real-time callback fired during resizing                     | `(size: { width: number; height: number }) => void` | -       |
+| `onResizeEnd`   | Callback fired when resize interaction ends                  | `() => void`                                        | -       |
 
 ### ModalRef
 
 Imperative methods exposed via `ref`:
 
-| Method          | Description                                     | Type         |
-| --------------- | ----------------------------------------------- | ------------ |
-| `restore`       | Restores a minimized dialog                     | `() => void` |
-| `maximize`      | Maximizes the dialog                            | `() => void` |
-| `unmaximize`    | Exits maximized mode and restores previous size | `() => void` |
-| `minimize`      | Minimizes the dialog into the Dock              | `() => void` |
-| `resetPosition` | Resets window position back to center           | `() => void` |
-| `resetSize`     | Resets manually resized dimensions              | `() => void` |
+| Method          | Description                                           | Type         |
+| --------------- | ----------------------------------------------------- | ------------ |
+| `restore`       | Restores a minimized modal                            | `() => void` |
+| `maximize`      | Maximizes the modal                                   | `() => void` |
+| `unmaximize`    | Exits maximized mode and restores previous dimensions | `() => void` |
+| `minimize`      | Minimizes the modal into global Dock                  | `() => void` |
+| `resetPosition` | Resets dragged position back to center                | `() => void` |
+| `resetSize`     | Resets manually resized dimensions                    | `() => void` |
 
-## Semantic styles
+### ModalClassNames
 
-`rootClassName` targets the Modal root boundary. `classNames` exposes `root`, `mask`, `wrapper`, `content`, `header`, `title`, `actions`, `body`, `footer`, `resizeHandle`, and `minimizedDock`; `styles` is limited to the primary `root`, `mask`, `wrapper`, `content`, `header`, `body`, `footer`, `resizeHandle`, and `minimizedDock` nodes. Root styles are applied to the portal root through an instance-scoped CSS-in-JS rule.
+Inherits Ant Design `ModalProps['classNames']`, extended with the following fields:
 
-Header operations are isolated from high-frequency position and size state, so moving or resizing the window does not repeatedly render the action area.
+| Property        | Description                                     | Type     |
+| --------------- | ----------------------------------------------- | -------- |
+| `title`         | Custom className for modal title area           | `string` |
+| `actions`       | Custom className for header action buttons area | `string` |
+| `resizeHandle`  | Custom className for resize handle              | `string` |
+| `minimizedDock` | Custom className for minimized Dock card        | `string` |
+
+### ModalStyles
+
+Inherits Ant Design `ModalProps['styles']`, extended with the following fields:
+
+| Property        | Description                                 | Type                  |
+| --------------- | ------------------------------------------- | --------------------- |
+| `resizeHandle`  | Custom inline style for resize handle       | `React.CSSProperties` |
+| `minimizedDock` | Custom inline style for minimized Dock card | `React.CSSProperties` |

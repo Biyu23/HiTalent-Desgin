@@ -14,7 +14,7 @@ Extends Ant Design Drawer with directional resize handles, minimization to a glo
 - When a user is working on complex form inputs or tasks and needs to temporarily minimize to the global Dock and restore later without losing progress.
 - When multiple drawers or modals need to be orchestrated together in a shared floating task dock.
 
-## Code Demonstrations
+## Examples
 
 <code src="./demo/resizable.tsx" title="Resizable" description="Drag the inner edge to resize width or height with 4-direction support and minSize / maxSize constraints."></code>
 
