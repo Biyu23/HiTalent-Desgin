@@ -21,7 +21,7 @@ export interface PopoverSelectFieldNames<OptionType extends object> {
   disabled?: keyof OptionType;
 }
 
-export type PopoverSelectSlot =
+export type PopoverSelectClassNameSlot =
   | 'root'
   | 'trigger'
   | 'triggerText'
@@ -34,12 +34,16 @@ export type PopoverSelectSlot =
   | 'footer'
   | 'empty';
 
-export type PopoverSelectClassNames = SemanticClassNames<PopoverSelectSlot>;
-export type PopoverSelectStyles = SemanticStyles<PopoverSelectSlot>;
+export type PopoverSelectStyleSlot = 'root' | 'trigger' | 'popup' | 'menu';
+
+export type PopoverSelectSlot = PopoverSelectClassNameSlot;
+export type PopoverSelectClassNames =
+  SemanticClassNames<PopoverSelectClassNameSlot>;
+export type PopoverSelectStyles = SemanticStyles<PopoverSelectStyleSlot>;
 
 interface PopoverSelectBaseProps<OptionType extends object>
   extends Omit<NativeProps, 'children'>,
-    SemanticStyleProps<PopoverSelectSlot> {
+    SemanticStyleProps<PopoverSelectClassNameSlot, PopoverSelectStyleSlot> {
   prefixCls?: string;
   options?: readonly OptionType[];
   placeholder?: React.ReactNode;
@@ -112,7 +116,7 @@ export type PopoverSelectProps<
 
 export interface SelectorProps
   extends Omit<NativeProps, 'children'>,
-    SemanticStyleProps<PopoverSelectSlot> {
+    SemanticStyleProps<PopoverSelectClassNameSlot, PopoverSelectStyleSlot> {
   content: React.ReactNode | (() => React.ReactNode);
   autoAdjustOverflow?: boolean;
   afterOpenChange?: (open: boolean) => void;

@@ -114,4 +114,4 @@ toc: content
 
 Table 的 `root` 是同时包含工具栏和 Ant Design Table 的外层边界。`className`、`style` 作用于 Ant Design Table，`rootClassName` 作用于外层边界。
 
-`classNames` 与 `styles` 支持 `root`、`toolbar`、`toolbarExtra`、`settingTrigger`、`settingPopup`、`table`、`headerCell`、`resizeHandle`、`rowDragHandle`、`dragOverlay` 插槽。设置弹层和拖拽浮层位于 Portal 中，但仍自动携带当前前缀与 CSS-in-JS hash。
+`classNames` 支持 `root`、`toolbar`、`toolbarExtra`、`settingTrigger`、`settingPopup`、`table`、`headerCell`、`resizeHandle`、`rowDragHandle`、`dragOverlay`；`styles` 仅支持主要节点 `root`、`toolbar`、`settingPopup`、`table`、`dragOverlay`。设置弹层和拖拽浮层位于 Portal 中，但仍自动携带当前前缀与 CSS-in-JS hash。

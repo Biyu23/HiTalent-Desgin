@@ -40,7 +40,6 @@ function Toolbar<RecordType = Record<string, unknown>>(
     >
       <div
         className={clsx(e('toolbar-extra'), hashId, classNames?.toolbarExtra)}
-        style={styles?.toolbarExtra}
       >
         {toolbarExtra}
       </div>

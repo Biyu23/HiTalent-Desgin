@@ -15,7 +15,7 @@ export default () => {
         classNames={{ title: 'demo-modal-title', resizeHandle: 'demo-resize' }}
         styles={{
           root: { '--demo-modal-accent': '#1677ff' },
-          title: { color: '#1677ff' },
+          header: { borderBottomColor: '#91caff' },
           body: { minHeight: 160 },
           resizeHandle: { color: '#1677ff' },
         }}

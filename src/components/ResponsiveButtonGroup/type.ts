@@ -69,21 +69,31 @@ export interface ResponsiveButtonGroupItem {
   onClick?: (info: ResponsiveButtonGroupClickInfo) => void | Promise<unknown>;
 }
 
-export type ResponsiveButtonGroupSlot =
+export type ResponsiveButtonGroupClassNameSlot =
   | 'root'
   | 'visible'
   | 'overflowTrigger'
   | 'popup'
   | 'menuItem';
 
+export type ResponsiveButtonGroupStyleSlot =
+  | 'root'
+  | 'visible'
+  | 'overflowTrigger'
+  | 'popup';
+
+export type ResponsiveButtonGroupSlot = ResponsiveButtonGroupClassNameSlot;
 export type ResponsiveButtonGroupClassNames =
-  SemanticClassNames<ResponsiveButtonGroupSlot>;
+  SemanticClassNames<ResponsiveButtonGroupClassNameSlot>;
 export type ResponsiveButtonGroupStyles =
-  SemanticStyles<ResponsiveButtonGroupSlot>;
+  SemanticStyles<ResponsiveButtonGroupStyleSlot>;
 
 export interface ResponsiveButtonGroupProps
   extends NativeProps,
-    SemanticStyleProps<ResponsiveButtonGroupSlot> {
+    SemanticStyleProps<
+      ResponsiveButtonGroupClassNameSlot,
+      ResponsiveButtonGroupStyleSlot
+    > {
   /** 样式类名前缀 */
   prefixCls?: string;
   items: readonly ResponsiveButtonGroupItem[];

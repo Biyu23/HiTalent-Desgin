@@ -74,7 +74,7 @@ interface AntdModalStyles extends NonNullable<AntdModalProps['styles']> {
   minimizedDock?: React.CSSProperties;
 }
 
-export type ModalSlot =
+export type ModalClassNameSlot =
   | 'root'
   | 'mask'
   | 'wrapper'
@@ -87,9 +87,12 @@ export type ModalSlot =
   | 'resizeHandle'
   | 'minimizedDock';
 
-export type ModalClassNames = SemanticClassNames<ModalSlot> &
+export type ModalStyleSlot = Exclude<ModalClassNameSlot, 'title' | 'actions'>;
+export type ModalSlot = ModalClassNameSlot;
+
+export type ModalClassNames = SemanticClassNames<ModalClassNameSlot> &
   AntdModalClassNames;
-export type ModalStyles = SemanticStyles<ModalSlot> & AntdModalStyles;
+export type ModalStyles = SemanticStyles<ModalStyleSlot> & AntdModalStyles;
 
 export interface ModalProps
   extends Omit<
@@ -101,7 +104,7 @@ export interface ModalProps
       | 'styles'
       | 'rootClassName'
     >,
-    SemanticStyleProps<ModalSlot> {
+    SemanticStyleProps<ModalClassNameSlot, ModalStyleSlot> {
   classNames?: ModalClassNames;
   styles?: ModalStyles;
   /**

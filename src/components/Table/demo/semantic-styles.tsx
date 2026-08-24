@@ -12,12 +12,16 @@ export default () => (
     columns={columns}
     dataSource={data}
     rootClassName="demo-table-boundary"
-    classNames={{ toolbar: 'demo-table-toolbar', table: 'demo-table' }}
+    classNames={{
+      toolbar: 'demo-table-toolbar',
+      table: 'demo-table',
+      headerCell: 'demo-table-header-cell',
+      resizeHandle: 'demo-table-resize-handle',
+    }}
     styles={{
       root: { padding: 12, border: '1px solid #d9d9d9' },
       toolbar: { background: '#f5f5f5' },
-      headerCell: { color: '#1677ff' },
-      resizeHandle: { '--demo-resize-color': '#1677ff' },
+      table: { '--demo-table-accent': '#1677ff' },
     }}
   />
 );

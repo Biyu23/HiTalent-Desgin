@@ -50,7 +50,7 @@ Fully compatible with Ant Design `DrawerProps` in addition to the enhancements b
 | `onMinimizeChange` | Callback when minimized or restored                                                       | `(minimized: boolean) => void`                                                           | -              |
 | `onClose`          | Callback for close button, ESC, or Dock close (event is undefined for programmatic close) | `(event?) => void`                                                                       | -              |
 | `classNames`       | Semantic class names, extended with `dragger`, `minimizeButton`, `minimizedDock`          | `DrawerClassNames`                                                                       | -              |
-| `styles`           | Semantic styles, extended with `dragger`, `minimizeButton`, `minimizedDock`               | `DrawerStyles`                                                                           | -              |
+| `styles`           | Primary-node styles, extended with `dragger` and `minimizedDock`                          | `DrawerStyles`                                                                           | -              |
 
 ### DrawerRef
 
@@ -78,6 +78,6 @@ Imperative control handle via `ref`. Panel DOM element remains accessible via `p
 
 ## Semantic styles
 
-`rootClassName` targets the Drawer root boundary. `classNames` and `styles` expose `root`, `mask`, `wrapper`, `content`, `header`, `body`, `footer`, `dragger`, `minimizeButton`, and `minimizedDock`. The minimized dock is a separate portal that automatically inherits the current namespace and CSS-in-JS hash.
+`rootClassName` targets the Drawer root boundary. `classNames` exposes `root`, `mask`, `wrapper`, `content`, `header`, `body`, `footer`, `dragger`, `minimizeButton`, and `minimizedDock`; `styles` is limited to the primary `root`, `mask`, `wrapper`, `content`, `header`, `body`, `footer`, `dragger`, and `minimizedDock` nodes. The minimized dock is a separate portal that automatically inherits the current namespace and CSS-in-JS hash.
 
 Resize uses Pointer Events. Global listeners exist only during an active interaction and are removed on commit, cancellation, window blur, or unmount.

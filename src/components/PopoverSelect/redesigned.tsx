@@ -176,7 +176,16 @@ function PopoverSelectContent<
 
   const renderOption = useCallback(
     (option: MappedOption<ValueType, OptionType>) => {
-      const content = optionRender ? optionRender(option.source) : option.label;
+      const content = optionRender ? (
+        optionRender(option.source)
+      ) : (
+        <span
+          className={namespace.element('menu-item-text')}
+          title={typeof option.label === 'string' ? option.label : undefined}
+        >
+          {option.label}
+        </span>
+      );
       const itemClassName = clsx(
         namespace.element(mode === 'multiple' ? 'menu-checkbox' : 'menu-radio'),
         classNames?.item,
@@ -185,10 +194,10 @@ function PopoverSelectContent<
         return (
           <Checkbox
             key={option.value}
+            value={option.value}
             checked={selectedSet.has(option.value)}
             disabled={option.disabled}
             className={itemClassName}
-            style={styles?.item}
             onChange={() => onToggle(option.value)}
           >
             {content}
@@ -207,29 +216,17 @@ function PopoverSelectContent<
             [namespace.elementModifier('menu-radio', 'disabled')]:
               option.disabled,
           })}
-          style={styles?.item}
           onClick={() => !option.disabled && onToggle(option.value)}
         >
           {content}
         </div>
       );
     },
-    [
-      classNames?.item,
-      mode,
-      namespace,
-      onToggle,
-      optionRender,
-      selectedSet,
-      styles?.item,
-    ],
+    [classNames?.item, mode, namespace, onToggle, optionRender, selectedSet],
   );
 
   const empty = (description: string) => (
-    <div
-      className={clsx(namespace.element('empty'), classNames?.empty)}
-      style={styles?.empty}
-    >
+    <div className={clsx(namespace.element('empty'), classNames?.empty)}>
       <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={description} />
     </div>
   );
@@ -250,7 +247,11 @@ function PopoverSelectContent<
     <div
       role="listbox"
       aria-multiselectable={mode === 'multiple' || undefined}
-      className={clsx(namespace.element('menu'), classNames?.menu)}
+      className={clsx(
+        namespace.element('menu'),
+        classNames?.menu,
+        !virtual && namespace.element('menu-scroll'),
+      )}
       style={{
         ...styles?.menu,
         ...(!virtual ? { maxHeight: listHeight } : undefined),
@@ -258,6 +259,7 @@ function PopoverSelectContent<
     >
       {virtual ? (
         <VirtualList
+          className={namespace.element('menu-virtual-list')}
           data={displayOptions}
           height={actualHeight}
           itemHeight={listItemHeight}
@@ -275,10 +277,7 @@ function PopoverSelectContent<
   return (
     <div className={namespace.element('dropdown')}>
       {showSearch && (
-        <div
-          className={clsx(namespace.element('search'), classNames?.search)}
-          style={styles?.search}
-        >
+        <div className={clsx(namespace.element('search'), classNames?.search)}>
           <Input
             prefix={<SearchOutlined />}
             placeholder={locale.searchPlaceholder}
@@ -294,7 +293,6 @@ function PopoverSelectContent<
             namespace.element('select-all'),
             classNames?.selectAll,
           )}
-          style={styles?.selectAll}
         >
           <Checkbox
             checked={allSelected}
@@ -308,10 +306,7 @@ function PopoverSelectContent<
       )}
       {displayOptions.length > 0 ? renderedMenu : empty(locale.noMatch)}
       {footerActions.length > 0 && (
-        <div
-          className={clsx(namespace.element('footer'), classNames?.footer)}
-          style={styles?.footer}
-        >
+        <div className={clsx(namespace.element('footer'), classNames?.footer)}>
           <Space>{footerActions}</Space>
         </div>
       )}
@@ -337,8 +332,6 @@ const Selector = forwardRef<React.ComponentRef<typeof Button>, SelectorProps>(
       showArrow = true,
       disabled = false,
       onClear,
-      className,
-      style,
       classNames,
       styles,
     } = props;
@@ -359,21 +352,21 @@ const Selector = forwardRef<React.ComponentRef<typeof Button>, SelectorProps>(
           namespace.element('selector-btn'),
           namespace.hashId,
           classNames?.trigger,
-          className,
           {
             [namespace.elementModifier('selector-btn', 'active')]: hasValue,
             [namespace.elementModifier('selector-btn', 'open')]: open,
             [namespace.elementModifier('selector-btn', 'empty')]: !hasValue,
+            [namespace.elementModifier('selector-btn', 'disabled')]: disabled,
           },
         )}
-        style={{ ...styles?.trigger, ...style }}
+        style={styles?.trigger}
       >
         <span
           className={clsx(
             namespace.element('selector-text'),
+            namespace.hashId,
             classNames?.triggerText,
           )}
-          style={styles?.triggerText}
         >
           {children}
         </span>
@@ -381,20 +374,34 @@ const Selector = forwardRef<React.ComponentRef<typeof Button>, SelectorProps>(
           <span
             className={clsx(
               namespace.element('selector-actions'),
+              namespace.hashId,
               classNames?.actions,
             )}
-            style={styles?.actions}
           >
             {hasClear && (
               <CloseCircleOutlined
-                className={namespace.element('selector-clear')}
+                className={clsx(
+                  namespace.element('selector-clear'),
+                  namespace.hashId,
+                  showArrow &&
+                    namespace.elementModifier('selector-clear', 'overlay'),
+                )}
                 onClick={(event) => {
                   event.stopPropagation();
                   onClear?.(event);
                 }}
               />
             )}
-            {showArrow && <DownOutlined />}
+            {showArrow && (
+              <DownOutlined
+                className={clsx(
+                  namespace.element('selector-arrow'),
+                  namespace.hashId,
+                  hasClear &&
+                    namespace.elementModifier('selector-arrow', 'has-clear'),
+                )}
+              />
+            )}
           </span>
         )}
       </Button>,
@@ -405,7 +412,9 @@ const Selector = forwardRef<React.ComponentRef<typeof Button>, SelectorProps>(
         trigger="click"
         placement={placement}
         getPopupContainer={getPopupContainer}
-        destroyTooltipOnHide={destroyTooltipOnHide}
+        {...(destroyTooltipOnHide !== undefined
+          ? { destroyTooltipOnHide }
+          : undefined)}
         autoAdjustOverflow={autoAdjustOverflow}
         rootClassName={clsx(
           namespace.element('selector'),
@@ -681,6 +690,7 @@ function InternalPopoverSelect<
         style={styles?.root}
       >
         <Selector
+          {...props}
           content={props.dropdownRender ? () => content : content}
           open={open}
           onOpenChange={setOpen}
@@ -698,8 +708,6 @@ function InternalPopoverSelect<
           }}
           showArrow={showArrow}
           disabled={disabled}
-          className={props.className}
-          style={props.style}
           classNames={classNames}
           styles={styles}
         >

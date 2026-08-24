@@ -26,7 +26,6 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({
           [em('resize-handle', 'active')]: isResizing,
         },
       )}
-      style={context.styles?.resizeHandle}
       onPointerDown={onPointerDown}
       onClick={(e) => e.stopPropagation()}
       role="separator"

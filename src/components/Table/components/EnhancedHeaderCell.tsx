@@ -58,7 +58,6 @@ function EnhancedHeaderCell<RecordType = unknown>(
   const cellContent = (
     <div
       className={clsx(e('header-cell'), hashId, context.classNames?.headerCell)}
-      style={context.styles?.headerCell}
     >
       <span className={clsx(e('header-cell-title'), hashId)}>{children}</span>
     </div>

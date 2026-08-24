@@ -12,7 +12,7 @@ import type {
 
 export type ButtonRef = React.ComponentRef<typeof AntdButton>;
 
-export type ButtonSlot = 'root' | 'content';
+export type ButtonSlot = 'root' | 'icon';
 export type ButtonClassNames = SemanticClassNames<ButtonSlot>;
 export type ButtonStyles = SemanticStyles<ButtonSlot>;
 

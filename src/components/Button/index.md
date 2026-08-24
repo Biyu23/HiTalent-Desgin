@@ -22,7 +22,7 @@ toc: content
 
 <code src="./demo/tooltip.tsx" title="提示气泡" description="通过 tooltip 属性为按钮配置提示，支持快捷文本与完整 TooltipProps 配置。"></code>
 
-<code src="./demo/semantic-styles.tsx" title="语义化样式" description="通过强类型 root、content 插槽定制按钮，并验证消费方样式覆盖顺序。"></code>
+<code src="./demo/semantic-styles.tsx" title="语义化样式" description="通过强类型 root、icon 插槽定制按钮，并验证消费方样式覆盖顺序。"></code>
 
 ## API
 
@@ -39,4 +39,4 @@ toc: content
 
 ## 语义化样式
 
-`className` 和 `style` 作用于按钮元素。`rootClassName`、`classNames` 与 `styles` 提供 Ant Design 风格的语义化定制能力；可用插槽为 `root`、`content`。消费方样式在内部样式之后合并，因此同名行内属性由消费方覆盖。
+`className` 和 `style` 作用于按钮元素。`rootClassName` 作用于同一根节点；`classNames` 与 `styles` 提供 `root`、`icon` 插槽。`style` 在 `styles.root` 之后合并，因此同名行内属性由 `style` 覆盖。按钮内容保持 Ant Design 原始 DOM 语义，不额外增加包装层。

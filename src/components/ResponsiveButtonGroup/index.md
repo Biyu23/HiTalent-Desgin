@@ -60,6 +60,6 @@ toc: content
 
 ## 语义化样式
 
-组件项的 `key` 必须是唯一字符串。`rootClassName`、`classNames` 与 `styles` 支持 `root`、`visible`、`overflowTrigger`、`popup`、`menuItem` 插槽。`popup` 对应溢出菜单 Portal 根节点。
+组件项的 `key` 必须是唯一字符串。`classNames` 支持 `root`、`visible`、`overflowTrigger`、`popup`、`menuItem`；`styles` 仅支持主要节点 `root`、`visible`、`overflowTrigger`、`popup`。`rootClassName` 作用于组件根边界，`popup` 对应溢出菜单 Portal 根节点。
 
 响应式测量只渲染每个按钮一次，并额外测量一个候选溢出按钮；不会为所有折叠数量渲染隐藏组合。

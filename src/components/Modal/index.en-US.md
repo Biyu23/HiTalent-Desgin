@@ -62,6 +62,6 @@ Imperative methods exposed via `ref`:
 
 ## Semantic styles
 
-`rootClassName` targets the Modal root boundary. `classNames` and `styles` expose `root`, `mask`, `wrapper`, `content`, `header`, `title`, `actions`, `body`, `footer`, `resizeHandle`, and `minimizedDock`. Inline styles for `root` are applied to the portal root through an instance-scoped CSS-in-JS rule.
+`rootClassName` targets the Modal root boundary. `classNames` exposes `root`, `mask`, `wrapper`, `content`, `header`, `title`, `actions`, `body`, `footer`, `resizeHandle`, and `minimizedDock`; `styles` is limited to the primary `root`, `mask`, `wrapper`, `content`, `header`, `body`, `footer`, `resizeHandle`, and `minimizedDock` nodes. Root styles are applied to the portal root through an instance-scoped CSS-in-JS rule.
 
 Header operations are isolated from high-frequency position and size state, so moving or resizing the window does not repeatedly render the action area.

@@ -9,10 +9,13 @@ export type SemanticStyles<Slot extends string> = Partial<
   Record<Slot, CSSPropertiesWithVars>
 >;
 
-export interface SemanticStyleProps<Slot extends string> {
+export interface SemanticStyleProps<
+  ClassNameSlot extends string,
+  StyleSlot extends string = ClassNameSlot,
+> {
   rootClassName?: string;
-  classNames?: SemanticClassNames<Slot>;
-  styles?: SemanticStyles<Slot>;
+  classNames?: SemanticClassNames<ClassNameSlot>;
+  styles?: SemanticStyles<StyleSlot>;
 }
 
 export function mergeSemanticClassNames<Slot extends string>(

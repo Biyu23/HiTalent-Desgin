@@ -84,4 +84,4 @@ Single selection uses `mode="single"` (or omits `mode`) and emits a scalar or `u
 
 String mode uses an unambiguous JSON-array codec, so async options, numeric values, and look-alike string values retain the correct type.
 
-Styling is exposed through `rootClassName`, `classNames`, and `styles`. Slots are `root`, `trigger`, `triggerText`, `actions`, `popup`, `search`, `selectAll`, `menu`, `item`, `footer`, and `empty`. The `popup` slot targets the portal root and automatically receives the active namespace and CSS-in-JS hash.
+Styling is exposed through `rootClassName`, `classNames`, and `styles`. `classNames` provides `root`, `trigger`, `triggerText`, `actions`, `popup`, `search`, `selectAll`, `menu`, `item`, `footer`, and `empty`; `styles` is limited to the primary `root`, `trigger`, `popup`, and `menu` nodes. The `popup` slot targets the portal root and automatically receives the active namespace and CSS-in-JS hash.

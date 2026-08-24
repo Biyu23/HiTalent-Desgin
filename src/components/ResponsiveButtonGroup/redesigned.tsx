@@ -332,9 +332,13 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
             overflowButtonProps?.['aria-label'] ?? locale.moreActions(count)
           }
         >
-          <span>{overflowLabel ?? locale.more}</span>
-          {showOverflowCount && <span>{count}</span>}
-          <DownOutlined />
+          <span className={namespace.element('overflow-label')}>
+            {overflowLabel ?? locale.more}
+          </span>
+          {showOverflowCount && (
+            <span className={namespace.element('overflow-count')}>{count}</span>
+          )}
+          <DownOutlined className={namespace.element('overflow-arrow')} />
         </Button>
       );
       if (!renderOverflowButton) return defaultNode;
@@ -366,10 +370,20 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
       layout.collapsedItems.map((item) => {
         const loading = Boolean(item.loading || pendingKeys.has(item.key));
         const defaultNode = (
-          <span className={classNames?.menuItem} style={styles?.menuItem}>
-            {(loading || item.icon) &&
-              (loading ? <LoadingOutlined spin /> : item.icon)}
-            <span>{item.label}</span>
+          <span
+            className={clsx(
+              namespace.element('menu-item-content'),
+              classNames?.menuItem,
+            )}
+          >
+            {(loading || item.icon) && (
+              <span className={namespace.element('menu-item-icon')}>
+                {loading ? <LoadingOutlined spin /> : item.icon}
+              </span>
+            )}
+            <span className={namespace.element('menu-item-label')}>
+              {item.label}
+            </span>
           </span>
         );
         const info: ResponsiveButtonGroupRenderInfo = {
@@ -384,7 +398,18 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
             React.isValidElement(item.tooltip)
               ? { title: item.tooltip }
               : item.tooltip;
-          label = <Tooltip {...tooltipProps}>{defaultNode}</Tooltip>;
+          label = (
+            <Tooltip
+              {...tooltipProps}
+              placement="right"
+              overlayStyle={{
+                pointerEvents: 'none',
+                ...tooltipProps.overlayStyle,
+              }}
+            >
+              {defaultNode}
+            </Tooltip>
+          );
         }
         return {
           key: item.key,
@@ -393,12 +418,7 @@ const ResponsiveButtonGroup: React.FC<ResponsiveButtonGroupProps> = (props) => {
           disabled: item.disabled || loading,
         };
       }),
-    [
-      classNames?.menuItem,
-      layout.collapsedItems,
-      pendingKeys,
-      styles?.menuItem,
-    ],
+    [classNames?.menuItem, layout.collapsedItems, namespace, pendingKeys],
   );
   const itemMap = useMemo(
     () => new Map(layout.collapsedItems.map((item) => [item.key, item])),

@@ -124,7 +124,7 @@ interface TableOwnProps<RecordType> {
   toolbarExtra?: React.ReactNode;
 }
 
-export type TableSlot =
+export type TableClassNameSlot =
   | 'root'
   | 'toolbar'
   | 'toolbarExtra'
@@ -136,8 +136,16 @@ export type TableSlot =
   | 'rowDragHandle'
   | 'dragOverlay';
 
-export type TableClassNames = SemanticClassNames<TableSlot>;
-export type TableStyles = SemanticStyles<TableSlot>;
+export type TableStyleSlot =
+  | 'root'
+  | 'toolbar'
+  | 'settingPopup'
+  | 'table'
+  | 'dragOverlay';
+
+export type TableSlot = TableClassNameSlot;
+export type TableClassNames = SemanticClassNames<TableClassNameSlot>;
+export type TableStyles = SemanticStyles<TableStyleSlot>;
 
 type ControlledColumnStateProps = {
   columnState: ColumnState;
@@ -163,7 +171,7 @@ export type TableProps<RecordType = Record<string, unknown>> = Omit<
   'columns' | 'className' | 'style' | 'rootClassName' | 'classNames' | 'styles'
 > &
   NativeProps &
-  SemanticStyleProps<TableSlot> &
+  SemanticStyleProps<TableClassNameSlot, TableStyleSlot> &
   TableOwnProps<RecordType> &
   (ControlledColumnStateProps | UncontrolledColumnStateProps);
 

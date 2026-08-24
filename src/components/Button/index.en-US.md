@@ -22,7 +22,7 @@ Extends Ant Design Button with async loading, click throttling, and tooltip capa
 
 <code src="./demo/tooltip.tsx" title="Tooltip" description="Attaches tooltip hints via string title or full TooltipProps object."></code>
 
-<code src="./demo/semantic-styles.tsx" title="Semantic Styles" description="Customize the strongly typed root and content slots with predictable consumer override precedence."></code>
+<code src="./demo/semantic-styles.tsx" title="Semantic Styles" description="Customize the strongly typed root and icon slots with predictable consumer override precedence."></code>
 
 ## API
 
@@ -39,4 +39,4 @@ Inherits all properties from [Ant Design Button](https://ant.design/components/b
 
 ## Semantic styles
 
-`className` and `style` target the button element. `rootClassName`, `classNames`, and `styles` provide Ant Design-style semantic customization with the `root` and `content` slots. Consumer inline styles are merged last.
+`className` and `style` target the button element, and `rootClassName` targets the same root node. `classNames` and `styles` expose the `root` and `icon` slots. `style` is merged after `styles.root`, so it wins for duplicate inline properties. Button content retains Ant Design's original DOM semantics without an extra wrapper.

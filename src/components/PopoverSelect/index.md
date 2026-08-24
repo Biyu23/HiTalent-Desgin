@@ -84,4 +84,4 @@ toc: content
 
 字符串模式使用 JSON 数组字符串进行无歧义编解码，因此异步选项、数字值与同形字符串值都能保持正确类型。
 
-所有样式入口统一为 `rootClassName`、`classNames`、`styles`。插槽包括：`root`、`trigger`、`triggerText`、`actions`、`popup`、`search`、`selectAll`、`menu`、`item`、`footer`、`empty`。其中 `popup` 作用于 Portal 根节点，并自动携带当前组件前缀和 CSS-in-JS hash。
+样式入口分为 `rootClassName`、`classNames` 与 `styles`。`classNames` 插槽包括 `root`、`trigger`、`triggerText`、`actions`、`popup`、`search`、`selectAll`、`menu`、`item`、`footer`、`empty`；`styles` 仅提供主要节点 `root`、`trigger`、`popup`、`menu`。其中 `popup` 作用于 Portal 根节点，并自动携带当前组件前缀和 CSS-in-JS hash。

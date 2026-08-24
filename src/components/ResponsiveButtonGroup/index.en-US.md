@@ -60,6 +60,6 @@ Automatically calculates available space based on container width and smoothly c
 
 ## Semantic styles
 
-Every item `key` must be a unique string. `rootClassName`, `classNames`, and `styles` expose the `root`, `visible`, `overflowTrigger`, `popup`, and `menuItem` slots. `popup` targets the overflow menu portal root.
+Every item `key` must be a unique string. `classNames` exposes `root`, `visible`, `overflowTrigger`, `popup`, and `menuItem`; `styles` is limited to the primary `root`, `visible`, `overflowTrigger`, and `popup` nodes. `rootClassName` targets the component boundary, while `popup` targets the overflow menu portal root.
 
 Responsive measurement renders each action once plus a single candidate overflow trigger; it does not render every collapsed combination.

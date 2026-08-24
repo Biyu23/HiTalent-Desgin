@@ -84,16 +84,12 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
       style={styles?.header}
       onDoubleClick={maximizable ? onToggleMaximize : undefined}
     >
-      <div
-        className={clsx(e('title'), namespace.hashId, classNames?.title)}
-        style={styles?.title}
-      >
+      <div className={clsx(e('title'), namespace.hashId, classNames?.title)}>
         {title}
       </div>
       {actions.length > 0 && (
         <Flex
           className={clsx(e('actions'), namespace.hashId, classNames?.actions)}
-          style={styles?.actions}
           data-modal-no-drag
           gap={8}
           align="center"

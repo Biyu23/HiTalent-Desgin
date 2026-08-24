@@ -158,7 +158,6 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
   const minimizeButtonClassName = classNames?.minimizeButton;
   const minimizedDockClassName = classNames?.minimizedDock;
   const draggerStyle = styles?.dragger;
-  const minimizeButtonStyle = styles?.minimizeButton;
   const minimizedDockStyle = styles?.minimizedDock;
 
   const mergedClassNames = useMemo(() => {
@@ -237,7 +236,6 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
             size="small"
             type="text"
             className={minimizeButtonClassName}
-            style={minimizeButtonStyle}
             onClick={minimize}
             icon={<MinusOutlined />}
             aria-label={drawerLocale.minimize}
@@ -254,7 +252,6 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
       minimizable,
       minimize,
       minimizeButtonClassName,
-      minimizeButtonStyle,
     ],
   );
 

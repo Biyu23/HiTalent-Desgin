@@ -95,7 +95,6 @@ export const RowDragHandle: React.FC = () => {
             [em('row-drag-handle', 'disabled')]: !draggable,
           },
         )}
-        style={tableContext.styles?.rowDragHandle}
         aria-label={dragHandleLabel}
         {...(draggable ? listeners : undefined)}
         {...(draggable ? attributes : undefined)}

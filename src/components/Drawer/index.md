@@ -50,7 +50,7 @@ toc: content
 | `onMinimizeChange` | 最小化或恢复状态变更回调                                                  | `(minimized: boolean) => void`                                                           | -              |
 | `onClose`          | 点击关闭、ESC 或从 Dock 卡片关闭的回调（程序化关闭时 event 为 undefined） | `(event?) => void`                                                                       | -              |
 | `classNames`       | 语义化 class，扩展 `dragger`、`minimizeButton`、`minimizedDock`           | `DrawerClassNames`                                                                       | -              |
-| `styles`           | 语义化 style，扩展 `dragger`、`minimizeButton`、`minimizedDock`           | `DrawerStyles`                                                                           | -              |
+| `styles`           | 主要节点 style，扩展 `dragger`、`minimizedDock`                           | `DrawerStyles`                                                                           | -              |
 
 ### DrawerRef
 
@@ -78,6 +78,6 @@ toc: content
 
 ## 语义化样式
 
-`rootClassName` 作用于 Drawer 根边界。`classNames` 与 `styles` 提供 `root`、`mask`、`wrapper`、`content`、`header`、`body`、`footer`、`dragger`、`minimizeButton`、`minimizedDock` 插槽。最小化 Dock 是独立 Portal，但会自动继承当前命名空间和 CSS-in-JS hash。
+`rootClassName` 作用于 Drawer 根边界。`classNames` 提供 `root`、`mask`、`wrapper`、`content`、`header`、`body`、`footer`、`dragger`、`minimizeButton`、`minimizedDock`；`styles` 仅提供主要节点 `root`、`mask`、`wrapper`、`content`、`header`、`body`、`footer`、`dragger`、`minimizedDock`。最小化 Dock 是独立 Portal，但会自动继承当前命名空间和 CSS-in-JS hash。
 
 调整尺寸使用 Pointer Events；全局监听仅在活动拖拽期间注册，并在结束、取消、窗口失焦或卸载时清理。

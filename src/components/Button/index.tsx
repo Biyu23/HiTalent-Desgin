@@ -42,13 +42,14 @@ const Button = React.forwardRef<ButtonRef, ButtonProps>((props, ref) => {
       disabled={disabled}
       loading={combinedLoading}
       onClick={handleClick}
-      className={clsx(rootClassName, classNames?.root, className)}
+      rootClassName={rootClassName}
+      className={clsx(classNames?.root, className)}
       style={{ ...styles?.root, ...style }}
+      classNames={classNames?.icon ? { icon: classNames.icon } : undefined}
+      styles={styles?.icon ? { icon: styles.icon } : undefined}
       {...restProps}
     >
-      <span className={classNames?.content} style={styles?.content}>
-        {children}
-      </span>
+      {children}
     </AntdButton>
   );
 

@@ -114,4 +114,4 @@ All Ant Design `TableProps` remain available, with enhanced `columns` and additi
 
 The Table `root` is the outer boundary containing both the toolbar and the Ant Design Table. `className` and `style` target the Ant Design Table, while `rootClassName` targets the outer boundary.
 
-`classNames` and `styles` expose `root`, `toolbar`, `toolbarExtra`, `settingTrigger`, `settingPopup`, `table`, `headerCell`, `resizeHandle`, `rowDragHandle`, and `dragOverlay`. Settings and drag overlays render in portals but still receive the active prefix and CSS-in-JS hash.
+`classNames` exposes `root`, `toolbar`, `toolbarExtra`, `settingTrigger`, `settingPopup`, `table`, `headerCell`, `resizeHandle`, `rowDragHandle`, and `dragOverlay`; `styles` is limited to the primary `root`, `toolbar`, `settingPopup`, `table`, and `dragOverlay` nodes. Settings and drag overlays render in portals but still receive the active prefix and CSS-in-JS hash.

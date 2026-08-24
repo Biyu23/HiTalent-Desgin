@@ -10,6 +10,7 @@ export type {
 export { default as PopoverSelect } from './PopoverSelect';
 export type {
   DefaultOptionType,
+  PopoverSelectClassNameSlot,
   PopoverSelectClassNames,
   PopoverSelectFieldNames,
   PopoverSelectMultipleArrayProps,
@@ -17,6 +18,7 @@ export type {
   PopoverSelectProps,
   PopoverSelectSingleProps,
   PopoverSelectSlot,
+  PopoverSelectStyleSlot,
   PopoverSelectStyles,
   RawValueType,
 } from './PopoverSelect/publicTypes';
@@ -33,6 +35,7 @@ export type {
 export { default as ResponsiveButtonGroup } from './ResponsiveButtonGroup';
 export type {
   ResponsiveButtonGroupButtonProps,
+  ResponsiveButtonGroupClassNameSlot,
   ResponsiveButtonGroupClassNames,
   ResponsiveButtonGroupClickInfo,
   ResponsiveButtonGroupItem,
@@ -42,12 +45,14 @@ export type {
   ResponsiveButtonGroupProps,
   ResponsiveButtonGroupRenderInfo,
   ResponsiveButtonGroupSlot,
+  ResponsiveButtonGroupStyleSlot,
   ResponsiveButtonGroupStyles,
 } from './ResponsiveButtonGroup/type';
 
 export { default as Drawer } from './Drawer';
 export type {
   DrawerAxis,
+  DrawerClassNameSlot,
   DrawerClassNames,
   DrawerPlacement,
   DrawerProps,
@@ -55,18 +60,21 @@ export type {
   DrawerResizableConfig,
   DrawerSize,
   DrawerSlot,
+  DrawerStyleSlot,
   DrawerStyles,
 } from './Drawer/type';
 
 export { default as Modal } from './Modal';
 export type {
   MinimizePosition,
+  ModalClassNameSlot,
   ModalClassNames,
   ModalProps,
   ModalRef,
   ModalResizableConfig,
   ModalSlot,
   ModalStaticMethods,
+  ModalStyleSlot,
   ModalStyles,
 } from './Modal/type';
 
@@ -86,9 +94,11 @@ export type {
   RowDragConfig,
   RowDragResult,
   RowDropInfo,
+  TableClassNameSlot,
   TableClassNames,
   TableProps,
   TableRef,
   TableSlot,
+  TableStyleSlot,
   TableStyles,
 } from './Table/type';

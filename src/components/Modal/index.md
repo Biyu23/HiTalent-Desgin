@@ -62,6 +62,6 @@ toc: content
 
 ## 语义化样式
 
-`rootClassName` 作用于 Modal 根边界。`classNames` 与 `styles` 支持 `root`、`mask`、`wrapper`、`content`、`header`、`title`、`actions`、`body`、`footer`、`resizeHandle`、`minimizedDock` 插槽。`root` 行内样式通过实例级 CSS-in-JS 规则应用到 Portal 根节点。
+`rootClassName` 作用于 Modal 根边界。`classNames` 支持 `root`、`mask`、`wrapper`、`content`、`header`、`title`、`actions`、`body`、`footer`、`resizeHandle`、`minimizedDock`；`styles` 仅支持主要节点 `root`、`mask`、`wrapper`、`content`、`header`、`body`、`footer`、`resizeHandle`、`minimizedDock`。`root` 样式通过实例级 CSS-in-JS 规则应用到 Portal 根节点。
 
 标题操作上下文与位置、尺寸等高频状态相互独立，拖拽或缩放不会使标题操作区因窗口坐标变化而重复渲染。
