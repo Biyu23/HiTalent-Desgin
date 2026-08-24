@@ -1,4 +1,4 @@
-import { Alert, Button, Flex, Space, Typography } from 'antd';
+import { Button, Flex, Space } from 'antd';
 import { Drawer, Modal } from 'hi-talent-design';
 import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React, { useState } from 'react';
@@ -10,9 +10,8 @@ const messages = {
     openDrawer: '打开 Drawer',
     modalTitle: '审批弹窗',
     drawerTitle: '详情抽屉',
-    modalContent: '这是一个可最小化的 Modal。',
-    drawerContent: '这是一个可最小化的 Drawer，与 Modal 共享全局 Dock。',
-    sharedHint: 'Modal 与 Drawer 共用同一全局 Dock，支持独立停靠、恢复与关闭。',
+    modalContent: '可最小化的 Modal。',
+    drawerContent: '可最小化的 Drawer，与 Modal 共享 Dock。',
   },
   'en-US': {
     openBoth: 'Open Both',
@@ -20,22 +19,19 @@ const messages = {
     openDrawer: 'Open Drawer',
     modalTitle: 'Approval Modal',
     drawerTitle: 'Details Drawer',
-    modalContent: 'This is a minimizable Modal.',
-    drawerContent:
-      'This is a minimizable Drawer, sharing the same global Dock.',
-    sharedHint:
-      'Modal and Drawer share the unified global Dock with independent restore and close.',
+    modalContent: 'Minimizable Modal.',
+    drawerContent: 'Minimizable Drawer, sharing Dock with Modal.',
   },
 };
 
-export default () => {
+export default (): React.ReactElement => {
   const { t } = useDemoIntl(messages);
   const [modalOpen, setModalOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [modalMinimized, setModalMinimized] = useState(false);
   const [drawerMinimized, setDrawerMinimized] = useState(false);
 
-  const openBoth = () => {
+  const openBoth = (): void => {
     setModalOpen(true);
     setDrawerOpen(true);
     setModalMinimized(false);
@@ -81,10 +77,7 @@ export default () => {
           setModalMinimized(false);
         }}
       >
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-          <Alert type="info" showIcon message={t('sharedHint')} />
-          <Typography.Paragraph>{t('modalContent')}</Typography.Paragraph>
-        </Space>
+        <p>{t('modalContent')}</p>
       </Modal>
 
       <Drawer
@@ -100,10 +93,7 @@ export default () => {
           setDrawerMinimized(false);
         }}
       >
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-          <Alert type="success" showIcon message={t('sharedHint')} />
-          <Typography.Paragraph>{t('drawerContent')}</Typography.Paragraph>
-        </Space>
+        <p>{t('drawerContent')}</p>
       </Drawer>
     </Space>
   );

@@ -1,4 +1,4 @@
-import { Button, Flex, Radio, Space, Tag, Typography } from 'antd';
+import { Button, Flex, Radio, Space, Tag } from 'antd';
 import type { DrawerProps } from 'hi-talent-design';
 import { Drawer } from 'hi-talent-design';
 import { useDemoIntl } from 'hi-talent-design/demoIntl';
@@ -8,31 +8,27 @@ const messages = {
   'zh-CN': {
     open: '打开抽屉',
     title: '拖拽调整尺寸',
-    placement: '展开方向',
     currentSize: '当前尺寸',
-    minLimit: '最小尺寸: 100px',
-    hint: '拖拽抽屉内侧边缘可自由缩放宽度或高度，支持 4 个展开方向及 minSize / maxSize 约束。',
     close: '关闭',
+    content: '拖拽内侧边缘可调整抽屉尺寸。',
   },
   'en-US': {
     open: 'Open Drawer',
-    title: 'Resize Drawer',
-    placement: 'Placement',
+    title: 'Resizable Drawer',
     currentSize: 'Current Size',
-    minLimit: 'Min Size: 100px',
-    hint: 'Drag the inner edge to resize width or height, with 4-direction support and minSize / maxSize constraints.',
     close: 'Close',
+    content: 'Drag the inner edge to resize the drawer.',
   },
 };
 
-export default () => {
+export default (): React.ReactElement => {
   const { t } = useDemoIntl(messages);
   const [open, setOpen] = useState(false);
   const [placement, setPlacement] =
     useState<NonNullable<DrawerProps['placement']>>('right');
   const [size, setSize] = useState(400);
 
-  const handlePlacementChange = (nextPlacement: typeof placement) => {
+  const handlePlacementChange = (nextPlacement: typeof placement): void => {
     setPlacement(nextPlacement);
     setSize(nextPlacement === 'top' || nextPlacement === 'bottom' ? 280 : 400);
   };
@@ -58,7 +54,6 @@ export default () => {
         <Tag color="blue">
           {t('currentSize')}: {size}px
         </Tag>
-        <Tag color="default">{t('minLimit')}</Tag>
       </Flex>
 
       <Drawer
@@ -66,6 +61,8 @@ export default () => {
         placement={placement}
         open={open}
         size={size}
+        minSize={100}
+        maxSize={800}
         resizable={{ onResize: setSize }}
         onClose={() => setOpen(false)}
         extra={
@@ -74,7 +71,7 @@ export default () => {
           </Button>
         }
       >
-        <Typography.Paragraph>{t('hint')}</Typography.Paragraph>
+        <p>{t('content')}</p>
       </Drawer>
     </Space>
   );

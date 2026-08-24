@@ -1,4 +1,4 @@
-import { Button, Flex, Radio, Space, Tag, Typography } from 'antd';
+import { Button, Flex, Radio, Space, Tag } from 'antd';
 import type { MinimizePosition } from 'hi-talent-design';
 import { Drawer } from 'hi-talent-design';
 import { useDemoIntl } from 'hi-talent-design/demoIntl';
@@ -18,28 +18,27 @@ const positions: MinimizePosition[] = [
 const messages = {
   'zh-CN': {
     open: '打开抽屉',
-    minimize: '直接最小化',
+    minimize: '最小化',
     restore: '恢复展开',
     position: '停靠方位',
     title: '受控最小化与停靠方位',
     openState: '展开状态',
     minState: '最小化状态',
-    content: '通过 state 受控管理 minimized 状态与 8 个全局停靠方位。',
+    content: '受控模式下的抽屉内容。',
   },
   'en-US': {
     open: 'Open Drawer',
-    minimize: 'Minimize Directly',
+    minimize: 'Minimize',
     restore: 'Restore',
     position: 'Dock Position',
     title: 'Controlled Minimize & Positions',
     openState: 'Open',
     minState: 'Minimized',
-    content:
-      'Manage minimized state and 8 global dock positions via controlled props.',
+    content: 'Drawer content in controlled mode.',
   },
 };
 
-export default () => {
+export default (): React.ReactElement => {
   const { t } = useDemoIntl(messages);
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
@@ -76,7 +75,7 @@ export default () => {
       </Flex>
 
       <Flex gap={8} align="center" wrap="wrap">
-        <Typography.Text type="secondary">{t('position')}:</Typography.Text>
+        <span>{t('position')}:</span>
         <Radio.Group
           size="small"
           optionType="button"
@@ -114,7 +113,7 @@ export default () => {
           setOpen(false);
         }}
       >
-        <Typography.Paragraph>{t('content')}</Typography.Paragraph>
+        <p>{t('content')}</p>
       </Drawer>
     </Space>
   );

@@ -1,4 +1,4 @@
-import { Button, Space, Typography } from 'antd';
+import { Button, Space } from 'antd';
 import { Drawer } from 'hi-talent-design';
 import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React, { useState } from 'react';
@@ -7,18 +7,18 @@ const messages = {
   'zh-CN': {
     open: '打开自定义样式抽屉',
     title: '自定义样式',
-    hint: '通过 classNames 与 styles 定制拖拽把手 (dragger)、最小化 Dock 卡片 (minimizedDock) 及各区域样式。',
+    content: '通过 styles 与 classNames 定制拖拽把手与最小化卡片样式。',
     close: '关闭',
   },
   'en-US': {
     open: 'Open Styled Drawer',
     title: 'Custom Styles',
-    hint: 'Customize resize handle (dragger), minimized dock card (minimizedDock), and other regions via classNames and styles.',
+    content: 'Customize dragger and minimizedDock via styles and classNames.',
     close: 'Close',
   },
 };
 
-export default () => {
+export default (): React.ReactElement => {
   const { t } = useDemoIntl(messages);
   const [open, setOpen] = useState(false);
 
@@ -47,7 +47,7 @@ export default () => {
           </Button>
         }
       >
-        <Typography.Paragraph>{t('hint')}</Typography.Paragraph>
+        <p>{t('content')}</p>
       </Drawer>
     </Space>
   );

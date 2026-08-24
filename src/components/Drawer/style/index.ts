@@ -1,5 +1,6 @@
 import type { CSSObject } from '@ant-design/cssinjs';
 import type { GlobalToken } from 'antd/es/theme/interface';
+import type { UseComponentStyleResult } from '../../../styles';
 import { useComponentStyle } from '../../../styles';
 
 export const genDrawerStyle = (
@@ -108,7 +109,10 @@ export const genDrawerStyle = (
   };
 };
 
-export function useStyle(prefixCls: string, antdPrefixCls = 'ant') {
+export function useStyle(
+  prefixCls: string,
+  antdPrefixCls = 'ant',
+): UseComponentStyleResult {
   return useComponentStyle('Drawer', prefixCls, (token, currentPrefixCls) =>
     genDrawerStyle(token, currentPrefixCls, antdPrefixCls),
   );

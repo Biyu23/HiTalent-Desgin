@@ -16,15 +16,15 @@ toc: content
 
 ## 代码演示
 
-<code src="./demo/resizable.tsx" title="拖拽调整尺寸" description="拖拽内侧边缘调整宽度或高度，支持 4 个展开方向并限制最小/最大尺寸。"></code>
+<code src="./demo/resizable.tsx" title="拖拽调整尺寸" description="通过拖拽内侧边缘调整宽度或高度，支持 4 个展开方向及 minSize / maxSize 约束。"></code>
 
-<code src="./demo/minimizable.tsx" title="最小化与任务暂存" description="从标题栏或通过 DrawerRef 最小化到全局 Dock，恢复后完整保留表单输入与调整后的尺寸。"></code>
+<code src="./demo/minimizable.tsx" title="最小化与任务暂存" description="开启 minimizable 支持最小化到全局 Dock，并通过 DrawerRef 提供命令式控制，保留表单输入状态。"></code>
 
-<code src="./demo/controlled.tsx" title="受控停靠方位" description="受控管理 minimized 状态，并在 8 个全局停靠方位间切换。"></code>
+<code src="./demo/controlled.tsx" title="受控停靠方位" description="受控管理 minimized 状态与 8 个全局停靠方位。"></code>
 
 <code src="./demo/shared-dock.tsx" title="与 Modal 共享 Dock" description="抽屉与弹窗可同时停靠在同一全局 Dock 中，并支持独立恢复与关闭。"></code>
 
-<code src="./demo/custom-style.tsx" title="自定义样式" description="通过 styles 和 classNames 定制拖拽把手及最小化卡片等层级样式。"></code>
+<code src="./demo/custom-style.tsx" title="自定义样式" description="通过 styles 和 classNames 定制拖拽把手及最小化卡片样式。"></code>
 
 ## API
 
@@ -36,14 +36,14 @@ toc: content
 | ------------------ | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------- |
 | `size`             | 轴向受控尺寸（水平方向为宽，垂直方向为高）                        | `'default' \| 'large' \| number \| string`                                                               | -                |
 | `defaultSize`      | 非受控模式下的初始轴向尺寸                                        | `number \| string`                                                                                       | `378`            |
-| `minSize`          | 调整尺寸允许的最小像素值（防止抽屉塌陷为 0）                      | `number`                                                                                                 | `100`            |
-| `maxSize`          | 调整尺寸允许的最大像素值，同时受限于实际容器可用边界              | `number`                                                                                                 | 容器尺寸         |
-| `resizable`        | 是否允许拖拽调整尺寸，或提供 resize 生命周期回调配置              | `boolean \| DrawerResizableConfig`                                                                       | `false`          |
+| `minSize`          | 调整尺寸允许的最小像素尺寸                                        | `number`                                                                                                 | `100`            |
+| `maxSize`          | 调整尺寸允许的最大像素尺寸，同时受限于实际容器可用边界            | `number`                                                                                                 | -                |
+| `resizable`        | 是否允许通过内侧边缘拖拽调整尺寸，或提供生命周期回调配置          | `boolean \| DrawerResizableConfig`                                                                       | `false`          |
 | `minimizable`      | 是否支持最小化到全局 Dock（自动保留 DOM 与表单状态）              | `boolean`                                                                                                | `false`          |
 | `minimized`        | 受控最小化状态                                                    | `boolean`                                                                                                | -                |
 | `minimizePosition` | 最小化卡片停靠位置                                                | `'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right' \| 'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom-right'` |
-| `onMinimizeChange` | 最小化或恢复状态变更回调                                          | `(minimized: boolean) => void`                                                                           | -                |
-| `onClose`          | 关闭回调（从 Dock 卡片程序化关闭时 event 为 undefined）           | `(event?: React.MouseEvent \| React.KeyboardEvent) => void`                                              | -                |
+| `onMinimizeChange` | 最小化状态变化回调                                                | `(minimized: boolean) => void`                                                                           | -                |
+| `onClose`          | 关闭回调（从最小化 Dock 程序化关闭时 event 为 undefined）         | `(event?: React.MouseEvent \| React.KeyboardEvent) => void`                                              | -                |
 | `classNames`       | 自定义类名配置，扩展 `dragger`、`minimizeButton`、`minimizedDock` | `DrawerClassNames`                                                                                       | -                |
 | `styles`           | 自定义样式配置，扩展 `dragger`、`minimizedDock`                   | `DrawerStyles`                                                                                           | -                |
 
@@ -58,11 +58,11 @@ toc: content
 
 ### DrawerResizableConfig
 
-| 属性            | 说明                                     | 类型                     |
-| --------------- | ---------------------------------------- | ------------------------ |
-| `onResizeStart` | 开始调整尺寸时触发                       | `() => void`             |
-| `onResize`      | 调整尺寸过程中触发，参数为当前轴向像素值 | `(size: number) => void` |
-| `onResizeEnd`   | 结束调整尺寸时触发                       | `() => void`             |
+| 属性            | 说明                                       | 类型                     |
+| --------------- | ------------------------------------------ | ------------------------ |
+| `onResizeStart` | 开始调整尺寸时触发                         | `() => void`             |
+| `onResize`      | 调整尺寸过程中触发，参数为当前轴向像素尺寸 | `(size: number) => void` |
+| `onResizeEnd`   | 结束调整尺寸时触发                         | `() => void`             |
 
 ### DrawerClassNames
 
@@ -86,6 +86,6 @@ toc: content
 ## 注意事项
 
 - **最小尺寸与边界保护**：`minSize` 默认保底为 100px，防止抽屉被拖拽折叠至 0px 导致把手不可抓取；`maxSize` 始终会自动与宿主容器可用尺寸取较小值。
-- **状态保留机制**：开启 `minimizable` 时内部会保持 `destroyOnHidden: false`，最小化时抽屉隐藏但 DOM 节点与表单输入状态完全保留。
+- **状态保留机制**：开启 `minimizable` 时内部会保持 `destroyOnClose: false`，最小化时抽屉隐藏但 DOM 节点与表单输入状态完全保留。
 - **受控与非受控**：未传 `size` 时为非受控模式，拖拽尺寸由组件内部持久记录；传入 `size` 时需在 `onResize` 回调中同步更新。
 - **全局 Dock 协同**：与 Modal 共用相同的全局悬浮 Dock 管理器，多个弹窗和抽屉卡片会自动流式排列。

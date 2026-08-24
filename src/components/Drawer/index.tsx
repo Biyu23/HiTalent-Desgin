@@ -32,7 +32,7 @@ interface ManualSizes {
   vertical?: number;
 }
 
-const setRef = <T,>(ref: React.Ref<T> | undefined, value: T | null) => {
+const setRef = <T,>(ref: React.Ref<T> | undefined, value: T | null): void => {
   if (typeof ref === 'function') {
     ref(value);
   } else if (ref && typeof ref === 'object' && 'current' in ref) {
@@ -172,9 +172,11 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
         wrapper: wrapperClass,
       };
     }
-    const antdClassNames: Record<string, string | undefined> = {
-      ...classNames,
-    };
+
+    const antdClassNames = { ...classNames } as Record<
+      string,
+      string | undefined
+    >;
     delete antdClassNames.dragger;
     delete antdClassNames.minimizeButton;
     delete antdClassNames.minimizedDock;
@@ -190,30 +192,28 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
       ? { transition: 'none' }
       : {};
 
+    const baseWrapperStyle: React.CSSProperties = {
+      ...(axis === 'horizontal' ? { maxWidth: '100%' } : { maxHeight: '100%' }),
+      ...resizingStyle,
+    };
+
     if (!styles) {
       return {
-        wrapper: {
-          ...(axis === 'horizontal'
-            ? { maxWidth: '100%' }
-            : { maxHeight: '100%' }),
-          ...resizingStyle,
-        },
+        wrapper: baseWrapperStyle,
       };
     }
-    const antdStyles: Record<string, React.CSSProperties | undefined> = {
-      ...styles,
-    };
+
+    const antdStyles = { ...styles } as Record<
+      string,
+      React.CSSProperties | undefined
+    >;
     delete antdStyles.dragger;
-    delete antdStyles.minimizeButton;
     delete antdStyles.minimizedDock;
 
     return {
       ...antdStyles,
       wrapper: {
-        ...(axis === 'horizontal'
-          ? { maxWidth: '100%' }
-          : { maxHeight: '100%' }),
-        ...resizingStyle,
+        ...baseWrapperStyle,
         ...styles.wrapper,
       },
     };

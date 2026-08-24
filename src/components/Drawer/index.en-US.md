@@ -16,15 +16,15 @@ Extends Ant Design Drawer with directional resize handles, minimization to a glo
 
 ## Code Demonstrations
 
-<code src="./demo/resizable.tsx" title="Directional Resizing" description="Drag the inner edge to resize width or height with 4-direction support and min/max size constraints."></code>
+<code src="./demo/resizable.tsx" title="Resizable" description="Drag the inner edge to resize width or height with 4-direction support and minSize / maxSize constraints."></code>
 
-<code src="./demo/minimizable.tsx" title="Minimize & Task Persistence" description="Minimize to the global Dock from the header button or DrawerRef, preserving form input and resized dimensions on restore."></code>
+<code src="./demo/minimizable.tsx" title="Minimizable & Task Stowing" description="Enable minimizable to dock to the global Dock, with DrawerRef imperative control and form state persistence."></code>
 
-<code src="./demo/controlled.tsx" title="Controlled Dock Positions" description="Manage minimized state in controlled mode across 8 global dock positions."></code>
+<code src="./demo/controlled.tsx" title="Controlled Dock Positions" description="Control minimized state and switch between 8 global dock positions."></code>
 
-<code src="./demo/shared-dock.tsx" title="Shared Dock with Modal" description="Drawers and Modals can dock together in the same global Dock with independent restore and close operations."></code>
+<code src="./demo/shared-dock.tsx" title="Shared Dock with Modal" description="Drawers and Modals can dock together in the same global Dock with independent restore and close."></code>
 
-<code src="./demo/custom-style.tsx" title="Custom Styles" description="Customize resize handle, minimized dock card, and other regions via styles and classNames."></code>
+<code src="./demo/custom-style.tsx" title="Custom Styles" description="Customize resize handle and minimized dock card via styles and classNames."></code>
 
 ## API
 
@@ -36,8 +36,8 @@ Inherits all native properties from [Ant Design Drawer](https://ant.design/compo
 | ------------------ | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------- |
 | `size`             | Controlled axis size (width for horizontal, height for vertical)                             | `'default' \| 'large' \| number \| string`                                                               | -                |
 | `defaultSize`      | Initial axis size in uncontrolled mode                                                       | `number \| string`                                                                                       | `378`            |
-| `minSize`          | Minimum resize size in pixels (prevents collapsing to 0)                                     | `number`                                                                                                 | `100`            |
-| `maxSize`          | Maximum resize size in pixels, constrained by container bounds                               | `number`                                                                                                 | container size   |
+| `minSize`          | Minimum resize size in pixels                                                                | `number`                                                                                                 | `100`            |
+| `maxSize`          | Maximum resize size in pixels, constrained by container bounds                               | `number`                                                                                                 | -                |
 | `resizable`        | Enable resize dragging or provide lifecycle callbacks                                        | `boolean \| DrawerResizableConfig`                                                                       | `false`          |
 | `minimizable`      | Allow minimizing to the global Dock (keeps DOM and form state)                               | `boolean`                                                                                                | `false`          |
 | `minimized`        | Controlled minimized state                                                                   | `boolean`                                                                                                | -                |
@@ -86,6 +86,6 @@ Inherits Ant Design `DrawerProps['styles']`, extended with:
 ## Notes
 
 - **Minimum Size & Boundary Protection**: `minSize` defaults to 100px to prevent the drawer from collapsing to 0px and losing its handle. `maxSize` is always capped by the host container's available size.
-- **State Persistence**: When `minimizable` is enabled, `destroyOnHidden: false` is maintained internally so that DOM nodes and form state remain intact during minimization.
+- **State Persistence**: When `minimizable` is enabled, `destroyOnClose: false` is maintained internally so that DOM nodes and form state remain intact during minimization.
 - **Controlled vs Uncontrolled**: When `size` is omitted, the component operates in uncontrolled mode and remembers resized dimensions; in controlled mode, update `size` via `onResize`.
 - **Shared Global Dock**: Modals and Drawers share the same floating dock manager, and cards are arranged automatically.

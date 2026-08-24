@@ -28,7 +28,14 @@ interface UseDrawerPointerResizeOptions {
   onSizeChange: (size: number) => void;
 }
 
-export function useDrawerPointerResize(options: UseDrawerPointerResizeOptions) {
+export interface UseDrawerPointerResizeResult {
+  isResizing: boolean;
+  handlePointerDown: (event: React.PointerEvent<HTMLDivElement>) => void;
+}
+
+export function useDrawerPointerResize(
+  options: UseDrawerPointerResizeOptions,
+): UseDrawerPointerResizeResult {
   const {
     placement,
     minSize,

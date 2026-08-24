@@ -1,4 +1,4 @@
-import { Alert, Button, Flex, Form, Input, Space } from 'antd';
+import { Button, Flex, Form, Input, Space } from 'antd';
 import type { DrawerRef } from 'hi-talent-design';
 import { Drawer } from 'hi-talent-design';
 import { useDemoIntl } from 'hi-talent-design/demoIntl';
@@ -9,8 +9,7 @@ const messages = {
     open: '打开抽屉',
     minimize: '通过 Ref 最小化',
     restore: '通过 Ref 恢复',
-    title: '任务详情（支持暂存）',
-    hint: '点击标题栏 ➖ 按钮或外部按钮最小化到右下角 Dock。恢复后表单输入和调整后的尺寸保持不变。',
+    title: '可最小化抽屉',
     name: '任务名称',
     desc: '任务描述',
     close: '取消',
@@ -20,8 +19,7 @@ const messages = {
     open: 'Open Drawer',
     minimize: 'Minimize via Ref',
     restore: 'Restore via Ref',
-    title: 'Task Details (Stowable)',
-    hint: 'Click the header ➖ button or external button to minimize to Dock. Form inputs and resized dimensions are preserved upon restore.',
+    title: 'Minimizable Drawer',
     name: 'Task Name',
     desc: 'Description',
     close: 'Cancel',
@@ -29,7 +27,7 @@ const messages = {
   },
 };
 
-export default () => {
+export default (): React.ReactElement => {
   const { t } = useDemoIntl(messages);
   const [open, setOpen] = useState(false);
   const drawerRef = useRef<DrawerRef>(null);
@@ -75,17 +73,14 @@ export default () => {
           </Flex>
         }
       >
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-          <Alert type="info" showIcon message={t('hint')} />
-          <Form layout="vertical" initialValues={{ name: 'HiTalent Design' }}>
-            <Form.Item label={t('name')} name="name">
-              <Input />
-            </Form.Item>
-            <Form.Item label={t('desc')} name="desc">
-              <Input.TextArea rows={3} />
-            </Form.Item>
-          </Form>
-        </Space>
+        <Form layout="vertical" initialValues={{ name: 'HiTalent Design' }}>
+          <Form.Item label={t('name')} name="name">
+            <Input />
+          </Form.Item>
+          <Form.Item label={t('desc')} name="desc">
+            <Input.TextArea rows={3} />
+          </Form.Item>
+        </Form>
       </Drawer>
     </Space>
   );

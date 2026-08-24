@@ -45,7 +45,7 @@ export interface DrawerResizableConfig {
 export interface DrawerClassNames
   extends NonNullable<AntdDrawerProps['classNames']> {
   /**
-   * @description 最小化按钮的 className
+   * @description 标题栏最小化按钮的 className
    */
   minimizeButton?: string;
   /**
@@ -53,7 +53,7 @@ export interface DrawerClassNames
    */
   minimizedDock?: string;
   /**
-   * @description 调整尺寸把手的 className
+   * @description 拖拽调整尺寸把手的 className
    */
   dragger?: string;
 }
@@ -67,7 +67,7 @@ export interface DrawerStyles extends NonNullable<AntdDrawerProps['styles']> {
    */
   minimizedDock?: React.CSSProperties;
   /**
-   * @description 调整尺寸把手的行内样式
+   * @description 拖拽调整尺寸把手的行内样式
    */
   dragger?: React.CSSProperties;
 }
