@@ -1,6 +1,3 @@
-/**
- * description: 开启 `mode="multiple"` 即可切换多选，默认显示确认按钮。可额外开启取消、清空按钮以及自定义分隔符和最大标签数。
- */
 import { PopoverSelect } from 'hi-talent-design';
 import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React, { useState } from 'react';
@@ -13,7 +10,7 @@ const messages = {
 
 export default () => {
   const { t } = useDemoIntl(messages);
-  const [values, setValues] = useState<string[]>([]);
+  const [values, setValues] = useState<string[]>(['FE', 'BE', 'PM']);
 
   return (
     <div style={{ width: 300 }}>

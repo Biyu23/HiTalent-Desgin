@@ -7,3 +7,11 @@ export const standardOptions = [
   { label: '测试工程师', value: 'QA' },
   { label: '运维工程师', value: 'OP' },
 ];
+
+// 自定义字段数据源
+export const customFieldOptions = [
+  { title: '杭州研发中心', code: 'HZ' },
+  { title: '北京研发中心', code: 'BJ' },
+  { title: '上海研发中心', code: 'SH' },
+  { title: '深圳研发中心', code: 'SZ', isInactive: true },
+];

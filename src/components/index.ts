@@ -21,7 +21,8 @@ export type {
   PopoverSelectStyleSlot,
   PopoverSelectStyles,
   RawValueType,
-} from './PopoverSelect/publicTypes';
+  SelectorProps,
+} from './PopoverSelect/type';
 
 export { default as Button } from './Button';
 export type { ButtonProps, ButtonRef } from './Button/type';

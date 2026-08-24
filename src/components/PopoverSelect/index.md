@@ -6,82 +6,87 @@ toc: content
 
 # PopoverSelect 气泡选择
 
-以 Popover 承载选择面板，提供虚拟滚动、全选、字段映射、自定义渲染与灵活值格式。
+以 Popover 气泡卡片承载选择面板，提供虚拟滚动、搜索过滤、全选、字段映射、多选确认机制与 JSON 数组字符串提交格式。
 
 ## 何时使用
 
+- 需要以气泡卡片（Popover）形态呈现选择面板，节省页面空间。
 - 选项数量大，需要虚拟滚动保持打开、搜索和滚动流畅。
-- 后端字段并非固定的 `label` / `value` 结构。
-- 多选需要确认、取消、清空或针对当前搜索结果全选。
-- 接口要求字符串字段，同时选项值需要保留数字或字符串的原始类型。
-
-简单、少量且无需定制的选项可以直接使用 Ant Design Select。
-
-## 核心能力
-
-- 基于 `rc-virtual-list` 处理万级选项。
-- `fieldNames` 直接适配后端数据，无需先执行 `map`。
-- `valueType="string"` 使用 JSON 数组字符串协议，无歧义保留数字与字符串值。
-- 单选、多选、全选和确认机制共享一致状态模型。
-- `optionRender` 与 `dropdownRender` 扩展选项和面板内容。
+- 后端字段并非固定的 `label` / `value` 结构，需要直接映射。
+- 多选需要确认、取消、清空等草稿确认操作或针对当前搜索结果全选。
+- 接口要求提交字符串字段，同时选项值需要保留数字或字符串的原始类型。
 
 ## 代码演示
 
-<code src="./demo/multiple.tsx" title="多选确认与标签截断" description="multiple 模式支持确认/取消/清空草稿操作，并可通过 maxTagCount 实现超出自动 +N 截断展示。"></code>
+<code src="./demo/basic.tsx" title="基础单选" description="支持气泡单选、搜索过滤、一键清空与自定义字段名映射（fieldNames）。"></code>
 
-<code src="./demo/string-value.tsx" title="类型安全的字符串提交" description="valueType='string' 使用 JSON 数组字符串保留数字与字符串值类型，全选联动当前搜索过滤结果。"></code>
+<code src="./demo/multiple.tsx" title="多选确认与标签截断" description="多选模式支持确认、取消与清空草稿操作，并可通过 maxTagCount 实现超出标签自动 (+N) 截断展示。"></code>
 
-<code src="./demo/semantic-styles.tsx" title="语义化样式与 Portal" description="定制触发器、菜单项和弹层根节点，Portal 自动继承命名空间。"></code>
+<code src="./demo/string-value.tsx" title="字符串提交与全选" description="valueType='string' 使用 JSON 数组字符串提交，无歧义保留数字与字符串值类型；showSelectAll 支持全选联动当前搜索过滤结果。"></code>
 
 ## API
 
-除下表属性外，组件同时支持 `className`、`style` 和 CSS 变量等 `NativeProps`。
+除下表属性外，组件同时支持 `className`、`style`、`rootClassName` 等原生属性。
 
-| 属性                   | 说明                       | 类型                                   | 默认值         |
-| ---------------------- | -------------------------- | -------------------------------------- | -------------- |
-| `options`              | 数据选项                   | `OptionType[]`                         | `[]`           |
-| `placeholder`          | 选择框提示内容             | `ReactNode`                            | -              |
-| `showSearch`           | 是否显示搜索框             | `boolean`                              | `false`        |
-| `allowClear`           | 是否允许清除               | `boolean`                              | `false`        |
-| `mode`                 | 单选或多选                 | `single \| multiple`                   | `single`       |
-| `value`                | 受控选中值                 | `ValueType \| ValueType[]`             | -              |
-| `defaultValue`         | 非受控初始值               | `ValueType \| ValueType[]`             | -              |
-| `onChange`             | 值和选项变化回调           | `(value, options?) => void`            | -              |
-| `fieldNames`           | 后端字段映射               | `FieldNames`                           | -              |
-| `dropdownRender`       | 自定义完整面板             | `(menu: ReactElement) => ReactElement` | -              |
-| `showConfirm`          | 多选时是否显示确认按钮     | `boolean`                              | `true`         |
-| `showCancelBtn`        | 是否显示取消按钮           | `boolean`                              | `false`        |
-| `showClearBtn`         | 是否显示清空按钮           | `boolean`                              | `false`        |
-| `optionRender`         | 自定义选项内容             | `(item: OptionType) => ReactNode`      | -              |
-| `separator`            | 多选值的展示分隔符         | `string`                               | `, `           |
-| `maxTagCount`          | 多选时最多展示的标签数量   | `number`                               | -              |
-| `virtual`              | 是否启用虚拟滚动           | `boolean`                              | `true`         |
-| `listHeight`           | 列表最大高度，单位 px      | `number`                               | `150`          |
-| `listItemHeight`       | 虚拟列表单项高度，单位 px  | `number`                               | `34`           |
-| `valueType`            | 提交数组或 JSON 数组字符串 | `string \| array`                      | -              |
-| `showSelectAll`        | 多选时是否显示全选         | `boolean`                              | `false`        |
-| `showArrow`            | 是否显示下拉箭头           | `boolean`                              | `true`         |
-| `disabled`             | 是否禁用组件               | `boolean`                              | `false`        |
-| `ellipsis`             | 是否支持文本截断与 Tooltip | `boolean \| { tooltip?: string }`      | `true`         |
-| `open`                 | 下拉弹窗展开状态（受控）   | `boolean`                              | -              |
-| `onOpenChange`         | 下拉弹窗状态变化回调       | `(open: boolean) => void`              | -              |
-| `afterOpenChange`      | 弹窗动画完成回调           | `(open: boolean) => void`              | -              |
-| `placement`            | 气泡框展开位置             | `TooltipPlacement`                     | `'bottomLeft'` |
-| `getPopupContainer`    | 浮层渲染挂载父节点         | `(triggerNode) => HTMLElement`         | -              |
-| `autoAdjustOverflow`   | 是否自动调整遮挡位置       | `boolean`                              | `true`         |
-| `destroyTooltipOnHide` | 关闭时是否销毁浮层         | `boolean`                              | `false`        |
+### PopoverSelectProps
 
-## 注意事项
+| 属性                   | 说明                                                   | 类型                                        | 默认值                |
+| ---------------------- | ------------------------------------------------------ | ------------------------------------------- | --------------------- |
+| `options`              | 数据选项列表                                           | `OptionType[]`                              | `[]`                  |
+| `placeholder`          | 选择框提示内容                                         | `ReactNode`                                 | -                     |
+| `showSearch`           | 是否显示搜索框进行本地过滤                             | `boolean`                                   | `false`               |
+| `allowClear`           | 是否允许一键清除                                       | `boolean`                                   | `false`               |
+| `mode`                 | 选择模式，单选或多选                                   | `'single' \| 'multiple'`                    | `'single'`            |
+| `value`                | 当前选中值（受控）                                     | `ValueType \| ValueType[] \| string`        | -                     |
+| `defaultValue`         | 默认选中值（非受控）                                   | `ValueType \| ValueType[] \| string`        | -                     |
+| `onChange`             | 选中值与选项变化回调                                   | `(value, options) => void`                  | -                     |
+| `valueType`            | 多选模式下值提交类型，支持数组或 JSON 数组字符串       | `'array' \| 'string'`                       | `'array'`             |
+| `fieldNames`           | 后端自定义字段名映射                                   | `PopoverSelectFieldNames<OptionType>`       | -                     |
+| `showConfirm`          | 多选时是否显示确认按钮（开启时进入草稿确认流程）       | `boolean`                                   | `mode === 'multiple'` |
+| `showCancelBtn`        | 是否显示取消按钮，点击放弃草稿更改                     | `boolean`                                   | `false`               |
+| `showClearBtn`         | 是否显示清空按钮，点击清空当前草稿/选中值              | `boolean`                                   | `false`               |
+| `showSelectAll`        | 多选时是否显示全选复选框（与当前搜索过滤联动）         | `boolean`                                   | `false`               |
+| `maxTagCount`          | 多选时最多展示的标签数量，超出部分截断并显示 `(+N)`    | `number`                                    | -                     |
+| `separator`            | 多选展示时的分隔符                                     | `string`                                    | `', '`                |
+| `ellipsis`             | 是否支持文本截断与 Tooltip 提示，可自定义 Tooltip 内容 | `boolean \| { tooltip?: string }`           | `true`                |
+| `virtual`              | 是否启用虚拟滚动                                       | `boolean`                                   | `true`                |
+| `listHeight`           | 下拉列表最大高度，单位 px                              | `number`                                    | `150`                 |
+| `listItemHeight`       | 虚拟列表单项高度，单位 px                              | `number`                                    | `34`                  |
+| `showArrow`            | 是否显示下拉箭头                                       | `boolean`                                   | `true`                |
+| `disabled`             | 是否禁用组件                                           | `boolean`                                   | `false`               |
+| `dropdownRender`       | 自定义下拉面板渲染                                     | `(menu: ReactElement) => ReactElement`      | -                     |
+| `optionRender`         | 自定义单个选项内容渲染                                 | `(item: OptionType) => ReactNode`           | -                     |
+| `open`                 | 气泡下拉弹窗展开状态（受控）                           | `boolean`                                   | -                     |
+| `onOpenChange`         | 气泡下拉弹窗展开状态变化回调                           | `(open: boolean) => void`                   | -                     |
+| `afterOpenChange`      | 气泡弹窗动画完成后的回调                               | `(open: boolean) => void`                   | -                     |
+| `placement`            | 气泡框展开方位                                         | `TooltipPlacement`                          | `'bottomLeft'`        |
+| `getPopupContainer`    | 浮层渲染挂载父节点                                     | `(triggerNode: HTMLElement) => HTMLElement` | -                     |
+| `autoAdjustOverflow`   | 气泡被遮挡时是否自动调整位置                           | `boolean`                                   | `true`                |
+| `destroyTooltipOnHide` | 关闭时是否销毁浮层内部 DOM                             | `boolean`                                   | `false`               |
+| `classNames`           | 自定义各插槽类名                                       | `PopoverSelectClassNames`                   | -                     |
+| `styles`               | 自定义各插槽行内样式                                   | `PopoverSelectStyles`                       | -                     |
 
-- 大数据量下应为 `value` 字段提供稳定且唯一的值。
-- `fieldNames` 只负责读取字段，不会修改原始数据。
-- 字符串模式输入输出均为 JSON 数组字符串，例如 `[1,"PM"]`，可保留数字与字符串类型。
-- 自定义渲染应保持选项高度稳定，以免影响虚拟列表测量。
+### PopoverSelectClassNames
 
-## 值类型与语义化样式
+| 属性          | 说明                                           | 类型     |
+| ------------- | ---------------------------------------------- | -------- |
+| `root`        | 根容器的 className                             | `string` |
+| `trigger`     | 触发器按钮的 className                         | `string` |
+| `triggerText` | 触发器内部文本容器的 className                 | `string` |
+| `actions`     | 触发器右侧操作区（箭头与清除图标）的 className | `string` |
+| `popup`       | 弹出气泡容器的 className                       | `string` |
+| `search`      | 搜索输入框区域的 className                     | `string` |
+| `selectAll`   | 全选复选框区域的 className                     | `string` |
+| `menu`        | 选项菜单列表的 className                       | `string` |
+| `item`        | 单个选项节点的 className                       | `string` |
+| `footer`      | 底部操作按钮区域的 className                   | `string` |
+| `empty`       | 空状态区域的 className                         | `string` |
 
-单选使用 `mode="single"`（或省略 `mode`），变更结果为标量或 `undefined`。多选必须显式选择 `valueType="array"` 或 `valueType="string"`，回调结果分别为数组或字符串。
+### PopoverSelectStyles
 
-字符串模式使用 JSON 数组字符串进行无歧义编解码，因此异步选项、数字值与同形字符串值都能保持正确类型。
-
-样式入口分为 `rootClassName`、`classNames` 与 `styles`。`classNames` 插槽包括 `root`、`trigger`、`triggerText`、`actions`、`popup`、`search`、`selectAll`、`menu`、`item`、`footer`、`empty`；`styles` 仅提供主要节点 `root`、`trigger`、`popup`、`menu`。其中 `popup` 作用于 Portal 根节点，并自动携带当前组件前缀和 CSS-in-JS hash。
+| 属性      | 说明                   | 类型                  |
+| --------- | ---------------------- | --------------------- |
+| `root`    | 根容器的行内样式       | `React.CSSProperties` |
+| `trigger` | 触发器按钮的行内样式   | `React.CSSProperties` |
+| `popup`   | 弹出气泡容器的行内样式 | `React.CSSProperties` |
+| `menu`    | 选项菜单列表的行内样式 | `React.CSSProperties` |

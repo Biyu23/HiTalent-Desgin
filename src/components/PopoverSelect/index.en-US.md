@@ -6,82 +6,87 @@ toc: content
 
 # PopoverSelect
 
-Uses a Popover-hosted selection panel with virtual scrolling, select all, field mapping, custom rendering, and flexible value formats.
+Hosts a selection panel inside a Popover card, providing virtual scrolling, search filtering, select-all, field mapping, multi-select confirmation, and JSON-array string value serialization.
 
 ## When to use
 
-- A large option set needs virtual scrolling to keep opening, searching, and scrolling responsive.
-- Backend records do not use a fixed `label` / `value` shape.
-- Multi-select needs confirm, cancel, clear, or select-all behavior scoped to current search results.
-- An API requires a string field while option values must retain their original number or string types.
-
-Use Ant Design Select directly for small, straightforward option sets that need no extra panel behavior.
-
-## Core capabilities
-
-- `rc-virtual-list` keeps 10,000+ options responsive.
-- `fieldNames` reads backend records directly without a preprocessing `map`.
-- `valueType="string"` uses a JSON-array string protocol that preserves number and string values without ambiguity.
-- Single select, multiple select, select all, and confirmation share one state model.
-- `optionRender` and `dropdownRender` extend option and panel content.
+- Need a Popover card form to host the selection panel and save screen space.
+- Large number of options where virtual scrolling is required to keep opening, searching, and scrolling responsive.
+- Backend records do not use a standard `label` / `value` structure and require field mapping.
+- Multi-select workflows require draft operations such as confirm, cancel, clear, or select-all scoped to the current search results.
+- Backend API requires a string field while option values must preserve original number or string types.
 
 ## Demos
 
-<code src="./demo/multiple.tsx" title="Multiple Select with Confirmation" description="Multiple mode confirms before committing and supports cancel, clear, and maxTagCount ellipsis."></code>
+<code src="./demo/basic.tsx" title="Basic Single Selection" description="Supports Popover single selection, search filtering, clear button, and custom field mapping (fieldNames)."></code>
 
-<code src="./demo/string-value.tsx" title="Type-safe String Submission" description="valueType='string' preserves number and string value types in a JSON-array string; select all follows the current search results."></code>
+<code src="./demo/multiple.tsx" title="Multiple Select with Confirmation" description="Multiple mode supports confirm, cancel, and clear draft operations, with maxTagCount auto (+N) truncation."></code>
 
-<code src="./demo/semantic-styles.tsx" title="Semantic Styles and Portal" description="Customize trigger, menu item, and popup-root slots while the portal inherits the active namespace."></code>
+<code src="./demo/string-value.tsx" title="String Submission & Select All" description="valueType='string' submits values as a JSON array string preserving number and string types; showSelectAll supports selecting all filtered results."></code>
 
 ## API
 
-The component also accepts `NativeProps`, including `className`, `style`, and CSS variables.
+In addition to the properties below, the component also supports native props including `className`, `style`, and `rootClassName`.
 
-| Property               | Description                                 | Type                                   | Default        |
-| ---------------------- | ------------------------------------------- | -------------------------------------- | -------------- |
-| `options`              | Data options                                | `OptionType[]`                         | `[]`           |
-| `placeholder`          | Placeholder content                         | `ReactNode`                            | -              |
-| `showSearch`           | Shows local search                          | `boolean`                              | `false`        |
-| `allowClear`           | Allows clearing the value                   | `boolean`                              | `false`        |
-| `mode`                 | Single- or multiple-select mode             | `single \| multiple`                   | `single`       |
-| `value`                | Controlled value                            | `ValueType \| ValueType[]`             | -              |
-| `defaultValue`         | Uncontrolled initial value                  | `ValueType \| ValueType[]`             | -              |
-| `onChange`             | Runs when values or selected options change | `(value, options?) => void`            | -              |
-| `fieldNames`           | Maps backend field names                    | `FieldNames`                           | -              |
-| `dropdownRender`       | Renders the complete panel                  | `(menu: ReactElement) => ReactElement` | -              |
-| `showConfirm`          | Shows confirmation in multiple mode         | `boolean`                              | `true`         |
-| `showCancelBtn`        | Shows a cancel action                       | `boolean`                              | `false`        |
-| `showClearBtn`         | Shows a clear action                        | `boolean`                              | `false`        |
-| `optionRender`         | Renders custom option content               | `(item: OptionType) => ReactNode`      | -              |
-| `separator`            | Separates displayed multiple values         | `string`                               | `, `           |
-| `maxTagCount`          | Maximum visible tags in multiple mode       | `number`                               | -              |
-| `virtual`              | Enables virtual scrolling                   | `boolean`                              | `true`         |
-| `listHeight`           | Maximum list height in pixels               | `number`                               | `150`          |
-| `listItemHeight`       | Virtual-list item height in pixels          | `number`                               | `34`           |
-| `valueType`            | Submits an array or JSON-array string       | `string \| array`                      | -              |
-| `showSelectAll`        | Shows select all in multiple mode           | `boolean`                              | `false`        |
-| `showArrow`            | Whether to show dropdown arrow              | `boolean`                              | `true`         |
-| `disabled`             | Whether the component is disabled           | `boolean`                              | `false`        |
-| `ellipsis`             | Truncates text and displays full Tooltip    | `boolean \| { tooltip?: string }`      | `true`         |
-| `open`                 | Controlled open state of dropdown popover   | `boolean`                              | -              |
-| `onOpenChange`         | Callback when open state changes            | `(open: boolean) => void`              | -              |
-| `afterOpenChange`      | Callback when open/close transition ends    | `(open: boolean) => void`              | -              |
-| `placement`            | Popover placement position                  | `TooltipPlacement`                     | `'bottomLeft'` |
-| `getPopupContainer`    | Container node for popup overlay            | `(triggerNode) => HTMLElement`         | -              |
-| `autoAdjustOverflow`   | Auto adjust overflow placement              | `boolean`                              | `true`         |
-| `destroyTooltipOnHide` | Destroy popover on hide                     | `boolean`                              | `false`        |
+### PopoverSelectProps
 
-## Notes
+| Property               | Description                                                | Type                                        | Default               |
+| ---------------------- | ---------------------------------------------------------- | ------------------------------------------- | --------------------- |
+| `options`              | Data options list                                          | `OptionType[]`                              | `[]`                  |
+| `placeholder`          | Placeholder text                                           | `ReactNode`                                 | -                     |
+| `showSearch`           | Whether to show search box for local filtering             | `boolean`                                   | `false`               |
+| `allowClear`           | Whether to show clear button                               | `boolean`                                   | `false`               |
+| `mode`                 | Selection mode, single or multiple                         | `'single' \| 'multiple'`                    | `'single'`            |
+| `value`                | Current selected value (controlled)                        | `ValueType \| ValueType[] \| string`        | -                     |
+| `defaultValue`         | Default selected value (uncontrolled)                      | `ValueType \| ValueType[] \| string`        | -                     |
+| `onChange`             | Callback when value and selected options change            | `(value, options) => void`                  | -                     |
+| `valueType`            | Value submission format in multiple mode                   | `'array' \| 'string'`                       | `'array'`             |
+| `fieldNames`           | Custom backend field name mapping                          | `PopoverSelectFieldNames<OptionType>`       | -                     |
+| `showConfirm`          | Whether to show confirm button in multiple mode            | `boolean`                                   | `mode === 'multiple'` |
+| `showCancelBtn`        | Whether to show cancel button to discard draft changes     | `boolean`                                   | `false`               |
+| `showClearBtn`         | Whether to show clear button to clear draft/selected value | `boolean`                                   | `false`               |
+| `showSelectAll`        | Whether to show select all checkbox in multiple mode       | `boolean`                                   | `false`               |
+| `maxTagCount`          | Max number of visible tags before truncating to `(+N)`     | `number`                                    | -                     |
+| `separator`            | Separator between selected tags                            | `string`                                    | `', '`                |
+| `ellipsis`             | Text truncation and Tooltip config                         | `boolean \| { tooltip?: string }`           | `true`                |
+| `virtual`              | Whether to enable virtual scrolling                        | `boolean`                                   | `true`                |
+| `listHeight`           | Max list height in pixels                                  | `number`                                    | `150`                 |
+| `listItemHeight`       | Virtual list item height in pixels                         | `number`                                    | `34`                  |
+| `showArrow`            | Whether to show dropdown arrow                             | `boolean`                                   | `true`                |
+| `disabled`             | Whether to disable the component                           | `boolean`                                   | `false`               |
+| `dropdownRender`       | Custom dropdown panel renderer                             | `(menu: ReactElement) => ReactElement`      | -                     |
+| `optionRender`         | Custom single option renderer                              | `(item: OptionType) => ReactNode`           | -                     |
+| `open`                 | Popover open state (controlled)                            | `boolean`                                   | -                     |
+| `onOpenChange`         | Callback when Popover open state changes                   | `(open: boolean) => void`                   | -                     |
+| `afterOpenChange`      | Callback when Popover open/close transition finishes       | `(open: boolean) => void`                   | -                     |
+| `placement`            | Popover placement                                          | `TooltipPlacement`                          | `'bottomLeft'`        |
+| `getPopupContainer`    | Mounting container node for popup                          | `(triggerNode: HTMLElement) => HTMLElement` | -                     |
+| `autoAdjustOverflow`   | Whether to automatically adjust position on overflow       | `boolean`                                   | `true`                |
+| `destroyTooltipOnHide` | Whether to destroy popup DOM on hide                       | `boolean`                                   | `false`               |
+| `classNames`           | Custom semantic slot classNames                            | `PopoverSelectClassNames`                   | -                     |
+| `styles`               | Custom semantic slot inline styles                         | `PopoverSelectStyles`                       | -                     |
 
-- Provide stable, unique values for large option sets.
-- `fieldNames` changes how fields are read; it does not mutate source records.
-- String-mode input and output are JSON-array strings such as `[1,"PM"]`, preserving number and string types.
-- Keep custom option heights stable so virtual-list measurement remains accurate.
+### PopoverSelectClassNames
 
-## Value contracts and semantic styles
+| Property      | Description                                                     | Type     |
+| ------------- | --------------------------------------------------------------- | -------- |
+| `root`        | Class name of the root wrapper                                  | `string` |
+| `trigger`     | Class name of the trigger button                                | `string` |
+| `triggerText` | Class name of the trigger text container                        | `string` |
+| `actions`     | Class name of the right action container (arrow and clear icon) | `string` |
+| `popup`       | Class name of the popup container                               | `string` |
+| `search`      | Class name of the search input area                             | `string` |
+| `selectAll`   | Class name of the select-all checkbox area                      | `string` |
+| `menu`        | Class name of the options menu list                             | `string` |
+| `item`        | Class name of each option item                                  | `string` |
+| `footer`      | Class name of the footer button area                            | `string` |
+| `empty`       | Class name of the empty state area                              | `string` |
 
-Single selection uses `mode="single"` (or omits `mode`) and emits a scalar or `undefined`. Multiple selection must explicitly choose `valueType="array"` or `valueType="string"`; the callback result is an array or string respectively.
+### PopoverSelectStyles
 
-String mode uses an unambiguous JSON-array codec, so async options, numeric values, and look-alike string values retain the correct type.
-
-Styling is exposed through `rootClassName`, `classNames`, and `styles`. `classNames` provides `root`, `trigger`, `triggerText`, `actions`, `popup`, `search`, `selectAll`, `menu`, `item`, `footer`, and `empty`; `styles` is limited to the primary `root`, `trigger`, `popup`, and `menu` nodes. The `popup` slot targets the portal root and automatically receives the active namespace and CSS-in-JS hash.
+| Property  | Description                           | Type                  |
+| --------- | ------------------------------------- | --------------------- |
+| `root`    | Inline style of the root wrapper      | `React.CSSProperties` |
+| `trigger` | Inline style of the trigger button    | `React.CSSProperties` |
+| `popup`   | Inline style of the popup container   | `React.CSSProperties` |
+| `menu`    | Inline style of the options menu list | `React.CSSProperties` |
