@@ -265,8 +265,6 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
       <>
         {!!resizable && !!open && !isMinimized && (
           <DrawerResizeHandle
-            prefixCls={prefixCls}
-            hashId={hashId}
             placement={placement}
             className={draggerClassName}
             style={draggerStyle}
@@ -281,12 +279,10 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
       draggerClassName,
       draggerStyle,
       handlePointerDown,
-      hashId,
       isMinimized,
       isResizing,
       open,
       placement,
-      prefixCls,
       resizable,
       userDrawerRender,
     ],
