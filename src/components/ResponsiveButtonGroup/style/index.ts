@@ -60,6 +60,9 @@ export const genResponsiveButtonGroupStyle = (
         display: 'inline-flex',
         flex: '0 0 auto',
       },
+    },
+
+    [`.${prefixCls}-popup, .${prefixCls}`]: {
       [`.${prefixCls}-menu-item-content, .${prefixCls}-menu-item-icon`]: {
         display: 'inline-flex',
         alignItems: 'center',

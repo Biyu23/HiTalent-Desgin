@@ -509,7 +509,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
       trigger={['click']}
       {...overflowDropdownProps}
       rootClassName={clsx(
-        namespace.prefixCls,
+        namespace.e('popup'),
         namespace.hashId,
         classNames?.popup,
         overflowDropdownProps?.rootClassName,

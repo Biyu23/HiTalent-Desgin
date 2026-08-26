@@ -93,7 +93,7 @@ export default () => {
             容器宽度 ({width}px):
           </Typography.Text>
           <Slider
-            min={120}
+            min={250}
             max={650}
             value={width}
             onChange={setWidth}
