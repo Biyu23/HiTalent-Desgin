@@ -26,8 +26,7 @@ function ColumnSettingPopover<RecordType = Record<string, unknown>>(
     loading = false,
     title: titleProp,
   } = props;
-  const namespace = useComponentNamespace();
-  const { prefixCls, e } = namespace;
+  const { e } = useComponentNamespace();
   const {
     hashId: resolvedHashId,
     classNames,
@@ -131,10 +130,13 @@ function ColumnSettingPopover<RecordType = Record<string, unknown>>(
       onOpenChange={setOpen}
       content={renderContent()}
       title={title}
-      rootClassName={clsx(prefixCls, resolvedHashId, classNames?.settingPopup)}
+      rootClassName={clsx(
+        e('column-setting-popover'),
+        resolvedHashId,
+        classNames?.settingPopup,
+      )}
       styles={{ root: styles?.settingPopup }}
       classNames={{
-        root: clsx(e('column-setting-popover'), resolvedHashId),
         body: clsx(e('column-setting-popover-body'), resolvedHashId),
       }}
     >

@@ -58,7 +58,6 @@ const MinimizedDockInner = memo<MinimizedDockProps>(
             ref={dragRef}
             className={clsx(
               e('dock'),
-              ownerNamespace.prefixCls,
               ownerNamespace.hashId,
               hashId,
               className,
