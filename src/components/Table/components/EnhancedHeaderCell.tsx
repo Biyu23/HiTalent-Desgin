@@ -36,8 +36,9 @@ function EnhancedHeaderCell<RecordType = unknown>(
   } = props;
 
   const namespace = useComponentNamespace();
-  const e = namespace.element;
+  const { e } = namespace;
   const context = useContext(TableContext);
+
   const { hashId } = context;
   const currentControlledWidth =
     context.columnWidths[columnId] ??

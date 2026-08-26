@@ -5,12 +5,10 @@ import clsx from 'clsx';
 import React, {
   forwardRef,
   memo,
-  useContext,
   useImperativeHandle,
   useMemo,
   useRef,
 } from 'react';
-import { ConfigContext } from '../../configProvider/context';
 import { useLocale } from '../../configProvider/useLocale';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
 import {
@@ -79,15 +77,15 @@ function InternalTable<RecordType = Record<string, unknown>>(
     ...restProps
   } = props;
   const prefixCls = usePrefixCls('table', customPrefixCls);
-  const { antdPrefixCls } = useContext(ConfigContext);
-  const { wrapSSR, hashId } = useStyle(prefixCls, antdPrefixCls);
+  const { wrapSSR, hashId } = useStyle(prefixCls);
   const namespace = useResolvedComponentNamespace(
     'table',
     customPrefixCls,
     hashId,
   );
-  const { element: e, modifier: m } = namespace;
+  const { e, m } = namespace;
   const locale = useLocale('Table');
+
   const antdTableRef = useRef<AntdTableRef>(null);
   const tableRootRef = useRef<HTMLDivElement>(null);
   const controlled = 'columnState' in props;

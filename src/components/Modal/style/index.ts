@@ -130,8 +130,6 @@ export const genModalStyle = (
   };
 };
 
-export function useStyle(prefixCls: string, antdPrefixCls = 'ant') {
-  return useComponentStyle('Modal', prefixCls, (token, currentPrefixCls) =>
-    genModalStyle(token, currentPrefixCls, antdPrefixCls),
-  );
+export function useStyle(prefixCls: string, antdPrefixCls?: string) {
+  return useComponentStyle('Modal', prefixCls, genModalStyle, antdPrefixCls);
 }

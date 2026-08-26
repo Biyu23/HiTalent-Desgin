@@ -111,9 +111,7 @@ export const genDrawerStyle = (
 
 export function useStyle(
   prefixCls: string,
-  antdPrefixCls = 'ant',
+  antdPrefixCls?: string,
 ): UseComponentStyleResult {
-  return useComponentStyle('Drawer', prefixCls, (token, currentPrefixCls) =>
-    genDrawerStyle(token, currentPrefixCls, antdPrefixCls),
-  );
+  return useComponentStyle('Drawer', prefixCls, genDrawerStyle, antdPrefixCls);
 }

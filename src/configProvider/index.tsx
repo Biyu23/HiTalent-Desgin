@@ -1,34 +1,52 @@
 import { ConfigProvider as AntdConfigProvider } from 'antd';
 import React, { useCallback, useContext, useMemo } from 'react';
-import { ConfigContext, defaultPrefixCls } from './context';
+import { isNullOrBlank } from '../util';
+import type { ConfigContextValue } from './context';
+import { ConfigContext, defaultPrefixCls, useConfig } from './context';
 import { mergeLocale } from './mergeLocale';
+import { mergeTheme } from './mergeTheme';
 import type { ConfigProviderProps } from './type';
 
-export { ConfigContext, defaultPrefixCls } from './context';
+export { ConfigContext, defaultPrefixCls, useConfig } from './context';
 export type { ConfigContextValue } from './context';
 export type { ConfigProviderProps } from './type';
 export { useLocale } from './useLocale';
-export { useNamespace, usePrefixCls } from './usePrefixCls';
-export type { UseNamespaceResult } from './usePrefixCls';
+export { useAntdPrefixCls, usePrefixCls } from './usePrefixCls';
 
-export const ConfigProvider: React.FC<ConfigProviderProps> = ({
+export interface ConfigProviderType extends React.FC<ConfigProviderProps> {
+  useConfig: typeof useConfig;
+  ConfigContext: typeof ConfigContext;
+  defaultPrefixCls: typeof defaultPrefixCls;
+}
+
+const InternalConfigProvider: React.FC<ConfigProviderProps> = ({
   prefixCls,
   antdPrefixCls,
   iconPrefixCls,
   locale,
+  antdLocale,
   localeOverrides,
   direction,
+  theme,
   children,
+  ...restAntdProps
 }) => {
   const parentConfig = useContext(ConfigContext);
   const mergedPrefixCls =
     prefixCls ?? parentConfig.prefixCls ?? defaultPrefixCls;
   const mergedAntdPrefixCls = antdPrefixCls ?? parentConfig.antdPrefixCls;
   const mergedIconPrefixCls = iconPrefixCls ?? parentConfig.iconPrefixCls;
+  const mergedTheme = useMemo(
+    () => mergeTheme(parentConfig.theme, theme),
+    [parentConfig.theme, theme],
+  );
+  const mergedAntdLocale = antdLocale ?? parentConfig.antdLocale;
 
   const getPrefixCls = useCallback(
-    (suffixCls?: string, customPrefix?: string) => {
-      if (customPrefix) return customPrefix;
+    (suffixCls?: string, customPrefix?: string): string => {
+      if (!isNullOrBlank(customPrefix)) {
+        return customPrefix;
+      }
       return suffixCls ? `${mergedPrefixCls}-${suffixCls}` : mergedPrefixCls;
     },
     [mergedPrefixCls],
@@ -38,22 +56,27 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({
   const resolvedDirection =
     direction ?? locale?.direction ?? parentConfig.direction;
 
-  const mergedLocale = useMemo(
-    () => ({
-      ...mergeLocale(baseLocale, localeOverrides),
+  const mergedLocale = useMemo(() => {
+    const merged = mergeLocale(baseLocale, localeOverrides);
+    if (merged.direction === resolvedDirection) {
+      return merged;
+    }
+    return {
+      ...merged,
       direction: resolvedDirection,
-    }),
-    [baseLocale, localeOverrides, resolvedDirection],
-  );
+    };
+  }, [baseLocale, localeOverrides, resolvedDirection]);
 
-  const config = useMemo(
+  const config: ConfigContextValue = useMemo(
     () => ({
       prefixCls: mergedPrefixCls,
       antdPrefixCls: mergedAntdPrefixCls,
       iconPrefixCls: mergedIconPrefixCls,
       getPrefixCls,
       locale: mergedLocale,
+      antdLocale: mergedAntdLocale,
       direction: resolvedDirection,
+      theme: mergedTheme,
     }),
     [
       mergedPrefixCls,
@@ -61,17 +84,27 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({
       mergedIconPrefixCls,
       getPrefixCls,
       mergedLocale,
+      mergedAntdLocale,
       resolvedDirection,
+      mergedTheme,
     ],
   );
 
   return (
     <AntdConfigProvider
+      {...restAntdProps}
       prefixCls={mergedAntdPrefixCls}
       iconPrefixCls={mergedIconPrefixCls}
       direction={resolvedDirection}
+      theme={mergedTheme}
+      locale={mergedAntdLocale}
     >
       <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>
     </AntdConfigProvider>
   );
 };
+
+export const ConfigProvider = InternalConfigProvider as ConfigProviderType;
+ConfigProvider.useConfig = useConfig;
+ConfigProvider.ConfigContext = ConfigContext;
+ConfigProvider.defaultPrefixCls = defaultPrefixCls;

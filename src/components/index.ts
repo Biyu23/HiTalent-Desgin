@@ -30,7 +30,6 @@ export type { ButtonProps, ButtonRef } from './Button/type';
 export { default as ResponsiveButtonGroup } from './ResponsiveButtonGroup';
 export type {
   ResponsiveButtonGroupButtonProps,
-  ResponsiveButtonGroupClassNameSlot,
   ResponsiveButtonGroupClassNames,
   ResponsiveButtonGroupClickInfo,
   ResponsiveButtonGroupItem,
@@ -38,9 +37,8 @@ export type {
   ResponsiveButtonGroupMode,
   ResponsiveButtonGroupOverflowRenderInfo,
   ResponsiveButtonGroupProps,
+  ResponsiveButtonGroupRef,
   ResponsiveButtonGroupRenderInfo,
-  ResponsiveButtonGroupSlot,
-  ResponsiveButtonGroupStyleSlot,
   ResponsiveButtonGroupStyles,
 } from './ResponsiveButtonGroup/type';
 

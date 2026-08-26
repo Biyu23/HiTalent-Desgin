@@ -22,7 +22,7 @@ const ModalResizeHandle = memo<ModalResizeHandleProps>(
     return (
       <div
         className={clsx(
-          namespace.element('resize-handle'),
+          namespace.e('resize-handle'),
           namespace.hashId,
           className,
         )}

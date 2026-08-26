@@ -250,11 +250,11 @@ export const genPopoverSelectStyle = (
   };
 };
 
-export function useStyle(prefixCls: string, antdPrefixCls = 'ant') {
+export function useStyle(prefixCls: string, antdPrefixCls?: string) {
   return useComponentStyle(
     'PopoverSelect',
     prefixCls,
-    (token, currentPrefixCls) =>
-      genPopoverSelectStyle(token, currentPrefixCls, antdPrefixCls),
+    genPopoverSelectStyle,
+    antdPrefixCls,
   );
 }

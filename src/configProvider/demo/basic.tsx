@@ -1,12 +1,7 @@
 /**
  * description: 通过 `prefixCls` 为组件指定自定义 CSS 类名前缀，避免与项目中其他 UI 库的样式冲突；通过 `antdPrefixCls` 可同步控制底层 Ant Design 组件类名前缀。
  */
-import {
-  Button,
-  ConfigProvider,
-  useNamespace,
-  usePrefixCls,
-} from 'hi-talent-design';
+import { Button, ConfigProvider, usePrefixCls } from 'hi-talent-design';
 import { useDemoIntl } from 'hi-talent-design/demoIntl';
 import React from 'react';
 
@@ -28,7 +23,7 @@ const messages = {
 const PrefixDisplay = () => {
   const { t } = useDemoIntl(messages);
   const modalPrefix = usePrefixCls('modal');
-  const ns = useNamespace('card');
+  const cardPrefix = usePrefixCls('card');
 
   return (
     <div
@@ -39,8 +34,8 @@ const PrefixDisplay = () => {
       }}
     >
       <div>
-        {t('basic.info')} <code>{modalPrefix}</code>，{t('basic.button')}:{' '}
-        <code>{ns.e('header')}</code>
+        {t('basic.info')} <code>{modalPrefix}</code>，
+        <code>{cardPrefix}-header</code>
       </div>
     </div>
   );

@@ -34,8 +34,7 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
   } = useModalOperations();
 
   const namespace = useComponentNamespace();
-  const e = namespace.element;
-  const em = namespace.elementModifier;
+  const { e, em } = namespace;
   const modalLocale = useLocale('Modal');
 
   const {

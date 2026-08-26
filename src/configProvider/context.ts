@@ -1,6 +1,11 @@
-import { createContext } from 'react';
+import type {
+  ConfigProviderProps as AntdConfigProviderProps,
+  ThemeConfig,
+} from 'antd';
+import { createContext, useContext } from 'react';
 import type { HtdLocale, LocaleDirection } from '../locales';
 import { zh_CN } from '../locales';
+import { isNullOrBlank } from '../util';
 
 export interface ConfigContextValue {
   /** HiTalent Design 默认/全局组件前缀，默认为 'htd' */
@@ -13,16 +18,22 @@ export interface ConfigContextValue {
   getPrefixCls: (suffixCls?: string, customPrefix?: string) => string;
   /** 当前语言包 */
   locale: HtdLocale;
+  /** 底层 Ant Design 语言包（可选） */
+  antdLocale?: AntdConfigProviderProps['locale'];
   /** 当前布局方向 */
   direction: LocaleDirection;
+  /** 主题配置（可选） */
+  theme?: ThemeConfig;
 }
 
 export const defaultPrefixCls = 'htd';
 
 export const defaultConfig: ConfigContextValue = {
   prefixCls: defaultPrefixCls,
-  getPrefixCls: (suffixCls?: string, customPrefix?: string) => {
-    if (customPrefix) return customPrefix;
+  getPrefixCls: (suffixCls?: string, customPrefix?: string): string => {
+    if (!isNullOrBlank(customPrefix)) {
+      return customPrefix;
+    }
     return suffixCls ? `${defaultPrefixCls}-${suffixCls}` : defaultPrefixCls;
   },
   locale: zh_CN,
@@ -30,3 +41,10 @@ export const defaultConfig: ConfigContextValue = {
 };
 
 export const ConfigContext = createContext<ConfigContextValue>(defaultConfig);
+
+/**
+ * 获取当前全局 ConfigContext 配置
+ */
+export const useConfig = (): ConfigContextValue => {
+  return useContext(ConfigContext);
+};

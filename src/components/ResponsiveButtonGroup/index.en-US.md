@@ -16,50 +16,48 @@ Automatically calculates available space based on container width and smoothly c
 
 ## Examples
 
-<code src="./demo/basic.tsx" title="Comprehensive Responsive Button Group" description="Drag the slider to experience container responsiveness, priority layout, async loading panel persistence, and mode switching."></code>
+<code src="./demo/basic.tsx" title="Adaptive Layout and Modes" description="Experience container width responsiveness, priority ordering, minimum visible count, and async Promise loading persistence."></code>
 
-<code src="./demo/semantic-styles.tsx" title="Semantic Styles" description="Customize the visible area, overflow trigger, menu portal, and menu item slots."></code>
+<code src="./demo/custom-overflow.tsx" title="Custom Overflow Menu and State Listener" description="Customize More button icon, label, collapsed item rendering, and listen to visible/collapsed state changes."></code>
 
 ## API
 
+In addition to the properties in the table below, the component also supports native properties such as `className`, `style`, and `rootClassName`.
+
 ### ResponsiveButtonGroupProps
 
-| Property                | Description                                            | Type                                        | Default                |
-| ----------------------- | ------------------------------------------------------ | ------------------------------------------- | ---------------------- |
-| `items`                 | Action item list                                       | `readonly ResponsiveButtonGroupItem[]`      | -                      |
-| `mode`                  | Display mode (`responsive` / `expanded` / `collapsed`) | `'responsive' \| 'expanded' \| 'collapsed'` | `'responsive'`         |
-| `minVisibleCount`       | Minimum inline buttons to retain (excluding More)      | `number`                                    | `0`                    |
-| `gap`                   | Gap between buttons in pixels                          | `number`                                    | `8`                    |
-| `buttonProps`           | Shared props for all action buttons                    | `ResponsiveButtonGroupButtonProps`          | -                      |
-| `overflowLabel`         | Custom text for More button                            | `ReactNode`                                 | Locale text            |
-| `overflowIcon`          | Icon for More button                                   | `ReactNode`                                 | `<EllipsisOutlined />` |
-| `showOverflowCount`     | Shows count of collapsed items on More button          | `boolean`                                   | `true`                 |
-| `overflowButtonProps`   | Props for More trigger button                          | `ButtonProps`                               | -                      |
-| `overflowDropdownProps` | Props forwarded to Dropdown                            | `DropdownProps`                             | -                      |
-| `overflowMenuProps`     | Props forwarded to Menu                                | `MenuProps`                                 | -                      |
-| `renderOverflowButton`  | Custom render for More button                          | `(info) => ReactNode`                       | -                      |
-| `onItemClick`           | Unified click callback for all actions                 | `(info) => void \| Promise<unknown>`        | -                      |
-| `onActionError`         | Rejected async action callback                         | `(error, info) => void`                     | -                      |
-| `onVisibleChange`       | Callback when visible/collapsed keys change            | `(visibleKeys, collapsedKeys) => void`      | -                      |
+| Property                | Description                                                                                    | Type                                                                 | Default                |
+| ----------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ---------------------- |
+| `items`                 | Action item list data source                                                                   | `readonly ResponsiveButtonGroupItem[]`                               | -                      |
+| `mode`                  | Display mode (`responsive` / `expanded` / `collapsed`)                                         | `'responsive' \| 'expanded' \| 'collapsed'`                          | `'responsive'`         |
+| `minVisibleCount`       | Minimum inline buttons to retain (excluding More button)                                       | `number`                                                             | `0`                    |
+| `gap`                   | Gap between buttons in pixels                                                                  | `number`                                                             | `8`                    |
+| `buttonProps`           | Shared props configuration for all inline buttons                                              | `ResponsiveButtonGroupButtonProps`                                   | -                      |
+| `overflowLabel`         | Custom text for More trigger button                                                            | `ReactNode`                                                          | Locale text            |
+| `overflowIcon`          | Custom icon for More trigger button                                                            | `ReactNode`                                                          | `<EllipsisOutlined />` |
+| `showOverflowCount`     | Whether to show the count of collapsed items on More button                                    | `boolean`                                                            | `true`                 |
+| `overflowButtonProps`   | Props forwarded to More trigger Button                                                         | `ButtonProps`                                                        | -                      |
+| `overflowDropdownProps` | Props forwarded to overflow Dropdown                                                           | `DropdownProps`                                                      | -                      |
+| `overflowMenuProps`     | Props forwarded to overflow Menu                                                               | `MenuProps`                                                          | -                      |
+| `renderOverflowButton`  | Custom render function for More trigger button                                                 | `(info: ResponsiveButtonGroupOverflowRenderInfo) => ReactNode`       | -                      |
+| `onItemClick`           | Unified click callback for all actions; returns Promise to keep Loading state                  | `(info: ResponsiveButtonGroupClickInfo) => void \| Promise<unknown>` | -                      |
+| `onActionError`         | Callback when async action execution fails                                                     | `(error: unknown, info: ResponsiveButtonGroupClickInfo) => void`     | -                      |
+| `onVisibleChange`       | Callback when visible or collapsed item sets change                                            | `(visibleKeys: string[], collapsedKeys: string[]) => void`           | -                      |
+| `classNames`            | Semantic class names slot (supports `root`, `visible`, `overflowTrigger`, `popup`, `menuItem`) | `ResponsiveButtonGroupClassNames`                                    | -                      |
+| `styles`                | Semantic styles slot (supports `root`, `visible`, `overflowTrigger`, `popup`)                  | `ResponsiveButtonGroupStyles`                                        | -                      |
 
 ### ResponsiveButtonGroupItem
 
-| Property              | Description                                                                             | Type                                 | Default |
-| --------------------- | --------------------------------------------------------------------------------------- | ------------------------------------ | ------- |
-| `key`                 | Unique string key                                                                       | `string`                             | -       |
-| `label`               | Label for button and menu item                                                          | `ReactNode`                          | -       |
-| `icon`                | Icon for button and menu item                                                           | `ReactNode`                          | -       |
-| `priority`            | Collapse priority; lower values collapse earlier                                        | `number`                             | `0`     |
-| `disabled`            | Whether the action is disabled                                                          | `boolean`                            | `false` |
-| `danger`              | Whether the action is dangerous                                                         | `boolean`                            | `false` |
-| `loading`             | Controlled loading state                                                                | `boolean`                            | `false` |
-| `tooltip`             | Tooltip for both button and collapsed menu item                                         | `ButtonProps['tooltip']`             | -       |
-| `buttonProps`         | Item-specific Button props                                                              | `ResponsiveButtonGroupButtonProps`   | -       |
-| `renderCollapsedItem` | Custom render for collapsed menu item                                                   | `(info) => ReactNode`                | -       |
-| `onClick`             | Click handler; returns Promise to automatically show Loading and delay dropdown closing | `(info) => void \| Promise<unknown>` | -       |
-
-## Semantic styles
-
-Every item `key` must be a unique string. `classNames` exposes `root`, `visible`, `overflowTrigger`, `popup`, and `menuItem`; `styles` is limited to the primary `root`, `visible`, `overflowTrigger`, and `popup` nodes. `rootClassName` targets the component boundary, while `popup` targets the overflow menu portal root.
-
-Responsive measurement renders each action once plus a single candidate overflow trigger; it does not render every collapsed combination.
+| Property              | Description                                                                                             | Type                                                                 | Default |
+| --------------------- | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------- |
+| `key`                 | Unique string key                                                                                       | `string`                                                             | -       |
+| `label`               | Label for button and menu item                                                                          | `ReactNode`                                                          | -       |
+| `icon`                | Icon for button and menu item                                                                           | `ReactNode`                                                          | -       |
+| `priority`            | Collapse priority; lower values collapse earlier; items with equal priority collapse from back to front | `number`                                                             | `0`     |
+| `disabled`            | Whether the item is disabled                                                                            | `boolean`                                                            | `false` |
+| `danger`              | Whether the item is a dangerous action                                                                  | `boolean`                                                            | `false` |
+| `loading`             | Controlled loading state                                                                                | `boolean`                                                            | `false` |
+| `tooltip`             | Tooltip for both button and collapsed menu item                                                         | `ButtonProps['tooltip']`                                             | -       |
+| `buttonProps`         | Item-specific Button props                                                                              | `ResponsiveButtonGroupButtonProps`                                   | -       |
+| `renderCollapsedItem` | Custom render for collapsed menu item                                                                   | `(info: ResponsiveButtonGroupRenderInfo) => ReactNode`               | -       |
+| `onClick`             | Click handler; returns Promise to automatically show Loading and delay dropdown closing                 | `(info: ResponsiveButtonGroupClickInfo) => void \| Promise<unknown>` | -       |

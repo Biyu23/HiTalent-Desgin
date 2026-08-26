@@ -15,10 +15,11 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { ConfigContext, useLocale, usePrefixCls } from '../../configProvider';
+import { useLocale, usePrefixCls } from '../../configProvider';
 import { useMergeState } from '../../hooks';
+
 import type { PopoverSelectLocale } from '../../locales';
-import { attachPropertiesToComponent } from '../../util';
+import { attachPropertiesToComponent, isNullOrBlank } from '../../util';
 import {
   ComponentNamespaceProvider,
   useComponentNamespace,
@@ -195,7 +196,7 @@ function PopoverSelectContent<
         optionRender(option.source)
       ) : (
         <span
-          className={namespace.element('menu-item-text')}
+          className={namespace.e('menu-item-text')}
           title={typeof option.label === 'string' ? option.label : undefined}
         >
           {option.label}
@@ -203,7 +204,7 @@ function PopoverSelectContent<
       );
 
       const itemClassName = clsx(
-        namespace.element(mode === 'multiple' ? 'menu-checkbox' : 'menu-radio'),
+        namespace.e(mode === 'multiple' ? 'menu-checkbox' : 'menu-radio'),
         classNames?.item,
       );
 
@@ -229,10 +230,10 @@ function PopoverSelectContent<
           aria-selected={selectedSet.has(option.value)}
           aria-disabled={option.disabled}
           className={clsx(itemClassName, {
-            [namespace.elementModifier('menu-radio', 'active')]:
-              selectedSet.has(option.value),
-            [namespace.elementModifier('menu-radio', 'disabled')]:
-              option.disabled,
+            [namespace.em('menu-radio', 'active')]: selectedSet.has(
+              option.value,
+            ),
+            [namespace.em('menu-radio', 'disabled')]: option.disabled,
           })}
           onClick={() => !option.disabled && onToggle(option.value)}
         >
@@ -244,16 +245,14 @@ function PopoverSelectContent<
   );
 
   const empty = (description: string) => (
-    <div className={clsx(namespace.element('empty'), classNames?.empty)}>
+    <div className={clsx(namespace.e('empty'), classNames?.empty)}>
       <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={description} />
     </div>
   );
 
   if (options.length === 0) {
     return (
-      <div className={namespace.element('dropdown')}>
-        {empty(locale.noData)}
-      </div>
+      <div className={namespace.e('dropdown')}>{empty(locale.noData)}</div>
     );
   }
 
@@ -267,9 +266,9 @@ function PopoverSelectContent<
       role="listbox"
       aria-multiselectable={mode === 'multiple' || undefined}
       className={clsx(
-        namespace.element('menu'),
+        namespace.e('menu'),
         classNames?.menu,
-        !virtual && namespace.element('menu-scroll'),
+        !virtual && namespace.e('menu-scroll'),
       )}
       style={{
         ...styles?.menu,
@@ -278,7 +277,7 @@ function PopoverSelectContent<
     >
       {virtual ? (
         <VirtualList
-          className={namespace.element('menu-virtual-list')}
+          className={namespace.e('menu-virtual-list')}
           data={displayOptions}
           height={actualHeight}
           itemHeight={listItemHeight}
@@ -295,9 +294,9 @@ function PopoverSelectContent<
   const renderedMenu = dropdownRender ? dropdownRender(menu) : menu;
 
   return (
-    <div className={namespace.element('dropdown')}>
+    <div className={namespace.e('dropdown')}>
       {showSearch && (
-        <div className={clsx(namespace.element('search'), classNames?.search)}>
+        <div className={clsx(namespace.e('search'), classNames?.search)}>
           <Input
             prefix={<SearchOutlined />}
             placeholder={locale.searchPlaceholder}
@@ -308,12 +307,7 @@ function PopoverSelectContent<
         </div>
       )}
       {mode === 'multiple' && showSelectAll && displayOptions.length > 0 && (
-        <div
-          className={clsx(
-            namespace.element('select-all'),
-            classNames?.selectAll,
-          )}
-        >
+        <div className={clsx(namespace.e('select-all'), classNames?.selectAll)}>
           <Checkbox
             checked={allSelected}
             indeterminate={partiallySelected}
@@ -326,7 +320,7 @@ function PopoverSelectContent<
       )}
       {displayOptions.length > 0 ? renderedMenu : empty(locale.noMatch)}
       {footerActions.length > 0 && (
-        <div className={clsx(namespace.element('footer'), classNames?.footer)}>
+        <div className={clsx(namespace.e('footer'), classNames?.footer)}>
           <Space>{footerActions}</Space>
         </div>
       )}
@@ -378,22 +372,22 @@ export const Selector = forwardRef<
       type="text"
       disabled={disabled}
       className={clsx(
-        namespace.element('selector-btn'),
+        namespace.e('selector-btn'),
         namespace.hashId,
         className,
         classNames?.trigger,
         {
-          [namespace.elementModifier('selector-btn', 'active')]: hasValue,
-          [namespace.elementModifier('selector-btn', 'open')]: open,
-          [namespace.elementModifier('selector-btn', 'empty')]: !hasValue,
-          [namespace.elementModifier('selector-btn', 'disabled')]: disabled,
+          [namespace.em('selector-btn', 'active')]: hasValue,
+          [namespace.em('selector-btn', 'open')]: open,
+          [namespace.em('selector-btn', 'empty')]: !hasValue,
+          [namespace.em('selector-btn', 'disabled')]: disabled,
         },
       )}
       style={{ ...styles?.trigger, ...style }}
     >
       <span
         className={clsx(
-          namespace.element('selector-text'),
+          namespace.e('selector-text'),
           namespace.hashId,
           classNames?.triggerText,
         )}
@@ -403,7 +397,7 @@ export const Selector = forwardRef<
       {(hasClear || showArrow) && (
         <span
           className={clsx(
-            namespace.element('selector-actions'),
+            namespace.e('selector-actions'),
             namespace.hashId,
             classNames?.actions,
           )}
@@ -411,10 +405,9 @@ export const Selector = forwardRef<
           {hasClear && (
             <CloseCircleOutlined
               className={clsx(
-                namespace.element('selector-clear'),
+                namespace.e('selector-clear'),
                 namespace.hashId,
-                showArrow &&
-                  namespace.elementModifier('selector-clear', 'overlay'),
+                showArrow && namespace.em('selector-clear', 'overlay'),
               )}
               onClick={(event) => {
                 event.stopPropagation();
@@ -425,10 +418,9 @@ export const Selector = forwardRef<
           {showArrow && (
             <DownOutlined
               className={clsx(
-                namespace.element('selector-arrow'),
+                namespace.e('selector-arrow'),
                 namespace.hashId,
-                hasClear &&
-                  namespace.elementModifier('selector-arrow', 'has-clear'),
+                hasClear && namespace.em('selector-arrow', 'has-clear'),
               )}
             />
           )}
@@ -447,7 +439,7 @@ export const Selector = forwardRef<
         : undefined)}
       autoAdjustOverflow={autoAdjustOverflow}
       rootClassName={clsx(
-        namespace.element('selector'),
+        namespace.e('selector'),
         namespace.hashId,
         rootClassName,
         classNames?.popup,
@@ -475,7 +467,7 @@ function parseExternalValue<ValueType extends RawValueType>(
   mode: 'single' | 'multiple',
   valueType: 'array' | 'string' | undefined,
 ): ValueType[] {
-  if (value === undefined || value === null || value === '') return [];
+  if (isNullOrBlank(value)) return [];
   if (mode === 'multiple' && valueType === 'string') {
     try {
       const parsed: unknown = JSON.parse(String(value));
@@ -510,9 +502,8 @@ function InternalPopoverSelect<
 ) {
   const componentLocale = useLocale('PopoverSelect');
   const prefixCls = props.prefixCls;
-  const { antdPrefixCls } = React.useContext(ConfigContext);
   const resolvedPrefixCls = usePrefixCls('popover-select', prefixCls);
-  const { wrapSSR, hashId } = useStyle(resolvedPrefixCls, antdPrefixCls);
+  const { wrapSSR, hashId } = useStyle(resolvedPrefixCls);
   const namespace = useResolvedComponentNamespace(
     'popover-select',
     prefixCls,

@@ -1,4 +1,5 @@
 import type { DataIndex } from 'rc-table/lib/interface';
+import { isNullOrBlank } from '../../../util';
 import type {
   ColumnId,
   ColumnState,
@@ -21,7 +22,7 @@ function encodePart(value: string | number): string {
 }
 
 function encodeDataIndex(dataIndex: DataIndex | undefined): string | null {
-  if (dataIndex === undefined || dataIndex === null) return null;
+  if (isNullOrBlank(dataIndex)) return null;
   if (Array.isArray(dataIndex)) {
     return `path:${dataIndex.map((part) => encodePart(part)).join('/')}`;
   }
@@ -152,11 +153,11 @@ export function getValueByDataIndex(
   record: unknown,
   dataIndex: DataIndex | undefined,
 ): unknown {
-  if (dataIndex === undefined || dataIndex === null) return undefined;
+  if (isNullOrBlank(dataIndex)) return undefined;
   const path = Array.isArray(dataIndex) ? dataIndex : [dataIndex];
   let current: unknown = record;
   for (const segment of path) {
-    if (current === null || current === undefined) return undefined;
+    if (isNullOrBlank(current)) return undefined;
     if (typeof current !== 'object') return undefined;
     current = (current as Record<string | number, unknown>)[segment];
   }

@@ -6,15 +6,12 @@ export {
   ConfigContext,
   ConfigProvider,
   defaultPrefixCls,
+  useAntdPrefixCls,
+  useConfig,
   useLocale,
-  useNamespace,
   usePrefixCls,
 } from './configProvider';
-export type {
-  ConfigContextValue,
-  ConfigProviderProps,
-  UseNamespaceResult,
-} from './configProvider';
+export type { ConfigContextValue, ConfigProviderProps } from './configProvider';
 
 // Hooks
 export { useDragBounds, useFieldNames, useMergeState } from './hooks';

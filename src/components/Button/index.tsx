@@ -16,6 +16,7 @@ const Button = React.forwardRef<ButtonRef, ButtonProps>((props, ref) => {
     block,
     ...restProps
   } = props;
+
   const { pending, run } = useActionRunner<
     [React.MouseEvent<HTMLElement, MouseEvent>]
   >({ throttle, trackPending: autoLoading });

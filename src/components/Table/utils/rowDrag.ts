@@ -1,5 +1,6 @@
 import type { DragMoveEvent } from '@dnd-kit/core';
 import React from 'react';
+import { isNullOrBlank } from '../../../util';
 import type { DropPositionLabel, RowDragResult, RowDropInfo } from '../type';
 import type { RowKeyGetter, RowMeta, RowRegistry } from '../types/internal';
 
@@ -28,7 +29,7 @@ export function buildRowRegistry<RecordType>(
   ) => {
     records.forEach((record, index) => {
       const key = getKey(record, index);
-      if (key === null || key === undefined) return;
+      if (isNullOrBlank(key)) return;
       const path = [...parentPath, key];
       if (metaMap.has(key)) duplicateKeys.add(key);
       else {

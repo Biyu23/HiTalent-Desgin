@@ -22,12 +22,13 @@ export const genResponsiveButtonGroupStyle = (
         minWidth: 'max-content',
       },
 
-      [`.${prefixCls}-overflow-trigger, .${prefixCls}-overflow-label`]: {
-        display: 'inline-flex',
-        alignItems: 'center',
-      },
+      [`.${prefixCls}-overflow-trigger, .${prefixCls}-overflow-label, .${prefixCls}-overflow-wrapper`]:
+        {
+          display: 'inline-flex',
+          alignItems: 'center',
+        },
 
-      [`.${prefixCls}-overflow-trigger`]: {
+      [`.${prefixCls}-overflow-trigger, .${prefixCls}-overflow-wrapper`]: {
         flex: '0 0 auto',
       },
 

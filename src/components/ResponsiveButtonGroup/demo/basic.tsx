@@ -1,6 +1,3 @@
-/**
- * description: 动态拖动宽度滑块或切换模式，体验自适应计算、优先级排版、异步 Promise Loading 保持面板展开及 Tooltip/禁用等完整特性。
- */
 import {
   CloudDownloadOutlined,
   CopyOutlined,
@@ -9,7 +6,7 @@ import {
   PlusOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
-import { Flex, Radio, Slider, message } from 'antd';
+import { Flex, Radio, Slider, Typography, message } from 'antd';
 import type {
   ResponsiveButtonGroupItem,
   ResponsiveButtonGroupMode,
@@ -17,14 +14,14 @@ import type {
 import { ResponsiveButtonGroup } from 'hi-talent-design';
 import React, { useMemo, useState } from 'react';
 
+const wait = (ms = 1000) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
 export default () => {
   const [width, setWidth] = useState(480);
   const [mode, setMode] = useState<ResponsiveButtonGroupMode>('responsive');
-
-  const wait = (ms = 1500) =>
-    new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
 
   const items: ResponsiveButtonGroupItem[] = useMemo(
     () => [
@@ -33,7 +30,7 @@ export default () => {
         label: '新建项目',
         icon: <PlusOutlined />,
         priority: 100,
-        buttonProps: { type: 'primary' as const },
+        buttonProps: { type: 'primary' },
         onClick: () => {
           message.success('点击新建');
         },
@@ -69,12 +66,12 @@ export default () => {
       },
       {
         key: 'download',
-        label: '导出报表 (异步等待)',
+        label: '导出报表',
         icon: <CloudDownloadOutlined />,
         priority: 15,
         onClick: async () => {
-          await wait(1500);
-          message.success('导出完成，面板自动收起');
+          await wait(1000);
+          message.success('导出完成');
         },
       },
       {
@@ -92,9 +89,9 @@ export default () => {
     <Flex vertical gap={16}>
       <Flex align="center" gap={24} wrap>
         <Flex align="center" gap={8} style={{ width: 320 }}>
-          <span style={{ fontSize: 13, color: '#666', whiteSpace: 'nowrap' }}>
+          <Typography.Text type="secondary" style={{ whiteSpace: 'nowrap' }}>
             容器宽度 ({width}px):
-          </span>
+          </Typography.Text>
           <Slider
             min={120}
             max={650}
@@ -104,7 +101,7 @@ export default () => {
           />
         </Flex>
         <Flex align="center" gap={8}>
-          <span style={{ fontSize: 13, color: '#666' }}>模式:</span>
+          <Typography.Text type="secondary">模式:</Typography.Text>
           <Radio.Group
             size="small"
             value={mode}
@@ -130,7 +127,12 @@ export default () => {
           background: '#fafafa',
         }}
       >
-        <ResponsiveButtonGroup mode={mode} items={items} minVisibleCount={1} />
+        <ResponsiveButtonGroup
+          mode={mode}
+          items={items}
+          minVisibleCount={1}
+          gap={8}
+        />
       </div>
     </Flex>
   );

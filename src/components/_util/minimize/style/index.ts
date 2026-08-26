@@ -172,11 +172,11 @@ export const genMinimizeStyle = (
   };
 };
 
-export function useStyle(prefixCls: string, antdPrefixCls = 'ant') {
+export function useStyle(prefixCls: string, antdPrefixCls?: string) {
   return useComponentStyle(
     'MinimizedDock',
     prefixCls,
-    (token, currentPrefixCls) =>
-      genMinimizeStyle(token, currentPrefixCls, antdPrefixCls),
+    genMinimizeStyle,
+    antdPrefixCls,
   );
 }

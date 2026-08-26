@@ -110,7 +110,7 @@ const SortableHeaderItem: React.FC<SortableHeaderItemProps> = ({
     };
   }, [transformValue, transition, isDragging, rootRef, tableId, token]);
 
-  const { element: e } = useComponentNamespace();
+  const { e } = useComponentNamespace();
   const { hashId } = useContext(TableContext);
 
   return (
@@ -159,7 +159,8 @@ const InternalColumnDragContext: React.FC<InternalColumnDragContextProps> = ({
   sensors,
   contextId,
 }) => {
-  const { element: e } = useComponentNamespace();
+  const { e } = useComponentNamespace();
+
   const { hashId, classNames, styles } = useContext(TableContext);
   const [activeId, setActiveId] = useState<ColumnId | null>(null);
 

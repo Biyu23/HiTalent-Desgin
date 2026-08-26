@@ -14,8 +14,7 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({
 }) => {
   const namespace = useComponentNamespace();
   const context = useContext(TableContext);
-  const e = namespace.element;
-  const em = namespace.elementModifier;
+  const { e, em } = namespace;
   return (
     <div
       className={clsx(

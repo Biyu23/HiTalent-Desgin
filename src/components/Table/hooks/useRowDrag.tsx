@@ -36,6 +36,7 @@ import React, {
 } from 'react';
 import ReactDOM from 'react-dom';
 import { useLocale } from '../../../configProvider/useLocale';
+import { isNullOrBlank } from '../../../util';
 import { useComponentNamespace } from '../../_util/namespace';
 import TableContext from '../TableContext';
 import type { RowDragConfig, RowDragResult } from '../type';
@@ -65,7 +66,7 @@ function stopRowEvent(event: React.SyntheticEvent) {
 
 export const RowDragHandle: React.FC = () => {
   const context = useContext(RowDragHandleContext);
-  const { element: e, elementModifier: em } = useComponentNamespace();
+  const { e, em } = useComponentNamespace();
   const tableContext = useContext(TableContext);
   if (!context) return null;
   const {
@@ -150,7 +151,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
   const candidate = dragState.candidate;
   const treeMode = dragState.treeMode;
   const isTarget = candidate?.targetKey === id;
-  const { element: e } = useComponentNamespace();
+  const { e } = useComponentNamespace();
   const { hashId } = useContext(TableContext);
   const dropClass =
     isTarget && treeMode ? e(`row-drag-over-${candidate.position}`) : undefined;
@@ -220,7 +221,8 @@ const InternalRowDragContext = <RecordType,>({
   sensors,
   contextId,
 }: InternalRowDragContextProps<RecordType>) => {
-  const { element: e } = useComponentNamespace();
+  const { e } = useComponentNamespace();
+
   const { hashId, classNames, styles } = useContext(TableContext);
   const [activeKey, setActiveKey] = useState<React.Key | null>(null);
   const [candidate, setCandidate] = useState<RowDragResult<RecordType> | null>(
@@ -419,7 +421,7 @@ export function useRowDrag<RecordType>(options: UseRowDragOptions<RecordType>) {
     ) => {
       if (!optionsRef.current.enabled) return <tr {...rowProps} />;
       const recordKey = rowProps['data-row-key'];
-      if (recordKey === null || recordKey === undefined) {
+      if (isNullOrBlank(recordKey)) {
         return <tr {...rowProps} />;
       }
       const meta = optionsRef.current.registry.metaMap.get(recordKey);

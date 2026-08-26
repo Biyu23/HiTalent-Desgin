@@ -262,8 +262,6 @@ export const genTableStyle = (
   };
 };
 
-export function useStyle(prefixCls: string, antdPrefixCls = 'ant') {
-  return useComponentStyle('Table', prefixCls, (token, currentPrefixCls) =>
-    genTableStyle(token, currentPrefixCls, antdPrefixCls),
-  );
+export function useStyle(prefixCls: string, antdPrefixCls?: string) {
+  return useComponentStyle('Table', prefixCls, genTableStyle, antdPrefixCls);
 }

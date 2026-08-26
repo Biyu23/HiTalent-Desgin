@@ -5,13 +5,11 @@ import React, {
   forwardRef,
   memo,
   useCallback,
-  useContext,
   useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import { ConfigContext } from '../../configProvider/context';
 import { useLocale } from '../../configProvider/useLocale';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
 import { isNullOrBlank, setRef } from '../../util';
@@ -69,6 +67,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     extra,
     closable,
     closeIcon,
+    maskClosable,
     destroyOnClose,
     destroyOnHidden,
     onClose,
@@ -82,21 +81,21 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
   } = props;
 
   const prefixCls = usePrefixCls('drawer', customPrefixCls);
-  const { antdPrefixCls } = useContext(ConfigContext);
   const drawerLocale = useLocale('Drawer');
+
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [manualSizes, setManualSizes] = useState<ManualSizes>({});
   const { isMinimized, minimize, restore, reset } = useMinimizeState({
     minimized: controlledMinimized,
     onMinimizeChange,
   });
-  const { wrapSSR, hashId } = useStyle(prefixCls, antdPrefixCls);
+  const { wrapSSR, hashId } = useStyle(prefixCls);
   const namespace = useResolvedComponentNamespace(
     'drawer',
     customPrefixCls,
     hashId,
   );
-  const { element: e, elementModifier: em } = namespace;
+  const { e, em } = namespace;
 
   const axis = getDrawerAxis(placement);
   const legacySize = axis === 'horizontal' ? width : height;
@@ -305,6 +304,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
         extra={mergedExtra}
         closable={mergedClosable}
         closeIcon={closeIcon}
+        maskClosable={maskClosable}
         destroyOnClose={isMinimized ? false : destroyOnClose}
         destroyOnHidden={isMinimized ? false : destroyOnHidden}
         onClose={handleClose}

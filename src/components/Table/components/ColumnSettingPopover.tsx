@@ -27,7 +27,7 @@ function ColumnSettingPopover<RecordType = Record<string, unknown>>(
     title: titleProp,
   } = props;
   const namespace = useComponentNamespace();
-  const { prefixCls, element: e } = namespace;
+  const { prefixCls, e } = namespace;
   const {
     hashId: resolvedHashId,
     classNames,

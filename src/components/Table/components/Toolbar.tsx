@@ -28,7 +28,7 @@ function Toolbar<RecordType = Record<string, unknown>>(
     columnSettingLoading,
   } = props;
   const namespace = useComponentNamespace();
-  const e = namespace.element;
+  const { e } = namespace;
   const { hashId, classNames, styles } = useContext(TableContext);
 
   if (!showColumnSetting && !toolbarExtra) return null;

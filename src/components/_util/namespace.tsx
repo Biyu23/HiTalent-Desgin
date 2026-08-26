@@ -1,14 +1,23 @@
+import type { ClassValue } from 'clsx';
+import clsx from 'clsx';
 import React, { createContext, useContext, useMemo } from 'react';
-import { ConfigContext } from '../../configProvider';
+import { useConfig } from '../../configProvider';
+import {
+  useAntdPrefixCls,
+  usePrefixCls,
+} from '../../configProvider/usePrefixCls';
 
 export interface ComponentNamespace {
   rootPrefixCls: string;
   prefixCls: string;
   antdPrefixCls: string;
   hashId: string;
-  element: (name: string) => string;
-  modifier: (name: string) => string;
-  elementModifier: (element: string, modifier: string) => string;
+  b: (blockSuffix?: string) => string;
+  e: (element: string) => string;
+  m: (modifier: string) => string;
+  em: (element: string, modifier: string) => string;
+  is: (name: string, state?: boolean) => string;
+  cls: (...args: ClassValue[]) => string;
 }
 
 const NamespaceContext = createContext<ComponentNamespace | null>(null);
@@ -31,23 +40,26 @@ export function useResolvedComponentNamespace(
   customPrefixCls: string | undefined,
   hashId: string,
 ): ComponentNamespace {
-  const config = useContext(ConfigContext);
-  const prefixCls = config.getPrefixCls(component, customPrefixCls);
-  const antdPrefixCls = config.antdPrefixCls || 'ant';
+  const config = useConfig();
+  const prefixCls = usePrefixCls(component, customPrefixCls);
+  const antdPrefixCls = useAntdPrefixCls();
 
-  return useMemo(
-    () => ({
+  return useMemo(() => {
+    return {
       rootPrefixCls: config.prefixCls,
       prefixCls,
       antdPrefixCls,
       hashId,
-      element: (name: string) => `${prefixCls}-${name}`,
-      modifier: (name: string) => `${prefixCls}-${name}`,
-      elementModifier: (element: string, modifier: string) =>
-        `${prefixCls}-${element}-${modifier}`,
-    }),
-    [antdPrefixCls, config.prefixCls, hashId, prefixCls],
-  );
+      b: (blockSuffix?: string) =>
+        blockSuffix ? `${prefixCls}-${blockSuffix}` : prefixCls,
+      e: (element: string) => (element ? `${prefixCls}-${element}` : ''),
+      m: (modifier: string) => (modifier ? `${prefixCls}-${modifier}` : ''),
+      em: (element: string, modifier: string) =>
+        element && modifier ? `${prefixCls}-${element}-${modifier}` : '',
+      is: (name: string, state = true) => (name && state ? `is-${name}` : ''),
+      cls: (...args: ClassValue[]) => clsx(prefixCls, ...args),
+    };
+  }, [antdPrefixCls, config.prefixCls, hashId, prefixCls]);
 }
 
 export function useComponentNamespace(): ComponentNamespace {

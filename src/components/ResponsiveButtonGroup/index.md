@@ -16,50 +16,48 @@ toc: content
 
 ## 代码演示
 
-<code src="./demo/basic.tsx" title="响应式按钮组综合演示" description="拖动滑块体验容器自适应、优先级排版、异步 Loading 状态保持与模式切换。"></code>
+<code src="./demo/basic.tsx" title="自适应排版与模式" description="体验容器宽度自适应、优先级排版、最小平铺保留数与异步 Promise Loading 保持状态。"></code>
 
-<code src="./demo/semantic-styles.tsx" title="语义化样式" description="定制可见区、溢出触发器、菜单 Portal 与菜单项插槽。"></code>
+<code src="./demo/custom-overflow.tsx" title="自定义溢出菜单与状态监听" description="自定义“更多”按钮图标、文案、折叠项渲染及平铺/折叠状态变化监听。"></code>
 
 ## API
 
+除下表属性外，组件同时支持 `className`、`style`、`rootClassName` 等原生属性。
+
 ### ResponsiveButtonGroupProps
 
-| 属性                    | 说明                                     | 类型                                        | 默认值                 |
-| ----------------------- | ---------------------------------------- | ------------------------------------------- | ---------------------- |
-| `items`                 | 操作项列表                               | `readonly ResponsiveButtonGroupItem[]`      | -                      |
-| `mode`                  | 展示模式（自适应 / 强制平铺 / 强制折叠） | `'responsive' \| 'expanded' \| 'collapsed'` | `'responsive'`         |
-| `minVisibleCount`       | 最少保留的平铺按钮数（不含“更多”）       | `number`                                    | `0`                    |
-| `gap`                   | 按钮间距（px）                           | `number`                                    | `8`                    |
-| `buttonProps`           | 所有平铺按钮的统一属性                   | `ResponsiveButtonGroupButtonProps`          | -                      |
-| `overflowLabel`         | “更多”按钮自定义文案                     | `ReactNode`                                 | locale 文案            |
-| `overflowIcon`          | “更多”按钮图标                           | `ReactNode`                                 | `<EllipsisOutlined />` |
-| `showOverflowCount`     | 是否在“更多”按钮上显示折叠项数量         | `boolean`                                   | `true`                 |
-| `overflowButtonProps`   | “更多”触发器按钮属性                     | `ButtonProps`                               | -                      |
-| `overflowDropdownProps` | 透传给 Dropdown 的属性                   | `DropdownProps`                             | -                      |
-| `overflowMenuProps`     | 透传给 Menu 的属性                       | `MenuProps`                                 | -                      |
-| `renderOverflowButton`  | 自定义“更多”按钮渲染                     | `(info) => ReactNode`                       | -                      |
-| `onItemClick`           | 操作点击统一触发回调                     | `(info) => void \| Promise<unknown>`        | -                      |
-| `onActionError`         | 异步操作失败回调                         | `(error, info) => void`                     | -                      |
-| `onVisibleChange`       | 平铺与折叠项集合变化时的回调             | `(visibleKeys, collapsedKeys) => void`      | -                      |
+| 属性                    | 说明                                                                             | 类型                                                                 | 默认值                 |
+| ----------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ---------------------- |
+| `items`                 | 操作项列表数据源                                                                 | `readonly ResponsiveButtonGroupItem[]`                               | -                      |
+| `mode`                  | 展示模式（自适应 / 强制平铺 / 强制折叠）                                         | `'responsive' \| 'expanded' \| 'collapsed'`                          | `'responsive'`         |
+| `minVisibleCount`       | 必须保持平铺的最少按钮数（不包含“更多”按钮）                                     | `number`                                                             | `0`                    |
+| `gap`                   | 按钮之间的间距，单位为像素                                                       | `number`                                                             | `8`                    |
+| `buttonProps`           | 所有平铺按钮共享的统一属性配置                                                   | `ResponsiveButtonGroupButtonProps`                                   | -                      |
+| `overflowLabel`         | “更多”触发器按钮自定义展示文案                                                   | `ReactNode`                                                          | locale 文案            |
+| `overflowIcon`          | “更多”触发器按钮自定义图标                                                       | `ReactNode`                                                          | `<EllipsisOutlined />` |
+| `showOverflowCount`     | 是否在“更多”按钮上显示当前已折叠的项目数量                                       | `boolean`                                                            | `true`                 |
+| `overflowButtonProps`   | 透传给“更多”触发器 Button 的属性配置                                             | `ButtonProps`                                                        | -                      |
+| `overflowDropdownProps` | 透传给溢出 Dropdown 的属性配置                                                   | `DropdownProps`                                                      | -                      |
+| `overflowMenuProps`     | 透传给溢出 Menu 的属性配置                                                       | `MenuProps`                                                          | -                      |
+| `renderOverflowButton`  | 自定义“更多”触发器按钮的渲染函数                                                 | `(info: ResponsiveButtonGroupOverflowRenderInfo) => ReactNode`       | -                      |
+| `onItemClick`           | 所有操作项的统一点击回调，返回 Promise 时自动保持 Loading 状态                   | `(info: ResponsiveButtonGroupClickInfo) => void \| Promise<unknown>` | -                      |
+| `onActionError`         | 异步操作执行出错时的回调                                                         | `(error: unknown, info: ResponsiveButtonGroupClickInfo) => void`     | -                      |
+| `onVisibleChange`       | 平铺项与折叠项集合发生变化时的回调                                               | `(visibleKeys: string[], collapsedKeys: string[]) => void`           | -                      |
+| `classNames`            | 语义化类名插槽（支持 `root`、`visible`、`overflowTrigger`、`popup`、`menuItem`） | `ResponsiveButtonGroupClassNames`                                    | -                      |
+| `styles`                | 语义化样式插槽（支持 `root`、`visible`、`overflowTrigger`、`popup`）             | `ResponsiveButtonGroupStyles`                                        | -                      |
 
 ### ResponsiveButtonGroupItem
 
-| 属性                  | 说明                                                     | 类型                                 | 默认值  |
-| --------------------- | -------------------------------------------------------- | ------------------------------------ | ------- |
-| `key`                 | 唯一字符串标识                                           | `string`                             | -       |
-| `label`               | 按钮及菜单项文案                                         | `ReactNode`                          | -       |
-| `icon`                | 按钮及菜单项图标                                         | `ReactNode`                          | -       |
-| `priority`            | 收起优先级，数值越小越早收起                             | `number`                             | `0`     |
-| `disabled`            | 是否禁用                                                 | `boolean`                            | `false` |
-| `danger`              | 是否为危险操作                                           | `boolean`                            | `false` |
-| `loading`             | 是否处于加载中（受控）                                   | `boolean`                            | `false` |
-| `tooltip`             | 提示气泡，平铺与折叠菜单均生效                           | `ButtonProps['tooltip']`             | -       |
-| `buttonProps`         | 单项独立 Button 属性                                     | `ResponsiveButtonGroupButtonProps`   | -       |
-| `renderCollapsedItem` | 自定义折叠菜单项内容                                     | `(info) => ReactNode`                | -       |
-| `onClick`             | 点击回调，返回 Promise 时自动开启 Loading 并延迟收起面板 | `(info) => void \| Promise<unknown>` | -       |
-
-## 语义化样式
-
-组件项的 `key` 必须是唯一字符串。`classNames` 支持 `root`、`visible`、`overflowTrigger`、`popup`、`menuItem`；`styles` 仅支持主要节点 `root`、`visible`、`overflowTrigger`、`popup`。`rootClassName` 作用于组件根边界，`popup` 对应溢出菜单 Portal 根节点。
-
-响应式测量只渲染每个按钮一次，并额外测量一个候选溢出按钮；不会为所有折叠数量渲染隐藏组合。
+| 属性                  | 说明                                                                 | 类型                                                                 | 默认值  |
+| --------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------- | ------- |
+| `key`                 | 唯一字符串标识                                                       | `string`                                                             | -       |
+| `label`               | 按钮及菜单项展示文案                                                 | `ReactNode`                                                          | -       |
+| `icon`                | 按钮及菜单项图标                                                     | `ReactNode`                                                          | -       |
+| `priority`            | 收起优先级，数值越小越早收起；相同权重时根据位置从后往前依次收起     | `number`                                                             | `0`     |
+| `disabled`            | 是否禁用该项                                                         | `boolean`                                                            | `false` |
+| `danger`              | 是否为危险操作项                                                     | `boolean`                                                            | `false` |
+| `loading`             | 是否处于加载中（受控）                                               | `boolean`                                                            | `false` |
+| `tooltip`             | 提示气泡，平铺按钮与折叠菜单项均生效                                 | `ButtonProps['tooltip']`                                             | -       |
+| `buttonProps`         | 单项独立的 Button 属性配置                                           | `ResponsiveButtonGroupButtonProps`                                   | -       |
+| `renderCollapsedItem` | 自定义折叠至下拉菜单时的单项渲染                                     | `(info: ResponsiveButtonGroupRenderInfo) => ReactNode`               | -       |
+| `onClick`             | 点击回调，返回 Promise 时自动保持 Loading 状态并在完成后自动收起面板 | `(info: ResponsiveButtonGroupClickInfo) => void \| Promise<unknown>` | -       |

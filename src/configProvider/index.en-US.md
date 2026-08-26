@@ -6,11 +6,12 @@ toc: content
 
 # ConfigProvider
 
-Uses React Context to provide a shared CSS prefix, Ant Design prefix coordination, locale package, scoped messages, and text direction to HiTalent Design components.
+Uses React Context to provide a shared CSS prefix, Ant Design prefix coordination, theme customization (Theme Token), locale package, scoped messages, and text direction to HiTalent Design components.
 
 ## When to use
 
-- The application needs to switch the component locale from one place.
+- The application needs to switch the component locale from one place, including underlying Ant Design components.
+- Need to customize Ant Design 5 primary color, border radius, dark algorithm, or Design Tokens.
 - The default `htd` prefix conflicts with an existing style system, or microfrontend style isolation (qiankun / Module Federation) is needed.
 - Need to coordinate class prefixes for both custom components and underlying Ant Design components.
 - A workflow region needs scoped copy or RTL.
@@ -20,15 +21,19 @@ Uses React Context to provide a shared CSS prefix, Ant Design prefix coordinatio
 
 - `prefixCls` changes the shared HiTalent Design component class prefix.
 - `antdPrefixCls` and `iconPrefixCls` forward to Ant Design ConfigProvider for underlying component prefix isolation.
-- `usePrefixCls` and `useNamespace` provide structured class generators (`b()`, `e()`, `m()`, `em()`, `cls()`).
+- `theme` natively supports Ant Design 5 Design Tokens and theme algorithms (Dark mode, Compact mode, etc.).
+- `usePrefixCls`, `useAntdPrefixCls`, and `useConfig` provide simple and robust access to prefixes and configuration.
 - `locale` accepts `zh_CN`, `en_US`, or a complete custom locale.
-- `localeOverrides` replaces messages only for selected components.
-- Nested providers merge with surrounding configuration.
+- `antdLocale` forwards to underlying Ant Design components for synced i18n.
+- `localeOverrides` replaces messages only for selected components (with deep merge and default fallback).
+- Nested providers merge with surrounding configuration (supports `inherit: false` for full isolation).
 - `direction` supports `ltr` and `rtl`.
 
 ## Demos
 
 <code src="./demo/basic.tsx" title="Basic Configuration & Prefix Coordination" description="Set prefixCls and antdPrefixCls to coordinate prefixes across custom and Ant Design components."></code>
+
+<code src="./demo/theme.tsx" title="Theme & Token Customization" description="Configure Design Tokens via the theme prop; custom components and underlying Antd components react dynamically."></code>
 
 <code src="./demo/custom-locale.tsx" title="Locale, Overrides, and RTL" description="Pass a complete locale, inherit it through nested providers, then override selected copy or change direction."></code>
 
@@ -36,78 +41,52 @@ Uses React Context to provide a shared CSS prefix, Ant Design prefix coordinatio
 
 ## API
 
-| Property          | Description                                       | Type              | Default                 |
-| ----------------- | ------------------------------------------------- | ----------------- | ----------------------- |
-| `prefixCls`       | Class prefix for HiTalent Design components       | `string`          | `htd`                   |
-| `antdPrefixCls`   | Class prefix for underlying Ant Design components | `string`          | `ant`                   |
-| `iconPrefixCls`   | Class prefix for icons                            | `string`          | `anticon`               |
-| `locale`          | Complete component locale package                 | `HtdLocale`       | `zh_CN`                 |
-| `localeOverrides` | Component-level copy merged onto the locale       | `LocaleOverrides` | -                       |
-| `direction`       | Text and layout direction                         | `ltr \| rtl`      | inherited from `locale` |
-| `children`        | Descendants that consume this configuration       | `ReactNode`       | -                       |
+| Property          | Description                                                                   | Type              | Default                 |
+| ----------------- | ----------------------------------------------------------------------------- | ----------------- | ----------------------- |
+| `prefixCls`       | Class prefix for HiTalent Design components                                   | `string`          | `htd`                   |
+| `antdPrefixCls`   | Class prefix for underlying Ant Design components                             | `string`          | `ant`                   |
+| `iconPrefixCls`   | Class prefix for icons                                                        | `string`          | `anticon`               |
+| `theme`           | Ant Design 5 theme config (Tokens, algorithms, component tokens, deep merged) | `ThemeConfig`     | -                       |
+| `locale`          | Complete component locale package                                             | `HtdLocale`       | `zh_CN`                 |
+| `antdLocale`      | Underlying Ant Design locale package                                          | `Locale`          | -                       |
+| `localeOverrides` | Component-level copy merged onto the locale                                   | `LocaleOverrides` | -                       |
+| `direction`       | Text and layout direction                                                     | `ltr \| rtl`      | inherited from `locale` |
+| `children`        | Descendants that consume this configuration                                   | `ReactNode`       | -                       |
+
+> `ConfigProvider` also inherits all configuration properties from Ant Design 5's native `ConfigProvider` (such as `componentSize`, `getPopupContainer`, `wave`, etc.) and forwards them directly to child components.
 
 ## Hooks
 
-- `usePrefixCls(suffixCls?: string, customPrefix?: string): string`: Returns the resolved class prefix string.
-- `useNamespace(suffixCls?: string, customPrefix?: string): UseNamespaceResult`: Returns a namespace generator object (`b()`, `e()`, `m()`, `em()`, `cls()`).
+- `useConfig(): ConfigContextValue`: Returns the full active global configuration object.
+- `usePrefixCls(suffixCls?: string, customPrefix?: string): string`: Returns the resolved HiTalent Design class prefix string.
+- `useAntdPrefixCls(customAntdPrefix?: string): string`: Returns the resolved underlying Ant Design class prefix string.
+- `useLocale(componentName: keyof LocaleComponentMap, customLocale?: Partial<ComponentLocale>)`: Returns the current locale copy object for the specified component (with automatic Chinese fallback and instance-level override support).
 
-## How to Customize Prefix (e.g. changing `htd` to `myApp`)
+## How to Customize Prefix and Theme
 
-If a project needs to customize the class and CSS variable prefixes to `myApp` (e.g. for micro-frontend style isolation), only **two steps** are needed:
-
-### Step 1: Wrap ConfigProvider in React Root
+Because HiTalent Design deeply integrates **Ant Design 5 CSS-in-JS**, **no pre-compiled Less variable configuration is required in Webpack / Vite**. All class prefixes and Design Tokens are dynamically generated at runtime:
 
 ```tsx | pure
-import { ConfigProvider } from 'hi-talent-design';
+import { ConfigProvider, zh_CN } from 'hi-talent-design';
+import antdZhCN from 'antd/locale/zh_CN';
+import App from './App';
 
 export default () => (
-  <ConfigProvider prefixCls="myApp">
+  <ConfigProvider
+    prefixCls="myApp"
+    antdPrefixCls="myAnt"
+    locale={zh_CN}
+    antdLocale={antdZhCN}
+    theme={{
+      token: {
+        colorPrimary: '#1677ff',
+        borderRadius: 6,
+      },
+    }}
+  >
     <App />
   </ConfigProvider>
 );
-```
-
-### Step 2: Configure `@custom-prefix` in the Build Tool
-
-- **Vite (`vite.config.ts`)**:
-
-```ts
-export default defineConfig({
-  css: {
-    preprocessorOptions: {
-      less: {
-        modifyVars: {
-          'custom-prefix': 'myApp',
-        },
-        javascriptEnabled: true,
-      },
-    },
-  },
-});
-```
-
-- **Webpack / CRA / Vue CLI (`webpack.config.js` / `craco.config.js`)**:
-
-```js
-module.exports = {
-  // ...
-  lessOptions: {
-    modifyVars: {
-      'custom-prefix': 'myApp',
-    },
-    javascriptEnabled: true,
-  },
-};
-```
-
-- **Umi / Dumi (`.umirc.ts`)**:
-
-```ts
-export default {
-  theme: {
-    'custom-prefix': 'myApp',
-  },
-};
 ```
 
 ---
@@ -115,4 +94,5 @@ export default {
 ## Notes
 
 - `antdPrefixCls` forwards directly to the underlying Ant Design 5 `<ConfigProvider>` to synchronously control Ant Design class names and CSS-in-JS style rendering.
-- `localeOverrides` merges on top of the complete locale, so untouched fields continue to inherit.
+- `theme` deeply merges with outer themes, enabling dynamic color switching and dark mode support; set `inherit: false` for isolated local themes.
+- `localeOverrides` merges deeply on top of the complete locale, so untouched fields continue to inherit.

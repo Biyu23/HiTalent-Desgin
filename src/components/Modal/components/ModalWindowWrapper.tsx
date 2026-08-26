@@ -30,8 +30,9 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
     styles,
   } = useModalWindow();
   const namespace = useComponentNamespace();
-  const e = namespace.element;
+  const { e } = namespace;
   const dragRef = useRef<HTMLDivElement>(null);
+
   const modalContentRef = useRef<HTMLElement | null>(null);
   const [modalContent, setModalContent] = useState<HTMLElement | null>(null);
   const resizeActive = !!resizable && !!open && !isMaximized && !isMinimized;

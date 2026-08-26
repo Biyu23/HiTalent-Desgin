@@ -4,11 +4,9 @@ import React, {
   forwardRef,
   memo,
   useCallback,
-  useContext,
   useImperativeHandle,
   useMemo,
 } from 'react';
-import { ConfigContext } from '../../configProvider/context';
 import { useLocale } from '../../configProvider/useLocale';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
 import MinimizedDock from '../_util/minimize/MinimizedDock';
@@ -53,6 +51,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     styles,
     style,
     centered = false,
+    maskClosable,
     children,
     onCancel,
     modalRender,
@@ -63,15 +62,15 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   } = props;
 
   const prefixCls = usePrefixCls('modal', customPrefixCls);
-  const { antdPrefixCls } = useContext(ConfigContext);
   const modalLocale = useLocale('Modal');
-  const { wrapSSR, hashId } = useStyle(prefixCls, antdPrefixCls);
+  const { wrapSSR, hashId } = useStyle(prefixCls);
+
   const namespace = useResolvedComponentNamespace(
     'modal',
     customPrefixCls,
     hashId,
   );
-  const { element: e, modifier: m, elementModifier: em } = namespace;
+  const { e, m, em } = namespace;
 
   const minimizedDockClassName = classNames?.minimizedDock;
   const minimizedDockStyle = styles?.minimizedDock;
@@ -282,6 +281,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
         <ModalWindowContext.Provider value={windowValue}>
           <AntdModal
             {...restProps}
+            maskClosable={maskClosable}
             rootClassName={clsx(prefixCls, hashId, rootClassName)}
             classNames={antdClassNames}
             destroyOnClose={resolvedDestroyOnClose}
