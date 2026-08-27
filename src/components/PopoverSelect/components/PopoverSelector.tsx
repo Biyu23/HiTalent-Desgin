@@ -1,6 +1,7 @@
 import { CloseCircleOutlined, DownOutlined } from '@ant-design/icons';
 import { Button, Popover } from 'antd';
 import React, { forwardRef } from 'react';
+import { usePrefixCls } from '../../../configProvider';
 import { useMergeState } from '../../../hooks';
 import { useStyles } from '../style';
 import type { SelectorProps } from '../type';
@@ -12,7 +13,8 @@ export const Selector = forwardRef<
   React.ComponentRef<typeof Button>,
   SelectorProps
 >((props, ref) => {
-  const { styles: selectStyles, cx } = useStyles();
+  const prefixCls = usePrefixCls('popover-select', props.prefixCls);
+  const { styles: selectStyles, cx } = useStyles(prefixCls);
   const {
     content,
     autoAdjustOverflow = true,

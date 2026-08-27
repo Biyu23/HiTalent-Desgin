@@ -317,6 +317,10 @@ export type PopoverSelectProps<
 /** PopoverSelect.Selector 独立触发器组件属性 */
 export interface SelectorProps extends Omit<NativeProps, 'children'> {
   /**
+   * @description 类名前缀
+   */
+  prefixCls?: string;
+  /**
    * @description 气泡框内部承载的内容或渲染函数
    */
   content: React.ReactNode | (() => React.ReactNode);

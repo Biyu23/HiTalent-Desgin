@@ -257,6 +257,7 @@ function InternalPopoverSelect<
 
   const content = (
     <PopoverSelectContent
+      prefixCls={resolvedPrefixCls}
       options={options}
       displayOptions={displayOptions}
       selectedValues={targetValues}
@@ -292,6 +293,7 @@ function InternalPopoverSelect<
       style={{ ...styles?.root, ...style }}
     >
       <Selector
+        prefixCls={resolvedPrefixCls}
         autoAdjustOverflow={props.autoAdjustOverflow}
         afterOpenChange={props.afterOpenChange}
         placement={props.placement}

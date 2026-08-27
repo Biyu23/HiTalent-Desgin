@@ -4,7 +4,6 @@ import { useAntdPrefixCls } from '../../../configProvider/usePrefixCls';
 import DraggablePointerContainer from '../../_util/DraggablePointerContainer';
 import { useModalWindow } from '../contexts';
 import { useModalPointerResize } from '../hooks/useModalPointerResize';
-import { useStyles } from '../style';
 import ModalResizeHandle from './ModalResizeHandle';
 
 export interface ModalWindowWrapperProps {
@@ -27,7 +26,6 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
     styles,
   } = useModalWindow();
   const antdPrefixCls = useAntdPrefixCls();
-  const { styles: modalStyles } = useStyles();
   const dragRef = useRef<HTMLDivElement>(null);
 
   const modalContentRef = useRef<HTMLElement | null>(null);
@@ -61,7 +59,7 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
     setWindowPosition(pos);
   };
 
-  const handleSelector = `.${modalStyles.header}, .${antdPrefixCls}-modal-footer`;
+  const handleSelector = `.${antdPrefixCls}-modal-header, .${antdPrefixCls}-modal-footer`;
   const cancelSelector =
     '[data-modal-no-drag], button, a, input, textarea, select, [contenteditable]';
 

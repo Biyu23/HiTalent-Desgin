@@ -3,6 +3,7 @@ import type { CheckboxChangeEvent } from 'antd';
 import { Checkbox, Empty, Input, Space } from 'antd';
 import VirtualList from 'rc-virtual-list';
 import React, { useCallback, useMemo } from 'react';
+import { usePrefixCls } from '../../../configProvider';
 import type { PopoverSelectLocale } from '../../../locales';
 import { useStyles } from '../style';
 import type { MappedOption, PopoverSelectProps, RawValueType } from '../type';
@@ -11,6 +12,7 @@ export interface PopoverSelectContentProps<
   ValueType extends RawValueType,
   OptionType extends object,
 > {
+  prefixCls?: string;
   options: Array<MappedOption<ValueType, OptionType>>;
   displayOptions: Array<MappedOption<ValueType, OptionType>>;
   selectedValues: ValueType[];
@@ -36,7 +38,8 @@ export function PopoverSelectContent<
   ValueType extends RawValueType,
   OptionType extends object,
 >(props: PopoverSelectContentProps<ValueType, OptionType>) {
-  const { styles: popoverStyles, cx } = useStyles();
+  const prefixCls = usePrefixCls('popover-select', props.prefixCls);
+  const { styles: popoverStyles, cx } = useStyles(prefixCls);
   const {
     options,
     displayOptions,
