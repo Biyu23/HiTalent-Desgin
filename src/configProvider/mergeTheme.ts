@@ -1,5 +1,5 @@
 import type { ThemeConfig } from 'antd';
-import { isPlainObject } from '../util';
+import { isPlainObject } from '../utils';
 
 /**
  * 深度安全合并普通对象

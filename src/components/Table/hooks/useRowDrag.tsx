@@ -26,7 +26,6 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import clsx from 'clsx';
 import React, {
   useCallback,
   useContext,
@@ -36,8 +35,8 @@ import React, {
 } from 'react';
 import ReactDOM from 'react-dom';
 import { useLocale } from '../../../configProvider/useLocale';
-import { isNullOrBlank } from '../../../util';
-import { useComponentNamespace } from '../../_util/namespace';
+import { isNullOrBlank } from '../../../utils';
+import { useStyles } from '../style';
 import TableContext from '../TableContext';
 import type { RowDragConfig, RowDragResult } from '../type';
 import type { RowKeyGetter, RowRegistry } from '../types/internal';
@@ -54,7 +53,6 @@ interface RowDragHandleContextValue {
   setActivatorNodeRef: (node: HTMLElement | null) => void;
   dragHandleLabel: string;
   draggable: boolean;
-  hashId?: string;
 }
 
 const RowDragHandleContext =
@@ -66,8 +64,9 @@ function stopRowEvent(event: React.SyntheticEvent) {
 
 export const RowDragHandle: React.FC = () => {
   const context = useContext(RowDragHandleContext);
-  const { e, em } = useComponentNamespace();
   const tableContext = useContext(TableContext);
+  const { styles: tableStyles, cx } = useStyles();
+
   if (!context) return null;
   const {
     attributes,
@@ -75,12 +74,11 @@ export const RowDragHandle: React.FC = () => {
     setActivatorNodeRef,
     dragHandleLabel,
     draggable,
-    hashId,
   } = context;
 
   return (
     <div
-      className={clsx(e('row-drag-handle-wrapper'), hashId)}
+      className={tableStyles.rowDragHandleWrapper}
       onPointerDown={stopRowEvent}
       onClick={stopRowEvent}
       onDoubleClick={stopRowEvent}
@@ -88,13 +86,10 @@ export const RowDragHandle: React.FC = () => {
     >
       <span
         ref={draggable ? setActivatorNodeRef : undefined}
-        className={clsx(
-          e('row-drag-handle'),
-          hashId,
+        className={cx(
+          tableStyles.rowDragHandle,
+          !draggable && tableStyles.rowDragHandleDisabled,
           tableContext.classNames?.rowDragHandle,
-          {
-            [em('row-drag-handle', 'disabled')]: !draggable,
-          },
         )}
         aria-label={dragHandleLabel}
         {...(draggable ? listeners : undefined)}
@@ -151,10 +146,10 @@ const SortableRow: React.FC<SortableRowProps> = ({
   const candidate = dragState.candidate;
   const treeMode = dragState.treeMode;
   const isTarget = candidate?.targetKey === id;
-  const { e } = useComponentNamespace();
-  const { hashId } = useContext(TableContext);
   const dropClass =
-    isTarget && treeMode ? e(`row-drag-over-${candidate.position}`) : undefined;
+    isTarget && treeMode && candidate
+      ? `row-drag-over-${candidate.position}`
+      : undefined;
 
   const handleContextValue = useMemo(
     () => ({
@@ -163,16 +158,8 @@ const SortableRow: React.FC<SortableRowProps> = ({
       setActivatorNodeRef,
       dragHandleLabel,
       draggable,
-      hashId,
     }),
-    [
-      attributes,
-      listeners,
-      setActivatorNodeRef,
-      dragHandleLabel,
-      draggable,
-      hashId,
-    ],
+    [attributes, listeners, setActivatorNodeRef, dragHandleLabel, draggable],
   );
 
   return (
@@ -186,9 +173,7 @@ const SortableRow: React.FC<SortableRowProps> = ({
           transition,
           ...(isDragging ? { opacity: treeMode ? 0.3 : 0, zIndex: 9999 } : {}),
         }}
-        className={[rowProps.className, dropClass, hashId]
-          .filter(Boolean)
-          .join(' ')}
+        className={[rowProps.className, dropClass].filter(Boolean).join(' ')}
       >
         {rowProps.children}
       </tr>
@@ -221,9 +206,10 @@ const InternalRowDragContext = <RecordType,>({
   sensors,
   contextId,
 }: InternalRowDragContextProps<RecordType>) => {
-  const { e } = useComponentNamespace();
-
-  const { hashId, classNames, styles } = useContext(TableContext);
+  const context = useContext(TableContext);
+  const prefixCls = context.prefixCls || 'htd-table';
+  const { styles: tableStyles, cx } = useStyles(prefixCls);
+  const { classNames, styles } = context;
   const [activeKey, setActiveKey] = useState<React.Key | null>(null);
   const [candidate, setCandidate] = useState<RowDragResult<RecordType> | null>(
     null,
@@ -332,9 +318,9 @@ const InternalRowDragContext = <RecordType,>({
             }}
           >
             <div
-              className={clsx(
-                e('drag-overlay'),
-                hashId,
+              className={cx(
+                tableStyles.dragOverlay,
+                `${prefixCls}-drag-overlay`,
                 classNames?.dragOverlay,
               )}
               style={styles?.dragOverlay}

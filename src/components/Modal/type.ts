@@ -9,6 +9,10 @@ export type { MinimizePosition } from '../_util/minimize/type';
  */
 export interface ModalRef {
   /**
+   * @description 底层 DOM 容器节点
+   */
+  nativeElement: HTMLDivElement | null;
+  /**
    * @description 恢复最小化的弹窗
    */
   restore: () => void;

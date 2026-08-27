@@ -1,6 +1,5 @@
-import clsx from 'clsx';
 import React, { memo, useContext } from 'react';
-import { useComponentNamespace } from '../../_util/namespace';
+import { useStyles } from '../style';
 import TableContext from '../TableContext';
 
 interface ResizeHandleProps {
@@ -12,18 +11,15 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({
   isResizing,
   onPointerDown,
 }) => {
-  const namespace = useComponentNamespace();
   const context = useContext(TableContext);
-  const { e, em } = namespace;
+  const { styles, cx } = useStyles();
+
   return (
     <div
-      className={clsx(
-        e('resize-handle'),
-        namespace.hashId,
+      className={cx(
+        styles.resizeHandle,
+        isResizing && styles.resizeHandleActive,
         context.classNames?.resizeHandle,
-        {
-          [em('resize-handle', 'active')]: isResizing,
-        },
       )}
       onPointerDown={onPointerDown}
       onClick={(e) => e.stopPropagation()}

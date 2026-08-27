@@ -25,7 +25,6 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import clsx from 'clsx';
 import React, {
   useCallback,
   useContext,
@@ -37,7 +36,7 @@ import React, {
 } from 'react';
 import ReactDOM from 'react-dom';
 import { useLocale } from '../../../configProvider/useLocale';
-import { useComponentNamespace } from '../../_util/namespace';
+import { useStyles } from '../style';
 import TableContext from '../TableContext';
 import type { ColumnId } from '../type';
 import { moveColumnItem } from '../utils/columnDrag';
@@ -110,15 +109,14 @@ const SortableHeaderItem: React.FC<SortableHeaderItemProps> = ({
     };
   }, [transformValue, transition, isDragging, rootRef, tableId, token]);
 
-  const { e } = useComponentNamespace();
-  const { hashId } = useContext(TableContext);
+  const { styles: tableStyles } = useStyles();
 
   return (
     <div
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      className={clsx(e('drag-container'), hashId)}
+      className={tableStyles.dragContainer}
       style={{
         transform: transformValue,
         transition,
@@ -159,9 +157,10 @@ const InternalColumnDragContext: React.FC<InternalColumnDragContextProps> = ({
   sensors,
   contextId,
 }) => {
-  const { e } = useComponentNamespace();
-
-  const { hashId, classNames, styles } = useContext(TableContext);
+  const context = useContext(TableContext);
+  const prefixCls = context.prefixCls || 'htd-table';
+  const { styles: tableStyles, cx } = useStyles(prefixCls);
+  const { classNames, styles } = context;
   const [activeId, setActiveId] = useState<ColumnId | null>(null);
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -229,11 +228,7 @@ const InternalColumnDragContext: React.FC<InternalColumnDragContextProps> = ({
             }}
           >
             <div
-              className={clsx(
-                e('drag-overlay'),
-                hashId,
-                classNames?.dragOverlay,
-              )}
+              className={cx(tableStyles.dragOverlay, classNames?.dragOverlay)}
               style={styles?.dragOverlay}
             >
               <table>

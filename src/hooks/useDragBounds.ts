@@ -1,16 +1,11 @@
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
-import type { DraggableData } from 'react-draggable';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-export type DragStartHandler = (
-  event: unknown,
-  data: Pick<DraggableData, 'x' | 'y'>,
-) => void;
+export type DragPosition = {
+  x: number;
+  y: number;
+};
+
+export type DragStartHandler = (event: unknown, data: DragPosition) => void;
 
 export interface StrictDraggableBounds {
   left: number;
@@ -24,10 +19,7 @@ export interface UseDragBoundsReturn {
   bounds: StrictDraggableBounds;
   boundsRef: React.MutableRefObject<StrictDraggableBounds>;
   onStart: DragStartHandler;
-  updateBounds: (currentPos?: {
-    x: number;
-    y: number;
-  }) => StrictDraggableBounds;
+  updateBounds: (currentPos?: DragPosition) => StrictDraggableBounds;
 }
 
 /**
@@ -35,8 +27,12 @@ export interface UseDragBoundsReturn {
  */
 export const computeDragBounds = (
   target: HTMLElement,
-  currentPosition?: { x: number; y: number },
+  currentPosition?: DragPosition,
 ): StrictDraggableBounds => {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return { left: 0, top: 0, right: 0, bottom: 0 };
+  }
+
   const clientWidth = document.documentElement.clientWidth || window.innerWidth;
   const clientHeight =
     document.documentElement.clientHeight || window.innerHeight;
@@ -73,8 +69,7 @@ export const computeDragBounds = (
 /**
  * 计算拖拽节点在当前视口内的移动边界。
  *
- * measureRef 用于包装节点和实际可视节点不一致的场景，例如 Modal 的
- * react-draggable 节点包裹了 Ant Design 的定位层；不传时沿用 dragRef。
+ * measureRef 用于包装节点和实际可视节点不一致的场景，例如 Modal 的定位层；不传时沿用 dragRef。
  */
 const useDragBounds = (
   measureRef?: React.RefObject<HTMLElement>,
@@ -90,7 +85,7 @@ const useDragBounds = (
   boundsRef.current = bounds;
 
   const updateBounds = useCallback(
-    (currentPos?: { x: number; y: number }): StrictDraggableBounds => {
+    (currentPos?: DragPosition): StrictDraggableBounds => {
       const target = measureRef?.current || dragRef.current;
       if (!target) return boundsRef.current;
       const nextBounds = computeDragBounds(target, currentPos);
@@ -108,11 +103,12 @@ const useDragBounds = (
     [updateBounds],
   );
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     updateBounds();
   }, [updateBounds]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const handleResize = () => {
       updateBounds();
     };

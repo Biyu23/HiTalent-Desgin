@@ -1,18 +1,15 @@
-import clsx from 'clsx';
 import React, { memo, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { DraggableData, DraggableEvent } from 'react-draggable';
-import ReactDraggable from 'react-draggable';
-import { useComponentNamespace } from '../../_util/namespace';
+import { useAntdPrefixCls } from '../../../configProvider/usePrefixCls';
+import DraggablePointerContainer from '../../_util/DraggablePointerContainer';
 import { useModalWindow } from '../contexts';
 import { useModalPointerResize } from '../hooks/useModalPointerResize';
+import { useStyles } from '../style';
 import ModalResizeHandle from './ModalResizeHandle';
 
 export interface ModalWindowWrapperProps {
   children: React.ReactNode;
 }
-
-const Draggable = ReactDraggable;
 
 const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
   const {
@@ -29,8 +26,8 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
     classNames,
     styles,
   } = useModalWindow();
-  const namespace = useComponentNamespace();
-  const { e } = namespace;
+  const antdPrefixCls = useAntdPrefixCls();
+  const { styles: modalStyles } = useStyles();
   const dragRef = useRef<HTMLDivElement>(null);
 
   const modalContentRef = useRef<HTMLElement | null>(null);
@@ -38,7 +35,7 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
   const resizeActive = !!resizable && !!open && !isMaximized && !isMinimized;
   const resize = useModalPointerResize({
     modalRef: modalContentRef,
-    antdPrefixCls: namespace.antdPrefixCls,
+    antdPrefixCls,
     resizable,
     active: resizeActive,
     setSize: setWindowSize,
@@ -50,63 +47,46 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
 
   useLayoutEffect(() => {
     const content = dragRef.current?.querySelector<HTMLElement>(
-      `.${namespace.antdPrefixCls}-modal-content`,
+      `.${antdPrefixCls}-modal-content`,
     );
     modalContentRef.current = content || dragRef.current;
     setModalContent((current) =>
       current === (content || null) ? current : content || null,
     );
-  }, [children, namespace.antdPrefixCls, open]);
+  }, [children, antdPrefixCls, open]);
 
   if (!draggable && !resizable) return <>{children}</>;
 
-  const handleDrag = (_event: DraggableEvent, data: DraggableData) => {
-    setWindowPosition({ x: data.x, y: data.y });
+  const handleDrag = (pos: { x: number; y: number }) => {
+    setWindowPosition(pos);
   };
-  const handleSelector = `.${e('header')}, .${
-    namespace.antdPrefixCls
-  }-modal-footer`;
+
+  const handleSelector = `.${modalStyles.header}, .${antdPrefixCls}-modal-footer`;
   const cancelSelector =
     '[data-modal-no-drag], button, a, input, textarea, select, [contenteditable]';
 
-  const handleDragStart = (event: DraggableEvent): false | void => {
-    const target = event.target;
-    if (
-      resize.resizing ||
-      (target instanceof Element && target.closest(cancelSelector))
-    ) {
-      return false;
-    }
-  };
-
   return (
-    <Draggable
+    <DraggablePointerContainer
       disabled={!draggable || isMaximized || isResizing}
       nodeRef={dragRef}
       handle={handleSelector}
       cancel={cancelSelector}
       position={isMaximized ? { x: 0, y: 0 } : windowPosition}
-      onStart={handleDragStart}
       onDrag={handleDrag}
+      data-dragging={draggable && !isMaximized ? 'true' : undefined}
     >
-      <div
-        ref={dragRef}
-        className={clsx(e('window'), namespace.hashId)}
-        data-dragging={draggable && !isMaximized ? 'true' : undefined}
-      >
-        {children}
-        {resizeActive && modalContent
-          ? createPortal(
-              <ModalResizeHandle
-                onPointerDown={resize.onPointerDown}
-                className={classNames?.resizeHandle}
-                style={styles?.resizeHandle}
-              />,
-              modalContent,
-            )
-          : null}
-      </div>
-    </Draggable>
+      {children}
+      {resizeActive && modalContent
+        ? createPortal(
+            <ModalResizeHandle
+              onPointerDown={resize.onPointerDown}
+              className={classNames?.resizeHandle}
+              style={styles?.resizeHandle}
+            />,
+            modalContent,
+          )
+        : null}
+    </DraggablePointerContainer>
   );
 });
 

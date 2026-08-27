@@ -1,9 +1,8 @@
 import { LoadingOutlined, SettingOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Empty, Popover, Spin } from 'antd';
-import clsx from 'clsx';
 import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
 import { useLocale } from '../../../configProvider/useLocale';
-import { useComponentNamespace } from '../../_util/namespace';
+import { useStyles } from '../style';
 import TableContext from '../TableContext';
 import type { ColumnId, EnhancedColumnType } from '../type';
 import { collectColumnMeta } from '../utils/columnHelpers';
@@ -26,12 +25,9 @@ function ColumnSettingPopover<RecordType = Record<string, unknown>>(
     loading = false,
     title: titleProp,
   } = props;
-  const { e } = useComponentNamespace();
-  const {
-    hashId: resolvedHashId,
-    classNames,
-    styles,
-  } = useContext(TableContext);
+  const { styles: tableStyles, cx } = useStyles();
+  const context = useContext(TableContext);
+  const { classNames, styles } = context;
   const locale = useLocale('Table');
   const [open, setOpen] = useState(false);
   const [checkValue, setCheckValue] = useState<ColumnId[]>([...visibleIds]);
@@ -69,12 +65,9 @@ function ColumnSettingPopover<RecordType = Record<string, unknown>>(
     if (!optionsList.length) return <Empty />;
 
     const listContent = (
-      <div className={clsx(e('column-setting-list'), resolvedHashId)}>
+      <div className={tableStyles.columnSettingList}>
         {optionsList.map((item) => (
-          <div
-            key={item.id}
-            className={clsx(e('column-setting-item'), resolvedHashId)}
-          >
+          <div key={item.id} className={tableStyles.columnSettingItem}>
             <Checkbox
               checked={item.disabled || checkValue.includes(item.id)}
               disabled={item.disabled}
@@ -94,7 +87,7 @@ function ColumnSettingPopover<RecordType = Record<string, unknown>>(
     );
 
     const footer = (
-      <div className={clsx(e('column-setting-footer'), resolvedHashId)}>
+      <div className={tableStyles.columnSettingFooter}>
         <Button size="small" onClick={handleCancel}>
           {locale.cancel}
         </Button>
@@ -130,14 +123,13 @@ function ColumnSettingPopover<RecordType = Record<string, unknown>>(
       onOpenChange={setOpen}
       content={renderContent()}
       title={title}
-      rootClassName={clsx(
-        e('column-setting-popover'),
-        resolvedHashId,
+      rootClassName={cx(
+        tableStyles.columnSettingPopover,
         classNames?.settingPopup,
       )}
       styles={{ root: styles?.settingPopup }}
       classNames={{
-        body: clsx(e('column-setting-popover-body'), resolvedHashId),
+        body: tableStyles.columnSettingPopoverBody,
       }}
     >
       <Button

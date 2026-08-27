@@ -1,98 +1,84 @@
 import { CloseOutlined, ExpandOutlined } from '@ant-design/icons';
 import { Button, Flex } from 'antd';
-import clsx from 'clsx';
 import React, { memo, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import ReactDraggable from 'react-draggable';
+import { usePrefixCls } from '../../../configProvider/usePrefixCls';
 import useDragBounds from '../../../hooks/useDragBounds';
-import { useComponentNamespace } from '../namespace';
+import DraggablePointerContainer from '../DraggablePointerContainer';
 import { acquireDockContainer } from './dockRegistry';
-import { useStyle } from './style';
+import { useStyles } from './style';
 import type { MinimizedDockProps } from './type';
 
-const Draggable = ReactDraggable;
-
 const MinimizedDockInner = memo<MinimizedDockProps>(
-  ({ title, position, className, style, locale, onRestore, onClose }) => {
-    const ownerNamespace = useComponentNamespace();
-    const dockPrefixCls = `${ownerNamespace.rootPrefixCls}-minimize`;
-    const e = (element: string) => `${dockPrefixCls}-${element}`;
-    const { wrapSSR, hashId } = useStyle(
-      dockPrefixCls,
-      ownerNamespace.antdPrefixCls,
-    );
-    const { dragRef, bounds, onStart } = useDragBounds();
+  ({
+    title,
+    position: dockPosition,
+    className,
+    style,
+    locale,
+    onRestore,
+    onClose,
+  }) => {
+    const dockPrefixCls = usePrefixCls('minimize');
+    const { styles: dockStyles, cx } = useStyles(dockPrefixCls);
+    const { dragRef, bounds } = useDragBounds();
+    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
     const [scrollWrapperEl, setScrollWrapperEl] = useState<HTMLElement | null>(
       null,
     );
 
     useLayoutEffect(() => {
       const entry = acquireDockContainer({
-        namespace: ownerNamespace.rootPrefixCls,
+        namespace: 'htd',
         dockPrefixCls,
-        hashId: clsx(ownerNamespace.hashId, hashId),
-        position,
+        hashId: '',
+        position: dockPosition,
       });
       setScrollWrapperEl(entry.scrollWrapper);
       return entry.release;
-    }, [
-      dockPrefixCls,
-      hashId,
-      ownerNamespace.hashId,
-      ownerNamespace.rootPrefixCls,
-      position,
-    ]);
+    }, [dockPosition, dockPrefixCls]);
 
     if (!scrollWrapperEl) return null;
 
-    return wrapSSR(
-      createPortal(
-        <Draggable
-          key={`${dockPrefixCls}-${position}`}
-          nodeRef={dragRef}
-          bounds={bounds}
-          onStart={onStart}
-          handle={`.${e('header')}`}
+    return createPortal(
+      <DraggablePointerContainer
+        key={`${dockPrefixCls}-${dockPosition}`}
+        nodeRef={dragRef}
+        bounds={bounds}
+        position={dragOffset}
+        onDrag={setDragOffset}
+        handle={`.${dockStyles.header}`}
+        className={cx(dockStyles.dock, className)}
+        style={style}
+        data-dragging={
+          dragOffset.x !== 0 || dragOffset.y !== 0 ? 'true' : undefined
+        }
+      >
+        <div
+          className={dockStyles.header}
+          role="group"
+          aria-label={locale.minimizedDockDragHandle}
         >
-          <div
-            ref={dragRef}
-            className={clsx(
-              e('dock'),
-              ownerNamespace.hashId,
-              hashId,
-              className,
-            )}
-            style={style}
-            role="group"
-            aria-label={locale.minimizedDockLabel}
-          >
-            <div
-              className={e('header')}
-              role="group"
-              aria-label={locale.minimizedDockDragHandle}
-            >
-              <div className={e('title')}>{title}</div>
-              <Flex gap={8} align="center" className={e('actions')}>
-                <Button
-                  size="small"
-                  type="text"
-                  onClick={() => onRestore()}
-                  icon={<ExpandOutlined />}
-                  aria-label={locale.restore}
-                />
-                <Button
-                  size="small"
-                  type="text"
-                  onClick={() => onClose()}
-                  icon={<CloseOutlined />}
-                  aria-label={locale.close}
-                />
-              </Flex>
-            </div>
-          </div>
-        </Draggable>,
-        scrollWrapperEl,
-      ),
+          <div className={dockStyles.title}>{title}</div>
+          <Flex gap={8} align="center" className={dockStyles.actions}>
+            <Button
+              size="small"
+              type="text"
+              onClick={() => onRestore()}
+              icon={<ExpandOutlined />}
+              aria-label={locale.restore}
+            />
+            <Button
+              size="small"
+              type="text"
+              onClick={() => onClose()}
+              icon={<CloseOutlined />}
+              aria-label={locale.close}
+            />
+          </Flex>
+        </div>
+      </DraggablePointerContainer>,
+      scrollWrapperEl,
     );
   },
 );

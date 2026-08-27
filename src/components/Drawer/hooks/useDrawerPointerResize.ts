@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { usePointerResize } from '../../_util/usePointerResize';
+import { usePointerResize } from '../../../hooks';
 import type { DrawerPlacement, DrawerResizableConfig } from '../type';
 import { getDrawerAxis } from '../utils/placement';
 import {

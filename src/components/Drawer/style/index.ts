@@ -1,117 +1,121 @@
-import type { CSSObject } from '@ant-design/cssinjs';
-import type { GlobalToken } from 'antd/es/theme/interface';
-import type { UseComponentStyleResult } from '../../../styles';
-import { useComponentStyle } from '../../../styles';
+import { createStyles, css } from 'antd-style';
 
-export const genDrawerStyle = (
-  token: GlobalToken,
-  prefixCls: string,
-  antdPrefixCls = 'ant',
-): CSSObject => {
+export const useStyles = createStyles(({ token }) => {
+  const handleGripSize = token.lineWidthBold * 2; // ~4px
+  const handleHitOffset = -(token.marginXXS - token.lineWidth); // ~ -3px
+
   return {
-    [`.${prefixCls}`]: {
-      [`.${prefixCls}-header-actions`]: {
-        [`.${antdPrefixCls}-btn`]: {
-          color: token.colorTextSecondary,
-        },
-      },
+    root: css`
+      /* 抽屉根样式 */
+    `,
+    headerActions: css`
+      button {
+        color: ${token.colorTextSecondary};
 
-      [`.${prefixCls}-empty-title`]: {
-        display: 'inline-block',
-      },
-    },
+        &:hover {
+          color: ${token.colorText};
+        }
+      }
+    `,
+    emptyTitle: css`
+      display: inline-block;
+    `,
+    wrapper: css`
+      /* 抽屉面板基础样式 */
+    `,
+    wrapperResizing: css`
+      transition: none !important;
+    `,
+    wrapperHorizontal: css`
+      will-change: width;
+    `,
+    wrapperVertical: css`
+      will-change: height;
+    `,
+    resizeHandle: css`
+      position: absolute;
+      z-index: 2;
+      box-sizing: border-box;
+      background: transparent;
+      pointer-events: auto;
+      user-select: none;
+      touch-action: none;
 
-    [`.${prefixCls}-wrapper`]: {
-      [`&.${prefixCls}-wrapper-resizing`]: {
-        transition: 'none',
+      &::after {
+        content: '';
+        position: absolute;
+        background: transparent;
+        transition: background-color ${token.motionDurationMid}
+            ${token.motionEaseInOut},
+          opacity ${token.motionDurationMid} ${token.motionEaseInOut};
+      }
 
-        [`&.${prefixCls}-wrapper-horizontal`]: {
-          willChange: 'width',
-        },
+      &:hover::after {
+        background: ${token.colorPrimary};
+        opacity: 0.2;
+      }
+    `,
+    resizeHandleResizing: css`
+      &::after {
+        background: ${token.colorPrimary} !important;
+        opacity: 0.3 !important;
+      }
+    `,
+    resizeHandleLeft: css`
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: ${handleGripSize}px;
+      cursor: col-resize;
 
-        [`&.${prefixCls}-wrapper-vertical`]: {
-          willChange: 'height',
-        },
-      },
-    },
+      &::after {
+        top: 0;
+        right: ${handleHitOffset}px;
+        bottom: 0;
+        left: ${handleHitOffset}px;
+      }
+    `,
+    resizeHandleRight: css`
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: ${handleGripSize}px;
+      cursor: col-resize;
 
-    [`.${prefixCls}-resize-handle`]: {
-      position: 'absolute',
-      zIndex: 2,
-      boxSizing: 'border-box',
-      background: 'transparent',
-      pointerEvents: 'auto',
-      userSelect: 'none',
-      touchAction: 'none',
+      &::after {
+        top: 0;
+        right: ${handleHitOffset}px;
+        bottom: 0;
+        left: ${handleHitOffset}px;
+      }
+    `,
+    resizeHandleTop: css`
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: ${handleGripSize}px;
+      cursor: row-resize;
 
-      '&::after': {
-        content: '""',
-        position: 'absolute',
-        background: 'transparent',
-        transition: 'background-color 0.2s ease, opacity 0.2s ease',
-      },
+      &::after {
+        top: ${handleHitOffset}px;
+        right: 0;
+        bottom: ${handleHitOffset}px;
+        left: 0;
+      }
+    `,
+    resizeHandleBottom: css`
+      top: 0;
+      right: 0;
+      left: 0;
+      height: ${handleGripSize}px;
+      cursor: row-resize;
 
-      [`&:hover::after, &.${prefixCls}-resize-handle-resizing::after`]: {
-        background: token.colorPrimary,
-        opacity: 0.2,
-      },
-
-      [`&.${prefixCls}-resize-handle-resizing::after`]: {
-        opacity: 0.3,
-      },
-
-      [`&.${prefixCls}-resize-handle-left, &.${prefixCls}-resize-handle-right`]:
-        {
-          top: 0,
-          bottom: 0,
-          width: 4,
-          cursor: 'col-resize',
-
-          '&::after': {
-            top: 0,
-            right: -3,
-            bottom: 0,
-            left: -3,
-          },
-        },
-
-      [`&.${prefixCls}-resize-handle-top, &.${prefixCls}-resize-handle-bottom`]:
-        {
-          right: 0,
-          left: 0,
-          height: 4,
-          cursor: 'row-resize',
-
-          '&::after': {
-            top: -3,
-            right: 0,
-            bottom: -3,
-            left: 0,
-          },
-        },
-
-      [`&.${prefixCls}-resize-handle-left`]: {
-        right: 0,
-      },
-
-      [`&.${prefixCls}-resize-handle-right`]: {
-        left: 0,
-      },
-
-      [`&.${prefixCls}-resize-handle-top`]: {
-        bottom: 0,
-      },
-
-      [`&.${prefixCls}-resize-handle-bottom`]: {
-        top: 0,
-      },
-    },
+      &::after {
+        top: ${handleHitOffset}px;
+        right: 0;
+        bottom: ${handleHitOffset}px;
+        left: 0;
+      }
+    `,
   };
-};
-
-export function useStyle(
-  prefixCls: string,
-  antdPrefixCls?: string,
-): UseComponentStyleResult {
-  return useComponentStyle('Drawer', prefixCls, genDrawerStyle, antdPrefixCls);
-}
+});

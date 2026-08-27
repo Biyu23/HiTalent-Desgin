@@ -1,6 +1,5 @@
 import { MinusOutlined } from '@ant-design/icons';
 import { Drawer as AntdDrawer, Button, Flex } from 'antd';
-import clsx from 'clsx';
 import React, {
   forwardRef,
   memo,
@@ -12,16 +11,12 @@ import React, {
 } from 'react';
 import { useLocale } from '../../configProvider/useLocale';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
-import { isNullOrBlank, setRef } from '../../util';
+import { useMinimizeState } from '../../hooks';
+import { isNullOrBlank, setRef } from '../../utils';
 import MinimizedDock from '../_util/minimize/MinimizedDock';
-import { useMinimizeState } from '../_util/minimize/useMinimizeState';
-import {
-  ComponentNamespaceProvider,
-  useResolvedComponentNamespace,
-} from '../_util/namespace';
 import DrawerResizeHandle from './components/DrawerResizeHandle';
 import { useDrawerPointerResize } from './hooks/useDrawerPointerResize';
-import { useStyle } from './style';
+import { useStyles } from './style';
 import type { DrawerProps, DrawerRef, DrawerResizableConfig } from './type';
 import { getDrawerAxis } from './utils/placement';
 import { DEFAULT_DRAWER_SIZE, resolveDrawerSize } from './utils/resize';
@@ -89,13 +84,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     minimized: controlledMinimized,
     onMinimizeChange,
   });
-  const { wrapSSR, hashId } = useStyle(prefixCls);
-  const namespace = useResolvedComponentNamespace(
-    'drawer',
-    customPrefixCls,
-    hashId,
-  );
-  const { e, em } = namespace;
+  const { styles: drawerStyles, cx } = useStyles(prefixCls);
 
   const axis = getDrawerAxis(placement);
   const legacySize = axis === 'horizontal' ? width : height;
@@ -118,7 +107,17 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     [isMinimized, onClose, reset, restore],
   );
 
-  useImperativeHandle(ref, () => ({ minimize, restore }), [minimize, restore]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      get nativeElement() {
+        return panelRef.current;
+      },
+      minimize,
+      restore,
+    }),
+    [minimize, restore],
+  );
 
   const handlePanelRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -156,11 +155,13 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
   const minimizedDockStyle = styles?.minimizedDock;
 
   const mergedClassNames = useMemo(() => {
-    const wrapperClass = clsx(e('wrapper'), hashId, {
-      [em('wrapper', 'resizing')]: isResizing,
-      [em('wrapper', 'horizontal')]: axis === 'horizontal',
-      [em('wrapper', 'vertical')]: axis === 'vertical',
-    });
+    const wrapperClass = cx(
+      drawerStyles.wrapper,
+      isResizing && drawerStyles.wrapperResizing,
+      axis === 'horizontal'
+        ? drawerStyles.wrapperHorizontal
+        : drawerStyles.wrapperVertical,
+    );
 
     if (!classNames) {
       return {
@@ -178,9 +179,9 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
 
     return {
       ...antdClassNames,
-      wrapper: clsx(classNames.wrapper, wrapperClass),
+      wrapper: cx(classNames.wrapper, wrapperClass),
     };
-  }, [classNames, axis, e, em, hashId, isResizing]);
+  }, [axis, classNames, cx, drawerStyles, isResizing]);
 
   const mergedStyles = useMemo(() => {
     const resizingStyle: React.CSSProperties = isResizing
@@ -217,11 +218,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
   const mergedExtra = useMemo(
     () =>
       minimizable ? (
-        <Flex
-          gap={8}
-          align="center"
-          className={clsx(e('header-actions'), hashId)}
-        >
+        <Flex gap={8} align="center" className={drawerStyles.headerActions}>
           {extra}
           <Button
             size="small"
@@ -237,9 +234,8 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
       ),
     [
       drawerLocale.minimize,
-      e,
+      drawerStyles.headerActions,
       extra,
-      hashId,
       minimizable,
       minimize,
       minimizeButtonClassName,
@@ -255,10 +251,10 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
   const mergedTitle = useMemo(() => {
     if (title === null) return null;
     if (minimizable && isNullOrBlank(title)) {
-      return <span className={clsx(e('empty-title'), hashId)} aria-hidden />;
+      return <span className={drawerStyles.emptyTitle} aria-hidden />;
     }
     return title;
-  }, [e, hashId, minimizable, title]);
+  }, [drawerStyles.emptyTitle, minimizable, title]);
 
   const finalDrawerRender = useCallback(
     (drawerNode: React.ReactNode) => (
@@ -288,8 +284,8 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     ],
   );
 
-  return wrapSSR(
-    <ComponentNamespaceProvider value={namespace}>
+  return (
+    <>
       <AntdDrawer
         {...restProps}
         open={open && !isMinimized}
@@ -304,7 +300,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
         destroyOnClose={isMinimized ? false : destroyOnClose}
         destroyOnHidden={isMinimized ? false : destroyOnHidden}
         onClose={handleClose}
-        rootClassName={clsx(prefixCls, hashId, rootClassName)}
+        rootClassName={cx(prefixCls, drawerStyles.root, rootClassName)}
         rootStyle={rootStyle}
         classNames={mergedClassNames}
         styles={mergedStyles}
@@ -322,7 +318,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
         onRestore={restore}
         onClose={handleClose}
       />
-    </ComponentNamespaceProvider>,
+    </>
   );
 });
 

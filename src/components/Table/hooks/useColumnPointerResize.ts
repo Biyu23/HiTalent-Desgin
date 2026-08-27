@@ -1,4 +1,4 @@
-import { usePointerResize } from '../../_util/usePointerResize';
+import { usePointerResize } from '../../../hooks';
 
 interface UseColumnPointerResizeOptions {
   columnId: string;

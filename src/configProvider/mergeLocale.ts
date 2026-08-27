@@ -1,5 +1,5 @@
 import type { HtdLocale, LocaleOverrides } from '../locales';
-import { isNullOrBlank, isPlainObject } from '../util';
+import { isNullOrBlank, isPlainObject } from '../utils';
 
 /**
  * 递归深度合并语言包对象，保留所有默认兜底字段

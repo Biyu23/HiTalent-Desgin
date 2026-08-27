@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { areMapsEqual } from '../../../util';
+import { areMapsEqual } from '../../../utils';
 
 interface Measurements {
   containerWidth: number | null;

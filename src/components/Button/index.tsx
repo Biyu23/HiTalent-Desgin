@@ -1,6 +1,6 @@
 import { Button as AntdButton, Tooltip } from 'antd';
 import React, { memo } from 'react';
-import { useActionRunner } from '../_util/useActionRunner';
+import { useActionRunner } from '../../hooks';
 import type { ButtonProps, ButtonRef } from './type';
 import { parseTooltipConfig } from './utils/tooltip';
 

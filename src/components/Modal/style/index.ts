@@ -1,135 +1,159 @@
-import type { CSSObject } from '@ant-design/cssinjs';
-import type { GlobalToken } from 'antd/es/theme/interface';
-import { useComponentStyle } from '../../../styles';
+import { createStyles, css } from 'antd-style';
 
-export const genModalStyle = (
-  token: GlobalToken,
-  prefixCls: string,
-  antdPrefixCls = 'ant',
-): CSSObject => {
-  const modalContent = `.${antdPrefixCls}-modal-content`;
-  const modalHeader = `.${antdPrefixCls}-modal-header`;
-  const modalFooter = `.${antdPrefixCls}-modal-footer`;
-  const modalBody = `.${antdPrefixCls}-modal-body`;
+export const useStyles = createStyles(({ token }) => {
+  const handleSize = token.controlHeightSM / 2 + token.lineWidthBold * 2;
+  const handleIconSize = token.sizeXS - token.lineWidth;
+  const handleOffset = token.marginXXS - token.lineWidth;
 
   return {
-    [`.${prefixCls}-wrap-constrained`]: {
-      overflow: 'hidden',
-    },
-    [`.${prefixCls}`]: {
-      [`&.${prefixCls}-draggable, &.${prefixCls}-resizable, &.${prefixCls}-manual-size`]:
-        {
-          paddingBottom: 0,
-        },
-      [`&&.${prefixCls}-transition-active`]: {
-        transition: `width ${token.motionDurationSlow} ${token.motionEaseInOut}, height ${token.motionDurationSlow} ${token.motionEaseInOut}, top ${token.motionDurationSlow} ${token.motionEaseInOut}`,
-        [modalContent]: {
-          transition: `all ${token.motionDurationSlow} ${token.motionEaseInOut}`,
-        },
-      },
-      [`.${prefixCls}-header`]: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        width: '100%',
-        gap: token.size,
-        [`&.${prefixCls}-header-draggable`]: {
-          cursor: 'move',
-        },
-      },
-      [`.${prefixCls}-title`]: {
-        flex: 1,
-        overflow: 'hidden',
-      },
-      [`.${prefixCls}-actions`]: {
-        flexShrink: 0,
-        [`.${antdPrefixCls}-btn`]: {
-          color: token.colorTextSecondary,
-        },
-      },
-      [`&.${prefixCls}-draggable`]: {
-        [modalFooter]: {
-          cursor: 'move',
-          'button, a, input, textarea, select, [contenteditable], [data-modal-no-drag]':
-            {
-              cursor: 'auto',
-            },
-        },
-      },
-      [`&&.${prefixCls}-manual-size`]: {
-        boxSizing: 'border-box',
-        maxWidth: 'none',
-        [`.${prefixCls}-window, ${modalContent}`]: {
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-        },
-        [`${modalHeader}, ${modalFooter}`]: {
-          flexShrink: 0,
-        },
-        [modalBody]: {
-          flex: 1,
-          minHeight: 0,
-          overflow: 'auto',
-        },
-      },
-      [`&.${prefixCls}-resizing, &.${prefixCls}-resizing ${modalContent}`]: {
-        transition: 'none',
-      },
-      [modalContent]: {
-        position: 'relative',
-      },
-      [`.${prefixCls}-resize-handle`]: {
-        position: 'absolute',
-        right: 0,
-        bottom: 0,
-        zIndex: 2,
-        width: 16,
-        height: 16,
-        cursor: 'nwse-resize',
-        touchAction: 'none',
-        '&::after': {
-          content: '""',
-          position: 'absolute',
-          right: 3,
-          bottom: 3,
-          width: 6,
-          height: 6,
-          borderColor: 'currentColor',
-          borderStyle: 'solid',
-          borderWidth: '0 1px 1px 0',
-          opacity: 0.35,
-        },
-        '&:hover::after': {
-          color: token.colorPrimary,
-          opacity: 1,
-        },
-      },
-      [`&&.${prefixCls}-maximized`]: {
-        top: 0,
-        width: '100%',
-        height: '100vh',
-        maxWidth: '100vw',
-        margin: 0,
-        paddingBottom: 0,
-        [modalContent]: {
-          height: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          borderRadius: 0,
-        },
-        [modalBody]: {
-          flex: 1,
-          overflow: 'auto',
-        },
-        [`.${prefixCls}-header`]: {
-          cursor: 'default',
-        },
-      },
-    },
-  };
-};
+    wrapConstrained: css`
+      overflow: hidden;
+    `,
+    root: css`
+      .ant-modal-content {
+        position: relative;
+      }
 
-export function useStyle(prefixCls: string, antdPrefixCls?: string) {
-  return useComponentStyle('Modal', prefixCls, genModalStyle, antdPrefixCls);
-}
+      &.draggable,
+      &.resizable,
+      &.manual-size {
+        padding-bottom: 0;
+      }
+
+      &.transition-active {
+        transition: width ${token.motionDurationSlow} ${token.motionEaseInOut},
+          height ${token.motionDurationSlow} ${token.motionEaseInOut},
+          top ${token.motionDurationSlow} ${token.motionEaseInOut};
+
+        .ant-modal-content {
+          transition: all ${token.motionDurationSlow} ${token.motionEaseInOut};
+        }
+      }
+
+      &.resizing,
+      &.resizing .ant-modal-content {
+        transition: none !important;
+      }
+
+      &.draggable {
+        .ant-modal-footer {
+          cursor: move;
+
+          button,
+          a,
+          input,
+          textarea,
+          select,
+          [contenteditable],
+          [data-modal-no-drag] {
+            cursor: auto;
+          }
+        }
+      }
+
+      &.manual-size {
+        box-sizing: border-box;
+        max-width: none;
+
+        .ant-modal-content {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .ant-modal-header,
+        .ant-modal-footer {
+          flex-shrink: 0;
+        }
+
+        .ant-modal-body {
+          flex: 1;
+          min-height: 0;
+          overflow: auto;
+        }
+      }
+
+      &.maximized {
+        top: 0 !important;
+        width: 100% !important;
+        height: 100vh !important;
+        max-width: 100vw !important;
+        margin: 0 !important;
+        padding-bottom: 0 !important;
+
+        .ant-modal-content {
+          height: 100vh !important;
+          display: flex;
+          flex-direction: column;
+          border-radius: 0;
+        }
+
+        .ant-modal-header,
+        .ant-modal-footer {
+          flex-shrink: 0;
+        }
+
+        .ant-modal-body {
+          flex: 1;
+          min-height: 0;
+          overflow: auto;
+        }
+      }
+    `,
+    header: css`
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      gap: ${token.size}px;
+    `,
+    headerDraggable: css`
+      cursor: move;
+    `,
+    title: css`
+      flex: 1;
+      overflow: hidden;
+    `,
+    actions: css`
+      flex-shrink: 0;
+
+      button {
+        color: ${token.colorTextSecondary};
+
+        &:hover {
+          color: ${token.colorText};
+        }
+      }
+    `,
+    resizeHandle: css`
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      z-index: 2;
+      width: ${handleSize}px;
+      height: ${handleSize}px;
+      cursor: nwse-resize;
+      touch-action: none;
+
+      &::after {
+        content: '';
+        position: absolute;
+        right: ${handleOffset}px;
+        bottom: ${handleOffset}px;
+        width: ${handleIconSize}px;
+        height: ${handleIconSize}px;
+        border-color: currentColor;
+        border-style: solid;
+        border-width: 0 ${token.lineWidth}px ${token.lineWidth}px 0;
+        opacity: 0.35;
+        transition: color ${token.motionDurationMid},
+          opacity ${token.motionDurationMid};
+      }
+
+      &:hover::after {
+        color: ${token.colorPrimary};
+        opacity: 1;
+      }
+    `,
+  };
+});

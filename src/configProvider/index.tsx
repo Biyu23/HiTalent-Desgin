@@ -1,6 +1,6 @@
 import { ConfigProvider as AntdConfigProvider } from 'antd';
 import React, { useCallback, useContext, useMemo } from 'react';
-import { isNullOrBlank } from '../util';
+import { isNullOrBlank } from '../utils';
 import type { ConfigContextValue } from './context';
 import { ConfigContext, defaultPrefixCls, useConfig } from './context';
 import { mergeLocale } from './mergeLocale';

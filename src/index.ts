@@ -13,9 +13,6 @@ export {
 } from './configProvider';
 export type { ConfigContextValue, ConfigProviderProps } from './configProvider';
 
-// Hooks
-export { useDragBounds, useFieldNames, useMergeState } from './hooks';
-
 // Locales
 export { en_US, zh_CN } from './locales';
 export type {

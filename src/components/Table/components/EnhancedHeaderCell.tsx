@@ -1,7 +1,6 @@
-import clsx from 'clsx';
 import React, { memo, useContext } from 'react';
-import { useComponentNamespace } from '../../_util/namespace';
 import { useColumnPointerResize } from '../hooks/useColumnPointerResize';
+import { useStyles } from '../style';
 import TableContext from '../TableContext';
 import type { EnhancedLeafColumnType } from '../type';
 import ResizeHandle from './ResizeHandle';
@@ -35,11 +34,9 @@ function EnhancedHeaderCell<RecordType = unknown>(
     ...restThProps
   } = props;
 
-  const namespace = useComponentNamespace();
-  const { e } = namespace;
   const context = useContext(TableContext);
+  const { styles, cx } = useStyles();
 
-  const { hashId } = context;
   const currentControlledWidth =
     context.columnWidths[columnId] ??
     (typeof column.width === 'number' && Number.isFinite(column.width)
@@ -57,10 +54,8 @@ function EnhancedHeaderCell<RecordType = unknown>(
   const showResizeHandle = enableColumnResize && column.resizable !== false;
 
   const cellContent = (
-    <div
-      className={clsx(e('header-cell'), hashId, context.classNames?.headerCell)}
-    >
-      <span className={clsx(e('header-cell-title'), hashId)}>{children}</span>
+    <div className={cx(styles.headerCell, context.classNames?.headerCell)}>
+      <span className={styles.headerCellTitle}>{children}</span>
     </div>
   );
 
@@ -70,11 +65,7 @@ function EnhancedHeaderCell<RecordType = unknown>(
     cellContent
   );
 
-  const mergedClassName = clsx(
-    className,
-    hashId,
-    showResizeHandle ? e('resizable-th') : '',
-  );
+  const mergedClassName = cx(className, showResizeHandle && 'resizable-th');
 
   return (
     <CellComponent className={mergedClassName} {...restThProps}>

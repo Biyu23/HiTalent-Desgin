@@ -1,4 +1,4 @@
-import { usePointerResize } from '../../_util/usePointerResize';
+import { usePointerResize } from '../../../hooks';
 import type { ModalResizableConfig } from '../type';
 import type { ModalWindowSize } from '../types/internal';
 

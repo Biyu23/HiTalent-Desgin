@@ -1,5 +1,16 @@
 import { useCallback, useRef, useState } from 'react';
-import type { UseMinimizeStateOptions, UseMinimizeStateReturn } from './type';
+
+export interface UseMinimizeStateOptions {
+  minimized?: boolean;
+  onMinimizeChange?: (minimized: boolean) => void;
+}
+
+export interface UseMinimizeStateReturn {
+  isMinimized: boolean;
+  minimize: () => void;
+  restore: () => void;
+  reset: () => void;
+}
 
 /** 管理受控或非受控的最小化状态。 */
 export const useMinimizeState = ({

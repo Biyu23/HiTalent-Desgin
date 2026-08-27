@@ -1,6 +1,6 @@
 import type { DragMoveEvent } from '@dnd-kit/core';
 import React from 'react';
-import { isNullOrBlank } from '../../../util';
+import { isNullOrBlank } from '../../../utils';
 import type { DropPositionLabel, RowDragResult, RowDropInfo } from '../type';
 import type { RowKeyGetter, RowMeta, RowRegistry } from '../types/internal';
 

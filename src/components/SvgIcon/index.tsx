@@ -1,5 +1,4 @@
 import AntdIcon from '@ant-design/icons';
-import type { CustomIconComponentProps } from '@ant-design/icons/lib/components/Icon';
 import clsx from 'clsx';
 import React, {
   cloneElement,
@@ -10,7 +9,8 @@ import React, {
   useMemo,
 } from 'react';
 import { usePrefixCls } from '../../configProvider';
-import type { SvgIconProps } from './type';
+import type { CustomIconComponentProps, SvgIconProps } from './type';
+export type { CustomIconComponentProps } from './type';
 
 const PRESET_SIZES: Record<string, number> = {
   small: 14,

@@ -1,93 +1,71 @@
-import type { CSSObject } from '@ant-design/cssinjs';
-import type { GlobalToken } from 'antd/es/theme/interface';
-import { useComponentStyle } from '../../../styles';
+import { createStyles, css } from 'antd-style';
 
-export const genResponsiveButtonGroupStyle = (
-  token: GlobalToken,
-  prefixCls: string,
-): CSSObject => {
+export const useStyles = createStyles(({ token }) => {
   return {
-    [`.${prefixCls}`]: {
-      position: 'relative',
-      boxSizing: 'border-box',
-      display: 'flex',
-      width: '100%',
-      minWidth: 0,
-
-      [`.${prefixCls}-visible`]: {
-        display: 'flex',
-        flex: '0 0 auto',
-        flexWrap: 'nowrap',
-        alignItems: 'center',
-        minWidth: 'max-content',
-      },
-
-      [`.${prefixCls}-overflow-trigger, .${prefixCls}-overflow-label, .${prefixCls}-overflow-wrapper`]:
-        {
-          display: 'inline-flex',
-          alignItems: 'center',
-        },
-
-      [`.${prefixCls}-overflow-trigger, .${prefixCls}-overflow-wrapper`]: {
-        flex: '0 0 auto',
-      },
-
-      [`.${prefixCls}-overflow-count`]: {
-        marginInlineStart: token.sizeXXS,
-      },
-
-      [`.${prefixCls}-overflow-arrow`]: {
-        marginInlineStart: token.sizeXXS,
-        fontSize: 10,
-      },
-
-      [`.${prefixCls}-measure`]: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        zIndex: -1,
-        display: 'flex',
-        width: 0,
-        maxWidth: 0,
-        height: 0,
-        overflow: 'hidden',
-        visibility: 'hidden',
-        pointerEvents: 'none',
-        contain: 'strict',
-      },
-
-      [`.${prefixCls}-measure-item`]: {
-        display: 'inline-flex',
-        flex: '0 0 auto',
-      },
-    },
-
-    [`.${prefixCls}-popup, .${prefixCls}`]: {
-      [`.${prefixCls}-menu-item-content, .${prefixCls}-menu-item-icon`]: {
-        display: 'inline-flex',
-        alignItems: 'center',
-      },
-
-      [`.${prefixCls}-menu-item-content`]: {
-        gap: token.sizeSM,
-        width: '100%',
-      },
-
-      [`.${prefixCls}-menu-item-icon`]: {
-        flex: '0 0 auto',
-      },
-
-      [`.${prefixCls}-menu-item-label`]: {
-        minWidth: 0,
-      },
-    },
+    root: css`
+      position: relative;
+      box-sizing: border-box;
+      display: flex;
+      width: 100%;
+      min-width: 0;
+    `,
+    visible: css`
+      display: flex;
+      flex: 0 0 auto;
+      flex-wrap: nowrap;
+      align-items: center;
+      min-width: max-content;
+    `,
+    overflowTrigger: css`
+      display: inline-flex;
+      align-items: center;
+      flex: 0 0 auto;
+    `,
+    overflowLabel: css`
+      display: inline-flex;
+      align-items: center;
+    `,
+    overflowCount: css`
+      margin-inline-start: ${token.sizeXXS}px;
+    `,
+    overflowArrow: css`
+      margin-inline-start: ${token.sizeXXS}px;
+      font-size: ${token.fontSizeSM - token.lineWidthBold}px;
+    `,
+    measure: css`
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      display: flex;
+      width: 0;
+      max-width: 0;
+      height: 0;
+      overflow: hidden;
+      visibility: hidden;
+      pointer-events: none;
+      contain: strict;
+    `,
+    measureItem: css`
+      display: inline-flex;
+      flex: 0 0 auto;
+    `,
+    popup: css`
+      /* 下拉弹层容器 */
+    `,
+    menuItemContent: css`
+      display: inline-flex;
+      align-items: center;
+      gap: ${token.sizeSM}px;
+      width: 100%;
+    `,
+    menuItemIcon: css`
+      display: inline-flex;
+      align-items: center;
+      flex: 0 0 auto;
+    `,
+    menuItemLabel: css`
+      min-width: 0;
+    `,
   };
-};
-
-export function useStyle(prefixCls: string) {
-  return useComponentStyle(
-    'ResponsiveButtonGroup',
-    prefixCls,
-    genResponsiveButtonGroupStyle,
-  );
-}
+});

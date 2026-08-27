@@ -1,4 +1,11 @@
-import type { CustomIconComponentProps } from '@ant-design/icons/lib/components/Icon';
+export interface CustomIconComponentProps {
+  width: string | number;
+  height: string | number;
+  fill?: string;
+  viewBox?: string;
+  className?: string;
+  style?: React.CSSProperties;
+}
 import type React from 'react';
 import type { NativeProps } from '../../types';
 import type {
@@ -13,6 +20,9 @@ export type SvgIconSlot = 'root' | 'svg';
 export type SvgIconClassNames = SemanticClassNames<SvgIconSlot>;
 export type SvgIconStyles = SemanticStyles<SvgIconSlot>;
 
+/**
+ * @deprecated SvgIcon 即将废弃，推荐直接使用 `@ant-design/icons` 的 `Icon` 组件或原生 SVG
+ */
 export interface SvgIconProps
   extends NativeProps,
     SemanticStyleProps<SvgIconSlot>,

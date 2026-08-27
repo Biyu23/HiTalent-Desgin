@@ -1,7 +1,7 @@
 import type { TooltipProps } from 'antd';
 import type React from 'react';
 import { isValidElement } from 'react';
-import { isNullOrBlank } from '../../../util';
+import { isNullOrBlank } from '../../../utils';
 
 /** 区分 Tooltip 配置对象和作为提示文案的 ReactNode。 */
 export function isTooltipProps(

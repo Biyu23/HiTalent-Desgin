@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { lockBodyInteraction } from './bodyInteractionLock';
+import { lockBodyInteraction } from '../utils';
 
 export interface PointerPosition {
   clientX: number;

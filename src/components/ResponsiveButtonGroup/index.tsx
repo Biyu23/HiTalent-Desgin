@@ -5,7 +5,6 @@ import {
 } from '@ant-design/icons';
 import type { DropdownProps, MenuProps, TooltipProps } from 'antd';
 import { Dropdown, Tooltip } from 'antd';
-import clsx from 'clsx';
 import React, {
   forwardRef,
   memo,
@@ -17,20 +16,16 @@ import React, {
   useState,
 } from 'react';
 import { ConfigContext, useLocale, usePrefixCls } from '../../configProvider';
+import { useKeyedActionRunner } from '../../hooks';
 import {
   areArraysEqual,
   isThenable,
   setRef,
   withNativeProps,
-} from '../../util';
-import {
-  ComponentNamespaceProvider,
-  useResolvedComponentNamespace,
-} from '../_util/namespace';
-import { useKeyedActionRunner } from '../_util/useActionRunner';
+} from '../../utils';
 import Button from '../Button';
 import { useResponsiveMeasurements } from './hooks/useResponsiveMeasurements';
-import { useStyle } from './style';
+import { useStyles } from './style';
 import type {
   ResponsiveButtonGroupClickInfo,
   ResponsiveButtonGroupItem,
@@ -146,12 +141,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
   } = props;
 
   const prefixCls = usePrefixCls('responsive-button-group', customPrefixCls);
-  const { wrapSSR, hashId } = useStyle(prefixCls);
-  const namespace = useResolvedComponentNamespace(
-    'responsive-button-group',
-    customPrefixCls,
-    hashId,
-  );
+  const { styles: buttonGroupStyles, cx } = useStyles(prefixCls);
   const locale = useLocale('ResponsiveButtonGroup');
   const { direction = 'ltr' } = useContext(ConfigContext);
 
@@ -362,8 +352,8 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
           {...(measuring
             ? getMeasurementButtonProps(overflowButtonProps)
             : overflowButtonProps)}
-          className={clsx(
-            namespace.e('overflow-trigger'),
+          className={cx(
+            buttonGroupStyles.overflowTrigger,
             classNames?.overflowTrigger,
             overflowButtonProps?.className,
           )}
@@ -376,13 +366,13 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
             overflowButtonProps?.['aria-label'] ?? locale.moreActions(count)
           }
         >
-          <span className={namespace.e('overflow-label')}>
+          <span className={buttonGroupStyles.overflowLabel}>
             {overflowLabel ?? locale.more}
           </span>
           {showOverflowCount && (
-            <span className={namespace.e('overflow-count')}>{count}</span>
+            <span className={buttonGroupStyles.overflowCount}>{count}</span>
           )}
-          <DownOutlined className={namespace.e('overflow-arrow')} />
+          <DownOutlined className={buttonGroupStyles.overflowArrow} />
         </Button>
       );
       if (!renderOverflowButton) return defaultNode;
@@ -397,12 +387,13 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     },
     [
       classNames?.overflowTrigger,
+      cx,
       locale,
-      namespace,
       open,
       overflowButtonProps,
       overflowIcon,
       overflowLabel,
+      prefixCls,
       renderOverflowButton,
       showOverflowCount,
       styles?.overflowTrigger,
@@ -416,17 +407,19 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
         const loading = Boolean(item.loading || pendingKeys.has(item.key));
         const defaultNode = (
           <span
-            className={clsx(
-              namespace.e('menu-item-content'),
+            className={cx(
+              buttonGroupStyles.menuItemContent,
               classNames?.menuItem,
             )}
           >
             {(loading || item.icon) && (
-              <span className={namespace.e('menu-item-icon')}>
+              <span className={buttonGroupStyles.menuItemIcon}>
                 {loading ? <LoadingOutlined spin /> : item.icon}
               </span>
             )}
-            <span className={namespace.e('menu-item-label')}>{item.label}</span>
+            <span className={buttonGroupStyles.menuItemLabel}>
+              {item.label}
+            </span>
           </span>
         );
         const info: ResponsiveButtonGroupRenderInfo = {
@@ -461,7 +454,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
           disabled: item.disabled || loading,
         };
       }),
-    [classNames?.menuItem, layout.collapsedItems, namespace, pendingKeys],
+    [classNames?.menuItem, cx, layout.collapsedItems, pendingKeys, prefixCls],
   );
 
   const itemMap = useMemo(
@@ -508,9 +501,8 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     <Dropdown
       trigger={['click']}
       {...overflowDropdownProps}
-      rootClassName={clsx(
-        namespace.e('popup'),
-        namespace.hashId,
+      rootClassName={cx(
+        buttonGroupStyles.popup,
         classNames?.popup,
         overflowDropdownProps?.rootClassName,
       )}
@@ -530,51 +522,44 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     </Dropdown>
   ) : null;
 
-  return wrapSSR(
-    <ComponentNamespaceProvider value={namespace}>
-      {withNativeProps(
-        props,
-        <div
-          ref={setMergedRef}
-          className={clsx(
-            namespace.prefixCls,
-            namespace.hashId,
-            rootClassName,
-            classNames?.root,
-          )}
-          style={styles?.root}
-          role="group"
-          dir={direction}
-        >
-          <div
-            className={clsx(namespace.e('visible'), classNames?.visible)}
-            style={{ ...styles?.visible, gap }}
-          >
-            {layout.visibleItems.map((item) => renderItemButton(item))}
-            {overflowNode}
-          </div>
-          {mode === 'responsive' && items.length > 0 && (
-            <div className={namespace.e('measure')} aria-hidden="true">
-              {items.map((item) => (
-                <span
-                  key={item.key}
-                  ref={getItemRef(item.key)}
-                  className={namespace.e('measure-item')}
-                >
-                  {renderItemButton(item, true)}
-                </span>
-              ))}
-              <span
-                ref={setOverflowRef}
-                className={namespace.e('measure-item')}
-              >
-                {renderOverflowTrigger(candidateItems, true)}
-              </span>
-            </div>
-          )}
-        </div>,
+  return withNativeProps(
+    props,
+    <div
+      ref={setMergedRef}
+      className={cx(
+        prefixCls,
+        buttonGroupStyles.root,
+        rootClassName,
+        classNames?.root,
       )}
-    </ComponentNamespaceProvider>,
+      style={styles?.root}
+      role="group"
+      dir={direction}
+    >
+      <div
+        className={cx(buttonGroupStyles.visible, classNames?.visible)}
+        style={{ ...styles?.visible, gap }}
+      >
+        {layout.visibleItems.map((item) => renderItemButton(item))}
+        {overflowNode}
+      </div>
+      {mode === 'responsive' && items.length > 0 && (
+        <div className={buttonGroupStyles.measure} aria-hidden="true">
+          {items.map((item) => (
+            <span
+              key={item.key}
+              ref={getItemRef(item.key)}
+              className={buttonGroupStyles.measureItem}
+            >
+              {renderItemButton(item, true)}
+            </span>
+          ))}
+          <span ref={setOverflowRef} className={buttonGroupStyles.measureItem}>
+            {renderOverflowTrigger(candidateItems, true)}
+          </span>
+        </div>
+      )}
+    </div>,
   );
 };
 

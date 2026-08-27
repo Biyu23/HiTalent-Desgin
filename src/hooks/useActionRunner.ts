@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { isThenable } from '../../util';
+import { isThenable } from '../utils';
 
 export interface ActionRunnerOptions {
   throttle?: number;

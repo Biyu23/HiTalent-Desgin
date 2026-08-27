@@ -1,6 +1,6 @@
 import { ConfigProvider as AntdConfigProvider } from 'antd';
 import { useContext } from 'react';
-import { isNullOrBlank } from '../util';
+import { isNullOrBlank } from '../utils';
 import { ConfigContext, defaultPrefixCls } from './context';
 
 /**

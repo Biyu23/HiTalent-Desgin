@@ -1,5 +1,4 @@
 import { Modal as AntdModal } from 'antd';
-import clsx from 'clsx';
 import React, {
   forwardRef,
   memo,
@@ -10,10 +9,6 @@ import React, {
 import { useLocale } from '../../configProvider/useLocale';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
 import MinimizedDock from '../_util/minimize/MinimizedDock';
-import {
-  ComponentNamespaceProvider,
-  useResolvedComponentNamespace,
-} from '../_util/namespace';
 import ModalHeader from './components/ModalHeader';
 import ModalWindowWrapper from './components/ModalWindowWrapper';
 import {
@@ -24,7 +19,7 @@ import {
 } from './contexts';
 import { useModalState } from './hooks/useModalState';
 import { useModalWindowState } from './hooks/useModalWindowState';
-import { useStyle } from './style';
+import { useStyles } from './style';
 import type { ModalProps, ModalRef, ModalStaticMethods } from './type';
 import { shouldRenderHeader } from './utils/header';
 
@@ -63,14 +58,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
 
   const prefixCls = usePrefixCls('modal', customPrefixCls);
   const modalLocale = useLocale('Modal');
-  const { wrapSSR, hashId } = useStyle(prefixCls);
-
-  const namespace = useResolvedComponentNamespace(
-    'modal',
-    customPrefixCls,
-    hashId,
-  );
-  const { e, m, em } = namespace;
+  const { styles: modalStyles, cx } = useStyles(prefixCls);
 
   const minimizedDockClassName = classNames?.minimizedDock;
   const minimizedDockStyle = styles?.minimizedDock;
@@ -149,6 +137,12 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   useImperativeHandle(
     ref,
     () => ({
+      get nativeElement() {
+        if (typeof document === 'undefined') return null;
+        return (
+          (document.querySelector(`.${prefixCls}`) as HTMLDivElement) || null
+        );
+      },
       restore: handleRestore,
       maximize: () => {
         handleRestore();
@@ -164,6 +158,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       handleMinimize,
       handleMaximize,
       handleUnmaximize,
+      prefixCls,
       resetWindowPosition,
       resetWindowSize,
     ],
@@ -275,55 +270,53 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     <ModalHeader title={title} />
   ) : title === null ? null : undefined;
 
-  return wrapSSR(
-    <ComponentNamespaceProvider value={namespace}>
-      <ModalOperationsContext.Provider value={operationsValue}>
-        <ModalWindowContext.Provider value={windowValue}>
-          <AntdModal
-            {...restProps}
-            maskClosable={maskClosable}
-            rootClassName={clsx(prefixCls, hashId, rootClassName)}
-            classNames={antdClassNames}
-            destroyOnClose={resolvedDestroyOnClose}
-            destroyOnHidden={resolvedDestroyOnHidden}
-            width={modalWidth}
-            centered={centered}
-            open={open && !isMinimized}
-            closable={false}
-            modalRender={finalModalRender}
-            onCancel={handleClose}
-            style={mergedStyle}
-            styles={mergedStyles}
-            wrapClassName={clsx(wrapClassName, e('wrap'), hashId, {
-              [em('wrap', 'constrained')]:
-                draggable || Boolean(resizable) || isMaximized || !!windowSize,
-            })}
-            className={clsx(prefixCls, hashId, className, {
-              [m('maximized')]: isMaximized,
-              [m('manual-size')]: !!windowSize && !isMaximized,
-              [m('resizing')]: isResizing,
-              [m('draggable')]: draggable && !isMaximized,
-              [m('resizable')]: Boolean(resizable) && !isMaximized,
-              [m('transition-active')]: !isResizing,
-            })}
-            title={resolvedTitle}
-          >
-            {children}
-          </AntdModal>
-          <MinimizedDock
-            open={open}
-            minimized={isMinimized}
-            title={title}
-            position={minimizePosition}
-            className={minimizedDockClassName}
-            style={minimizedDockStyle}
-            locale={modalLocale}
-            onRestore={handleRestore}
-            onClose={handleClose}
-          />
-        </ModalWindowContext.Provider>
-      </ModalOperationsContext.Provider>
-    </ComponentNamespaceProvider>,
+  return (
+    <ModalOperationsContext.Provider value={operationsValue}>
+      <ModalWindowContext.Provider value={windowValue}>
+        <AntdModal
+          {...restProps}
+          maskClosable={maskClosable}
+          rootClassName={cx(prefixCls, rootClassName)}
+          classNames={antdClassNames}
+          destroyOnClose={resolvedDestroyOnClose}
+          destroyOnHidden={resolvedDestroyOnHidden}
+          width={modalWidth}
+          centered={centered}
+          open={open && !isMinimized}
+          closable={false}
+          modalRender={finalModalRender}
+          onCancel={handleClose}
+          style={mergedStyle}
+          styles={mergedStyles}
+          wrapClassName={cx(wrapClassName, {
+            [modalStyles.wrapConstrained]:
+              draggable || Boolean(resizable) || isMaximized || !!windowSize,
+          })}
+          className={cx(prefixCls, modalStyles.root, className, {
+            maximized: isMaximized,
+            'manual-size': !!windowSize && !isMaximized,
+            resizing: isResizing,
+            draggable: draggable && !isMaximized,
+            resizable: Boolean(resizable) && !isMaximized,
+            'transition-active': !isResizing,
+          })}
+          title={resolvedTitle}
+        >
+          {children}
+        </AntdModal>
+        <MinimizedDock
+          open={open}
+          minimized={isMinimized}
+          title={title}
+          position={minimizePosition}
+          className={minimizedDockClassName}
+          style={minimizedDockStyle}
+          locale={modalLocale}
+          onRestore={handleRestore}
+          onClose={handleClose}
+        />
+      </ModalWindowContext.Provider>
+    </ModalOperationsContext.Provider>
   );
 });
 

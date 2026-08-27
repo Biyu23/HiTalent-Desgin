@@ -1,260 +1,251 @@
-import type { CSSObject } from '@ant-design/cssinjs';
-import type { GlobalToken } from 'antd/es/theme/interface';
-import { useComponentStyle } from '../../../styles';
+import { createStyles, css } from 'antd-style';
 
-export const genPopoverSelectStyle = (
-  token: GlobalToken,
-  prefixCls: string,
-  antdPrefixCls = 'ant',
-): CSSObject => {
-  return {
-    [`.${prefixCls}`]: {
-      display: 'inline-block',
-      maxWidth: '100%',
-    },
+export const useStyles = createStyles(
+  ({ token }, prefixCls: string = 'htd-popover-select') => {
+    return {
+      root: css`
+        display: inline-block;
+        max-width: 100%;
+      `,
+      selectorBtn: css`
+        display: flex;
+        gap: ${token.paddingXS}px;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        box-sizing: border-box;
+        padding: ${token.paddingXXS}px ${token.paddingSM}px;
+        color: ${token.colorText};
+        text-align: left;
+        background-color: transparent;
+        border: ${token.lineWidth}px solid transparent;
+        border-radius: ${token.borderRadiusXS}px;
+        transition: color ${token.motionDurationMid} ${token.motionEaseInOut},
+          background-color ${token.motionDurationMid} ${token.motionEaseInOut},
+          border-color ${token.motionDurationMid} ${token.motionEaseInOut};
 
-    [`.${prefixCls}-selector-btn`]: {
-      display: 'flex',
-      gap: token.paddingXS,
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      width: '100%',
-      boxSizing: 'border-box',
-      padding: `${token.paddingXXS}px ${token.paddingSM}px`,
-      color: token.colorText,
-      textAlign: 'left',
-      backgroundColor: 'transparent',
-      border: '1px solid transparent',
-      borderRadius: token.borderRadiusXS,
-      transition: `color ${token.motionDurationMid} ${token.motionEaseInOut}, background-color ${token.motionDurationMid} ${token.motionEaseInOut}, border-color ${token.motionDurationMid} ${token.motionEaseInOut}`,
-      '&:hover': {
-        backgroundColor: token.colorFillTertiary,
-      },
-      [`&.${prefixCls}-selector-btn-active`]: {
-        color: token.colorPrimary,
-        backgroundColor: token.colorPrimaryBg,
-        border: `1px solid ${token.colorPrimaryBorder}`,
-      },
-      [`&.${prefixCls}-selector-btn-open`]: {
-        backgroundColor: token.colorFillTertiary,
-        [`.${prefixCls}-selector-arrow`]: {
-          transform: 'rotate(180deg)',
-        },
-      },
-      [`&.${prefixCls}-selector-btn-disabled`]: {
-        color: token.colorTextDisabled,
-        cursor: 'not-allowed',
-        backgroundColor: 'transparent',
-        border: '1px solid transparent',
-      },
-    },
+        &:hover {
+          background-color: ${token.colorFillTertiary};
+        }
+      `,
+      selectorBtnActive: css`
+        color: ${token.colorPrimary};
+        background-color: ${token.colorPrimaryBg};
+        border: ${token.lineWidth}px solid ${token.colorPrimaryBorder};
+      `,
+      selectorBtnOpen: css`
+        background-color: ${token.colorFillTertiary};
+      `,
+      selectorBtnDisabled: css`
+        color: ${token.colorTextDisabled};
+        cursor: not-allowed;
+        background-color: transparent;
+        border: ${token.lineWidth}px solid transparent;
+      `,
+      selectorText: css`
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        color: inherit;
+        line-height: inherit;
+        text-align: start;
+        white-space: nowrap;
+        text-overflow: ellipsis;
 
-    [`.${prefixCls}-selector-text`]: {
-      flex: 1,
-      minWidth: 0,
-      overflow: 'hidden',
-      color: 'inherit',
-      lineHeight: 'inherit',
-      textAlign: 'start',
-      whiteSpace: 'nowrap',
-      textOverflow: 'ellipsis',
-      [`.${antdPrefixCls}-typography`]: {
-        margin: 0,
-        padding: 0,
-      },
-      '> span': {
-        display: 'inline-block',
-        maxWidth: '100%',
-        overflow: 'hidden',
-        verticalAlign: 'bottom',
-        whiteSpace: 'nowrap',
-        textOverflow: 'ellipsis',
-      },
-    },
+        .ant-typography {
+          margin: 0;
+          padding: 0;
+        }
 
-    [`.${prefixCls}-selector-actions`]: {
-      position: 'relative',
-      display: 'inline-flex',
-      flexShrink: 0,
-      alignItems: 'center',
-      justifyContent: 'center',
-      minWidth: token.fontSizeSM,
-      height: token.fontSizeSM,
-      fontSize: token.fontSizeSM,
-      lineHeight: 1,
-    },
+        > span {
+          display: inline-block;
+          max-width: 100%;
+          overflow: hidden;
+          vertical-align: bottom;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+      `,
+      selectorActions: css`
+        position: relative;
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        min-width: ${token.fontSizeSM}px;
+        height: ${token.fontSizeSM}px;
+        font-size: ${token.fontSizeSM}px;
+        line-height: 1;
+      `,
+      selectorArrow: css`
+        flex-shrink: 0;
+        color: ${token.colorTextQuaternary};
+        font-size: ${token.fontSizeSM}px;
+        transition: transform ${token.motionDurationMid}
+            ${token.motionEaseInOut},
+          opacity ${token.motionDurationMid};
+      `,
+      selectorClear: css`
+        z-index: 1;
+        flex-shrink: 0;
+        color: ${token.colorTextQuaternary};
+        font-size: ${token.fontSizeSM}px;
+        cursor: pointer;
+        transition: color ${token.motionDurationMid},
+          opacity ${token.motionDurationMid};
 
-    [`.${prefixCls}-selector-arrow`]: {
-      flexShrink: 0,
-      color: token.colorTextQuaternary,
-      fontSize: token.fontSizeSM,
-      transition: `transform ${token.motionDurationMid} ${token.motionEaseInOut}, opacity ${token.motionDurationMid}`,
-    },
+        &.${prefixCls}-selector-clear-overlay {
+          position: absolute;
+          top: 50%;
+          right: 0;
+          transform: translateY(-50%);
+          opacity: 0;
+          pointer-events: none;
+        }
 
-    [`.${prefixCls}-selector-clear`]: {
-      zIndex: 1,
-      flexShrink: 0,
-      color: token.colorTextQuaternary,
-      fontSize: token.fontSizeSM,
-      cursor: 'pointer',
-      transition: `color ${token.motionDurationMid}, opacity ${token.motionDurationMid}`,
-      [`&.${prefixCls}-selector-clear-overlay`]: {
-        position: 'absolute',
-        top: '50%',
-        right: 0,
-        transform: 'translateY(-50%)',
-        opacity: 0,
-        pointerEvents: 'none',
-      },
-      '&:hover': {
-        color: token.colorTextTertiary,
-      },
-    },
+        &:hover {
+          color: ${token.colorTextTertiary};
+        }
+      `,
+      popover: css`
+        .ant-popover-inner {
+          padding: 0 !important;
+        }
+      `,
+      dropdown: css`
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        min-width: ${Math.max(150, token.controlHeight * 4)}px;
+      `,
+      menu: css`
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+      `,
+      menuScroll: css`
+        overflow-y: auto;
+      `,
+      menuRadio: css`
+        display: flex;
+        align-items: center;
+        padding: ${token.paddingXXS}px ${token.paddingSM}px;
+        cursor: pointer;
+        color: ${token.colorText};
+        transition: background-color ${token.motionDurationMid};
+        user-select: none;
 
-    [`.${prefixCls}-selector-btn:hover .${prefixCls}-selector-clear-overlay`]: {
-      opacity: 1,
-      pointerEvents: 'auto',
-    },
+        &:hover {
+          background-color: ${token.colorFillTertiary};
+        }
+      `,
+      menuRadioActive: css`
+        color: ${token.colorPrimary} !important;
+        background-color: ${token.colorPrimaryBg} !important;
 
-    [`.${prefixCls}-selector-btn:hover .${prefixCls}-selector-arrow-has-clear`]:
-      {
-        opacity: 0,
-      },
+        &:hover {
+          background-color: ${token.colorPrimaryBgHover ||
+          token.colorPrimaryBg} !important;
+        }
+      `,
+      menuRadioDisabled: css`
+        color: ${token.colorTextDisabled} !important;
+        cursor: not-allowed !important;
 
-    [`.${prefixCls}-selector`]: {
-      [`.${antdPrefixCls}-popover-inner`]: {
-        padding: 0,
-      },
-      [`.${prefixCls}-dropdown`]: {
-        display: 'flex',
-        flexDirection: 'column',
-        width: '100%',
-        minWidth: 150,
-      },
-      [`.${prefixCls}-menu`]: {
-        display: 'flex',
-        flex: 1,
-        flexDirection: 'column',
-      },
-      [`.${prefixCls}-menu-scroll`]: {
-        overflowY: 'auto',
-      },
-      [`.${prefixCls}-menu-virtual-list`]: {
-        overflowY: 'auto',
-      },
-      [`.${prefixCls}-menu-radio`]: {
-        display: 'flex',
-        alignItems: 'center',
-        padding: `${token.paddingXXS}px ${token.paddingSM}px`,
-        cursor: 'pointer',
-        color: token.colorText,
-        transition: `background-color ${token.motionDurationMid}`,
-        userSelect: 'none',
-        '&:hover': {
-          backgroundColor: token.colorFillTertiary,
-        },
-        [`&.${prefixCls}-menu-radio-active`]: {
-          color: token.colorPrimary,
-          backgroundColor: token.colorPrimaryBg,
-          '&:hover': {
-            backgroundColor: token.colorPrimaryBgHover || token.colorPrimaryBg,
-          },
-        },
-        [`&.${prefixCls}-menu-radio-disabled`]: {
-          color: token.colorTextDisabled,
-          cursor: 'not-allowed',
-          '&:hover': {
-            backgroundColor: 'transparent',
-          },
-        },
-      },
-      [`.${prefixCls}-menu-checkbox`]: {
-        display: 'flex',
-        alignItems: 'center',
-        width: '100%',
-        margin: 0,
-        padding: `${token.paddingXXS}px ${token.paddingSM}px`,
-        color: token.colorText,
-        transition: `background-color ${token.motionDurationMid}`,
-        '&:hover': {
-          backgroundColor: token.colorFillTertiary,
-        },
-        [`&.${antdPrefixCls}-checkbox-wrapper-disabled, &[disabled]`]: {
-          cursor: 'not-allowed',
-          '&:hover': {
-            backgroundColor: 'transparent',
-          },
-        },
-        '> span:last-child': {
-          flex: 1,
-          minWidth: 0,
-          overflow: 'hidden',
-          whiteSpace: 'nowrap',
-          textOverflow: 'ellipsis',
-        },
-      },
-      [`.${prefixCls}-menu-item-text`]: {
-        overflow: 'hidden',
-        whiteSpace: 'nowrap',
-        textOverflow: 'ellipsis',
-      },
-      [`.${prefixCls}-footer`]: {
-        display: 'flex',
-        justifyContent: 'flex-end',
-        padding: token.paddingSM,
-        borderTop: `1px solid ${token.colorBorderSecondary}`,
-      },
-      [`.${prefixCls}-search`]: {
-        padding: `${token.paddingXS}px ${token.paddingXS}px 0 ${token.paddingXS}px`,
-        [`.${antdPrefixCls}-input-affix-wrapper svg`]: {
-          color: token.colorTextQuaternary,
-        },
-      },
-      [`.${prefixCls}-select-all`]: {
-        padding: `${token.paddingXXS}px ${token.paddingSM}px`,
-        borderBottom: `1px solid ${token.colorBorderSecondary}`,
-        [`.${antdPrefixCls}-checkbox-wrapper`]: {
-          display: 'flex',
-          alignItems: 'center',
-          width: '100%',
-          margin: 0,
-          '> span:first-child': {
-            flexShrink: 0,
-          },
-          '> span:last-child': {
-            flex: 1,
-            minWidth: 0,
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-            textOverflow: 'ellipsis',
-          },
-        },
-      },
-      [`.${prefixCls}-empty`]: {
-        padding: `${token.paddingLG}px ${token.paddingSM}px`,
-        textAlign: 'center',
-        [`.${antdPrefixCls}-empty-image`]: {
-          height: 40,
-          marginBottom: token.marginXS,
-          [`.${antdPrefixCls}-empty-img-simple`]: {
-            width: 40,
-            height: 40,
-          },
-        },
-        [`.${antdPrefixCls}-empty-description`]: {
-          color: token.colorText,
-          fontSize: token.fontSizeSM,
-        },
-      },
-    },
-  };
-};
+        &:hover {
+          background-color: transparent !important;
+        }
+      `,
+      menuCheckbox: css`
+        display: flex;
+        align-items: center;
+        width: 100%;
+        margin: 0;
+        padding: ${token.paddingXXS}px ${token.paddingSM}px;
+        color: ${token.colorText};
+        transition: background-color ${token.motionDurationMid};
 
-export function useStyle(prefixCls: string, antdPrefixCls?: string) {
-  return useComponentStyle(
-    'PopoverSelect',
-    prefixCls,
-    genPopoverSelectStyle,
-    antdPrefixCls,
-  );
-}
+        &:hover {
+          background-color: ${token.colorFillTertiary};
+        }
+
+        &.ant-checkbox-wrapper-disabled,
+        &[disabled] {
+          cursor: not-allowed;
+
+          &:hover {
+            background-color: transparent;
+          }
+        }
+
+        > span:last-child {
+          flex: 1;
+          min-width: 0;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+      `,
+      menuItemText: css`
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      `,
+      search: css`
+        padding: ${token.paddingXS}px ${token.paddingXS}px 0;
+
+        .ant-input-affix-wrapper .anticon {
+          color: ${token.colorTextQuaternary};
+        }
+      `,
+      selectAll: css`
+        padding: ${token.paddingXXS}px ${token.paddingSM}px;
+        border-bottom: ${token.lineWidth}px solid ${token.colorBorderSecondary};
+
+        .ant-checkbox-wrapper {
+          display: flex;
+          align-items: center;
+          width: 100%;
+          margin: 0;
+
+          > span:first-child {
+            flex-shrink: 0;
+          }
+
+          > span:last-child {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+          }
+        }
+      `,
+      footer: css`
+        display: flex;
+        justify-content: flex-end;
+        padding: ${token.paddingSM}px;
+        border-top: ${token.lineWidth}px solid ${token.colorBorderSecondary};
+      `,
+      empty: css`
+        padding: ${token.paddingLG}px ${token.paddingSM}px;
+        text-align: center;
+
+        .ant-empty-image {
+          height: ${token.controlHeightLG}px;
+          margin-bottom: ${token.marginXS}px;
+
+          .ant-empty-img-simple {
+            width: ${token.controlHeightLG}px;
+            height: ${token.controlHeightLG}px;
+          }
+        }
+
+        .ant-empty-description {
+          color: ${token.colorText};
+          fontsize: ${token.fontSizeSM}px;
+        }
+      `,
+    };
+  },
+);

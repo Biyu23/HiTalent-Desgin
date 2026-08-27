@@ -1,7 +1,6 @@
-import clsx from 'clsx';
 import React, { memo } from 'react';
 import { useLocale } from '../../../configProvider/useLocale';
-import { useComponentNamespace } from '../../_util/namespace';
+import { useStyles } from '../style';
 import type { DrawerPlacement } from '../type';
 
 interface DrawerResizeHandleProps {
@@ -12,9 +11,16 @@ interface DrawerResizeHandleProps {
   onPointerDown: (event: React.PointerEvent<HTMLDivElement>) => void;
 }
 
+const placementStyleKeyMap = {
+  left: 'resizeHandleLeft',
+  right: 'resizeHandleRight',
+  top: 'resizeHandleTop',
+  bottom: 'resizeHandleBottom',
+} as const;
+
 const DrawerResizeHandle = memo<DrawerResizeHandleProps>(
   ({ placement, className, style, resizing, onPointerDown }) => {
-    const { e, em, hashId } = useComponentNamespace();
+    const { styles: drawerStyles, cx } = useStyles();
     const drawerLocale = useLocale('Drawer');
     const horizontal = placement === 'left' || placement === 'right';
     const ariaLabels = {
@@ -26,11 +32,10 @@ const DrawerResizeHandle = memo<DrawerResizeHandleProps>(
 
     return (
       <div
-        className={clsx(
-          e('resize-handle'),
-          em('resize-handle', placement),
-          hashId,
-          { [em('resize-handle', 'resizing')]: resizing },
+        className={cx(
+          drawerStyles.resizeHandle,
+          drawerStyles[placementStyleKeyMap[placement]],
+          resizing && drawerStyles.resizeHandleResizing,
           className,
         )}
         style={style}

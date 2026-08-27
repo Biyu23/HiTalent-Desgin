@@ -12,6 +12,10 @@ export type DrawerSize = 'default' | 'large' | number | string;
  */
 export interface DrawerRef {
   /**
+   * @description 底层 DOM 容器节点
+   */
+  nativeElement: HTMLDivElement | null;
+  /**
    * @description 最小化 Drawer 到全局 Dock
    */
   minimize: () => void;

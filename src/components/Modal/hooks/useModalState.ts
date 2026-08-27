@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { useMinimizeState } from '../../_util/minimize/useMinimizeState';
+import { useMinimizeState } from '../../../hooks';
 import type { ModalProps } from '../type';
 
 type UseModalStateOptions = Pick<

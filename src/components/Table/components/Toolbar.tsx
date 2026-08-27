@@ -1,6 +1,5 @@
-import clsx from 'clsx';
 import React, { memo, useContext } from 'react';
-import { useComponentNamespace } from '../../_util/namespace';
+import { useStyles } from '../style';
 import TableContext from '../TableContext';
 import type { ColumnId, EnhancedColumnType } from '../type';
 import ColumnSettingPopover from './ColumnSettingPopover';
@@ -27,24 +26,22 @@ function Toolbar<RecordType = Record<string, unknown>>(
     toolbarExtra,
     columnSettingLoading,
   } = props;
-  const namespace = useComponentNamespace();
-  const { e } = namespace;
-  const { hashId, classNames, styles } = useContext(TableContext);
+  const context = useContext(TableContext);
+  const { styles: tableStyles, cx } = useStyles();
+  const { classNames, styles } = context;
 
   if (!showColumnSetting && !toolbarExtra) return null;
 
   return (
     <div
-      className={clsx(e('toolbar'), hashId, classNames?.toolbar)}
+      className={cx(tableStyles.toolbar, classNames?.toolbar)}
       style={styles?.toolbar}
     >
-      <div
-        className={clsx(e('toolbar-extra'), hashId, classNames?.toolbarExtra)}
-      >
+      <div className={cx(tableStyles.toolbarExtra, classNames?.toolbarExtra)}>
         {toolbarExtra}
       </div>
       {showColumnSetting && (
-        <div className={clsx(e('toolbar-setting'), hashId)}>
+        <div className={tableStyles.toolbarSetting}>
           <ColumnSettingPopover
             columns={columns}
             visibleIds={visibleIds}

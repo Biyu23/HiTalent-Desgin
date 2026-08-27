@@ -5,14 +5,12 @@ const zhNav = [
   { title: '首页', link: '/' },
   { title: '指南', link: '/guide' },
   { title: '组件', link: '/components/button' },
-  { title: 'Hooks', link: '/hooks/use-merge-state' },
 ];
 
 const enNav = [
   { title: 'Home', link: '/en-US' },
   { title: 'Guide', link: '/en-US/guide' },
   { title: 'Components', link: '/en-US/components/button' },
-  { title: 'Hooks', link: '/en-US/hooks/use-merge-state' },
 ];
 
 export default defineConfig({
@@ -174,64 +172,6 @@ export default defineConfig({
             {
               title: 'ConfigProvider',
               link: '/en-US/components/config-provider',
-            },
-          ],
-        },
-      ],
-      '/hooks': [
-        {
-          title: '状态管理',
-          children: [
-            {
-              title: 'useMergeState 合并状态',
-              link: '/hooks/use-merge-state',
-            },
-          ],
-        },
-        {
-          title: '交互能力',
-          children: [
-            {
-              title: 'useDragBounds 拖拽边界',
-              link: '/hooks/use-drag-bounds',
-            },
-          ],
-        },
-        {
-          title: '数据适配',
-          children: [
-            {
-              title: 'useFieldNames 字段映射',
-              link: '/hooks/use-field-names',
-            },
-          ],
-        },
-      ],
-      '/en-US/hooks': [
-        {
-          title: 'State',
-          children: [
-            {
-              title: 'useMergeState',
-              link: '/en-US/hooks/use-merge-state',
-            },
-          ],
-        },
-        {
-          title: 'Interaction',
-          children: [
-            {
-              title: 'useDragBounds',
-              link: '/en-US/hooks/use-drag-bounds',
-            },
-          ],
-        },
-        {
-          title: 'Data Adapters',
-          children: [
-            {
-              title: 'useFieldNames',
-              link: '/en-US/hooks/use-field-names',
             },
           ],
         },

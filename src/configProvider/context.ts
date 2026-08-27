@@ -5,7 +5,7 @@ import type {
 import { createContext, useContext } from 'react';
 import type { HtdLocale, LocaleDirection } from '../locales';
 import { zh_CN } from '../locales';
-import { isNullOrBlank } from '../util';
+import { isNullOrBlank } from '../utils';
 
 export interface ConfigContextValue {
   /** HiTalent Design 默认/全局组件前缀，默认为 'htd' */

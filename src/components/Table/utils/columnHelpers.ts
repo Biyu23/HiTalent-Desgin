@@ -1,5 +1,5 @@
 import type { DataIndex } from 'rc-table/lib/interface';
-import { isNullOrBlank } from '../../../util';
+import { isNullOrBlank } from '../../../utils';
 import type {
   ColumnId,
   ColumnState,
