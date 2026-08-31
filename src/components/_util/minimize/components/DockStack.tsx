@@ -9,8 +9,14 @@ import useTransformScroll from '../hooks/useTransformScroll';
 import useViewportHeight from '../hooks/useViewportHeight';
 import { useStackStyles } from '../style';
 import type { DockItem, MinimizePosition } from '../type';
-import { getStackBadgeCount, shouldCollapseStack } from '../utils/layout';
-import { isBottomPosition } from '../utils/position';
+import {
+  getCollapsedStackScale,
+  getStackBadgeCount,
+  NOTIFICATION_STACK_LAYERS,
+  NOTIFICATION_STACK_OFFSET,
+  shouldCollapseStack,
+} from '../utils/layout';
+import { getStackTransformOrigin, isBottomPosition } from '../utils/position';
 import DockCard from './DockCard';
 
 export interface DockStackProps {
@@ -32,17 +38,16 @@ export const DockStack = memo<DockStackProps>(
 
     const viewportRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
-    const latestRef = useRef<HTMLDivElement>(null);
     const viewportHeight = useViewportHeight();
 
     const displayItems = useMemo(() => [...items].reverse(), [items]);
-    const itemRevision = useMemo(
-      () => displayItems.map((item) => item.id).join('|'),
+    const itemIds = useMemo(
+      () => displayItems.map((item) => item.id),
       [displayItems],
     );
+    const itemRevision = useMemo(() => itemIds.join('|'), [itemIds]);
     const totalCount = displayItems.length;
     const latestItem = displayItems[0];
-    const olderItems = displayItems.slice(1);
     const collapsible = shouldCollapseStack(totalCount, latestItem?.stack);
     const expansion = useDockExpansion({
       rootRef: dragRef,
@@ -51,10 +56,11 @@ export const DockStack = memo<DockStackProps>(
     });
     const expanded = expansion.expanded;
     const anchorBottom = isBottomPosition(position);
+    const transformOrigin = getStackTransformOrigin(position);
     const metrics = useDockMetrics({
       contentRef,
-      latestRef,
-      revision: `${expanded ? 'expanded' : 'collapsed'}:${itemRevision}`,
+      itemIds,
+      revision: itemRevision,
       fallbackHeight: DEFAULT_CARD_HEIGHT,
     });
 
@@ -80,7 +86,8 @@ export const DockStack = memo<DockStackProps>(
       updateBounds(dragOffsetRef.current);
     }, [containerHeight, position, updateBounds, viewportHeight]);
 
-    const showStackLayers = collapsible && !expanded;
+    const latestMetrics = metrics.cards.get(latestItem.id);
+    const hasMeasuredCards = metrics.cards.size === totalCount;
     const draggable = !collapsible;
 
     return (
@@ -104,7 +111,7 @@ export const DockStack = memo<DockStackProps>(
           ref={viewportRef}
           className={cx(
             styles.viewport,
-            expanded && styles.viewportExpanded,
+            isScrollable && styles.viewportExpanded,
             isScrollable && styles.viewportScrollable,
           )}
         >
@@ -112,31 +119,56 @@ export const DockStack = memo<DockStackProps>(
             ref={contentRef}
             className={cx(styles.canvas, anchorBottom && styles.canvasBottom)}
           >
-            <div
-              ref={latestRef}
-              className={cx(
-                styles.cardItem,
-                styles.latestCard,
-                showStackLayers &&
-                  (anchorBottom
-                    ? styles.latestCardStackBottom
-                    : styles.latestCardStackTop),
-              )}
-            >
-              <DockCard
-                item={latestItem}
-                draggable={draggable}
-                elevated={!expanded}
-                count={getStackBadgeCount(totalCount, true)}
-              />
-            </div>
+            {displayItems.map((item, index) => {
+              const cardMetrics = metrics.cards.get(item.id);
+              const interactive = expanded || index === 0;
+              const visible =
+                expanded ||
+                index === 0 ||
+                (hasMeasuredCards && index < NOTIFICATION_STACK_LAYERS);
+              let transform = 'translateY(0) scaleX(1)';
 
-            {expanded &&
-              olderItems.map((item) => (
-                <div key={item.id} className={styles.cardItem}>
-                  <DockCard item={item} draggable={draggable} />
+              if (!expanded && latestMetrics && cardMetrics) {
+                const targetTop = anchorBottom
+                  ? latestMetrics.top +
+                    latestMetrics.height -
+                    cardMetrics.height -
+                    index * NOTIFICATION_STACK_OFFSET
+                  : latestMetrics.top + index * NOTIFICATION_STACK_OFFSET;
+                const offsetY = targetTop - cardMetrics.top;
+                const scaleX = getCollapsedStackScale(
+                  latestMetrics.width,
+                  cardMetrics.width,
+                  index,
+                );
+                transform = `translateY(${offsetY}px) scaleX(${scaleX})`;
+              }
+
+              const itemStyle: React.CSSProperties = {
+                transform,
+                transformOrigin,
+                opacity: visible ? 1 : 0,
+                zIndex: totalCount - index,
+                pointerEvents: interactive ? 'auto' : 'none',
+              };
+
+              return (
+                <div
+                  key={item.id}
+                  ref={metrics.getCardRef(item.id)}
+                  className={styles.cardItem}
+                  style={itemStyle}
+                >
+                  <DockCard
+                    item={item}
+                    interactive={interactive}
+                    draggable={draggable}
+                    elevated={!expanded && index < NOTIFICATION_STACK_LAYERS}
+                    count={getStackBadgeCount(totalCount, index === 0)}
+                  />
                 </div>
-              ))}
+              );
+            })}
           </div>
         </div>
       </DraggablePointerContainer>

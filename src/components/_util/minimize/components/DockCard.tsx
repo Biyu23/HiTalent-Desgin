@@ -6,13 +6,14 @@ import type { DockItem } from '../type';
 
 export interface DockCardProps {
   item: DockItem;
+  interactive: boolean;
   draggable: boolean;
   elevated?: boolean;
   count?: number;
 }
 
 export const DockCard = memo<DockCardProps>(
-  ({ item, draggable, elevated, count }) => {
+  ({ item, interactive, draggable, elevated, count }) => {
     const { styles, cx } = useStackStyles();
 
     return (
@@ -23,9 +24,14 @@ export const DockCard = memo<DockCardProps>(
           item.className,
         )}
         style={item.style}
+        aria-hidden={!interactive || undefined}
       >
         <div
-          className={cx(styles.header, !draggable && styles.headerStatic)}
+          className={cx(
+            styles.header,
+            !draggable && styles.headerStatic,
+            !interactive && styles.cardContentHidden,
+          )}
           role="group"
           aria-label={item.locale.minimizedDockDragHandle}
         >
@@ -44,6 +50,7 @@ export const DockCard = memo<DockCardProps>(
             <Button
               size="small"
               type="text"
+              tabIndex={interactive ? undefined : -1}
               onClick={item.onRestore}
               icon={<ExpandOutlined />}
               aria-label={item.locale.restore}
@@ -51,6 +58,7 @@ export const DockCard = memo<DockCardProps>(
             <Button
               size="small"
               type="text"
+              tabIndex={interactive ? undefined : -1}
               onClick={item.onClose}
               icon={<CloseOutlined />}
               aria-label={item.locale.close}

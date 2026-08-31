@@ -11,9 +11,6 @@ const minimizeDockIn = keyframes`
   }
 `;
 
-const NOTIFICATION_STACK_OFFSET = 8;
-const MIN_STACK_SCALE = 0.72;
-
 export const useStackStyles = createStyles(({ token }) => ({
   stackWrapper: css`
     position: relative;
@@ -67,109 +64,24 @@ export const useStackStyles = createStyles(({ token }) => ({
     flex-direction: column-reverse;
   `,
   cardItem: css`
+    position: relative;
     width: 100%;
     flex: 0 0 auto;
-  `,
-  latestCard: css`
-    position: relative;
-    isolation: isolate;
-    z-index: 1;
-  `,
-  latestCardStackTop: css`
-    &::before,
-    &::after {
-      position: absolute;
-      inset: 0;
-      background: ${token.colorBgElevated};
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: ${token.lineWidth}px solid ${token.colorBorderSecondary};
-      border-radius: ${token.borderRadiusLG}px;
-      box-shadow: ${token.boxShadowSecondary};
-      pointer-events: none;
-      content: '';
-      transition: transform ${token.motionDurationSlow}, backdrop-filter 0s;
-      will-change: transform, opacity;
-    }
-
-    &::before {
-      z-index: -1;
-      transform: translateY(${NOTIFICATION_STACK_OFFSET}px)
-        scaleX(
-          ${Math.max(
-            (token.controlHeight * 7 - NOTIFICATION_STACK_OFFSET * 2) /
-              (token.controlHeight * 7),
-            MIN_STACK_SCALE,
-          )}
-        );
-    }
-
-    &::after {
-      z-index: -2;
-      transform: translateY(${NOTIFICATION_STACK_OFFSET * 2}px)
-        scaleX(
-          ${Math.max(
-            (token.controlHeight * 7 - NOTIFICATION_STACK_OFFSET * 4) /
-              (token.controlHeight * 7),
-            MIN_STACK_SCALE,
-          )}
-        );
-    }
-  `,
-  latestCardStackBottom: css`
-    &::before,
-    &::after {
-      position: absolute;
-      inset: 0;
-      background: ${token.colorBgElevated};
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: ${token.lineWidth}px solid ${token.colorBorderSecondary};
-      border-radius: ${token.borderRadiusLG}px;
-      box-shadow: ${token.boxShadowSecondary};
-      pointer-events: none;
-      content: '';
-      transition: transform ${token.motionDurationSlow}, backdrop-filter 0s;
-      will-change: transform, opacity;
-    }
-
-    &::before {
-      z-index: -1;
-      transform: translateY(-${NOTIFICATION_STACK_OFFSET}px)
-        scaleX(
-          ${Math.max(
-            (token.controlHeight * 7 - NOTIFICATION_STACK_OFFSET * 2) /
-              (token.controlHeight * 7),
-            MIN_STACK_SCALE,
-          )}
-        );
-    }
-
-    &::after {
-      z-index: -2;
-      transform: translateY(-${NOTIFICATION_STACK_OFFSET * 2}px)
-        scaleX(
-          ${Math.max(
-            (token.controlHeight * 7 - NOTIFICATION_STACK_OFFSET * 4) /
-              (token.controlHeight * 7),
-            MIN_STACK_SCALE,
-          )}
-        );
-    }
+    transition: transform ${token.motionDurationSlow},
+      opacity ${token.motionDurationMid};
+    will-change: transform, opacity;
   `,
   stackCard: css`
     position: relative;
     z-index: 1;
     width: 100%;
     overflow: hidden;
-    background: transparent;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: ${token.colorBgElevated};
     border: ${token.lineWidth}px solid ${token.colorBorderSecondary};
     border-radius: ${token.borderRadiusLG}px;
-    box-shadow: none;
+    box-shadow: ${token.boxShadowTertiary};
     animation: ${minimizeDockIn} ${token.motionDurationSlow}
-      cubic-bezier(0.16, 1, 0.3, 1);
+      cubic-bezier(0.16, 1, 0.3, 1) both;
     transition: box-shadow ${token.motionDurationMid}
         cubic-bezier(0.16, 1, 0.3, 1),
       border-color ${token.motionDurationFast} ease;
@@ -180,13 +92,16 @@ export const useStackStyles = createStyles(({ token }) => ({
     }
   `,
   stackCardElevated: css`
-    background: ${token.colorBgElevated};
     box-shadow: ${token.boxShadowSecondary};
 
     &:hover,
     &:focus-within {
       box-shadow: ${token.boxShadow};
     }
+  `,
+  cardContentHidden: css`
+    opacity: 0;
+    transition: opacity ${token.motionDurationMid};
   `,
   header: css`
     display: flex;
