@@ -54,6 +54,23 @@ const en_US = {
     yes: 'Yes',
     no: 'No',
   },
+  SearchForm: {
+    searchCriteria: 'Search Criteria',
+    quickFilters: 'Quick Filters',
+    basicInfo: 'Basic Information',
+    search: 'Search',
+    reset: 'Reset',
+    clearAll: 'Clear All',
+    activeFilters: 'Active Filters',
+    expand: 'Expand More',
+    collapse: 'Collapse',
+    advancedSearch: 'Advanced Search',
+    confirm: 'Confirm',
+    cancel: 'Cancel',
+    clear: 'Clear',
+    selectedCount: (count: number) => `${count} selected`,
+    itemsSummary: (count: number) => `etc. ${count} items`,
+  },
 } as const satisfies HtdLocale;
 
 export default en_US;

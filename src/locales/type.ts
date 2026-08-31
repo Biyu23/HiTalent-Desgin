@@ -95,6 +95,26 @@ export interface LocaleComponentMap {
   ResponsiveButtonGroup: ResponsiveButtonGroupLocale;
   Modal: ModalLocale;
   Table: TableLocale;
+  SearchForm: SearchFormLocale;
+}
+
+/** SearchForm 组件的国际化文案 */
+export interface SearchFormLocale {
+  searchCriteria: string;
+  quickFilters: string;
+  basicInfo: string;
+  search: string;
+  reset: string;
+  clearAll: string;
+  activeFilters: string;
+  expand: string;
+  collapse: string;
+  advancedSearch: string;
+  confirm: string;
+  cancel: string;
+  clear: string;
+  selectedCount: (count: number) => string;
+  itemsSummary: (count: number) => string;
 }
 
 /** HiTalent Design 完整语言包 */

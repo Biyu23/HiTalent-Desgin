@@ -53,6 +53,23 @@ const zh_CN = {
     yes: '是',
     no: '否',
   },
+  SearchForm: {
+    searchCriteria: '搜索条件',
+    quickFilters: '快捷筛选',
+    basicInfo: '基础信息',
+    search: '搜索',
+    reset: '重置',
+    clearAll: '清空全部',
+    activeFilters: '已选条件',
+    expand: '展开更多',
+    collapse: '收起',
+    advancedSearch: '高级筛选',
+    confirm: '确定',
+    cancel: '取消',
+    clear: '清空',
+    selectedCount: (count: number) => `已选择 ${count} 项`,
+    itemsSummary: (count: number) => `等 ${count} 项`,
+  },
 } as const satisfies HtdLocale;
 
 export default zh_CN;

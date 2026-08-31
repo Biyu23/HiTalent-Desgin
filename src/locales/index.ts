@@ -9,6 +9,7 @@ export type {
   ModalLocale,
   PopoverSelectLocale,
   ResponsiveButtonGroupLocale,
+  SearchFormLocale,
   TableLocale,
 } from './type';
 

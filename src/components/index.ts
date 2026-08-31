@@ -90,3 +90,18 @@ export type {
   TableStyleSlot,
   TableStyles,
 } from './Table/type';
+
+export { default as SearchForm } from './SearchForm';
+export type {
+  SearchFieldGroup,
+  SearchFormClassNameSlot,
+  SearchFormClassNames,
+  SearchFormFieldItem,
+  SearchFormMode,
+  SearchFormProps,
+  SearchFormRef,
+  SearchFormStyleSlot,
+  SearchFormStyles,
+  SearchSearchInfo,
+  SearchTriggerMode,
+} from './SearchForm/type';
