@@ -100,6 +100,10 @@ export default defineConfig({
               title: 'PopoverSelect 气泡选择',
               link: '/components/popover-select',
             },
+            {
+              title: 'SearchForm 搜索表单',
+              link: '/components/search-form',
+            },
           ],
         },
         {
@@ -148,6 +152,10 @@ export default defineConfig({
             {
               title: 'PopoverSelect',
               link: '/en-US/components/popover-select',
+            },
+            {
+              title: 'SearchForm',
+              link: '/en-US/components/search-form',
             },
           ],
         },
