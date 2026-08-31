@@ -54,6 +54,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     minimizable = false,
     minimized: controlledMinimized,
     minimizePosition = 'bottom-right',
+    minimizeStack,
     onMinimizeChange,
     width,
     height,
@@ -297,8 +298,9 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
         closable={mergedClosable}
         closeIcon={closeIcon}
         maskClosable={maskClosable}
-        destroyOnClose={isMinimized ? false : destroyOnClose}
-        destroyOnHidden={isMinimized ? false : destroyOnHidden}
+        destroyOnHidden={
+          isMinimized ? false : destroyOnHidden ?? destroyOnClose
+        }
         onClose={handleClose}
         rootClassName={cx(prefixCls, drawerStyles.root, rootClassName)}
         rootStyle={rootStyle}
@@ -314,6 +316,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
         position={minimizePosition}
         className={minimizedDockClassName}
         style={minimizedDockStyle}
+        stack={minimizeStack}
         locale={drawerLocale}
         onRestore={restore}
         onClose={handleClose}

@@ -1,8 +1,11 @@
 import type { DrawerProps as AntdDrawerProps } from 'antd';
 import type React from 'react';
-import type { MinimizePosition } from '../_util/minimize/type';
+import type { MinimizePosition, MinimizeStack } from '../_util/minimize/type';
 
-export type { MinimizePosition } from '../_util/minimize/type';
+export type {
+  MinimizePosition,
+  MinimizeStackConfig,
+} from '../_util/minimize/type';
 export type DrawerPlacement = 'left' | 'right' | 'top' | 'bottom';
 export type DrawerAxis = 'horizontal' | 'vertical';
 export type DrawerSize = 'default' | 'large' | number | string;
@@ -122,6 +125,11 @@ export interface DrawerProps
    * @default 'bottom-right'
    */
   minimizePosition?: MinimizePosition;
+  /**
+   * @description 最小化卡片堆叠配置。超过 threshold 后折叠，传入 false 时始终展开。
+   * @default { threshold: 3 }
+   */
+  minimizeStack?: MinimizeStack;
   /**
    * @description 最小化状态变化回调。
    */

@@ -37,6 +37,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     minimized: controlledMinimized,
     maximized: controlledMaximized,
     minimizePosition = 'bottom-right',
+    minimizeStack,
     closable = true,
     closeIcon,
     className,
@@ -114,8 +115,9 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   } = useModalWindowState();
 
   // 最小化模式下隐藏时保留 DOM，防止表单数据丢失；彻底关闭时遵循传入配置
-  const resolvedDestroyOnClose = isMinimized ? false : destroyOnClose;
-  const resolvedDestroyOnHidden = isMinimized ? false : destroyOnHidden;
+  const resolvedDestroyOnHidden = isMinimized
+    ? false
+    : destroyOnHidden ?? destroyOnClose;
 
   const handleClose = useCallback(
     (e?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>) => {
@@ -278,7 +280,6 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
           maskClosable={maskClosable}
           rootClassName={cx(prefixCls, rootClassName)}
           classNames={antdClassNames}
-          destroyOnClose={resolvedDestroyOnClose}
           destroyOnHidden={resolvedDestroyOnHidden}
           width={modalWidth}
           centered={centered}
@@ -311,6 +312,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
           position={minimizePosition}
           className={minimizedDockClassName}
           style={minimizedDockStyle}
+          stack={minimizeStack}
           locale={modalLocale}
           onRestore={handleRestore}
           onClose={handleClose}

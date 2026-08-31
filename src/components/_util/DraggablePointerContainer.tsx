@@ -3,7 +3,15 @@ import React, { useCallback, useRef } from 'react';
 export interface DraggablePointerContainerProps {
   disabled?: boolean;
   position?: { x: number; y: number };
+  onStart?: (
+    event: React.PointerEvent<HTMLDivElement>,
+    data: { x: number; y: number },
+  ) => void;
   onDrag?: (position: { x: number; y: number }) => void;
+  onStop?: (
+    event: React.PointerEvent<HTMLDivElement>,
+    data: { x: number; y: number },
+  ) => void;
   bounds?: { left: number; top: number; right: number; bottom: number };
   handle?: string;
   cancel?: string;
@@ -11,7 +19,21 @@ export interface DraggablePointerContainerProps {
   className?: string;
   style?: React.CSSProperties;
   children: React.ReactNode;
+  onMouseEnter?: React.MouseEventHandler<HTMLDivElement>;
+  onMouseLeave?: React.MouseEventHandler<HTMLDivElement>;
+  onFocusCapture?: React.FocusEventHandler<HTMLDivElement>;
+  onBlurCapture?: React.FocusEventHandler<HTMLDivElement>;
   'data-dragging'?: string;
+}
+
+interface DragState {
+  pointerId: number;
+  startX: number;
+  startY: number;
+  originX: number;
+  originY: number;
+  lastX: number;
+  lastY: number;
 }
 
 export const DraggablePointerContainer: React.FC<
@@ -19,7 +41,9 @@ export const DraggablePointerContainer: React.FC<
 > = ({
   disabled = false,
   position = { x: 0, y: 0 },
+  onStart,
   onDrag,
+  onStop,
   bounds,
   handle,
   cancel = '[data-modal-no-drag], button, a, input, textarea, select, [contenteditable]',
@@ -27,22 +51,19 @@ export const DraggablePointerContainer: React.FC<
   className,
   style,
   children,
+  onMouseEnter,
+  onMouseLeave,
+  onFocusCapture,
+  onBlurCapture,
   'data-dragging': dataDragging,
 }) => {
   const localRef = useRef<HTMLDivElement>(null);
   const containerRef = nodeRef || localRef;
-
-  const draggingRef = useRef<{
-    pointerId: number;
-    startX: number;
-    startY: number;
-    originX: number;
-    originY: number;
-  } | null>(null);
+  const draggingRef = useRef<DragState | null>(null);
 
   const handlePointerDown = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
-      if (disabled || event.button !== 0) return;
+      if (disabled || event.button !== 0 || draggingRef.current) return;
 
       const target = event.target as HTMLElement;
       if (cancel && target.closest(cancel)) return;
@@ -51,10 +72,12 @@ export const DraggablePointerContainer: React.FC<
       const container = containerRef.current;
       if (!container) return;
 
-      try {
-        container.setPointerCapture(event.pointerId);
-      } catch {
-        // 部分测试环境或非标准DOM忽略异常
+      if (typeof container.setPointerCapture === 'function') {
+        try {
+          container.setPointerCapture(event.pointerId);
+        } catch {
+          // 部分测试环境或非标准 DOM 不支持 pointer capture。
+        }
       }
 
       draggingRef.current = {
@@ -63,11 +86,14 @@ export const DraggablePointerContainer: React.FC<
         startY: event.clientY,
         originX: position.x,
         originY: position.y,
+        lastX: position.x,
+        lastY: position.y,
       };
 
+      onStart?.(event, { x: position.x, y: position.y });
       event.stopPropagation();
     },
-    [cancel, containerRef, disabled, handle, position.x, position.y],
+    [cancel, containerRef, disabled, handle, onStart, position.x, position.y],
   );
 
   const handlePointerMove = useCallback(
@@ -77,7 +103,6 @@ export const DraggablePointerContainer: React.FC<
 
       const deltaX = event.clientX - state.startX;
       const deltaY = event.clientY - state.startY;
-
       let nextX = state.originX + deltaX;
       let nextY = state.originY + deltaY;
 
@@ -86,28 +111,55 @@ export const DraggablePointerContainer: React.FC<
         nextY = Math.max(bounds.top, Math.min(bounds.bottom, nextY));
       }
 
+      state.lastX = nextX;
+      state.lastY = nextY;
       onDrag?.({ x: nextX, y: nextY });
     },
     [bounds, onDrag],
   );
 
-  const handlePointerUp = useCallback(
-    (event: React.PointerEvent<HTMLDivElement>) => {
+  const finishDrag = useCallback(
+    (
+      event: React.PointerEvent<HTMLDivElement>,
+      releasePointerCapture: boolean,
+    ) => {
       const state = draggingRef.current;
       if (!state || state.pointerId !== event.pointerId) return;
 
+      draggingRef.current = null;
       const container = containerRef.current;
-      if (container && container.hasPointerCapture(event.pointerId)) {
+      if (
+        releasePointerCapture &&
+        container &&
+        typeof container.hasPointerCapture === 'function' &&
+        typeof container.releasePointerCapture === 'function'
+      ) {
         try {
-          container.releasePointerCapture(event.pointerId);
+          if (container.hasPointerCapture(event.pointerId)) {
+            container.releasePointerCapture(event.pointerId);
+          }
         } catch {
-          // ignore
+          // pointer capture 可能已由浏览器自动释放。
         }
       }
 
-      draggingRef.current = null;
+      onStop?.(event, { x: state.lastX, y: state.lastY });
     },
-    [containerRef],
+    [containerRef, onStop],
+  );
+
+  const handlePointerUp = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      finishDrag(event, true);
+    },
+    [finishDrag],
+  );
+
+  const handleLostPointerCapture = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      finishDrag(event, false);
+    },
+    [finishDrag],
   );
 
   const transformStyle: React.CSSProperties = {
@@ -128,6 +180,11 @@ export const DraggablePointerContainer: React.FC<
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
+      onLostPointerCapture={handleLostPointerCapture}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onFocusCapture={onFocusCapture}
+      onBlurCapture={onBlurCapture}
     >
       {children}
     </div>

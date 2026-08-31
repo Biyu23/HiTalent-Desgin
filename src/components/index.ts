@@ -57,6 +57,7 @@ export type {
 export { default as Modal } from './Modal';
 export type {
   MinimizePosition,
+  MinimizeStackConfig,
   ModalClassNames,
   ModalProps,
   ModalRef,

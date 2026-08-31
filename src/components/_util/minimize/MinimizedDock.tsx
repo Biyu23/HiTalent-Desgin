@@ -1,83 +1,116 @@
-import { CloseOutlined, ExpandOutlined } from '@ant-design/icons';
-import { Button, Flex } from 'antd';
-import React, { memo, useLayoutEffect, useState } from 'react';
+import React, {
+  memo,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { usePrefixCls } from '../../../configProvider/usePrefixCls';
-import useDragBounds from '../../../hooks/useDragBounds';
-import DraggablePointerContainer from '../DraggablePointerContainer';
+import DockStack from './components/DockStack';
 import { acquireDockContainer } from './dockRegistry';
-import { useStyles } from './style';
-import type { MinimizedDockProps } from './type';
+import useDockId from './hooks/useDockId';
+import useDockItems from './hooks/useDockItems';
+import { dockStore } from './store/dockStore';
+import { useContainerStyles } from './style';
+import type { DockItem, MinimizedDockProps } from './type';
 
 const MinimizedDockInner = memo<MinimizedDockProps>(
   ({
+    id: propId,
     title,
     position: dockPosition,
     className,
     style,
+    stack,
     locale,
     onRestore,
     onClose,
   }) => {
     const dockPrefixCls = usePrefixCls('minimize');
-    const { styles: dockStyles, cx } = useStyles(dockPrefixCls);
-    const { dragRef, bounds } = useDragBounds();
-    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+    const { styles: containerStyles, cx } = useContainerStyles();
+    const dockId = useDockId(propId);
+    const items = useDockItems(dockPosition);
     const [scrollWrapperEl, setScrollWrapperEl] = useState<HTMLElement | null>(
       null,
     );
+    const positionClassName = {
+      'top-left': containerStyles.topLeft,
+      'top-right': containerStyles.topRight,
+      top: containerStyles.top,
+      'bottom-left': containerStyles.bottomLeft,
+      'bottom-right': containerStyles.bottomRight,
+      bottom: containerStyles.bottom,
+      left: containerStyles.left,
+      right: containerStyles.right,
+    }[dockPosition];
+    const scrollWrapperClassName = cx(
+      containerStyles.scrollWrapper,
+      positionClassName,
+    );
+
+    const item = useMemo<DockItem>(
+      () => ({
+        id: dockId,
+        title,
+        position: dockPosition,
+        className,
+        style,
+        stack,
+        locale,
+        onRestore,
+        onClose,
+      }),
+      [
+        className,
+        dockId,
+        dockPosition,
+        locale,
+        onClose,
+        onRestore,
+        stack,
+        style,
+        title,
+      ],
+    );
+    const itemRef = useRef(item);
+    itemRef.current = item;
+    useEffect(
+      () => dockStore.register(itemRef.current),
+      [dockId, dockPosition],
+    );
+
+    useEffect(() => {
+      dockStore.update(item);
+    }, [item]);
 
     useLayoutEffect(() => {
       const entry = acquireDockContainer({
-        namespace: 'htd',
         dockPrefixCls,
-        hashId: '',
+        containerClassName: containerStyles.container,
+        scrollWrapperClassName,
         position: dockPosition,
       });
       setScrollWrapperEl(entry.scrollWrapper);
       return entry.release;
-    }, [dockPosition, dockPrefixCls]);
+    }, [
+      containerStyles.container,
+      dockPosition,
+      dockPrefixCls,
+      scrollWrapperClassName,
+    ]);
 
-    if (!scrollWrapperEl) return null;
+    // 每个位置由最早注册的承载容器
+    const isLeader = items.length > 0 && items[0].id === dockId;
+    if (!scrollWrapperEl || !isLeader) return null;
 
     return createPortal(
-      <DraggablePointerContainer
-        key={`${dockPrefixCls}-${dockPosition}`}
-        nodeRef={dragRef}
-        bounds={bounds}
-        position={dragOffset}
-        onDrag={setDragOffset}
-        handle={`.${dockStyles.header}`}
-        className={cx(dockStyles.dock, className)}
-        style={style}
-        data-dragging={
-          dragOffset.x !== 0 || dragOffset.y !== 0 ? 'true' : undefined
-        }
-      >
-        <div
-          className={dockStyles.header}
-          role="group"
-          aria-label={locale.minimizedDockDragHandle}
-        >
-          <div className={dockStyles.title}>{title}</div>
-          <Flex gap={8} align="center" className={dockStyles.actions}>
-            <Button
-              size="small"
-              type="text"
-              onClick={() => onRestore()}
-              icon={<ExpandOutlined />}
-              aria-label={locale.restore}
-            />
-            <Button
-              size="small"
-              type="text"
-              onClick={() => onClose()}
-              icon={<CloseOutlined />}
-              aria-label={locale.close}
-            />
-          </Flex>
-        </div>
-      </DraggablePointerContainer>,
+      <DockStack
+        items={items}
+        position={dockPosition}
+        dockPrefixCls={dockPrefixCls}
+      />,
       scrollWrapperEl,
     );
   },

@@ -1,47 +1,78 @@
 import type { MinimizePosition } from './type';
 
+type ClassReferences = Map<string, number>;
+
 interface DockRegistryEntry {
   container: HTMLDivElement;
   scrollWrapper: HTMLDivElement;
   references: number;
-  hashes: Map<string, number>;
+  containerClasses: ClassReferences;
+  scrollWrapperClasses: ClassReferences;
 }
 
 const registry = new Map<string, DockRegistryEntry>();
 
-function registryKey(namespace: string, position: MinimizePosition) {
-  return `${namespace}:${position}`;
-}
-
-function syncClasses(
-  entry: DockRegistryEntry,
-  namespace: string,
+const getRegistryKey = (
   dockPrefixCls: string,
   position: MinimizePosition,
-) {
-  const hashes = Array.from(entry.hashes.keys()).filter(Boolean);
+): string => `${dockPrefixCls}:${position}`;
+
+const addClassReference = (
+  references: ClassReferences,
+  className?: string,
+): void => {
+  if (!className) return;
+  references.set(className, (references.get(className) || 0) + 1);
+};
+
+const removeClassReference = (
+  references: ClassReferences,
+  className?: string,
+): void => {
+  if (!className) return;
+  const nextCount = (references.get(className) || 1) - 1;
+  if (nextCount <= 0) references.delete(className);
+  else references.set(className, nextCount);
+};
+
+const syncClasses = (
+  entry: DockRegistryEntry,
+  dockPrefixCls: string,
+  position: MinimizePosition,
+): void => {
   entry.container.className = [
     `${dockPrefixCls}-container`,
     `${dockPrefixCls}-container-${position}`,
-    namespace,
-    ...hashes,
+    ...entry.containerClasses.keys(),
   ].join(' ');
+
   entry.scrollWrapper.className = [
     `${dockPrefixCls}-scroll-wrapper`,
-    namespace,
-    ...hashes,
+    ...entry.scrollWrapperClasses.keys(),
   ].join(' ');
+};
+
+export interface AcquireDockContainerOptions {
+  dockPrefixCls: string;
+  containerClassName?: string;
+  scrollWrapperClassName?: string;
+  position: MinimizePosition;
 }
 
-export function acquireDockContainer(options: {
-  namespace: string;
-  dockPrefixCls: string;
-  hashId: string;
-  position: MinimizePosition;
-}) {
-  const { namespace, dockPrefixCls, hashId, position } = options;
-  const key = registryKey(namespace, position);
+export function acquireDockContainer(options: AcquireDockContainerOptions): {
+  container: HTMLDivElement;
+  scrollWrapper: HTMLDivElement;
+  release: () => void;
+} {
+  const {
+    dockPrefixCls,
+    containerClassName,
+    scrollWrapperClassName,
+    position,
+  } = options;
+  const key = getRegistryKey(dockPrefixCls, position);
   let entry = registry.get(key);
+
   if (!entry) {
     const container = document.createElement('div');
     const scrollWrapper = document.createElement('div');
@@ -51,31 +82,40 @@ export function acquireDockContainer(options: {
       container,
       scrollWrapper,
       references: 0,
-      hashes: new Map(),
+      containerClasses: new Map(),
+      scrollWrapperClasses: new Map(),
     };
     registry.set(key, entry);
   }
+
   entry.references += 1;
-  entry.hashes.set(hashId, (entry.hashes.get(hashId) || 0) + 1);
-  syncClasses(entry, namespace, dockPrefixCls, position);
+  addClassReference(entry.containerClasses, containerClassName);
+  addClassReference(entry.scrollWrapperClasses, scrollWrapperClassName);
+  syncClasses(entry, dockPrefixCls, position);
   let released = false;
 
   return {
+    container: entry.container,
     scrollWrapper: entry.scrollWrapper,
     release: () => {
       if (released) return;
       released = true;
+
       const current = registry.get(key);
       if (!current) return;
+
       current.references -= 1;
-      const hashReferences = (current.hashes.get(hashId) || 1) - 1;
-      if (hashReferences <= 0) current.hashes.delete(hashId);
-      else current.hashes.set(hashId, hashReferences);
+      removeClassReference(current.containerClasses, containerClassName);
+      removeClassReference(
+        current.scrollWrapperClasses,
+        scrollWrapperClassName,
+      );
+
       if (current.references <= 0) {
         current.container.remove();
         registry.delete(key);
       } else {
-        syncClasses(current, namespace, dockPrefixCls, position);
+        syncClasses(current, dockPrefixCls, position);
       }
     },
   };

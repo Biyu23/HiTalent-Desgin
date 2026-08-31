@@ -1,8 +1,11 @@
 import type { Modal as AntdModal, ModalProps as AntdModalProps } from 'antd';
 import type React from 'react';
-import type { MinimizePosition } from '../_util/minimize/type';
+import type { MinimizePosition, MinimizeStack } from '../_util/minimize/type';
 
-export type { MinimizePosition } from '../_util/minimize/type';
+export type {
+  MinimizePosition,
+  MinimizeStackConfig,
+} from '../_util/minimize/type';
 
 /**
  * Modal 组件暴露的命令式方法
@@ -181,6 +184,11 @@ export interface ModalProps
    * @default 'bottom-right'
    */
   minimizePosition?: MinimizePosition;
+  /**
+   * @description 最小化卡片堆叠配置。超过 threshold 后折叠，传入 false 时始终展开
+   * @default { threshold: 3 }
+   */
+  minimizeStack?: MinimizeStack;
   /**
    * @description 是否最小化（受控）
    */
