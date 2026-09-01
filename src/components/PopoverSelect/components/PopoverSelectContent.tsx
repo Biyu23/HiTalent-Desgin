@@ -108,9 +108,6 @@ export function PopoverSelectContent<
       return (
         <div
           key={option.value}
-          role="option"
-          aria-selected={selectedSet.has(option.value)}
-          aria-disabled={option.disabled}
           className={cx(
             popoverStyles.menuRadio,
             selectedSet.has(option.value) && popoverStyles.menuRadioActive,
@@ -151,8 +148,6 @@ export function PopoverSelectContent<
 
   const menu = (
     <div
-      role="listbox"
-      aria-multiselectable={mode === 'multiple' || undefined}
       className={cx(
         popoverStyles.menu,
         !virtual && popoverStyles.menuScroll,

@@ -22,7 +22,7 @@ export interface ResponsiveButtonGroupLocale {
 
 /** Button 组件的国际化文案 */
 export interface ButtonLocale {
-  /** loading 状态的 aria-label，屏幕阅读器专用 */
+  /** loading 状态文案 */
   loading: string;
 }
 
@@ -52,15 +52,15 @@ export interface ModalLocale {
   maximize: string;
   unmaximize: string;
   close: string;
-  /** 拖拽把手（屏幕阅读器 aria-label） */
+  /** 拖拽把手 */
   dragHandle: string;
-  /** 右下角缩放把手（屏幕阅读器 aria-label） */
+  /** 右下角缩放把手 */
   resizeBottomRight: string;
-  /** 标题栏（屏幕阅读器 aria-label，role="button" 时的描述） */
+  /** 标题栏描述 */
   headerTitle: string;
-  /** 最小化悬浮窗容器（屏幕阅读器 aria-label） */
+  /** 最小化悬浮窗容器 */
   minimizedDockLabel: string;
-  /** 最小化悬浮窗拖拽把手（屏幕阅读器 aria-label） */
+  /** 最小化悬浮窗拖拽把手 */
   minimizedDockDragHandle: string;
 }
 
@@ -72,9 +72,9 @@ export interface TableLocale {
   save: string;
   /** 取消 */
   cancel: string;
-  /** 拖拽手柄 aria-label */
+  /** 拖拽手柄 */
   dragHandle: string;
-  /** 列宽调整手柄 aria-label */
+  /** 列宽调整手柄 */
   resizeHandle: string;
   /** 空值占位文本 */
   emptyText: string;

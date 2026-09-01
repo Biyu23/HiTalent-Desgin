@@ -5,7 +5,6 @@ export interface ResolvedClosable {
   showClose: boolean;
   closeIcon?: React.ReactNode;
   disabled: boolean;
-  ariaLabel?: string;
 }
 
 /**
@@ -33,7 +32,6 @@ export function resolveClosable(
     showClose: true,
     closeIcon: typeof resolvedIcon !== 'boolean' ? resolvedIcon : undefined,
     disabled: (isObject && closable.disabled) || false,
-    ariaLabel: isObject ? closable['aria-label'] : undefined,
   };
 }
 

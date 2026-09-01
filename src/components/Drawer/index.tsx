@@ -227,14 +227,12 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
             className={minimizeButtonClassName}
             onClick={minimize}
             icon={<MinusOutlined />}
-            aria-label={drawerLocale.minimize}
           />
         </Flex>
       ) : (
         extra
       ),
     [
-      drawerLocale.minimize,
       drawerStyles.headerActions,
       extra,
       minimizable,
@@ -252,7 +250,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
   const mergedTitle = useMemo(() => {
     if (title === null) return null;
     if (minimizable && isNullOrBlank(title)) {
-      return <span className={drawerStyles.emptyTitle} aria-hidden />;
+      return <span className={drawerStyles.emptyTitle} />;
     }
     return title;
   }, [drawerStyles.emptyTitle, minimizable, title]);

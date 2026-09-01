@@ -1,5 +1,4 @@
 import React, { memo } from 'react';
-import { useLocale } from '../../../configProvider/useLocale';
 import { useStyles } from '../style';
 
 interface ModalResizeHandleProps {
@@ -15,7 +14,6 @@ const stopMouseDownPropagation = (event: React.MouseEvent<HTMLDivElement>) => {
 
 const ModalResizeHandle = memo<ModalResizeHandleProps>(
   ({ onPointerDown, className, style }) => {
-    const modalLocale = useLocale('Modal');
     const { styles, cx } = useStyles();
 
     return (
@@ -23,8 +21,6 @@ const ModalResizeHandle = memo<ModalResizeHandleProps>(
         className={cx(styles.resizeHandle, className)}
         style={style}
         data-modal-no-drag
-        role="separator"
-        aria-label={modalLocale.resizeBottomRight}
         onMouseDown={stopMouseDownPropagation}
         onPointerDown={onPointerDown}
       />

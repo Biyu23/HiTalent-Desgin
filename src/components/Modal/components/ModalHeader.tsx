@@ -6,7 +6,6 @@ import {
 } from '@ant-design/icons';
 import { Button, Flex } from 'antd';
 import React, { memo } from 'react';
-import { useLocale } from '../../../configProvider/useLocale';
 import { useModalOperations } from '../contexts';
 import { useStyles } from '../style';
 import { resolveClosable } from '../utils/header';
@@ -33,13 +32,11 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
   } = useModalOperations();
 
   const { styles, cx } = useStyles();
-  const modalLocale = useLocale('Modal');
 
   const {
     showClose,
     closeIcon: resolvedCloseIcon,
     disabled: closeDisabled,
-    ariaLabel: closeAriaLabel,
   } = resolveClosable(closable, closeIcon);
 
   const actions = [
@@ -49,7 +46,6 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
         type="text"
         onClick={onMinimize}
         icon={<MinusOutlined />}
-        aria-label={modalLocale.minimize}
       />
     ),
     maximizable && (
@@ -58,7 +54,6 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
         type="text"
         onClick={onToggleMaximize}
         icon={isMaximized ? <CompressOutlined /> : <ExpandOutlined />}
-        aria-label={isMaximized ? modalLocale.restore : modalLocale.maximize}
       />
     ),
     showClose && (
@@ -68,7 +63,6 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
         disabled={closeDisabled}
         onClick={onClose}
         icon={resolvedCloseIcon || <CloseOutlined />}
-        aria-label={closeAriaLabel}
       />
     ),
   ].filter(Boolean);

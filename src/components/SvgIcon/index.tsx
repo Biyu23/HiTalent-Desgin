@@ -5,7 +5,6 @@ import React, {
   forwardRef,
   isValidElement,
   memo,
-  useCallback,
   useMemo,
 } from 'react';
 import { usePrefixCls } from '../../configProvider';
@@ -153,7 +152,6 @@ const SvgIcon = forwardRef<HTMLSpanElement, SvgIconProps>((props, ref) => {
     tabIndex,
     onClick,
     onKeyDown,
-    'aria-label': ariaLabel,
     title,
     ...restProps
   } = props;
@@ -179,19 +177,6 @@ const SvgIcon = forwardRef<HTMLSpanElement, SvgIconProps>((props, ref) => {
     }
     return s;
   }, [size, color, style, isClickable]);
-
-  const isDecorative = !ariaLabel && !title && !isClickable;
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLSpanElement>) => {
-      if (isClickable && (e.key === 'Enter' || e.key === ' ')) {
-        e.preventDefault();
-        e.currentTarget.click();
-      }
-      onKeyDown?.(e);
-    },
-    [isClickable, onClick, onKeyDown],
-  );
 
   const RenderSvg = useMemo(() => {
     if (CustomComponent) {
@@ -232,13 +217,10 @@ const SvgIcon = forwardRef<HTMLSpanElement, SvgIconProps>((props, ref) => {
       rotate={rotate}
       className={clsx(prefixCls, rootClassName, classNames?.root, className)}
       style={{ ...styles?.root, ...mergedStyle }}
-      role={isClickable ? 'button' : isDecorative ? undefined : 'img'}
-      tabIndex={isClickable ? tabIndex ?? 0 : tabIndex}
-      aria-hidden={isDecorative ? true : undefined}
-      aria-label={ariaLabel}
+      tabIndex={tabIndex}
       title={title}
       onClick={onClick}
-      onKeyDown={handleKeyDown}
+      onKeyDown={onKeyDown}
       {...restProps}
     />
   );

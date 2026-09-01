@@ -11,7 +11,6 @@ import {
   defaultDropAnimationSideEffects,
   DndContext,
   DragOverlay,
-  KeyboardSensor,
   MeasuringStrategy,
   PointerSensor,
   TouchSensor,
@@ -22,7 +21,6 @@ import {
   defaultAnimateLayoutChanges,
   horizontalListSortingStrategy,
   SortableContext,
-  sortableKeyboardCoordinates,
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -36,7 +34,6 @@ import React, {
   useState,
 } from 'react';
 import ReactDOM from 'react-dom';
-import { useLocale } from '../../../configProvider/useLocale';
 import { useStyles } from '../style';
 import TableContext from '../TableContext';
 import type { ColumnId } from '../type';
@@ -64,14 +61,12 @@ export const TableDragContext = React.createContext<TableDragContextValue>({
 interface SortableHeaderItemProps {
   id: ColumnId;
   children: React.ReactNode;
-  dragHandleLabel: string;
   isFixed: boolean;
 }
 
 const SortableHeaderItem: React.FC<SortableHeaderItemProps> = ({
   id,
   children,
-  dragHandleLabel,
   isFixed,
 }) => {
   const {
@@ -129,7 +124,6 @@ const SortableHeaderItem: React.FC<SortableHeaderItemProps> = ({
         height: '100%',
         ...(isDragging ? { opacity: 0.3, zIndex: 999 } : {}),
       }}
-      aria-label={dragHandleLabel}
     >
       {children}
     </div>
@@ -305,7 +299,6 @@ export const SortableBodyCell: React.FC<
 };
 
 export function useColumnDrag(options: UseColumnDragOptions) {
-  const locale = useLocale('Table');
   const tableId = useMemo(() => Math.random().toString(36).slice(2, 10), []);
   const optionsRef = useRef(options);
   optionsRef.current = options;
@@ -319,10 +312,6 @@ export function useColumnDrag(options: UseColumnDragOptions) {
     () => ({ activationConstraint: { distance: 4 } }),
     [],
   );
-  const keyboardSensorOptions = useMemo(
-    () => ({ coordinateGetter: sortableKeyboardCoordinates }),
-    [],
-  );
   const touchSensorOptions = useMemo(
     () => ({ activationConstraint: { delay: 150, tolerance: 5 } }),
     [],
@@ -330,7 +319,6 @@ export function useColumnDrag(options: UseColumnDragOptions) {
 
   const sensors = useSensors(
     useSensor(PointerSensor, pointerSensorOptions),
-    useSensor(KeyboardSensor, keyboardSensorOptions),
     useSensor(TouchSensor, touchSensorOptions),
   );
 
@@ -380,24 +368,17 @@ export function useColumnDrag(options: UseColumnDragOptions) {
   const HeaderCellWrapper: React.FC<{
     children: React.ReactNode;
     columnId: ColumnId;
-  }> = useCallback(
-    ({ children, columnId }) => {
-      const { enabled, orderedIds, columns } = optionsRef.current;
-      const column = columns.find((item) => item.id === columnId);
-      if (!enabled || !orderedIds.includes(columnId) || !column)
-        return <>{children}</>;
-      return (
-        <SortableHeaderItem
-          id={columnId}
-          dragHandleLabel={locale.dragHandle}
-          isFixed={column.fixed}
-        >
-          {children}
-        </SortableHeaderItem>
-      );
-    },
-    [locale.dragHandle],
-  );
+  }> = useCallback(({ children, columnId }) => {
+    const { enabled, orderedIds, columns } = optionsRef.current;
+    const column = columns.find((item) => item.id === columnId);
+    if (!enabled || !orderedIds.includes(columnId) || !column)
+      return <>{children}</>;
+    return (
+      <SortableHeaderItem id={columnId} isFixed={column.fixed}>
+        {children}
+      </SortableHeaderItem>
+    );
+  }, []);
 
   return { HeaderCellWrapper, ColumnDragContextWrapper, tableId };
 }

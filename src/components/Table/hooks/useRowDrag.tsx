@@ -13,7 +13,6 @@ import {
   defaultDropAnimationSideEffects,
   DndContext,
   DragOverlay,
-  KeyboardSensor,
   PointerSensor,
   TouchSensor,
   useSensor,
@@ -21,7 +20,6 @@ import {
 } from '@dnd-kit/core';
 import {
   SortableContext,
-  sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
@@ -34,7 +32,6 @@ import React, {
   useState,
 } from 'react';
 import ReactDOM from 'react-dom';
-import { useLocale } from '../../../configProvider/useLocale';
 import { isNullOrBlank } from '../../../utils';
 import { useStyles } from '../style';
 import TableContext from '../TableContext';
@@ -51,7 +48,6 @@ interface RowDragHandleContextValue {
   attributes: DraggableAttributes;
   listeners: DraggableSyntheticListeners;
   setActivatorNodeRef: (node: HTMLElement | null) => void;
-  dragHandleLabel: string;
   draggable: boolean;
 }
 
@@ -68,13 +64,7 @@ export const RowDragHandle: React.FC = () => {
   const { styles: tableStyles, cx } = useStyles();
 
   if (!context) return null;
-  const {
-    attributes,
-    listeners,
-    setActivatorNodeRef,
-    dragHandleLabel,
-    draggable,
-  } = context;
+  const { attributes, listeners, setActivatorNodeRef, draggable } = context;
 
   return (
     <div
@@ -91,7 +81,6 @@ export const RowDragHandle: React.FC = () => {
           !draggable && tableStyles.rowDragHandleDisabled,
           tableContext.classNames?.rowDragHandle,
         )}
-        aria-label={dragHandleLabel}
         {...(draggable ? listeners : undefined)}
         {...(draggable ? attributes : undefined)}
       >
@@ -113,7 +102,6 @@ const RowDragStateContext = React.createContext<RowDragStateValue>({
 
 interface SortableRowProps {
   id: React.Key;
-  dragHandleLabel: string;
   rowProps: React.HTMLAttributes<HTMLTableRowElement> & {
     'data-row-key'?: React.Key;
   };
@@ -122,7 +110,6 @@ interface SortableRowProps {
 
 const SortableRow: React.FC<SortableRowProps> = ({
   id,
-  dragHandleLabel,
   rowProps,
   draggable,
 }) => {
@@ -156,10 +143,9 @@ const SortableRow: React.FC<SortableRowProps> = ({
       attributes,
       listeners,
       setActivatorNodeRef,
-      dragHandleLabel,
       draggable,
     }),
-    [attributes, listeners, setActivatorNodeRef, dragHandleLabel, draggable],
+    [attributes, listeners, setActivatorNodeRef, draggable],
   );
 
   return (
@@ -342,7 +328,6 @@ const InternalRowDragContext = <RecordType,>({
 
 export function useRowDrag<RecordType>(options: UseRowDragOptions<RecordType>) {
   const { dataSource, rowKey, config } = options;
-  const locale = useLocale('Table');
   const contextId = useMemo(
     () => `row-drag-${Math.random().toString(36).slice(2, 10)}`,
     [],
@@ -384,10 +369,6 @@ export function useRowDrag<RecordType>(options: UseRowDragOptions<RecordType>) {
     () => ({ activationConstraint: { distance: 4 } }),
     [],
   );
-  const keyboardSensorOptions = useMemo(
-    () => ({ coordinateGetter: sortableKeyboardCoordinates }),
-    [],
-  );
   const touchSensorOptions = useMemo(
     () => ({ activationConstraint: { delay: 150, tolerance: 5 } }),
     [],
@@ -395,7 +376,6 @@ export function useRowDrag<RecordType>(options: UseRowDragOptions<RecordType>) {
 
   const sensors = useSensors(
     useSensor(PointerSensor, pointerSensorOptions),
-    useSensor(KeyboardSensor, keyboardSensorOptions),
     useSensor(TouchSensor, touchSensorOptions),
   );
 
@@ -418,15 +398,10 @@ export function useRowDrag<RecordType>(options: UseRowDragOptions<RecordType>) {
           ? draggableOption(meta.record)
           : draggableOption !== false;
       return (
-        <SortableRow
-          id={recordKey}
-          dragHandleLabel={locale.dragHandle}
-          rowProps={rowProps}
-          draggable={draggable}
-        />
+        <SortableRow id={recordKey} rowProps={rowProps} draggable={draggable} />
       );
     },
-    [locale.dragHandle],
+    [],
   );
 
   const RowDragContextWrapper: React.FC<{ children: React.ReactNode }> =

@@ -24,7 +24,6 @@ export const DockCard = memo<DockCardProps>(
           item.className,
         )}
         style={item.style}
-        aria-hidden={!interactive || undefined}
       >
         <div
           className={cx(
@@ -32,18 +31,11 @@ export const DockCard = memo<DockCardProps>(
             !draggable && styles.headerStatic,
             !interactive && styles.cardContentHidden,
           )}
-          role="group"
-          aria-label={item.locale.minimizedDockDragHandle}
         >
           <Flex align="center" className={styles.title}>
             <span className={styles.titleText}>{item.title}</span>
             {count !== undefined && (
-              <span
-                className={styles.badge}
-                aria-label={`${item.locale.minimizedDockLabel}: ${count}`}
-              >
-                {count}
-              </span>
+              <span className={styles.badge}>{count}</span>
             )}
           </Flex>
           <Flex gap={8} align="center" className={styles.actions}>
@@ -53,7 +45,6 @@ export const DockCard = memo<DockCardProps>(
               tabIndex={interactive ? undefined : -1}
               onClick={item.onRestore}
               icon={<ExpandOutlined />}
-              aria-label={item.locale.restore}
             />
             <Button
               size="small"
@@ -61,7 +52,6 @@ export const DockCard = memo<DockCardProps>(
               tabIndex={interactive ? undefined : -1}
               onClick={item.onClose}
               icon={<CloseOutlined />}
-              aria-label={item.locale.close}
             />
           </Flex>
         </div>

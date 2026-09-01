@@ -23,9 +23,6 @@ const ResizeHandle: React.FC<ResizeHandleProps> = ({
       )}
       onPointerDown={onPointerDown}
       onClick={(e) => e.stopPropagation()}
-      role="separator"
-      aria-orientation="vertical"
-      aria-label="resize column"
     />
   );
 };

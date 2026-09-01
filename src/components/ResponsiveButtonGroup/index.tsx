@@ -360,11 +360,6 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
           style={{ ...styles?.overflowTrigger, ...overflowButtonProps?.style }}
           tabIndex={measuring ? -1 : overflowButtonProps?.tabIndex}
           icon={overflowIcon}
-          aria-haspopup="menu"
-          aria-expanded={open}
-          aria-label={
-            overflowButtonProps?.['aria-label'] ?? locale.moreActions(count)
-          }
         >
           <span className={buttonGroupStyles.overflowLabel}>
             {overflowLabel ?? locale.more}
@@ -533,7 +528,6 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
         classNames?.root,
       )}
       style={styles?.root}
-      role="group"
       dir={direction}
     >
       <div
@@ -544,7 +538,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
         {overflowNode}
       </div>
       {mode === 'responsive' && items.length > 0 && (
-        <div className={buttonGroupStyles.measure} aria-hidden="true">
+        <div className={buttonGroupStyles.measure}>
           {items.map((item) => (
             <span
               key={item.key}

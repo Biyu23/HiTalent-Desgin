@@ -136,7 +136,6 @@ function ColumnSettingPopover<RecordType = Record<string, unknown>>(
         type="text"
         className={classNames?.settingTrigger}
         icon={<SettingOutlined />}
-        aria-label={String(locale.columnSetting)}
       />
     </Popover>
   );

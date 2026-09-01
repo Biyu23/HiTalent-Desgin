@@ -18,7 +18,7 @@ toc: content
 
 - **尺寸智能抹平**：自动将 SVG 根节点的硬编码宽高覆写为 `1em`，通过 `fontSize` 或 `size` 进行像素级精准控制。
 - **viewBox 自动补全**：若 SVG 缺失 `viewBox`，自动根据原有尺寸推导生成，杜绝显示残缺与变形。
-- **Ant Design 规范对齐**：底层基于 `@ant-design/icons` 的 `Icon` 组件包装，支持 `spin`、`rotate`、无障碍属性及 Native Props 穿透。
+- **Ant Design 规范对齐**：底层基于 `@ant-design/icons` 的 `Icon` 组件包装，支持 `spin`、`rotate` 及 Native Props 穿透。
 - **双模态支持**：既支持通过 `<SvgIcon><svg>...</svg></SvgIcon>` 行内直接使用，也支持通过 `createSvgIcon` 批量导出为独立图标组件。
 
 ## 代码演示
@@ -47,7 +47,7 @@ toc: content
 | rotate    | 图标旋转角度 (deg)                                                                    | `number`                                             | -       |
 | className | 自定义 CSS 类名                                                                       | `string`                                             | -       |
 | style     | 自定义样式对象                                                                        | `CSSProperties`                                      | -       |
-| onClick   | 点击事件回调（支持键盘 Enter/Space 无障碍触发）                                       | `MouseEventHandler<HTMLSpanElement>`                 | -       |
+| onClick   | 点击事件回调                                                                          | `MouseEventHandler<HTMLSpanElement>`                 | -       |
 
 ### createSvgIcon(SvgChild, defaultProps?, displayName?)
 

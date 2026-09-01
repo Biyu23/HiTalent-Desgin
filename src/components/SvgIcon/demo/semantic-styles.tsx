@@ -3,7 +3,6 @@ import React from 'react';
 
 export default () => (
   <SvgIcon
-    aria-label="semantic icon"
     rootClassName="demo-icon-boundary"
     classNames={{ svg: 'demo-icon-svg' }}
     styles={{
