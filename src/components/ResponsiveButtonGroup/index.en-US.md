@@ -18,7 +18,7 @@ Automatically calculates available space based on container width and smoothly c
 
 <code src="./demo/basic.tsx" title="Adaptive Layout and Modes" description="Experience container width responsiveness, priority ordering, minimum visible count, and async Promise loading persistence."></code>
 
-<code src="./demo/custom-overflow.tsx" title="Custom Overflow Menu and State Listener" description="Customize More button icon, label, collapsed item rendering, and listen to visible/collapsed state changes."></code>
+<code src="./demo/custom-overflow.tsx" title="Custom Overflow Menu" description="Customize More button icon, label, badge, and custom rendering for collapsed items."></code>
 
 ## API
 
@@ -32,7 +32,6 @@ In addition to the properties in the table below, the component also supports na
 | `mode`                  | Display mode (`responsive` / `expanded` / `collapsed`)                                         | `'responsive' \| 'expanded' \| 'collapsed'`                          | `'responsive'`         |
 | `minVisibleCount`       | Minimum inline buttons to retain (excluding More button)                                       | `number`                                                             | `0`                    |
 | `gap`                   | Gap between buttons in pixels                                                                  | `number`                                                             | `8`                    |
-| `buttonProps`           | Shared props configuration for all inline buttons                                              | `ResponsiveButtonGroupButtonProps`                                   | -                      |
 | `overflowLabel`         | Custom text for More trigger button                                                            | `ReactNode`                                                          | Locale text            |
 | `overflowIcon`          | Custom icon for More trigger button                                                            | `ReactNode`                                                          | `<EllipsisOutlined />` |
 | `showOverflowCount`     | Whether to show the count of collapsed items on More button                                    | `boolean`                                                            | `true`                 |

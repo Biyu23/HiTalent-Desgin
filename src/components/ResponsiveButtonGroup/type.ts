@@ -227,10 +227,6 @@ export interface ResponsiveButtonGroupProps extends NativeProps {
    */
   gap?: number;
   /**
-   * @description 所有平铺按钮共享的统一属性配置
-   */
-  buttonProps?: ResponsiveButtonGroupButtonProps;
-  /**
    * @description “更多”触发器按钮自定义展示文案
    */
   overflowLabel?: React.ReactNode;

@@ -18,7 +18,7 @@ toc: content
 
 <code src="./demo/basic.tsx" title="自适应排版与模式" description="体验容器宽度自适应、优先级排版、最小平铺保留数与异步 Promise Loading 保持状态。"></code>
 
-<code src="./demo/custom-overflow.tsx" title="自定义溢出菜单与状态监听" description="自定义“更多”按钮图标、文案、折叠项渲染及平铺/折叠状态变化监听。"></code>
+<code src="./demo/custom-overflow.tsx" title="自定义溢出菜单" description="自定义“更多”按钮图标、文案、徽标及折叠项自定义渲染。"></code>
 
 ## API
 
@@ -32,7 +32,6 @@ toc: content
 | `mode`                  | 展示模式（自适应 / 强制平铺 / 强制折叠）                                         | `'responsive' \| 'expanded' \| 'collapsed'`                          | `'responsive'`         |
 | `minVisibleCount`       | 必须保持平铺的最少按钮数（不包含“更多”按钮）                                     | `number`                                                             | `0`                    |
 | `gap`                   | 按钮之间的间距，单位为像素                                                       | `number`                                                             | `8`                    |
-| `buttonProps`           | 所有平铺按钮共享的统一属性配置                                                   | `ResponsiveButtonGroupButtonProps`                                   | -                      |
 | `overflowLabel`         | “更多”触发器按钮自定义展示文案                                                   | `ReactNode`                                                          | locale 文案            |
 | `overflowIcon`          | “更多”触发器按钮自定义图标                                                       | `ReactNode`                                                          | `<EllipsisOutlined />` |
 | `showOverflowCount`     | 是否在“更多”按钮上显示当前已折叠的项目数量                                       | `boolean`                                                            | `true`                 |

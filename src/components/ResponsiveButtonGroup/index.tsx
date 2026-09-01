@@ -36,82 +36,13 @@ import type {
 } from './type';
 import { getMeasurementButtonProps } from './utils/buttonProps';
 import {
-  getCollapseOrder,
+  calculateLayout,
   normalizeGap,
   normalizeMinVisibleCount,
 } from './utils/layout';
 
-/**
- * 根据已计算出的折叠索引集合将所有项拆分为平铺项和折叠项
- */
-function splitItems(
-  items: readonly ResponsiveButtonGroupItem[],
-  collapsedIndexes: ReadonlySet<number>,
-) {
-  const visibleItems: ResponsiveButtonGroupItem[] = [];
-  const collapsedItems: ResponsiveButtonGroupItem[] = [];
-  items.forEach((item, index) =>
-    (collapsedIndexes.has(index) ? collapsedItems : visibleItems).push(item),
-  );
-  return { visibleItems, collapsedItems };
-}
-
-/**
- * 自适应排版核心计算：
- * 1. expanded 模式或 items 为空：全量平铺。
- * 2. collapsed 模式：按优先级折叠至 minVisibleCount。
- * 3. responsive 模式：对比总宽度与容器可用宽度，不足时按优先级从低到高逐个折叠。
- */
-function calculateLayout(
-  items: readonly ResponsiveButtonGroupItem[],
-  mode: ResponsiveButtonGroupProps['mode'],
-  minVisibleCount: number,
-  gap: number,
-  containerWidth: number | null,
-  itemWidths: ReadonlyMap<string, number>,
-  overflowWidth: number | null,
-) {
-  if (mode === 'expanded' || items.length === 0) {
-    return { visibleItems: [...items], collapsedItems: [] };
-  }
-  const order = getCollapseOrder(items);
-  const maxCollapsed = items.length - minVisibleCount;
-  if (mode === 'collapsed') {
-    return splitItems(items, new Set(order.slice(0, maxCollapsed)));
-  }
-  // 未完成初始测量时，先平铺渲染以获取真实尺寸
-  if (
-    containerWidth === null ||
-    items.some((item) => !Number.isFinite(itemWidths.get(item.key)))
-  ) {
-    return { visibleItems: [...items], collapsedItems: [] };
-  }
-  const itemWidthTotal = items.reduce(
-    (sum, item) => sum + (itemWidths.get(item.key) || 0),
-    0,
-  );
-  // 所有平铺按钮无需折叠即可完整容纳
-  if (itemWidthTotal + gap * Math.max(0, items.length - 1) <= containerWidth) {
-    return { visibleItems: [...items], collapsedItems: [] };
-  }
-  if (overflowWidth === null) {
-    return { visibleItems: [...items], collapsedItems: [] };
-  }
-  // 逐项折叠并验证：剩余平铺按钮 + 间距 + “更多”触发器按钮总宽度 <= 容器可用宽度
-  const collapsedIndexes = new Set<number>();
-  let visibleWidth = itemWidthTotal;
-  for (let count = 1; count <= maxCollapsed; count += 1) {
-    const index = order[count - 1];
-    collapsedIndexes.add(index);
-    visibleWidth -= itemWidths.get(items[index].key) || 0;
-    if (
-      visibleWidth + overflowWidth + gap * (items.length - count) <=
-      containerWidth
-    ) {
-      return splitItems(items, collapsedIndexes);
-    }
-  }
-  return splitItems(items, collapsedIndexes);
+interface OpenChangeInfo {
+  source?: 'trigger' | 'menu';
 }
 
 const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
@@ -124,7 +55,6 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     mode = 'responsive',
     minVisibleCount: minVisibleCountProp = 0,
     gap: gapProp = 8,
-    buttonProps,
     overflowLabel,
     overflowIcon = <EllipsisOutlined />,
     showOverflowCount = true,
@@ -156,13 +86,12 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     [ResponsiveButtonGroupClickInfo]
   >();
   const [innerOpen, setInnerOpen] = useState(false);
-  const [candidateCount, setCandidateCount] = useState(1);
-  const stabilizationRef = useRef(0);
   const previousKeysRef = useRef<{
     visible: string[];
     collapsed: string[];
   }>();
 
+  const isResponsive = mode === 'responsive';
   const {
     containerWidth,
     itemWidths,
@@ -170,7 +99,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     setContainerRef,
     getItemRef,
     setOverflowRef,
-  } = useResponsiveMeasurements();
+  } = useResponsiveMeasurements(isResponsive);
 
   // 合并内部 container ref 与外部 forwarded ref
   const setMergedRef = useCallback(
@@ -183,15 +112,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
 
   const open = overflowDropdownProps?.open ?? innerOpen;
 
-  // 测量溢出按钮时使用的候选折叠项（避免因数字位数变化导致测量抖动）
-  const candidateItems = useMemo(() => {
-    const order = getCollapseOrder(items);
-    const indexes = new Set(
-      order.slice(0, Math.min(candidateCount, items.length)),
-    );
-    return items.filter((_, index) => indexes.has(index));
-  }, [candidateCount, items]);
-
+  // 根据当前平铺项、折叠项及尺寸信息进行排版计算
   const layout = useMemo(
     () =>
       calculateLayout(
@@ -214,13 +135,22 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     ],
   );
 
+  /**
+   * 响应式测量就绪标志：
+   * 1. 非 responsive 模式时无需等待测量。
+   * 2. responsive 模式下：
+   *    - 容器宽度已获取
+   *    - 所有平铺按钮在离屏区均已测量出宽度
+   *    - 若产生了折叠项，还需要“更多”按钮的宽度也已就绪
+   * 只有当上述条件齐备后，排版结果才稳定，方可向外触发 onVisibleChange，避免初始化过程中的频闪通知。
+   */
   const measurementReady =
-    mode !== 'responsive' ||
+    !isResponsive ||
     (containerWidth !== null &&
       items.every((item) => itemWidths.has(item.key)) &&
       (layout.collapsedItems.length === 0 || overflowWidth !== null));
 
-  // 开发环境下对重复 item.key 做出警告
+  // 开发环境下对重复 item.key 做出警告，避免渲染与 key 映射混乱
   useEffect(() => {
     if (process.env.NODE_ENV === 'production') return;
     const keys = new Set<string>();
@@ -234,19 +164,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     });
   }, [items]);
 
-  // 根据当前实际折叠数量动态修正候选折叠项数量，确保更多按钮测量宽度准确
-  useEffect(() => {
-    const count = Math.max(1, layout.collapsedItems.length);
-    if (mode !== 'responsive' || count === candidateCount) {
-      stabilizationRef.current = 0;
-      return;
-    }
-    if (stabilizationRef.current >= Math.min(items.length + 1, 8)) return;
-    stabilizationRef.current += 1;
-    setCandidateCount(count);
-  }, [candidateCount, items.length, layout.collapsedItems.length, mode]);
-
-  // 平铺与折叠集合变化时触发 onVisibleChange
+  // 当平铺项集合或折叠项集合发生实质变化时向外触发 onVisibleChange 回调
   useEffect(() => {
     if (!measurementReady) return;
     const visible = layout.visibleItems.map((item) => item.key);
@@ -261,9 +179,14 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     }
     previousKeysRef.current = { visible, collapsed };
     onVisibleChange?.(visible, collapsed);
-  }, [layout, measurementReady, onVisibleChange]);
+  }, [
+    layout.collapsedItems,
+    layout.visibleItems,
+    measurementReady,
+    onVisibleChange,
+  ]);
 
-  // 当折叠项变为 0 时自动关闭已展开的下拉菜单
+  // 当折叠项变为 0（例如容器宽度拉大）时，自动关闭可能正展开的“更多”下拉菜单
   useEffect(() => {
     if (layout.collapsedItems.length === 0 && open) {
       if (overflowDropdownProps?.open === undefined) setInnerOpen(false);
@@ -271,7 +194,12 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     }
   }, [layout.collapsedItems.length, open, overflowDropdownProps]);
 
-  // 统一执行点击事件并处理异步 Promise 状态与节流
+  /**
+   * 统一执行操作项点击事件：
+   * 1. 拦截 disabled / loading 状态项
+   * 2. 按顺序执行单项的 item.onClick 与全局的 onItemClick
+   * 3. 若返回 Promise，由 useKeyedActionRunner 接管异步 Loading 状态，并在 throttle 周期内防抖节流
+   */
   const execute = useCallback(
     (
       item: ResponsiveButtonGroupItem,
@@ -291,22 +219,20 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
         const asyncResults = [first, second].filter(isThenable);
         return asyncResults.length ? Promise.all(asyncResults) : undefined;
       };
-      return run(
-        item.key,
-        action,
-        [info],
-        item.buttonProps?.throttle ?? buttonProps?.throttle,
-      );
+      return run(item.key, action, [info], item.buttonProps?.throttle);
     },
-    [buttonProps?.throttle, onItemClick, run],
+    [onItemClick, run],
   );
 
-  // 渲染单个平铺按钮（measuring 为 true 时用于隐藏测量，剥离多余事件与属性）
+  /**
+   * 渲染单个平铺按钮：
+   * @param item 按钮配置项
+   * @param measuring 是否处于离屏隐藏测量区（measuring 为 true 时剥离事件、Tooltip 与 tabIndex 以保证纯净测宽）
+   */
   const renderItemButton = useCallback(
     (item: ResponsiveButtonGroupItem, measuring = false) => (
       <Button
         key={item.key}
-        {...(measuring ? getMeasurementButtonProps(buttonProps) : buttonProps)}
         {...(measuring
           ? getMeasurementButtonProps(item.buttonProps)
           : item.buttonProps)}
@@ -340,10 +266,14 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
         {item.label}
       </Button>
     ),
-    [buttonProps, execute, onActionError, pendingKeys],
+    [execute, onActionError, pendingKeys],
   );
 
-  // 渲染“更多”触发器按钮
+  /**
+   * 渲染“更多”触发器按钮：
+   * @param collapsed 当前被折叠收起的所有项
+   * @param measuring 是否处于离屏隐藏测量区
+   */
   const renderOverflowTrigger = useCallback(
     (collapsed: readonly ResponsiveButtonGroupItem[], measuring = false) => {
       const count = collapsed.length;
@@ -381,21 +311,28 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
       return React.isValidElement(result) ? result : <span>{result}</span>;
     },
     [
+      buttonGroupStyles.overflowArrow,
+      buttonGroupStyles.overflowCount,
+      buttonGroupStyles.overflowLabel,
+      buttonGroupStyles.overflowTrigger,
       classNames?.overflowTrigger,
       cx,
-      locale,
+      locale.more,
       open,
       overflowButtonProps,
       overflowIcon,
       overflowLabel,
-      prefixCls,
       renderOverflowButton,
       showOverflowCount,
       styles?.overflowTrigger,
     ],
   );
 
-  // 构造折叠下拉菜单的 Menu 项
+  /**
+   * 构造折叠下拉菜单的 Menu 项：
+   * - 支持自定义渲染 renderCollapsedItem
+   * - 当配置了 tooltip 时包裹 Tooltip 组件（设置 overlayStyle pointerEvents: 'none' 保证点击穿透）
+   */
   const menuItems = useMemo<MenuProps['items']>(
     () =>
       layout.collapsedItems.map((item) => {
@@ -449,7 +386,15 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
           disabled: item.disabled || loading,
         };
       }),
-    [classNames?.menuItem, cx, layout.collapsedItems, pendingKeys, prefixCls],
+    [
+      buttonGroupStyles.menuItemContent,
+      buttonGroupStyles.menuItemIcon,
+      buttonGroupStyles.menuItemLabel,
+      classNames?.menuItem,
+      cx,
+      layout.collapsedItems,
+      pendingKeys,
+    ],
   );
 
   const itemMap = useMemo(
@@ -457,7 +402,11 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     [layout.collapsedItems],
   );
 
-  // 点击下拉菜单项：若为异步操作则保持展开并展示 Loading，完成后自动收起
+  /**
+   * 点击下拉菜单项：
+   * - 若为异步操作，保持下拉菜单处于 open 状态并展示 spin Loading
+   * - 异步执行完成或出错后，自动收起下拉面板
+   */
   const handleMenuClick: MenuProps['onClick'] = (info) => {
     const item = itemMap.get(info.key);
     if (!item) return;
@@ -479,12 +428,17 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     } else close();
   };
 
+  /**
+   * 处理 Dropdown 展开与收起变化：
+   * 在点击菜单项触发异步操作期间，阻断菜单的立即收起行为，等待 Promise resolve
+   */
   const handleOpenChange: NonNullable<DropdownProps['onOpenChange']> = (
     nextOpen,
     info,
   ) => {
+    const openInfo = info as OpenChangeInfo | undefined;
     // 异步操作期间阻止点击菜单项立即关闭
-    if (!nextOpen && info && (info as any).source === 'menu') return;
+    if (!nextOpen && openInfo?.source === 'menu') return;
 
     if (overflowDropdownProps?.open === undefined) {
       setInnerOpen(nextOpen);
@@ -517,6 +471,21 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     </Dropdown>
   ) : null;
 
+  /**
+   * 测量溢出按钮时使用的候选折叠项：
+   * - 若当前已有折叠项，使用实际折叠项测量以反映当前真实折叠数字（如 "更多 3"）
+   * - 若尚未产生折叠项，使用首个项作为占位，预先测出带数字徽标时的按钮宽度
+   */
+  const overflowMeasureItems = useMemo(
+    () =>
+      layout.collapsedItems.length > 0
+        ? layout.collapsedItems
+        : items.length > 0
+        ? items.slice(0, 1)
+        : [],
+    [items, layout.collapsedItems],
+  );
+
   return withNativeProps(
     props,
     <div
@@ -537,7 +506,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
         {layout.visibleItems.map((item) => renderItemButton(item))}
         {overflowNode}
       </div>
-      {mode === 'responsive' && items.length > 0 && (
+      {isResponsive && items.length > 0 && (
         <div className={buttonGroupStyles.measure}>
           {items.map((item) => (
             <span
@@ -549,7 +518,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
             </span>
           ))}
           <span ref={setOverflowRef} className={buttonGroupStyles.measureItem}>
-            {renderOverflowTrigger(candidateItems, true)}
+            {renderOverflowTrigger(overflowMeasureItems, true)}
           </span>
         </div>
       )}
@@ -572,7 +541,6 @@ const ResponsiveButtonGroup = memo(
   displayName?: string;
 };
 
-ForwardResponsiveButtonGroup.displayName = 'ResponsiveButtonGroup';
-
 export default ResponsiveButtonGroup;
+
 export type * from './type';
