@@ -1,5 +1,6 @@
 import type {
   DragEndEvent,
+  DragOverEvent,
   DragStartEvent,
   SensorDescriptor,
   SensorOptions,
@@ -84,6 +85,7 @@ const SortableHeaderItem: React.FC<SortableHeaderItemProps> = ({
     id,
     disabled: isFixed,
     animateLayoutChanges: (args) => {
+      if (args.isSorting) return true;
       if (args.wasDragging) return false;
       return defaultAnimateLayoutChanges(args);
     },
@@ -162,11 +164,37 @@ const InternalColumnDragContext: React.FC<InternalColumnDragContextProps> = ({
   const { styles: tableStyles, cx } = useStyles(prefixCls);
   const { classNames, styles } = context;
   const [activeId, setActiveId] = useState<ColumnId | null>(null);
+  const startOrderRef = useRef<ColumnId[]>([]);
+  const previewOrderRef = useRef<ColumnId[]>([]);
+  const hasPreviewRef = useRef(false);
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    const id = event.active.id as ColumnId;
-    setActiveId(id);
-  }, []);
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const order = [...optionsRef.current.orderedIds];
+      startOrderRef.current = order;
+      previewOrderRef.current = order;
+      hasPreviewRef.current = false;
+      setActiveId(event.active.id as ColumnId);
+    },
+    [optionsRef],
+  );
+
+  const handleDragOver = useCallback(
+    (event: DragOverEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+
+      const next = moveColumnItem(
+        previewOrderRef.current,
+        active.id as ColumnId,
+        over.id as ColumnId,
+      );
+      previewOrderRef.current = next;
+      hasPreviewRef.current = true;
+      optionsRef.current.onPreview(next);
+    },
+    [optionsRef],
+  );
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
@@ -177,16 +205,22 @@ const InternalColumnDragContext: React.FC<InternalColumnDragContextProps> = ({
         return;
       }
 
-      const activeId = active.id as ColumnId;
-      const overId = over.id as ColumnId;
-      const currentOrder = optionsRef.current.orderedIds;
+      let next = previewOrderRef.current;
+      let changed = next.some(
+        (id, index) => id !== startOrderRef.current[index],
+      );
 
-      if (activeId !== overId) {
-        const next = moveColumnItem(currentOrder, activeId, overId);
-        optionsRef.current.onCommit(next);
-      } else {
-        optionsRef.current.onCancel();
+      if (!hasPreviewRef.current && active.id !== over.id) {
+        next = moveColumnItem(
+          startOrderRef.current,
+          active.id as ColumnId,
+          over.id as ColumnId,
+        );
+        changed = next.some((id, index) => id !== startOrderRef.current[index]);
       }
+
+      if (changed) optionsRef.current.onCommit(next);
+      else optionsRef.current.onCancel();
     },
     [optionsRef],
   );
@@ -207,6 +241,7 @@ const InternalColumnDragContext: React.FC<InternalColumnDragContextProps> = ({
       collisionDetection={closestCenter}
       measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
