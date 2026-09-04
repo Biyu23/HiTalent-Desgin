@@ -43,8 +43,7 @@ toc: content
 | `minimized`         | 受控最小化状态                                                           | `boolean`                                                                                                | -                |
 | `maximized`         | 受控最大化状态                                                           | `boolean`                                                                                                | -                |
 | `onMinimizeChange`  | 最小化状态切换时的回调                                                   | `(minimized: boolean) => void`                                                                           | -                |
-| `onMaximizeChange`  | 最大化状态切换时的回调                                                   | `(maximized: boolean) => void`                                                                           | -                |
-| `onMaximizedChange` | 最大化状态切换时的回调（同 `onMaximizeChange`）                          | `(maximized: boolean) => void`                                                                           | -                |
+| `onMaximizedChange` | 最大化状态切换时的回调                                                   | `(maximized: boolean) => void`                                                                           | -                |
 | `classNames`        | 自定义类名配置，扩展 `title`、`actions`、`resizeHandle`、`minimizedDock` | `ModalClassNames`                                                                                        | -                |
 | `styles`            | 自定义样式配置，扩展 `resizeHandle`、`minimizedDock`                     | `ModalStyles`                                                                                            | -                |
 

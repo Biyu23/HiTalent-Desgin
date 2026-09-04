@@ -205,8 +205,4 @@ export interface ModalProps
    * @description 最大化状态变化回调
    */
   onMaximizedChange?: (maximized: boolean) => void;
-  /**
-   * @description 最大化状态变化回调（同 `onMaximizedChange`）
-   */
-  onMaximizeChange?: (maximized: boolean) => void;
 }

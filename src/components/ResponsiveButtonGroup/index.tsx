@@ -150,20 +150,6 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
       items.every((item) => itemWidths.has(item.key)) &&
       (layout.collapsedItems.length === 0 || overflowWidth !== null));
 
-  // 开发环境下对重复 item.key 做出警告，避免渲染与 key 映射混乱
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'production') return;
-    const keys = new Set<string>();
-    items.forEach((item) => {
-      if (keys.has(item.key)) {
-        console.error(
-          `ResponsiveButtonGroup received duplicate item key "${item.key}".`,
-        );
-      }
-      keys.add(item.key);
-    });
-  }, [items]);
-
   // 当平铺项集合或折叠项集合发生实质变化时向外触发 onVisibleChange 回调
   useEffect(() => {
     if (!measurementReady) return;

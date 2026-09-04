@@ -87,10 +87,10 @@ export default defineConfig({
               title: 'ResponsiveButtonGroup 响应式按钮组',
               link: '/components/responsive-button-group',
             },
-            {
-              title: 'SvgIcon 自定义图标【废弃】',
-              link: '/components/svg-icon',
-            },
+            // {
+            //   title: 'SvgIcon 自定义图标【废弃】',
+            //   link: '/components/svg-icon',
+            // },
           ],
         },
         {

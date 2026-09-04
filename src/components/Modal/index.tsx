@@ -53,7 +53,6 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     modalRender,
     onMinimizeChange,
     onMaximizedChange,
-    onMaximizeChange,
     ...restProps
   } = props;
 
@@ -85,8 +84,6 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     return next;
   }, [styles]);
 
-  const mergedOnMaximizeChange = onMaximizedChange || onMaximizeChange;
-
   const {
     isMinimized,
     isMaximized,
@@ -100,7 +97,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     minimized: controlledMinimized,
     maximized: controlledMaximized,
     onMinimizeChange,
-    onMaximizedChange: mergedOnMaximizeChange,
+    onMaximizedChange,
   });
 
   const {

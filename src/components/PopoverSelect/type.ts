@@ -237,6 +237,7 @@ export interface PopoverSelectSingleProps<
    */
   mode?: 'single';
   valueType?: never;
+  valueSeparator?: never;
   /**
    * @description 当前选中的值（受控）
    */
@@ -265,6 +266,7 @@ export interface PopoverSelectMultipleArrayProps<
    * @default 'array'
    */
   valueType?: 'array';
+  valueSeparator?: never;
   /**
    * @description 当前选中的值数组（受控）
    */
@@ -279,7 +281,7 @@ export interface PopoverSelectMultipleArrayProps<
   onChange?: (value: ValueType[], options: OptionType[]) => void;
 }
 
-/** 多选模式属性（JSON 数组字符串格式输出） */
+/** 多选模式属性（分隔符字符串格式输出） */
 export interface PopoverSelectMultipleStringProps<
   OptionType extends object = DefaultOptionType,
 > extends PopoverSelectBaseProps<OptionType> {
@@ -288,19 +290,24 @@ export interface PopoverSelectMultipleStringProps<
    */
   mode: 'multiple';
   /**
-   * @description 值提交类型，JSON 数组字符串格式（精确保留字符串与数字类型）
+   * @description 值提交类型，分隔符字符串格式
    */
   valueType: 'string';
   /**
-   * @description 当前选中的 JSON 数组字符串值，例如 `'["FE", 1]'`（受控）
+   * @description 字符串值的分隔符
+   * @default ','
+   */
+  valueSeparator?: string;
+  /**
+   * @description 当前选中的分隔符字符串值，例如 `'FE,1'`（受控）
    */
   value?: string;
   /**
-   * @description 默认选中的 JSON 数组字符串值（非受控）
+   * @description 默认选中的分隔符字符串值（非受控）
    */
   defaultValue?: string;
   /**
-   * @description 选中值发生变化时的回调，返回 JSON 数组字符串
+   * @description 选中值发生变化时的回调，返回分隔符字符串
    */
   onChange?: (value: string, options: OptionType[]) => void;
 }
@@ -313,6 +320,32 @@ export type PopoverSelectProps<
   | PopoverSelectSingleProps<ValueType, OptionType>
   | PopoverSelectMultipleArrayProps<ValueType, OptionType>
   | PopoverSelectMultipleStringProps<OptionType>;
+
+/** PopoverSelect 组件 Ref 属性类型 */
+export type PopoverSelectRefProps = { ref?: React.Ref<HTMLDivElement> };
+
+/** PopoverSelect 组件类型定义（支持泛型重载与子组件静态属性） */
+export interface PopoverSelectComponent {
+  <
+    ValueType extends RawValueType = RawValueType,
+    OptionType extends object = DefaultOptionType,
+  >(
+    props: PopoverSelectSingleProps<ValueType, OptionType> &
+      PopoverSelectRefProps,
+  ): React.ReactElement | null;
+  <
+    ValueType extends RawValueType = RawValueType,
+    OptionType extends object = DefaultOptionType,
+  >(
+    props: PopoverSelectMultipleArrayProps<ValueType, OptionType> &
+      PopoverSelectRefProps,
+  ): React.ReactElement | null;
+  <OptionType extends object = DefaultOptionType>(
+    props: PopoverSelectMultipleStringProps<OptionType> & PopoverSelectRefProps,
+  ): React.ReactElement | null;
+  displayName?: string;
+  Selector: typeof import('./components/PopoverSelector').Selector;
+}
 
 /** PopoverSelect.Selector 独立触发器组件属性 */
 export interface SelectorProps extends Omit<NativeProps, 'children'> {
@@ -371,6 +404,11 @@ export interface SelectorProps extends Omit<NativeProps, 'children'> {
    * @default true
    */
   showArrow?: boolean;
+  /**
+   * @description 是否截断超出触发器宽度的文本
+   * @default true
+   */
+  ellipsis?: boolean;
   /**
    * @description 是否禁用
    * @default false

@@ -18,16 +18,24 @@ const messages = {
   },
 };
 
+const options = [
+  ...Array.from({ length: 5 }, (_, index) => ({
+    label: `数字标识 ${index + 1}`,
+    value: index + 1,
+  })),
+  ...standardOptions,
+];
+
 export default () => {
   const { t } = useDemoIntl(messages);
-  const [values, setValues] = useState<string>(JSON.stringify([1, 'PM']));
-  const options = [{ label: '数字标识 1', value: 1 }, ...standardOptions];
+  const [values, setValues] = useState<string>('1,2,3,4,5');
 
   return (
     <div style={{ width: 320 }}>
       <PopoverSelect
         mode="multiple"
         valueType="string"
+        valueSeparator=","
         options={options}
         value={values}
         onChange={setValues}

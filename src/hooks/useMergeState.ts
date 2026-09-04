@@ -12,6 +12,12 @@ export interface UseMergeStateProps<
   value?: TResult;
 
   /**
+   * 是否强制按受控模式运行。
+   * 未指定时沿用 value !== undefined 的默认判断。
+   */
+  controlled?: boolean;
+
+  /**
    * 默认初始值 (非受控)
    */
   defaultValue?: TResult | (() => TResult);
@@ -39,6 +45,7 @@ export function useMergeState<
 >(props: UseMergeStateProps<TOrigin, TResult, ChangeArgs> = {}) {
   const {
     value,
+    controlled,
     defaultValue,
     onChange,
     // 如果没有传转换函数，默认原样返回。
@@ -48,16 +55,18 @@ export function useMergeState<
     transformToResult = (v) => v as unknown as TResult,
   } = props;
 
-  // 判断是否为受控模式：外部传入了非 undefined 的 value 即为受控模式
-  const isControlled = value !== undefined;
+  // 默认以 value 是否为 undefined 判断；允许组件显式声明 undefined 代表受控空值
+  const isControlled = controlled ?? value !== undefined;
 
-  // 使用 useRef 缓存转换函数与回调，防止外部传入内联函数导致无意义的闭包依赖
+  // 使用 useRef 缓存转换函数、控制模式与回调，避免无意义的闭包依赖
   const transformOriginRef = useRef(transformToOrigin);
   const transformResultRef = useRef(transformToResult);
   const onChangeRef = useRef(onChange);
+  const isControlledRef = useRef(isControlled);
   transformOriginRef.current = transformToOrigin;
   transformResultRef.current = transformToResult;
   onChangeRef.current = onChange;
+  isControlledRef.current = isControlled;
 
   // 缓存受控模式下的 origin 转换结果，避免相同 value 重新计算导致对象/数组引用发生无意义变化
   const prevControlledRef = useRef<{
@@ -94,12 +103,17 @@ export function useMergeState<
     return transformToOrigin(initVal);
   });
 
-  // 当受控 value 变化时，保持内部 state 同步，避免受控转非受控（如清空为 undefined）时读取到陈旧内部状态
+  // 受控值或受控模式变化时同步回退 state，避免之后切回非受控读取陈旧值
   const prevValueRef = useRef(value);
-  if (isControlled && !Object.is(prevValueRef.current, value)) {
-    prevValueRef.current = value;
+  const prevIsControlledRef = useRef(isControlled);
+  if (
+    isControlled &&
+    (!prevIsControlledRef.current || !Object.is(prevValueRef.current, value))
+  ) {
     setInternalValue(controlledOriginValue);
   }
+  prevValueRef.current = value;
+  prevIsControlledRef.current = isControlled;
 
   // 当前生效的内部值：受控模式直接使用受控值转换结果，非受控模式使用内部 state
   const mergedValue = isControlled ? controlledOriginValue : internalValue;
@@ -109,7 +123,9 @@ export function useMergeState<
 
   const triggerChange = useCallback(
     (nextValue: TOrigin, ...args: ChangeArgs) => {
-      setInternalValue(nextValue);
+      if (!isControlledRef.current) {
+        setInternalValue(nextValue);
+      }
       internalValueRef.current = nextValue;
 
       if (onChangeRef.current) {

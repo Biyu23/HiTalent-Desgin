@@ -350,15 +350,6 @@ export function useRowDrag<RecordType>(options: UseRowDragOptions<RecordType>) {
     [config.childrenColumnName, config.treeMode, dataSource, getKey],
   );
 
-  if (
-    process.env.NODE_ENV !== 'production' &&
-    registry.duplicateKeys.size > 0
-  ) {
-    console.warn('[Table] 行拖拽已禁用重复 rowKey：', [
-      ...registry.duplicateKeys,
-    ]);
-  }
-
   const optionsRef = useRef<InternalOptions<RecordType>>({
     ...options,
     registry,

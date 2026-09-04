@@ -7,7 +7,10 @@ import type {
 import { getNodeText, readField } from '../utils';
 
 /**
- * 规范化选项数据，处理字段名映射、去重与搜索过滤
+ * 规范化选项数据 Hook：
+ * 1. 字段映射：根据 fieldNames（label / value / disabled）将外部 OptionType 映射为统一的 MappedOption。
+ * 2. 快速查找：建立原始值索引及字符串值索引，支持选项查找与字符串值类型恢复。
+ * 3. 搜索过滤：根据 searchValue 对选项文本或值进行不区分大小写的过滤。
  */
 export function useNormalizedOptions<
   ValueType extends RawValueType,
@@ -18,45 +21,34 @@ export function useNormalizedOptions<
   searchValue: string,
 ) {
   const options = useMemo(() => {
-    const result: Array<MappedOption<ValueType, OptionType>> = [];
-    const values = new Set<RawValueType>();
     const labelKey = fieldNames?.label ?? 'label';
     const valueKey = fieldNames?.value ?? 'value';
     const disabledKey = fieldNames?.disabled ?? 'disabled';
 
-    source.forEach((option, index) => {
-      const value = readField(option, valueKey);
-      if (typeof value !== 'string' && typeof value !== 'number') {
-        if (process.env.NODE_ENV !== 'production') {
-          console.error(
-            `PopoverSelect ignored option at index ${index}: value must be a string or number.`,
-          );
-        }
-        return;
-      }
-      if (values.has(value)) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.error(
-            `PopoverSelect ignored duplicate option value "${String(value)}".`,
-          );
-        }
-        return;
-      }
-      values.add(value);
-      result.push({
-        label: readField(option, labelKey) as React.ReactNode,
-        value: value as ValueType,
-        disabled: Boolean(readField(option, disabledKey)),
-        source: option,
-      });
-    });
-    return result;
+    return source.map((option) => ({
+      label: readField(option, labelKey) as React.ReactNode,
+      value: readField(option, valueKey) as ValueType,
+      disabled: Boolean(readField(option, disabledKey)),
+      source: option,
+    }));
   }, [fieldNames?.disabled, fieldNames?.label, fieldNames?.value, source]);
 
   const optionMap = useMemo(
-    () => new Map(options.map((option) => [option.value, option])),
+    () =>
+      new Map<ValueType, MappedOption<ValueType, OptionType>>(
+        options.map((option) => [option.value, option]),
+      ),
     [options],
   );
+
+  const stringValueMap = useMemo(() => {
+    const map = new Map<string, ValueType>();
+    options.forEach((option) => {
+      const key = String(option.value);
+      if (!map.has(key)) map.set(key, option.value);
+    });
+    return map;
+  }, [options]);
 
   const displayOptions = useMemo(() => {
     const query = searchValue.trim().toLocaleLowerCase();
@@ -68,5 +60,5 @@ export function useNormalizedOptions<
     );
   }, [options, searchValue]);
 
-  return { options, optionMap, displayOptions };
+  return { options, optionMap, stringValueMap, displayOptions };
 }

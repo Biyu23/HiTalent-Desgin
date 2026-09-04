@@ -1,65 +1,35 @@
-import { Button, Tooltip } from 'antd';
+import { Button } from 'antd';
 import React, {
   forwardRef,
   memo,
   useCallback,
   useEffect,
-  useMemo,
   useState,
 } from 'react';
 import { useLocale, usePrefixCls } from '../../configProvider';
 import { useMergeState } from '../../hooks';
-import { attachPropertiesToComponent, isNullOrBlank } from '../../utils';
+import { attachPropertiesToComponent } from '../../utils';
 import PopoverSelectContent from './components/PopoverSelectContent';
+import PopoverSelectLabel from './components/PopoverSelectLabel';
 import Selector from './components/PopoverSelector';
 import { useNormalizedOptions } from './hooks/useNormalizedOptions';
 import { useStyles } from './style';
 import type {
   DefaultOptionType,
-  PopoverSelectMultipleArrayProps,
-  PopoverSelectMultipleStringProps,
+  PopoverSelectComponent,
   PopoverSelectProps,
-  PopoverSelectSingleProps,
   RawValueType,
 } from './type';
-import { getNodeText } from './utils';
+import { parseExternalValue } from './utils';
 
 export type * from './type';
 export { Selector };
 
-/**
- * 将外部传入的受控/非受控值解析为内部统一的数组格式
- */
-function parseExternalValue<ValueType extends RawValueType>(
-  value: unknown,
-  mode: 'single' | 'multiple',
-  valueType: 'array' | 'string' | undefined,
-): ValueType[] {
-  if (isNullOrBlank(value)) return [];
-  if (mode === 'multiple' && valueType === 'string') {
-    try {
-      const parsed: unknown = JSON.parse(String(value));
-      if (
-        Array.isArray(parsed) &&
-        parsed.every(
-          (item) => typeof item === 'string' || typeof item === 'number',
-        )
-      ) {
-        return parsed as ValueType[];
-      }
-    } catch {
-      // 容错处理并在开发环境提示
-    }
-    if (process.env.NODE_ENV !== 'production') {
-      console.error(
-        'PopoverSelect string mode expects a JSON array string containing only string or number values.',
-      );
-    }
-    return [];
-  }
-  if (Array.isArray(value)) return value as ValueType[];
-  return [value as ValueType];
-}
+type ExternalValue<ValueType extends RawValueType> =
+  | ValueType
+  | ValueType[]
+  | string
+  | undefined;
 
 function InternalPopoverSelect<
   ValueType extends RawValueType = RawValueType,
@@ -71,7 +41,7 @@ function InternalPopoverSelect<
   const componentLocale = useLocale('PopoverSelect');
   const prefixCls = props.prefixCls;
   const resolvedPrefixCls = usePrefixCls('popover-select', prefixCls);
-  const { styles: popoverStyles, cx } = useStyles(resolvedPrefixCls);
+  const { styles: popoverStyles, cx } = useStyles();
 
   const {
     options: optionSource = [],
@@ -83,6 +53,7 @@ function InternalPopoverSelect<
     showCancelBtn = false,
     showClearBtn = false,
     separator = ', ',
+    valueSeparator = ',',
     maxTagCount,
     virtual = true,
     listHeight = 150,
@@ -102,58 +73,97 @@ function InternalPopoverSelect<
   } = props;
 
   const valueType = mode === 'multiple' ? props.valueType : undefined;
-  const controlled = Object.prototype.hasOwnProperty.call(props, 'value');
   const [searchValue, setSearchValue] = useState('');
-  const { options, optionMap, displayOptions } = useNormalizedOptions<
-    ValueType,
-    OptionType
-  >(optionSource, fieldNames, searchValue);
 
-  const [uncontrolledValue, setUncontrolledValue] = useState<ValueType[]>(() =>
-    parseExternalValue(props.defaultValue, mode, valueType),
-  );
-  const controlledValue = useMemo(
-    () => parseExternalValue<ValueType>(props.value, mode, valueType),
-    [mode, props.value, valueType],
-  );
-  const selectedValues = controlled ? controlledValue : uncontrolledValue;
+  // 规范化选项与建立快速索引 Map
+  const { options, optionMap, stringValueMap, displayOptions } =
+    useNormalizedOptions<ValueType, OptionType>(
+      optionSource,
+      fieldNames,
+      searchValue,
+    );
 
+  const transformToOrigin = useCallback(
+    (value: ExternalValue<ValueType>) =>
+      parseExternalValue<ValueType>(
+        value,
+        mode,
+        valueType,
+        valueSeparator,
+        stringValueMap,
+      ),
+    [mode, stringValueMap, valueSeparator, valueType],
+  );
+
+  const transformToResult = useCallback(
+    (values: ValueType[]): ExternalValue<ValueType> => {
+      if (mode === 'single') return values[0];
+      return valueType === 'string' ? values.join(valueSeparator) : values;
+    },
+    [mode, valueSeparator, valueType],
+  );
+
+  const handleValueChange = useCallback(
+    (value: ExternalValue<ValueType>, selectedOptions: OptionType[]) => {
+      if (props.mode === 'multiple') {
+        if (props.valueType === 'string') {
+          props.onChange?.(value as string, selectedOptions);
+        } else {
+          props.onChange?.(value as ValueType[], selectedOptions);
+        }
+      } else {
+        props.onChange?.(value as ValueType | undefined, selectedOptions);
+      }
+    },
+    [props.mode, props.onChange, props.valueType],
+  );
+
+  const [selectedValues, { set: setSelectedValues }] = useMergeState<
+    ValueType[],
+    ExternalValue<ValueType>,
+    [OptionType[]]
+  >({
+    value: props.value,
+    controlled: Object.prototype.hasOwnProperty.call(props, 'value'),
+    defaultValue: props.defaultValue,
+    onChange: handleValueChange,
+    transformToOrigin,
+    transformToResult,
+  });
+
+  // 弹层展开/收起状态
   const [open, { set: setOpen }] = useMergeState<boolean>({
     defaultValue: false,
     value: openProp,
     onChange: onOpenChange,
   });
 
-  // showConfirm 开启时在弹层内维护草稿值，确认后才提交
+  // 多选确认模式下：内部维护草稿值，仅在确认后对外提交
+  const isConfirmedMode = mode === 'multiple' && showConfirm;
   const [draftValue, setDraftValue] = useState<ValueType[]>(selectedValues);
-  const confirmedSelection = mode === 'multiple' && showConfirm;
-  const targetValues = confirmedSelection ? draftValue : selectedValues;
-
+  const targetValues = isConfirmedMode ? draftValue : selectedValues;
   useEffect(() => {
     if (open) setDraftValue(selectedValues);
     else setSearchValue('');
   }, [open, selectedValues]);
 
+  /**
+   * 提交选中值及其对应的完整选项
+   */
   const emitValue = useCallback(
     (nextValues: ValueType[]) => {
-      if (!controlled) setUncontrolledValue(nextValues);
       const selectedOptions = nextValues
         .map((value) => optionMap.get(value)?.source)
         .filter((option): option is OptionType => option !== undefined);
 
-      if (props.mode === 'multiple') {
-        if (props.valueType === 'string') {
-          props.onChange?.(JSON.stringify(nextValues), selectedOptions);
-        } else {
-          props.onChange?.(nextValues, selectedOptions);
-        }
-      } else {
-        props.onChange?.(nextValues[0], selectedOptions);
-      }
+      setSelectedValues(nextValues, selectedOptions);
     },
-    [controlled, optionMap, props],
+    [optionMap, setSelectedValues],
   );
 
+  /**
+   * 点击单项时的选中/取消切换逻辑
+   */
   const toggleValue = useCallback(
     (value: ValueType) => {
       const next =
@@ -163,72 +173,52 @@ function InternalPopoverSelect<
             : [...targetValues, value]
           : [value];
 
-      if (confirmedSelection) setDraftValue(next);
-      else emitValue(next);
+      if (isConfirmedMode) {
+        setDraftValue(next);
+      } else {
+        emitValue(next);
+      }
 
-      if (mode === 'single') setOpen(false);
+      // 单选模式选择后自动关闭弹层
+      if (mode === 'single') {
+        setOpen(false);
+      }
     },
-    [confirmedSelection, emitValue, mode, setOpen, targetValues],
+    [emitValue, isConfirmedMode, mode, setOpen, targetValues],
   );
 
-  // 全选逻辑：全选操作选中当前过滤结果中的未禁用项（追加到已有选择），取消全选则剔除当前过滤结果中的项
+  /**
+   * 全选/取消全选切换逻辑：
+   * 全选当前过滤出的所有非禁用项（增量合并到现有选择），取消全选则从现有选择中剔除当前可见项
+   */
   const handleSelectAll = useCallback(
     (event: { target: { checked: boolean } }) => {
       const enabledValues = displayOptions
         .filter((option) => !option.disabled)
         .map((option) => option.value);
       const enabledSet = new Set(enabledValues);
+
       const next = event.target.checked
         ? Array.from(new Set([...targetValues, ...enabledValues]))
         : targetValues.filter((value) => !enabledSet.has(value));
 
-      if (confirmedSelection) setDraftValue(next);
-      else emitValue(next);
-    },
-    [confirmedSelection, displayOptions, emitValue, targetValues],
-  );
-
-  const labels = selectedValues.map(
-    (value) => optionMap.get(value)?.label ?? String(value),
-  );
-
-  const visibleLabels =
-    mode === 'multiple' && maxTagCount !== undefined
-      ? labels.slice(0, maxTagCount)
-      : labels;
-
-  const displayNode = labels.length ? (
-    <Tooltip
-      title={
-        ellipsis === false
-          ? undefined
-          : typeof ellipsis === 'object' && ellipsis.tooltip
-          ? ellipsis.tooltip
-          : labels.map(getNodeText).join(separator)
+      if (isConfirmedMode) {
+        setDraftValue(next);
+      } else {
+        emitValue(next);
       }
-    >
-      <span>
-        {visibleLabels.map((label, index) => (
-          <React.Fragment key={index}>
-            {index > 0 && separator}
-            {label}
-          </React.Fragment>
-        ))}
-        {visibleLabels.length < labels.length &&
-          `${separator}... (+${labels.length - visibleLabels.length})`}
-      </span>
-    </Tooltip>
-  ) : (
-    <>{placeholder}</>
+    },
+    [displayOptions, emitValue, isConfirmedMode, targetValues],
   );
 
+  // 底部按钮组（清空、取消、确认）
   const footerActions = [
     showClearBtn && (
       <Button
         key="clear"
         size="small"
         onClick={() => {
-          if (confirmedSelection) setDraftValue([]);
+          if (isConfirmedMode) setDraftValue([]);
           else emitValue([]);
         }}
       >
@@ -240,7 +230,7 @@ function InternalPopoverSelect<
         {componentLocale.cancel}
       </Button>
     ),
-    confirmedSelection && (
+    isConfirmedMode && (
       <Button
         key="confirm"
         type="primary"
@@ -255,6 +245,7 @@ function InternalPopoverSelect<
     ),
   ].filter((node): node is React.ReactElement => Boolean(node));
 
+  // 弹层内容区节点
   const content = (
     <PopoverSelectContent
       prefixCls={resolvedPrefixCls}
@@ -299,7 +290,7 @@ function InternalPopoverSelect<
         placement={props.placement}
         getPopupContainer={props.getPopupContainer}
         destroyTooltipOnHide={props.destroyTooltipOnHide}
-        content={props.dropdownRender ? () => content : content}
+        content={content}
         open={open}
         onOpenChange={setOpen}
         allowClear={allowClear}
@@ -310,38 +301,23 @@ function InternalPopoverSelect<
           setDraftValue([]);
         }}
         showArrow={showArrow}
+        ellipsis={ellipsis !== false}
         disabled={disabled}
         classNames={classNames}
         styles={styles}
       >
-        {displayNode}
+        <PopoverSelectLabel
+          selectedValues={selectedValues}
+          optionMap={optionMap}
+          mode={mode}
+          placeholder={placeholder}
+          separator={separator}
+          maxTagCount={maxTagCount}
+          ellipsis={ellipsis}
+        />
       </Selector>
     </div>
   );
-}
-
-type PopoverSelectRefProps = { ref?: React.Ref<HTMLDivElement> };
-
-export interface PopoverSelectComponent {
-  <
-    ValueType extends RawValueType = RawValueType,
-    OptionType extends object = DefaultOptionType,
-  >(
-    props: PopoverSelectSingleProps<ValueType, OptionType> &
-      PopoverSelectRefProps,
-  ): React.ReactElement | null;
-  <
-    ValueType extends RawValueType = RawValueType,
-    OptionType extends object = DefaultOptionType,
-  >(
-    props: PopoverSelectMultipleArrayProps<ValueType, OptionType> &
-      PopoverSelectRefProps,
-  ): React.ReactElement | null;
-  <OptionType extends object = DefaultOptionType>(
-    props: PopoverSelectMultipleStringProps<OptionType> & PopoverSelectRefProps,
-  ): React.ReactElement | null;
-  displayName?: string;
-  Selector: typeof Selector;
 }
 
 const ForwardPopoverSelect = forwardRef(

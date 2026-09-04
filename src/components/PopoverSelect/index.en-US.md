@@ -6,7 +6,7 @@ toc: content
 
 # PopoverSelect
 
-Hosts a selection panel inside a Popover card, providing virtual scrolling, search filtering, select-all, field mapping, multi-select confirmation, and JSON-array string value serialization.
+Hosts a selection panel inside a Popover card, providing virtual scrolling, search filtering, select-all, field mapping, multi-select confirmation, and delimiter-separated string value serialization.
 
 ## When to use
 
@@ -14,7 +14,7 @@ Hosts a selection panel inside a Popover card, providing virtual scrolling, sear
 - Large number of options where virtual scrolling is required to keep opening, searching, and scrolling responsive.
 - Backend records do not use a standard `label` / `value` structure and require field mapping.
 - Multi-select workflows require draft operations such as confirm, cancel, clear, or select-all scoped to the current search results.
-- Backend API requires a string field while option values must preserve original number or string types.
+- Backend API requires a delimiter-separated string while option values need to recover their original number or string types.
 
 ## Demos
 
@@ -22,7 +22,7 @@ Hosts a selection panel inside a Popover card, providing virtual scrolling, sear
 
 <code src="./demo/multiple.tsx" title="Multiple Select with Confirmation" description="Multiple mode supports confirm, cancel, and clear draft operations, with maxTagCount auto (+N) truncation."></code>
 
-<code src="./demo/string-value.tsx" title="String Submission & Select All" description="valueType='string' submits values as a JSON array string preserving number and string types; showSelectAll supports selecting all filtered results."></code>
+<code src="./demo/string-value.tsx" title="String Submission & Select All" description="valueType='string' parses and submits values using valueSeparator, restoring value types from options; showSelectAll supports selecting all filtered results."></code>
 
 ## API
 
@@ -41,6 +41,7 @@ In addition to the properties below, the component also supports native props in
 | `defaultValue`         | Default selected value (uncontrolled)                      | `ValueType \| ValueType[] \| string`        | -                     |
 | `onChange`             | Callback when value and selected options change            | `(value, options) => void`                  | -                     |
 | `valueType`            | Value submission format in multiple mode                   | `'array' \| 'string'`                       | `'array'`             |
+| `valueSeparator`       | Separator used to parse and submit values in string mode   | `string`                                    | `','`                 |
 | `fieldNames`           | Custom backend field name mapping                          | `PopoverSelectFieldNames<OptionType>`       | -                     |
 | `showConfirm`          | Whether to show confirm button in multiple mode            | `boolean`                                   | `mode === 'multiple'` |
 | `showCancelBtn`        | Whether to show cancel button to discard draft changes     | `boolean`                                   | `false`               |

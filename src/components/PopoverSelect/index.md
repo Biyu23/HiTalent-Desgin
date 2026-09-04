@@ -6,7 +6,7 @@ toc: content
 
 # PopoverSelect 气泡选择
 
-以 Popover 气泡卡片承载选择面板，提供虚拟滚动、搜索过滤、全选、字段映射、多选确认机制与 JSON 数组字符串提交格式。
+以 Popover 气泡卡片承载选择面板，提供虚拟滚动、搜索过滤、全选、字段映射、多选确认机制与分隔符字符串提交格式。
 
 ## 何时使用
 
@@ -14,7 +14,7 @@ toc: content
 - 选项数量大，需要虚拟滚动保持打开、搜索和滚动流畅。
 - 后端字段并非固定的 `label` / `value` 结构，需要直接映射。
 - 多选需要确认、取消、清空等草稿确认操作或针对当前搜索结果全选。
-- 接口要求提交字符串字段，同时选项值需要保留数字或字符串的原始类型。
+- 接口要求提交分隔符字符串字段，同时根据选项恢复数字或字符串值类型。
 
 ## 代码演示
 
@@ -22,7 +22,7 @@ toc: content
 
 <code src="./demo/multiple.tsx" title="多选确认与标签截断" description="多选模式支持确认、取消与清空草稿操作，并可通过 maxTagCount 实现超出标签自动 (+N) 截断展示。"></code>
 
-<code src="./demo/string-value.tsx" title="字符串提交与全选" description="valueType='string' 使用 JSON 数组字符串提交，无歧义保留数字与字符串值类型；showSelectAll 支持全选联动当前搜索过滤结果。"></code>
+<code src="./demo/string-value.tsx" title="字符串提交与全选" description="valueType='string' 按 valueSeparator 分割和提交字符串，并根据 options 恢复值类型；showSelectAll 支持全选联动当前搜索过滤结果。"></code>
 
 ## API
 
@@ -40,7 +40,8 @@ toc: content
 | `value`                | 当前选中值（受控）                                     | `ValueType \| ValueType[] \| string`        | -                     |
 | `defaultValue`         | 默认选中值（非受控）                                   | `ValueType \| ValueType[] \| string`        | -                     |
 | `onChange`             | 选中值与选项变化回调                                   | `(value, options) => void`                  | -                     |
-| `valueType`            | 多选模式下值提交类型，支持数组或 JSON 数组字符串       | `'array' \| 'string'`                       | `'array'`             |
+| `valueType`            | 多选模式下值提交类型，支持数组或分隔符字符串           | `'array' \| 'string'`                       | `'array'`             |
+| `valueSeparator`       | 字符串模式下解析与提交值使用的分隔符                   | `string`                                    | `','`                 |
 | `fieldNames`           | 后端自定义字段名映射                                   | `PopoverSelectFieldNames<OptionType>`       | -                     |
 | `showConfirm`          | 多选时是否显示确认按钮（开启时进入草稿确认流程）       | `boolean`                                   | `mode === 'multiple'` |
 | `showCancelBtn`        | 是否显示取消按钮，点击放弃草稿更改                     | `boolean`                                   | `false`               |

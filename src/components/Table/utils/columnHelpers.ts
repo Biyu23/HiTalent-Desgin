@@ -100,9 +100,6 @@ export function createColumnState<RecordType>(
     if (metaMap.has(item.id)) duplicateIds.add(item.id);
     else metaMap.set(item.id, item);
   });
-  if (process.env.NODE_ENV !== 'production' && duplicateIds.size > 0) {
-    console.warn('[Table] 已忽略重复 column id：', [...duplicateIds]);
-  }
   duplicateIds.forEach((id) => metaMap.delete(id));
   const validMeta = meta.filter((item) => metaMap.has(item.id));
   const seen = new Set<ColumnId>();

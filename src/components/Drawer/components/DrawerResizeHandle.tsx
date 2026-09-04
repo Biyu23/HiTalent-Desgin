@@ -30,7 +30,6 @@ const DrawerResizeHandle = memo<DrawerResizeHandleProps>(
           className,
         )}
         style={style}
-        data-resizing={resizing ? 'true' : undefined}
         onPointerDown={onPointerDown}
       />
     );

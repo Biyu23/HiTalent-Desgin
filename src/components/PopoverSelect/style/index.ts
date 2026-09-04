@@ -1,10 +1,11 @@
 import { createStyles, css } from 'antd-style';
 
-export const useStyles = createStyles(({ token }, prefixCls?: string) => {
+export const useStyles = createStyles(({ token }) => {
   return {
     root: css`
       display: inline-block;
       max-width: 100%;
+      box-sizing: border-box;
     `,
     selectorBtn: css`
       display: flex;
@@ -12,6 +13,7 @@ export const useStyles = createStyles(({ token }, prefixCls?: string) => {
       align-items: center;
       justify-content: space-between;
       width: 100%;
+      max-width: 100%;
       box-sizing: border-box;
       padding: ${token.paddingXXS}px ${token.paddingSM}px;
       color: ${token.colorText};
@@ -40,21 +42,29 @@ export const useStyles = createStyles(({ token }, prefixCls?: string) => {
       cursor: not-allowed;
       background-color: transparent;
       border: ${token.lineWidth}px solid transparent;
+
+      &:hover {
+        color: ${token.colorTextDisabled};
+        background-color: transparent;
+        border-color: transparent;
+      }
     `,
     selectorText: css`
       flex: 1;
       min-width: 0;
-      overflow: hidden;
       color: inherit;
       line-height: inherit;
       text-align: start;
-      white-space: nowrap;
-      text-overflow: ellipsis;
 
       .ant-typography {
         margin: 0;
         padding: 0;
       }
+    `,
+    selectorTextEllipsis: css`
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
 
       > span {
         display: inline-block;
@@ -66,9 +76,9 @@ export const useStyles = createStyles(({ token }, prefixCls?: string) => {
       }
     `,
     selectorActions: css`
-      position: relative;
       display: inline-flex;
       flex-shrink: 0;
+      gap: ${token.marginXXS}px;
       align-items: center;
       justify-content: center;
       min-width: ${token.fontSizeSM}px;
@@ -83,33 +93,26 @@ export const useStyles = createStyles(({ token }, prefixCls?: string) => {
       transition: transform ${token.motionDurationMid} ${token.motionEaseInOut},
         opacity ${token.motionDurationMid};
     `,
+    selectorArrowOpen: css`
+      transform: rotate(180deg);
+    `,
     selectorClear: css`
-      z-index: 1;
       flex-shrink: 0;
       color: ${token.colorTextQuaternary};
       font-size: ${token.fontSizeSM}px;
       cursor: pointer;
-      transition: color ${token.motionDurationMid},
-        opacity ${token.motionDurationMid};
-
-      ${prefixCls
-        ? `&.${prefixCls}-selector-clear-overlay {
-          position: absolute;
-          top: 50%;
-          right: 0;
-          transform: translateY(-50%);
-          opacity: 0;
-          pointer-events: none;
-        }`
-        : ''}
+      transition: color ${token.motionDurationMid};
 
       &:hover {
         color: ${token.colorTextTertiary};
       }
     `,
     popover: css`
+      max-width: calc(100vw - ${token.marginSM * 2}px);
+
       .ant-popover-inner {
-        padding: ${token.paddingXXS}px !important;
+        padding: 0 !important;
+        overflow: hidden;
       }
     `,
     dropdown: css`
@@ -117,18 +120,38 @@ export const useStyles = createStyles(({ token }, prefixCls?: string) => {
       flex-direction: column;
       width: 100%;
       min-width: ${Math.max(150, token.controlHeight * 4)}px;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
     `,
     menu: css`
       display: flex;
       flex: 1;
       flex-direction: column;
+      min-width: 0;
+      padding-block: ${token.paddingXXS}px;
     `,
     menuScroll: css`
+      overflow-x: hidden;
       overflow-y: auto;
+    `,
+    menuItemVirtual: css`
+      height: var(--popover-select-item-height, ${token.controlHeight}px);
+      overflow: hidden;
+
+      > span:last-child {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
     `,
     menuRadio: css`
       display: flex;
       align-items: center;
+      width: 100%;
+      box-sizing: border-box;
       padding: ${token.paddingXXS}px ${token.paddingSM}px;
       cursor: pointer;
       color: ${token.colorText};
@@ -161,6 +184,7 @@ export const useStyles = createStyles(({ token }, prefixCls?: string) => {
       display: flex;
       align-items: center;
       width: 100%;
+      box-sizing: border-box;
       margin: 0;
       padding: ${token.paddingXXS}px ${token.paddingSM}px;
       color: ${token.colorText};
@@ -183,25 +207,25 @@ export const useStyles = createStyles(({ token }, prefixCls?: string) => {
       > span:last-child {
         flex: 1;
         min-width: 0;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
       }
     `,
     menuItemText: css`
+      display: block;
+      flex: 1;
+      min-width: 0;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
     `,
     search: css`
-      padding: ${token.paddingXS}px ${token.paddingXS}px 0;
+      padding: ${token.paddingXS}px ${token.paddingSM}px ${token.paddingXXS}px;
 
       .ant-input-affix-wrapper .anticon {
         color: ${token.colorTextQuaternary};
       }
     `,
     selectAll: css`
-      padding: ${token.paddingXXS}px ${token.paddingSM}px;
+      padding: ${token.paddingXS}px ${token.paddingSM}px;
       border-bottom: ${token.lineWidth}px solid ${token.colorBorderSecondary};
 
       .ant-checkbox-wrapper {
@@ -226,7 +250,7 @@ export const useStyles = createStyles(({ token }, prefixCls?: string) => {
     footer: css`
       display: flex;
       justify-content: flex-end;
-      padding: ${token.paddingSM}px;
+      padding: ${token.paddingXS}px ${token.paddingSM}px;
       border-top: ${token.lineWidth}px solid ${token.colorBorderSecondary};
     `,
     empty: css`
@@ -245,7 +269,7 @@ export const useStyles = createStyles(({ token }, prefixCls?: string) => {
 
       .ant-empty-description {
         color: ${token.colorText};
-        fontsize: ${token.fontSizeSM}px;
+        font-size: ${token.fontSizeSM}px;
       }
     `,
   };
