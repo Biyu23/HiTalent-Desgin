@@ -30,7 +30,7 @@ const PrefixDisplay = () => {
       style={{
         marginTop: 12,
         fontSize: 12,
-        color: 'var(--htd-doc-text-secondary, #666)',
+        color: 'var(--doc-text-secondary, #666)',
       }}
     >
       <div>
@@ -49,14 +49,14 @@ export default () => {
       <div
         style={{
           padding: 24,
-          background: 'var(--htd-doc-surface-muted, #fafafa)',
+          background: 'var(--doc-surface-muted, #fafafa)',
           borderRadius: 8,
         }}
       >
         <p
           style={{
             marginBottom: 12,
-            color: 'var(--htd-doc-text-secondary, #666)',
+            color: 'var(--doc-text-secondary, #666)',
             fontSize: 13,
           }}
         >

@@ -12,114 +12,76 @@ import type {
   SemanticStyles,
 } from '../_util/semanticStyles';
 
-export type ColumnId = string;
+export type TableColumnKey = string;
+export type TableRowKey = string | number;
 
-export interface ColumnStateItem {
-  id: ColumnId;
-  hidden?: boolean;
-  width?: number;
-}
-
-export type ColumnState = readonly ColumnStateItem[];
-export type ColumnStateChangeReason =
-  | 'visibility'
-  | 'resize'
-  | 'reorder'
-  | 'reset';
-
-export interface ColumnStateChangeInfo {
-  reason: ColumnStateChangeReason;
-  columnId?: ColumnId;
-}
-
-interface EnhancedColumnOptions {
-  /** 增强功能使用的稳定列标识；启用列设置、调整宽度或拖拽时建议显式提供。 */
-  id?: ColumnId;
-  /** 是否允许用户隐藏该列，默认 true。 */
+interface TableColumnOptions {
+  key: TableColumnKey;
   hideable?: boolean;
-  /** 是否允许用户调整该列宽度，默认 true。 */
   resizable?: boolean;
 }
 
-export type EnhancedLeafColumnType<RecordType = Record<string, unknown>> =
-  ColumnType<RecordType> & EnhancedColumnOptions;
+export type TableLeafColumn<RecordType = Record<string, unknown>> = Omit<
+  ColumnType<RecordType>,
+  'key'
+> &
+  TableColumnOptions;
 
-export type EnhancedColumnGroupType<RecordType = Record<string, unknown>> =
-  Omit<ColumnGroupType<RecordType>, 'children'> & {
-    children: readonly EnhancedColumnType<RecordType>[];
-  };
+export type TableColumnGroup<RecordType = Record<string, unknown>> = Omit<
+  ColumnGroupType<RecordType>,
+  'children'
+> & {
+  children: readonly TableColumn<RecordType>[];
+};
 
-export type EnhancedColumnType<RecordType = Record<string, unknown>> =
-  | EnhancedLeafColumnType<RecordType>
-  | EnhancedColumnGroupType<RecordType>;
+export type TableColumn<RecordType = Record<string, unknown>> =
+  | TableLeafColumn<RecordType>
+  | TableColumnGroup<RecordType>;
 
-export type DropPosition = -1 | 0 | 1;
-export type DropPositionLabel = 'before' | 'inside' | 'after';
-
-type RowDropPlacement =
-  | { position: 'before'; dropPosition: -1 }
-  | { position: 'inside'; dropPosition: 0 }
-  | { position: 'after'; dropPosition: 1 };
-
-interface RowDropBase<RecordType> {
-  dragRecord: RecordType;
-  targetRecord: RecordType;
-  dragPath: readonly React.Key[];
-  targetPath: readonly React.Key[];
+export interface TableColumnStateItem {
+  key: TableColumnKey;
+  visible?: boolean;
+  width?: number;
 }
 
-export type RowDropInfo<RecordType = Record<string, unknown>> =
-  RowDropBase<RecordType> & RowDropPlacement;
+export type TableColumnState = readonly TableColumnStateItem[];
 
-export type RowDragResult<RecordType = Record<string, unknown>> =
-  RowDropInfo<RecordType> & {
-    dragKey: React.Key;
-    targetKey: React.Key;
-  };
+export type RowDropPlacement = 'before' | 'inside' | 'after';
 
-export interface RowDragConfig<RecordType = Record<string, unknown>> {
-  treeMode?: boolean;
-  childrenColumnName?: string;
-  draggable?: boolean | ((record: RecordType) => boolean);
-  /**
-   * 业务放置规则。拖拽悬停期间会多次调用，应保持同步、快速且无副作用。
-   * 组件会先拒绝拖到自身或自身后代等结构非法位置。
-   */
-  allowDrop?: (info: RowDropInfo<RecordType>) => boolean;
-  handleColumn?:
-    | false
-    | {
-        width?: number;
-        title?: React.ReactNode;
-        fixed?: 'left' | 'right' | boolean;
-        align?: 'left' | 'center' | 'right';
-        resizable?: boolean;
-      };
+export interface RowDropTarget<RecordType> {
+  key: TableRowKey;
+  record: RecordType;
+  path: readonly TableRowKey[];
 }
 
-export interface TableContextValue {
-  /** 组件类名前缀（如 'htd-table'） */
-  prefixCls?: string;
-  classNames?: TableClassNames;
-  styles?: TableStyles;
-  columnWidths: Readonly<Record<ColumnId, number>>;
-  onColumnWidthChange: (columnId: ColumnId, width: number) => void;
-  onColumnResizeEnd?: (columnId: ColumnId, width: number) => void;
+export interface RowDropEvent<RecordType> {
+  source: RowDropTarget<RecordType>;
+  target: RowDropTarget<RecordType>;
+  placement: RowDropPlacement;
 }
 
-interface TableOwnProps<RecordType> {
-  columns: readonly EnhancedColumnType<RecordType>[];
-  showColumnSetting?: boolean;
-  columnSettingTitle?: React.ReactNode;
-  columnSettingLoading?: boolean;
-  enableColumnResize?: boolean;
-  enableColumnDrag?: boolean;
-  enableRowDrag?: boolean | RowDragConfig<RecordType>;
-  onRowDragEnd?: (result: RowDragResult<RecordType>) => void;
-  zebraStripe?: boolean;
-  hoverHighlight?: boolean;
-  toolbarRender?: (defaultToolbar: React.ReactNode) => React.ReactNode;
-  toolbarExtra?: React.ReactNode;
+export interface RowDragEndEvent<RecordType> extends RowDropEvent<RecordType> {
+  nextDataSource: readonly RecordType[];
+}
+
+export interface RowDragHandleOptions {
+  width?: number;
+  title?: React.ReactNode;
+  fixed?: 'left' | 'right' | boolean;
+}
+
+export interface RowDragOptions<RecordType> {
+  mode?: 'flat' | 'tree';
+  childrenKey?: string;
+  canDrag?: (record: RecordType) => boolean;
+  canDrop?: (event: RowDropEvent<RecordType>) => boolean;
+  autoExpandDelay?: number | false;
+  handle?: false | RowDragHandleOptions;
+}
+
+export interface ColumnSettingOptions {
+  title?: React.ReactNode;
+  loading?: boolean;
 }
 
 export type TableClassNameSlot =
@@ -131,38 +93,28 @@ export type TableClassNameSlot =
   | 'table'
   | 'headerCell'
   | 'resizeHandle'
-  | 'rowDragHandle'
-  | 'dragOverlay';
+  | 'rowDragHandle';
 
-export type TableStyleSlot =
-  | 'root'
-  | 'toolbar'
-  | 'settingPopup'
-  | 'table'
-  | 'dragOverlay';
+export type TableStyleSlot = 'root' | 'toolbar' | 'settingPopup' | 'table';
 
-export type TableSlot = TableClassNameSlot;
 export type TableClassNames = SemanticClassNames<TableClassNameSlot>;
 export type TableStyles = SemanticStyles<TableStyleSlot>;
 
-type ControlledColumnStateProps = {
-  columnState: ColumnState;
-  defaultColumnState?: never;
-  onColumnStateChange: (next: ColumnState, info: ColumnStateChangeInfo) => void;
-};
-
-type UncontrolledColumnStateProps = {
-  columnState?: never;
-  defaultColumnState?: ColumnState;
-  onColumnStateChange?: (
-    next: ColumnState,
-    info: ColumnStateChangeInfo,
-  ) => void;
-};
-
-export type ColumnStateProps =
-  | ControlledColumnStateProps
-  | UncontrolledColumnStateProps;
+export interface TableOwnProps<RecordType> {
+  columns: readonly TableColumn<RecordType>[];
+  columnSetting?: boolean | ColumnSettingOptions;
+  columnResize?: boolean;
+  columnDrag?: boolean;
+  rowDrag?: boolean | RowDragOptions<RecordType>;
+  columnState?: TableColumnState;
+  defaultColumnState?: TableColumnState;
+  onColumnStateChange?: (state: TableColumnState) => void;
+  onRowDragEnd?: (event: RowDragEndEvent<RecordType>) => void;
+  zebraStripe?: boolean;
+  hoverHighlight?: boolean;
+  toolbarRender?: (toolbar: React.ReactNode) => React.ReactNode;
+  toolbarExtra?: React.ReactNode;
+}
 
 export type TableProps<RecordType = Record<string, unknown>> = Omit<
   AntdTableProps<RecordType>,
@@ -170,8 +122,7 @@ export type TableProps<RecordType = Record<string, unknown>> = Omit<
 > &
   NativeProps &
   SemanticStyleProps<TableClassNameSlot, TableStyleSlot> &
-  TableOwnProps<RecordType> &
-  (ControlledColumnStateProps | UncontrolledColumnStateProps);
+  TableOwnProps<RecordType>;
 
 export type TableRef = AntdTableRef & {
   resetColumnState: () => void;

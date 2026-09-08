@@ -38,7 +38,7 @@ export default () => {
   ];
   const captionStyle = {
     marginBottom: 8,
-    color: 'var(--htd-doc-text-secondary, #666)',
+    color: 'var(--doc-text-secondary, #666)',
     fontSize: 13,
   } as const;
 

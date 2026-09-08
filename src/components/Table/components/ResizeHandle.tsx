@@ -1,30 +1,41 @@
-import React, { memo, useContext } from 'react';
+import React, { useContext } from 'react';
 import { useStyles } from '../style';
 import TableContext from '../TableContext';
 
 interface ResizeHandleProps {
-  isResizing: boolean;
-  onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => void;
+  active: boolean;
+  disabled?: boolean;
+  onPointerDown: React.PointerEventHandler<HTMLDivElement>;
 }
 
-const ResizeHandle: React.FC<ResizeHandleProps> = ({
-  isResizing,
-  onPointerDown,
-}) => {
-  const context = useContext(TableContext);
-  const { styles, cx } = useStyles();
+function stopHeaderAction(event: React.MouseEvent<HTMLDivElement>) {
+  event.preventDefault();
+  event.stopPropagation();
+}
 
+export default function ResizeHandle({
+  active,
+  disabled = false,
+  onPointerDown,
+}: ResizeHandleProps) {
+  const table = useContext(TableContext);
+  const { styles, cx } = useStyles();
   return (
     <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-disabled={disabled}
+      style={
+        disabled ? { visibility: 'hidden', pointerEvents: 'none' } : undefined
+      }
       className={cx(
         styles.resizeHandle,
-        isResizing && styles.resizeHandleActive,
-        context.classNames?.resizeHandle,
+        active && styles.resizeHandleActive,
+        table.classNames?.resizeHandle,
       )}
-      onPointerDown={onPointerDown}
-      onClick={(e) => e.stopPropagation()}
+      onPointerDown={disabled ? undefined : onPointerDown}
+      onClick={stopHeaderAction}
+      onDoubleClick={stopHeaderAction}
     />
   );
-};
-
-export default memo(ResizeHandle);
+}

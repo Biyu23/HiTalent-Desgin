@@ -64,7 +64,7 @@ export default () => {
         <div
           style={{
             padding: 20,
-            border: '1px dashed var(--htd-doc-border-color, #d9d9d9)',
+            border: '1px dashed var(--doc-border-color, #d9d9d9)',
             borderRadius: 8,
           }}
         >

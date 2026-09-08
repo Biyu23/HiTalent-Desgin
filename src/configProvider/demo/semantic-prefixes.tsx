@@ -25,7 +25,7 @@ export default () => (
       />
       <Table
         columns={[
-          { id: 'label', title: 'Label', dataIndex: 'label', width: 160 },
+          { key: 'label', title: 'Label', dataIndex: 'label', width: 160 },
         ]}
         dataSource={options.map((option) => ({
           key: option.value,

@@ -44,6 +44,10 @@ const zh_CN = {
     minimizedDockDragHandle: '拖拽悬浮窗',
   },
   Table: {
+    rowDropBefore: '插入到目标行之前',
+    rowDropAfter: '插入到目标行之后',
+    rowDropInside: '移入目标行，成为子级',
+    rowDropInvalid: '不可移入此位置',
     columnSetting: '列设置',
     save: '保存',
     cancel: '取消',

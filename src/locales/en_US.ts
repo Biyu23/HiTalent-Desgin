@@ -45,6 +45,10 @@ const en_US = {
     minimizedDockDragHandle: 'Drag to reposition',
   },
   Table: {
+    rowDropBefore: 'Insert before target',
+    rowDropAfter: 'Insert after target',
+    rowDropInside: 'Move into target as a child',
+    rowDropInvalid: 'Cannot drop here',
     columnSetting: 'Column Setting',
     save: 'Save',
     cancel: 'Cancel',

@@ -66,6 +66,10 @@ export interface ModalLocale {
 
 /** Table 组件的国际化文案 */
 export interface TableLocale {
+  rowDropBefore: string;
+  rowDropAfter: string;
+  rowDropInside: string;
+  rowDropInvalid: string;
   /** 列设置标题 */
   columnSetting: string;
   /** 保存 */

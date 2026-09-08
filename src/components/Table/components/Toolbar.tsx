@@ -1,56 +1,49 @@
 import React, { memo, useContext } from 'react';
+import type { ColumnMeta } from '../internal';
 import { useStyles } from '../style';
 import TableContext from '../TableContext';
-import type { ColumnId, EnhancedColumnType } from '../type';
-import ColumnSettingPopover from './ColumnSettingPopover';
+import type { ColumnSettingOptions, TableColumnKey } from '../type';
+import ColumnSetting from './ColumnSetting';
 
-interface ToolbarProps<RecordType = Record<string, unknown>> {
-  columns: readonly EnhancedColumnType<RecordType>[];
-  visibleIds: readonly ColumnId[];
-  onVisibleIdsChange: (ids: ColumnId[]) => void;
-  showColumnSetting: boolean;
-  columnSettingTitle?: React.ReactNode;
-  toolbarExtra?: React.ReactNode;
-  columnSettingLoading?: boolean;
+interface ToolbarProps<RecordType> {
+  columns: readonly ColumnMeta<RecordType>[];
+  visibleKeys: readonly TableColumnKey[];
+  onVisibleKeysChange: (keys: readonly TableColumnKey[]) => void;
+  columnSetting: boolean | ColumnSettingOptions;
+  extra?: React.ReactNode;
 }
 
-function Toolbar<RecordType = Record<string, unknown>>(
-  props: ToolbarProps<RecordType>,
-) {
-  const {
-    columns,
-    visibleIds,
-    onVisibleIdsChange,
-    showColumnSetting,
-    columnSettingTitle,
-    toolbarExtra,
-    columnSettingLoading,
-  } = props;
+function Toolbar<RecordType>({
+  columns,
+  visibleKeys,
+  onVisibleKeysChange,
+  columnSetting,
+  extra,
+}: ToolbarProps<RecordType>) {
   const context = useContext(TableContext);
-  const { styles: tableStyles, cx } = useStyles();
-  const { classNames, styles } = context;
+  const { styles, cx } = useStyles();
+  if (!columnSetting && !extra) return null;
 
-  if (!showColumnSetting && !toolbarExtra) return null;
-
+  const options = typeof columnSetting === 'object' ? columnSetting : {};
   return (
     <div
-      className={cx(tableStyles.toolbar, classNames?.toolbar)}
-      style={styles?.toolbar}
+      className={cx(styles.toolbar, context.classNames?.toolbar)}
+      style={context.styles?.toolbar}
     >
-      <div className={cx(tableStyles.toolbarExtra, classNames?.toolbarExtra)}>
-        {toolbarExtra}
+      <div
+        className={cx(styles.toolbarExtra, context.classNames?.toolbarExtra)}
+      >
+        {extra}
       </div>
-      {showColumnSetting && (
-        <div className={tableStyles.toolbarSetting}>
-          <ColumnSettingPopover
-            columns={columns}
-            visibleIds={visibleIds}
-            onVisibleIdsChange={onVisibleIdsChange}
-            loading={columnSettingLoading}
-            title={columnSettingTitle}
-          />
-        </div>
-      )}
+      {columnSetting ? (
+        <ColumnSetting
+          columns={columns}
+          visibleKeys={visibleKeys}
+          onChange={onVisibleKeysChange}
+          title={options.title}
+          loading={options.loading}
+        />
+      ) : null}
     </div>
   );
 }
