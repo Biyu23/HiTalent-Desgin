@@ -11,6 +11,9 @@ import type {
 } from './type';
 
 export const INTERNAL_COLUMN_KEY: unique symbol = Symbol('table-column-key');
+// React element props do not forward symbol keys. Consume this private field
+// in the cell adapters while preserving user onCell/onHeaderCell properties.
+export const INTERNAL_CELL_COLUMN = '__hiTalentTableColumn';
 
 export type InternalLeafColumn<RecordType> = TableLeafColumn<RecordType> & {
   [INTERNAL_COLUMN_KEY]?: TableColumnKey;

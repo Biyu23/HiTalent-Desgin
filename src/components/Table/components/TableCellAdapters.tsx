@@ -1,7 +1,7 @@
 import type { TableProps as AntdTableProps } from 'antd';
 import React, { useContext, useMemo } from 'react';
 import type { ColumnMeta, InternalLeafColumn } from '../internal';
-import { INTERNAL_COLUMN_KEY } from '../internal';
+import { INTERNAL_CELL_COLUMN, INTERNAL_COLUMN_KEY } from '../internal';
 import { RowAdapter, RowRuntimeContext } from '../rowDrag/SortableRow';
 import type { TableColumnKey } from '../type';
 import EnhancedHeaderCell from './EnhancedHeaderCell';
@@ -57,13 +57,13 @@ export function TableCellAdapterProvider<RecordType>({
 
 function HeaderCellAdapter(
   props: React.ThHTMLAttributes<HTMLTableCellElement> & {
-    column?: InternalLeafColumn<unknown>;
+    [INTERNAL_CELL_COLUMN]?: InternalLeafColumn<unknown>;
   },
 ) {
   const context = useContext(AdapterContext);
-  const { column, ...cellProps } = props;
+  const { [INTERNAL_CELL_COLUMN]: column, ...cellProps } = props;
   const key = column?.[INTERNAL_COLUMN_KEY];
-  const meta = key ? context.metaMap.get(key) : undefined;
+  const meta = key === undefined ? undefined : context.metaMap.get(key);
   if (!meta) {
     const Cell = context.headerCell ?? 'th';
     return <Cell {...cellProps} />;
@@ -81,14 +81,13 @@ function HeaderCellAdapter(
 
 function BodyCellAdapter(
   props: React.TdHTMLAttributes<HTMLTableCellElement> & {
-    column?: InternalLeafColumn<unknown>;
+    [INTERNAL_CELL_COLUMN]?: InternalLeafColumn<unknown>;
   },
 ) {
   const adapter = useContext(AdapterContext);
   const rowRuntime = useContext(RowRuntimeContext);
-  const key = props.column?.[INTERNAL_COLUMN_KEY];
-  const cellProps = { ...props };
-  delete cellProps.column;
+  const { [INTERNAL_CELL_COLUMN]: column, ...cellProps } = props;
+  const key = column?.[INTERNAL_COLUMN_KEY];
   const treeCell =
     rowRuntime?.treeMode &&
     props.className
@@ -108,7 +107,7 @@ function BodyCellAdapter(
     <Cell
       {...cellProps}
       data-table-column-key={adapter.dragEnabled ? key : undefined}
-      data-table-column-fixed={props.column?.fixed ? '' : undefined}
+      data-table-column-fixed={column?.fixed ? '' : undefined}
     />
   );
 }
@@ -116,6 +115,7 @@ function BodyCellAdapter(
 export function useTableComponents<RecordType>(
   components: AntdTableProps<RecordType>['components'],
   rowDragEnabled: boolean,
+  virtual = false,
 ) {
   return useMemo(() => {
     const header =
@@ -123,16 +123,20 @@ export function useTableComponents<RecordType>(
     const body =
       typeof components?.body === 'object' ? { ...components.body } : {};
     const headerCell = header.cell;
-    const bodyCell = body.cell;
-    const bodyRow = body.row;
+    const bodyCell = body.cell ?? (virtual ? 'div' : 'td');
+    const bodyRow = body.row ?? (virtual ? 'div' : 'tr');
     header.cell = HeaderCellAdapter;
     body.cell = BodyCellAdapter;
     if (rowDragEnabled) body.row = RowAdapter;
     return {
-      components: { ...components, header, body },
+      components: {
+        ...components,
+        header,
+        body: typeof components?.body === 'function' ? components.body : body,
+      },
       headerCell,
       bodyCell,
       bodyRow,
     };
-  }, [components, rowDragEnabled]);
+  }, [components, rowDragEnabled, virtual]);
 }

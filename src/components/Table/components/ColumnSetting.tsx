@@ -1,6 +1,6 @@
 import { LoadingOutlined, SettingOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Empty, Popover, Spin } from 'antd';
-import React, { memo, useContext, useEffect, useMemo, useState } from 'react';
+import React, { memo, useContext, useMemo, useState } from 'react';
 import { useLocale } from '../../../configProvider/useLocale';
 import type { ColumnMeta } from '../internal';
 import { useStyles } from '../style';
@@ -28,9 +28,10 @@ function ColumnSetting<RecordType>({
   const [open, setOpen] = useState(false);
   const [checkedKeys, setCheckedKeys] = useState<TableColumnKey[]>([]);
 
-  useEffect(() => {
-    if (open) setCheckedKeys([...visibleKeys]);
-  }, [open, visibleKeys]);
+  const changeOpen = (next: boolean) => {
+    if (next) setCheckedKeys([...visibleKeys]);
+    setOpen(next);
+  };
 
   const requiredKeys = useMemo(
     () => columns.filter((item) => !item.hideable).map((item) => item.key),
@@ -65,7 +66,9 @@ function ColumnSetting<RecordType>({
                   );
                 }}
               >
-                {item.column.title ?? item.key}
+                {(typeof item.column.title === 'function'
+                  ? item.column.title({})
+                  : item.column.title) ?? item.key}
               </Checkbox>
             </div>
           );
@@ -89,7 +92,7 @@ function ColumnSetting<RecordType>({
       trigger="click"
       placement="bottomRight"
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={changeOpen}
       content={content}
       title={title ?? locale.columnSetting}
       rootClassName={cx(

@@ -21,7 +21,6 @@ export default function SortableHeader({
       className={styles.dragContainer}
       style={{
         cursor: fixed ? 'default' : 'move',
-        touchAction: fixed ? undefined : 'none',
       }}
     >
       {children}

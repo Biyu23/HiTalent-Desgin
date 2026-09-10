@@ -27,14 +27,15 @@ function EnhancedHeaderCell<RecordType>({
   const context = useContext(TableContext);
   const drag = useContext(ColumnDragContext);
   const { styles, cx } = useStyles();
+  const canResize = resizeEnabled && meta.resizable;
   const resize = useColumnResize({
     columnKey: meta.key,
+    disabled: !canResize || drag.activeKey !== null,
     minWidth: meta.column.minWidth,
     onResize: context.previewColumnWidth,
     onResizeEnd: context.commitColumnWidth,
     onCancel: context.cancelColumnPreview,
   });
-  const canResize = resizeEnabled && meta.resizable;
   const content = (
     <div className={cx(styles.headerCell, context.classNames?.headerCell)}>
       <span className={styles.headerCellTitle}>{children}</span>

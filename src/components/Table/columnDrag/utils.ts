@@ -1,5 +1,6 @@
 import type { ColumnLayoutRect } from '../internal';
 import type { TableColumnKey } from '../type';
+import { tableElements } from '../utils/dragPreview';
 
 interface ProjectColumnOrderOptions {
   order: readonly TableColumnKey[];
@@ -14,11 +15,10 @@ export function captureColumnLayout(
   root: HTMLElement | null,
 ): Map<TableColumnKey, ColumnLayoutRect> {
   const result = new Map<TableColumnKey, ColumnLayoutRect>();
-  root
-    ?.querySelectorAll<HTMLElement>('[data-column-drag-key]')
-    .forEach((element) => {
+  (root ? tableElements(root, '[data-column-drag-key]') : []).forEach(
+    (element) => {
       const key = element.dataset.columnDragKey;
-      if (!key || result.has(key)) return;
+      if (key === undefined || result.has(key)) return;
       // The whole cell is the drag lane, including its vertical padding.
       const rect = (element.closest('th') ?? element).getBoundingClientRect();
       result.set(key, {
@@ -29,7 +29,8 @@ export function captureColumnLayout(
         width: rect.width,
         height: rect.height,
       });
-    });
+    },
+  );
   return result;
 }
 

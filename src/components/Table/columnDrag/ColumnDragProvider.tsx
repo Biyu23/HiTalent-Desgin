@@ -1,6 +1,7 @@
 import React, {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -8,8 +9,12 @@ import React, {
 import { unstable_batchedUpdates } from 'react-dom';
 import { lockBodyInteraction } from '../../../utils/bodyInteractionLock';
 import type { ColumnMeta } from '../internal';
-import type { TableColumnKey } from '../type';
-import { getTableViewport } from '../utils/dragPreview';
+import type { TableColumnKey, TableColumnState } from '../type';
+import {
+  getHorizontalScroller,
+  getTableViewport,
+  scrollTableHorizontally,
+} from '../utils/dragPreview';
 import { useColumnMotion } from './useColumnMotion';
 import {
   captureColumnLayout,
@@ -33,8 +38,10 @@ interface ColumnDragProviderProps<RecordType> {
   children: React.ReactNode;
   enabled: boolean;
   rootRef: React.RefObject<HTMLElement>;
+  scrollVirtual: (left: number) => void;
   columns: readonly ColumnMeta<RecordType>[];
   orderedKeys: readonly TableColumnKey[];
+  committedState: TableColumnState;
   onPreview: (keys: readonly TableColumnKey[]) => void;
   onCommit: (keys: readonly TableColumnKey[]) => void;
   onCancel: () => void;
@@ -42,6 +49,7 @@ interface ColumnDragProviderProps<RecordType> {
 
 interface ActiveDrag {
   key: TableColumnKey;
+  direction: number;
   pointerId: number;
   startX: number;
   startY: number;
@@ -53,6 +61,7 @@ interface ActiveDrag {
   rootLeft: number;
   rootTop: number;
   scroller: HTMLElement;
+  horizontalScroller: HTMLElement;
   order: TableColumnKey[];
   previewOrder: TableColumnKey[];
   rects: ReturnType<typeof captureColumnLayout>;
@@ -62,13 +71,25 @@ interface ActiveDrag {
 }
 
 const ACTIVATION_DISTANCE = 4;
+const HEADER_DRAG_TOLERANCE = 12;
+
+function isInsideHeader(drag: ActiveDrag, y: number) {
+  const header = drag.rects.get(drag.key);
+  return Boolean(
+    header &&
+      y >= header.top - HEADER_DRAG_TOLERANCE &&
+      y <= header.bottom + HEADER_DRAG_TOLERANCE,
+  );
+}
 
 export default function ColumnDragProvider<RecordType>({
   children,
   enabled,
   rootRef,
+  scrollVirtual,
   columns,
   orderedKeys,
+  committedState,
   onPreview,
   onCommit,
   onCancel,
@@ -106,21 +127,25 @@ export default function ColumnDragProvider<RecordType>({
       if (!startRect) return;
       const pointerDelta = drag.x - drag.startX;
       moveMotion(drag.x, drag.y);
-      if (drag.y < startRect.top || drag.y > startRect.bottom) return;
+      if (!isInsideHeader(drag, drag.y)) return;
 
       // Project in the frozen content coordinates; scrolling must not move the pointer overlay.
-      const deltaX = pointerDelta + drag.scroller.scrollLeft - drag.scrollLeft;
-      const pointerX = drag.x + drag.scroller.scrollLeft - drag.scrollLeft;
+      const deltaX =
+        pointerDelta + drag.horizontalScroller.scrollLeft - drag.scrollLeft;
+      const pointerX =
+        drag.x + drag.horizontalScroller.scrollLeft - drag.scrollLeft;
       const movement = pointerX - drag.lastContentX;
       drag.lastContentX = pointerX;
       if (movement === 0) return;
       const visible = drag.previewOrder.filter((key) => drag.rects.has(key));
+      if (drag.direction === -1) visible.reverse();
       // Reconstruct current slots without reading animated cell rectangles.
       // Frozen original slots stop matching the targets after the first swap.
       const slots = new Map(drag.rects);
       // Sticky cells retain viewport coordinates when a drag starts after scrolling.
       // Anchor content coordinates to the active (always non-fixed) column.
       const originalVisible = drag.order.filter((key) => drag.rects.has(key));
+      if (drag.direction === -1) originalVisible.reverse();
       let left =
         startRect.left -
         originalVisible
@@ -142,13 +167,14 @@ export default function ColumnDragProvider<RecordType>({
         deltaX: deltaX || 1,
         fixedKeys: drag.fixedKeys,
       });
+      if (drag.direction === -1) projected.reverse();
       const next =
         deltaX === 0
           ? [...drag.order]
           : mergeVisibleColumnOrder(drag.order, projected);
       const indexDelta =
         next.indexOf(drag.key) - drag.previewOrder.indexOf(drag.key);
-      if (indexDelta * movement < 0) return;
+      if (indexDelta * movement * drag.direction < 0) return;
       if (next.every((key, index) => key === drag.previewOrder[index])) return;
       captureLayout(
         new Set(next.filter((key, index) => key !== drag.previewOrder[index])),
@@ -167,11 +193,7 @@ export default function ColumnDragProvider<RecordType>({
         ? Math.min(time - lastFrameRef.current, 32)
         : 16;
       lastFrameRef.current = time;
-      const header = drag.rects.get(drag.key);
-      const insideHeader = Boolean(
-        header && drag.y >= header.top && drag.y <= header.bottom,
-      );
-      if (insideHeader) {
+      if (isInsideHeader(drag, drag.y)) {
         const rect = drag.scroller.getBoundingClientRect();
         const edge = 48;
         const right = Math.min(rect.right, window.innerWidth);
@@ -182,13 +204,18 @@ export default function ColumnDragProvider<RecordType>({
             : drag.x < left + edge
             ? -Math.min(1, (left + edge - drag.x) / edge)
             : 0;
-        if (direction) drag.scroller.scrollLeft += direction * elapsed * 0.65;
+        if (direction && rootRef.current)
+          scrollTableHorizontally(
+            rootRef.current,
+            direction * elapsed * 0.65,
+            scrollVirtual,
+          );
       }
       // Coalesce pointer events and scroll events into one projection per frame.
       unstable_batchedUpdates(() => project(drag));
       scrollFrameRef.current = requestAnimationFrame(autoScroll);
     },
-    [project],
+    [project, rootRef, scrollVirtual],
   );
 
   const move = useCallback(
@@ -207,11 +234,12 @@ export default function ColumnDragProvider<RecordType>({
       if (!drag.activated) {
         drag.activated = true;
         startMotion(drag.key);
-        moveMotion(drag.x, drag.y);
         drag.releaseBody = lockBodyInteraction('grabbing');
         setActiveKey(drag.key);
         scrollFrameRef.current = requestAnimationFrame(autoScroll);
       }
+      // Follow input immediately; table layout projection remains frame-coalesced.
+      moveMotion(drag.x, drag.y);
     },
     [autoScroll, moveMotion, startMotion],
   );
@@ -222,15 +250,14 @@ export default function ColumnDragProvider<RecordType>({
       if (!drag || drag.pointerId !== event.pointerId) return;
       unstable_batchedUpdates(() => {
         if (drag.activated) {
-          const header = drag.rects.get(drag.key);
-          const insideHeader =
-            header &&
-            event.clientY >= header.top &&
-            event.clientY <= header.bottom;
-          // Release confirms the displayed order; it must not project another
-          // target or restart the layout animation already running from the move.
-          if (insideHeader) onCommit(drag.previewOrder);
-          else {
+          if (isInsideHeader(drag, event.clientY)) {
+            drag.x = event.clientX;
+            drag.y = event.clientY;
+            // Flush unprocessed input if release beats RAF. project skips unchanged
+            // coordinates, so a settled preview does not swap again on release.
+            project(drag);
+            onCommit(drag.previewOrder);
+          } else {
             captureLayout();
             onCancel();
           }
@@ -243,7 +270,7 @@ export default function ColumnDragProvider<RecordType>({
         clear();
       });
     },
-    [captureLayout, clear, onCancel, onCommit],
+    [captureLayout, clear, onCancel, onCommit, project],
   );
 
   const abort = useCallback(() => {
@@ -256,7 +283,7 @@ export default function ColumnDragProvider<RecordType>({
     clear();
   }, [captureLayout, clear, onCancel]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!listening) return undefined;
     const cancel = (event: PointerEvent) => {
       if (dragRef.current?.pointerId === event.pointerId) abort();
@@ -296,7 +323,13 @@ export default function ColumnDragProvider<RecordType>({
 
   const start = useCallback(
     (event: React.PointerEvent<HTMLElement>, key: TableColumnKey) => {
-      if (!enabled || !event.isPrimary || event.button !== 0 || dragRef.current)
+      if (
+        !enabled ||
+        event.pointerType !== 'mouse' ||
+        !event.isPrimary ||
+        event.button !== 0 ||
+        dragRef.current
+      )
         return;
       if (
         event.target instanceof Element &&
@@ -308,27 +341,40 @@ export default function ColumnDragProvider<RecordType>({
       const meta = columns.find((item) => item.key === key);
       const root = rootRef.current;
       if (!root || !meta || meta.column.fixed) return;
+      if (
+        event.target instanceof Element &&
+        event.target.closest('[data-table-root]') !== root
+      )
+        return;
       cancelMotion();
       cancelLayout();
       setActiveKey(null);
       const rects = captureColumnLayout(root);
       if (!rects.has(key)) return;
       const scroller = getTableViewport(root);
+      const horizontalScroller = getHorizontalScroller(root);
       const rootBounds = root.getBoundingClientRect();
       const order = [...orderedKeys];
       dragRef.current = {
         key,
+        direction:
+          event.currentTarget.ownerDocument.defaultView?.getComputedStyle(
+            event.currentTarget,
+          ).direction === 'rtl'
+            ? -1
+            : 1,
         pointerId: event.pointerId,
         startX: event.clientX,
         startY: event.clientY,
         x: event.clientX,
         y: event.clientY,
-        scrollLeft: scroller.scrollLeft,
+        scrollLeft: horizontalScroller.scrollLeft,
         lastContentX: event.clientX,
         scrollTop: scroller.scrollTop,
         rootLeft: rootBounds.left,
         rootTop: rootBounds.top,
         scroller,
+        horizontalScroller,
         order,
         previewOrder: order,
         rects,
@@ -353,10 +399,17 @@ export default function ColumnDragProvider<RecordType>({
     if (!enabled) abort();
   }, [abort, enabled]);
   const previousColumns = useRef(columns);
-  useEffect(() => {
-    if (previousColumns.current !== columns) abort();
+  const previousState = useRef(committedState);
+  useLayoutEffect(() => {
+    // Preview order changes are transient; only committed inputs invalidate a drag.
+    if (
+      previousColumns.current !== columns ||
+      previousState.current !== committedState
+    )
+      abort();
     previousColumns.current = columns;
-  }, [abort, columns]);
+    previousState.current = committedState;
+  }, [abort, columns, committedState]);
 
   useEffect(
     () => () => {

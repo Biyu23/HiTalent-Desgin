@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useLayoutMotion } from '../hooks/useLayoutMotion';
-import { visibleTableRows } from '../utils/dragPreview';
+import {
+  tableElements,
+  tableSelector,
+  visibleTableRows,
+} from '../utils/dragPreview';
 
 /** A small header label follows the pointer; actual cells stay in the table. */
 export function useColumnMotion(rootRef: React.RefObject<HTMLElement>) {
@@ -17,11 +21,11 @@ export function useColumnMotion(rootRef: React.RefObject<HTMLElement>) {
   const start = useCallback(
     (key: string) => {
       cancel();
-      const header = Array.from(
-        rootRef.current?.querySelectorAll<HTMLElement>(
-          '[data-column-drag-key]',
-        ) ?? [],
-      ).find((cell) => cell.dataset.columnDragKey === key);
+      const root = rootRef.current;
+      if (!root) return;
+      const header = tableElements(root, '[data-column-drag-key]').find(
+        (cell) => cell.dataset.columnDragKey === key,
+      );
       if (!header) return;
       const computed = getComputedStyle(header);
       const label = document.createElement('div');
@@ -39,7 +43,7 @@ export function useColumnMotion(rootRef: React.RefObject<HTMLElement>) {
         border: '1px solid rgba(128, 128, 128, 0.25)',
         borderRadius: '4px',
         backgroundColor: getComputedStyle(
-          header.closest('.ant-table') ?? header,
+          header.closest(tableSelector(root)) ?? header,
         ).backgroundColor,
         color: computed.color,
         font: computed.font,
@@ -83,10 +87,12 @@ export function useColumnMotion(rootRef: React.RefObject<HTMLElement>) {
       if (!root) return;
       capture(
         [
-          ...root.querySelectorAll<HTMLElement>('th[data-table-column-key]'),
+          ...tableElements(root, 'th[data-table-column-key]'),
           ...visibleTableRows(root).flatMap((row) =>
-            Array.from(
-              row.querySelectorAll<HTMLElement>('td[data-table-column-key]'),
+            Array.from(row.children).filter(
+              (cell): cell is HTMLElement =>
+                cell instanceof HTMLElement &&
+                cell.hasAttribute('data-table-column-key'),
             ),
           ),
         ].filter(

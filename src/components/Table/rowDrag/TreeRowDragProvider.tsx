@@ -1,9 +1,9 @@
 import type { DragStartEvent, Modifier } from '@dnd-kit/core';
 import {
   DndContext,
+  KeyboardSensor,
   MeasuringStrategy,
-  PointerSensor,
-  TouchSensor,
+  MouseSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
@@ -11,6 +11,7 @@ import { SortableContext } from '@dnd-kit/sortable';
 import React, {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -25,6 +26,7 @@ import type {
 import type { TableRowKey } from '../type';
 import { visibleTableRows } from '../utils/dragPreview';
 import { RowDragStateContext, RowRuntimeContext } from './SortableRow';
+import { dragAccessibility } from './sensors';
 import { useRowCollisionDetection } from './useRowCollisionDetection';
 import {
   collectSubtreeKeys,
@@ -68,6 +70,7 @@ export default function TreeRowDragProvider<RecordType>(
   const {
     collisionDetection,
     getTarget,
+    keyboardCoordinates,
     reset: resetCollision,
   } = useRowCollisionDetection(props.rootRef, originalKeys, draggedKeys);
   const { capture: captureMotion } = useLayoutMotion('y');
@@ -142,71 +145,93 @@ export default function TreeRowDragProvider<RecordType>(
       if (next.candidate.placement !== 'inside') return;
       const target = registry.meta.get(next.candidate.targetKey);
       if (!target || propsRef.current.expandedKeys.has(target.key)) return;
-      if (!target.childKeys.length) {
-        expand(target.key, target.record);
-        return;
-      }
       const delay = propsRef.current.autoExpandDelay;
       if (delay === false) return;
       expandTimerRef.current = setTimeout(() => {
         expandTimerRef.current = null;
+        const current = propsRef.current;
+        const source = registry.meta.get(next.candidate.sourceKey);
+        if (
+          current.autoExpandDelay === false ||
+          current.expandedKeys.has(target.key) ||
+          !source ||
+          current.canDrag?.(source.record) === false ||
+          !resolveRowDrop(registry, next.candidate, current.canDrop)
+        )
+          return;
         expand(target.key, target.record);
       }, Math.max(0, delay));
     },
     [clearExpandTimer, expand],
   );
 
-  const evaluate = useCallback((): DragResult<RecordType> | null => {
-    const registry = registryRef.current;
-    const snapshot = snapshotRef.current;
-    const sourceKey = activeKeyRef.current;
-    const drop = getTarget();
-    const targetKey = drop?.key;
-    const placement = drop?.placement;
-    if (!registry || !snapshot || sourceKey === null) return null;
+  useEffect(() => {
+    clearExpandTimer();
+    signatureRef.current = '';
+  }, [clearExpandTimer, props.autoExpandDelay]);
 
-    if (!isTableRowKey(targetKey) || !placement) {
-      if (signatureRef.current !== 'none') {
-        signatureRef.current = 'none';
+  const evaluate = useCallback(
+    (force = false): DragResult<RecordType> | null => {
+      const registry = registryRef.current;
+      const snapshot = snapshotRef.current;
+      const sourceKey = activeKeyRef.current;
+      const drop = getTarget();
+      const targetKey = drop?.key;
+      const placement = drop?.placement;
+      if (!registry || !snapshot || sourceKey === null) return null;
+
+      if (!isTableRowKey(targetKey) || !placement) {
+        if (signatureRef.current !== 'none') {
+          signatureRef.current = 'none';
+          resultRef.current = null;
+          setCandidate(null);
+          clearExpandTimer();
+        }
+        return null;
+      }
+
+      const signature = `${typeof sourceKey}:${sourceKey}|${typeof targetKey}:${targetKey}|${placement}`;
+      if (!force && signature === signatureRef.current)
+        return resultRef.current;
+      signatureRef.current = signature;
+      const source = registry.meta.get(sourceKey);
+      if (!source || propsRef.current.canDrag?.(source.record) === false) {
         resultRef.current = null;
         setCandidate(null);
         clearExpandTimer();
+        return null;
       }
-      return null;
-    }
+      const resolved = resolveRowDrop(
+        registry,
+        { sourceKey, targetKey, placement },
+        propsRef.current.canDrop,
+      );
+      const nextDataSource = resolved
+        ? moveRow(snapshot, {
+            candidate: resolved,
+            registry,
+            getKey: propsRef.current.getKey,
+            childrenKey: propsRef.current.childrenKey,
+            treeMode: true,
+          })
+        : null;
 
-    const signature = `${typeof sourceKey}:${sourceKey}|${typeof targetKey}:${targetKey}|${placement}`;
-    if (signature === signatureRef.current) return resultRef.current;
-    signatureRef.current = signature;
-    const resolved = resolveRowDrop(
-      registry,
-      { sourceKey, targetKey, placement },
-      propsRef.current.canDrop,
-    );
-    const nextDataSource = resolved
-      ? moveRow(snapshot, {
-          candidate: resolved,
-          registry,
-          getKey: propsRef.current.getKey,
-          childrenKey: propsRef.current.childrenKey,
-          treeMode: true,
-        })
-      : null;
+      if (!resolved || !nextDataSource) {
+        resultRef.current = null;
+        setCandidate(null);
+        clearExpandTimer();
+        return null;
+      }
 
-    if (!resolved || !nextDataSource) {
-      resultRef.current = null;
-      setCandidate(null);
-      clearExpandTimer();
-      return null;
-    }
-
-    const result = { candidate: resolved, nextDataSource };
-    resultRef.current = result;
-    setCandidate(resolved);
-    // Keep the tree in place until release; candidate drives the insertion guide.
-    scheduleExpand(result, registry);
-    return result;
-  }, [clearExpandTimer, getTarget, scheduleExpand]);
+      const result = { candidate: resolved, nextDataSource };
+      resultRef.current = result;
+      setCandidate(resolved);
+      // Keep the tree in place until release; candidate drives the insertion guide.
+      scheduleExpand(result, registry);
+      return result;
+    },
+    [clearExpandTimer, getTarget, scheduleExpand],
+  );
 
   const start = useCallback((event: DragStartEvent) => {
     if (!isTableRowKey(event.active.id)) return;
@@ -235,8 +260,10 @@ export default function TreeRowDragProvider<RecordType>(
   }, [evaluate]);
 
   const end = useCallback(() => {
+    // A sensor may release after this provider has been removed or cancelled.
+    if (activeKeyRef.current === null) return;
     clearFrame();
-    const result = evaluate();
+    const result = evaluate(true);
     const registry = registryRef.current;
     const finalEvent =
       result && registry
@@ -270,25 +297,30 @@ export default function TreeRowDragProvider<RecordType>(
     return () => window.removeEventListener('blur', abort);
   }, [clear]);
 
-  useEffect(
+  useLayoutEffect(
     () => () => {
       clearFrame();
       clearExpandTimer();
+      const wasDragging = activeKeyRef.current !== null;
+      activeKeyRef.current = null;
+      snapshotRef.current = null;
+      registryRef.current = null;
+      resultRef.current = null;
+      if (wasDragging) propsRef.current.onPreview(null);
     },
     [clearExpandTimer, clearFrame],
   );
 
-  const pointerOptions = useMemo(
+  const mouseOptions = useMemo(
     () => ({ activationConstraint: { distance: 4 } }),
     [],
   );
-  const touchOptions = useMemo(
-    () => ({ activationConstraint: { delay: 150, tolerance: 5 } }),
-    [],
-  );
   const sensors = useSensors(
-    useSensor(PointerSensor, pointerOptions),
-    useSensor(TouchSensor, touchOptions),
+    useSensor(MouseSensor, mouseOptions),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: keyboardCoordinates,
+      scrollBehavior: 'auto',
+    }),
   );
   const stateValue = useMemo(
     () => ({ candidate, treeMode: true, draggedKeys }),
@@ -307,6 +339,7 @@ export default function TreeRowDragProvider<RecordType>(
 
   return (
     <DndContext
+      accessibility={dragAccessibility}
       modifiers={rowModifiers}
       sensors={sensors}
       collisionDetection={collisionDetection}

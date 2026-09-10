@@ -2,19 +2,21 @@ import type { DragEndEvent, Modifier } from '@dnd-kit/core';
 import {
   closestCenter,
   DndContext,
-  PointerSensor,
-  TouchSensor,
+  KeyboardSensor,
+  MouseSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
 import {
   SortableContext,
+  sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import type { RowDragProviderProps, RowRegistry } from '../internal';
 import type { TableRowKey } from '../type';
 import { RowDragStateContext, RowRuntimeContext } from './SortableRow';
+import { dragAccessibility } from './sensors';
 import {
   createRowDragEndEvent,
   isTableRowKey,
@@ -58,17 +60,31 @@ export default function FlatRowDragProvider<RecordType>(
 ) {
   const propsRef = useRef(props);
   propsRef.current = props;
-  const pointerOptions = useMemo(
+  const mountedRef = useRef(false);
+  const draggingRef = useRef(false);
+  useLayoutEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      draggingRef.current = false;
+    };
+  }, [props.registry]);
+  const start = useCallback(() => {
+    draggingRef.current = mountedRef.current && propsRef.current.enabled;
+  }, []);
+  const cancel = useCallback(() => {
+    draggingRef.current = false;
+  }, []);
+  const mouseOptions = useMemo(
     () => ({ activationConstraint: { distance: 4 } }),
     [],
   );
-  const touchOptions = useMemo(
-    () => ({ activationConstraint: { delay: 150, tolerance: 5 } }),
-    [],
-  );
   const sensors = useSensors(
-    useSensor(PointerSensor, pointerOptions),
-    useSensor(TouchSensor, touchOptions),
+    useSensor(MouseSensor, mouseOptions),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+      scrollBehavior: 'auto',
+    }),
   );
   const runtimeValue = useMemo(
     () => ({
@@ -81,6 +97,8 @@ export default function FlatRowDragProvider<RecordType>(
     [props.canDrag, props.handleEnabled, props.registry, props.rowComponent],
   );
   const end = useCallback((event: DragEndEvent) => {
+    if (!mountedRef.current || !draggingRef.current) return;
+    draggingRef.current = false;
     const { active, over } = event;
     if (
       !over ||
@@ -93,6 +111,7 @@ export default function FlatRowDragProvider<RecordType>(
     const source = current.registry.meta.get(active.id);
     const target = current.registry.meta.get(over.id);
     if (!source || !target) return;
+    if (current.canDrag?.(source.record) === false) return;
     const candidate = resolveRowDrop(
       current.registry,
       {
@@ -121,9 +140,12 @@ export default function FlatRowDragProvider<RecordType>(
 
   return (
     <DndContext
+      accessibility={dragAccessibility}
       modifiers={flatModifiers}
       sensors={sensors}
       collisionDetection={closestCenter}
+      onDragStart={start}
+      onDragCancel={cancel}
       onDragEnd={end}
     >
       <SortableContext

@@ -33,7 +33,13 @@ export default function ResizeHandle({
         active && styles.resizeHandleActive,
         table.classNames?.resizeHandle,
       )}
-      onPointerDown={disabled ? undefined : onPointerDown}
+      onPointerDown={
+        disabled
+          ? undefined
+          : (event) => {
+              if (event.pointerType === 'mouse') onPointerDown(event);
+            }
+      }
       onClick={stopHeaderAction}
       onDoubleClick={stopHeaderAction}
     />

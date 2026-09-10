@@ -1,5 +1,5 @@
 import type { ColumnMeta, InternalLeafColumn } from '../internal';
-import { INTERNAL_COLUMN_KEY } from '../internal';
+import { INTERNAL_CELL_COLUMN, INTERNAL_COLUMN_KEY } from '../internal';
 import type {
   TableColumn,
   TableColumnGroup,
@@ -23,15 +23,20 @@ export function collectColumnMeta<RecordType>(
   const visit = (
     items: readonly TableColumn<RecordType>[],
     parentPath: readonly number[],
+    inheritedFixed?: TableLeafColumn<RecordType>['fixed'],
   ) => {
     items.forEach((column, index) => {
       if (isColumnGroup(column)) {
-        visit(column.children, [...parentPath, index]);
+        visit(
+          column.children,
+          [...parentPath, index],
+          column.fixed ?? inheritedFixed,
+        );
         return;
       }
       result.push({
         key: column.key,
-        column,
+        column: { ...column, fixed: column.fixed ?? inheritedFixed },
         groupPath: parentPath.join('.'),
         hideable: column.hideable !== false,
         resizable: column.resizable !== false,
@@ -76,11 +81,9 @@ export function normalizeColumnState<RecordType>(
 
   meta.forEach((item) => {
     if (seen.has(item.key)) return;
-    const width = normalizeWidth(item.column.width);
     normalized.push({
       key: item.key,
       visible: true,
-      ...(width === undefined ? {} : { width }),
     });
   });
 
@@ -122,28 +125,33 @@ export function processColumns<RecordType>(
 
   const visit = (
     items: readonly TableColumn<RecordType>[],
+    inheritedFixed?: TableLeafColumn<RecordType>['fixed'],
   ): TableColumn<RecordType>[] => {
     const result = items
       .map((column): TableColumn<RecordType> | null => {
         if (isColumnGroup(column)) {
-          const children = visit(column.children);
+          const children = visit(
+            column.children,
+            column.fixed ?? inheritedFixed,
+          );
           return children.length ? { ...column, children } : null;
         }
 
         const item = stateMap.get(column.key);
         if (!item || item.visible === false) return null;
         const clean = sanitizeLeafColumn(column);
+        clean.fixed = column.fixed ?? inheritedFixed;
         clean[INTERNAL_COLUMN_KEY] = column.key;
         if (item.width !== undefined) clean.width = item.width;
         const originalOnHeaderCell = column.onHeaderCell;
         clean.onHeaderCell = (columnType) => ({
           ...(originalOnHeaderCell?.(columnType) ?? {}),
-          column: clean,
+          [INTERNAL_CELL_COLUMN]: clean,
         });
         const originalOnCell = column.onCell;
         clean.onCell = (record, rowIndex) => ({
           ...(originalOnCell?.(record, rowIndex) ?? {}),
-          column: clean,
+          [INTERNAL_CELL_COLUMN]: clean,
         });
         return clean;
       })

@@ -1,11 +1,9 @@
 import { HolderOutlined } from '@ant-design/icons';
-import type {
-  DraggableAttributes,
-  DraggableSyntheticListeners,
-} from '@dnd-kit/core';
+import type { DraggableSyntheticListeners } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import React, { useContext, useMemo } from 'react';
+import { useComposeRef } from 'rc-util/lib/ref';
+import React, { useContext, useMemo, useRef } from 'react';
 import type { RowDropCandidate, RowRegistry } from '../internal';
 import { useStyles } from '../style';
 import TableContext from '../TableContext';
@@ -13,7 +11,6 @@ import type { TableRowKey } from '../type';
 import { isTableRowKey } from './utils';
 
 interface RowDragHandleContextValue {
-  attributes: DraggableAttributes;
   listeners: DraggableSyntheticListeners;
   setActivatorNodeRef: (node: HTMLElement | null) => void;
   draggable: boolean;
@@ -60,6 +57,7 @@ export function RowDragHandle() {
     <div
       className={styles.rowDragHandleWrapper}
       onPointerDown={stopRowEvent}
+      onMouseDown={stopRowEvent}
       onClick={stopRowEvent}
       onDoubleClick={stopRowEvent}
       onContextMenu={stopRowEvent}
@@ -72,7 +70,8 @@ export function RowDragHandle() {
           table.classNames?.rowDragHandle,
         )}
         {...(drag.draggable ? drag.listeners : undefined)}
-        {...(drag.draggable ? drag.attributes : undefined)}
+        role="button"
+        tabIndex={drag.draggable ? 0 : undefined}
       >
         <HolderOutlined />
       </span>
@@ -86,6 +85,7 @@ interface SortableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
   handleEnabled: boolean;
   treeParent: boolean;
   rowComponent?: React.ElementType;
+  forwardedRef?: React.Ref<HTMLElement>;
 }
 
 const disableLayoutAnimation = () => false;
@@ -96,13 +96,14 @@ function SortableRow({
   handleEnabled,
   treeParent,
   rowComponent: Row = 'tr',
+  forwardedRef,
   className,
   style,
   ...rowProps
 }: SortableRowProps) {
   const state = useContext(RowDragStateContext);
+  const blockedMouse = useRef(false);
   const {
-    attributes,
     listeners,
     setNodeRef,
     setActivatorNodeRef,
@@ -121,20 +122,54 @@ function SortableRow({
     ? `row-drag-over-${state.candidate?.placement}`
     : undefined;
   const handleValue = useMemo(
-    () => ({ attributes, listeners, setActivatorNodeRef, draggable }),
-    [attributes, draggable, listeners, setActivatorNodeRef],
+    () => ({ listeners, setActivatorNodeRef, draggable }),
+    [draggable, listeners, setActivatorNodeRef],
+  );
+  const rowRef = useComposeRef(
+    forwardedRef ?? null,
+    setNodeRef,
+    handleEnabled ? null : setActivatorNodeRef,
   );
 
   return (
     <RowDragHandleContext.Provider value={handleValue}>
       <Row
         {...rowProps}
-        {...(!handleEnabled && draggable ? attributes : undefined)}
         {...(!handleEnabled && draggable ? listeners : undefined)}
-        ref={(node: HTMLElement | null) => {
-          setNodeRef(node);
-          if (!handleEnabled) setActivatorNodeRef(node);
+        tabIndex={!handleEnabled && draggable ? 0 : rowProps.tabIndex}
+        onPointerDown={(event: React.PointerEvent<HTMLTableRowElement>) => {
+          rowProps.onPointerDown?.(event);
+          // Preserve the existing onRow preventDefault contract when the
+          // subsequent mouse event activates MouseSensor.
+          blockedMouse.current = event.defaultPrevented;
         }}
+        onMouseDown={(event: React.MouseEvent<HTMLTableRowElement>) => {
+          rowProps.onMouseDown?.(event);
+          const ownTable =
+            !(event.target instanceof Element) ||
+            event.target.closest('[data-table-root]') ===
+              event.currentTarget.closest('[data-table-root]');
+          if (
+            !handleEnabled &&
+            draggable &&
+            ownTable &&
+            !blockedMouse.current &&
+            !event.defaultPrevented
+          )
+            listeners?.onMouseDown?.(event);
+          blockedMouse.current = false;
+        }}
+        onKeyDown={(event: React.KeyboardEvent<HTMLTableRowElement>) => {
+          rowProps.onKeyDown?.(event);
+          if (
+            !handleEnabled &&
+            draggable &&
+            !event.defaultPrevented &&
+            event.target === event.currentTarget
+          )
+            listeners?.onKeyDown?.(event);
+        }}
+        ref={rowRef}
         className={[className, dropClass, treeParent && styles.rowTreeParent]
           .filter(Boolean)
           .join(' ')}
@@ -156,25 +191,27 @@ function SortableRow({
   );
 }
 
-export function RowAdapter(
+export const RowAdapter = React.forwardRef(function RowAdapter(
   props: React.HTMLAttributes<HTMLTableRowElement> & {
     'data-row-key'?: React.Key;
   },
+  ref: React.Ref<HTMLElement>,
 ) {
   const runtime = useContext(RowRuntimeContext);
   const key = props['data-row-key'];
   if (!runtime || !isTableRowKey(key)) {
     const Row = runtime?.rowComponent ?? 'tr';
-    return <Row {...props} />;
+    return <Row {...props} ref={ref} />;
   }
   const meta = runtime.registry.meta.get(key);
   if (!meta) {
     const Row = runtime.rowComponent ?? 'tr';
-    return <Row {...props} />;
+    return <Row {...props} ref={ref} />;
   }
   return (
     <SortableRow
       {...props}
+      forwardedRef={ref}
       rowKey={key}
       draggable={runtime.canDrag ? runtime.canDrag(meta.record) : true}
       handleEnabled={runtime.handleEnabled}
@@ -182,4 +219,4 @@ export function RowAdapter(
       rowComponent={runtime.rowComponent}
     />
   );
-}
+});

@@ -1,6 +1,11 @@
 import type { TableProps as AntdTableProps } from 'antd';
-import useMergedState from 'rc-util/lib/hooks/useMergedState';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import type { RowKeyGetter } from '../internal';
 import {
   buildRowRegistry,
@@ -40,7 +45,7 @@ export function useRowDrag<RecordType>({
     };
   }, [rowKey]);
   const childrenKey = options.childrenKey ?? 'children';
-  const treeMode = options.mode === 'tree';
+  const treeMode = enabled && options.mode === 'tree';
   const registry = useMemo(
     () => buildRowRegistry(dataSource, getKey, childrenKey, treeMode),
     [childrenKey, dataSource, getKey, treeMode],
@@ -66,24 +71,40 @@ export function useRowDrag<RecordType>({
     () => expandable?.expandedRowKeys?.filter(isTableRowKey),
     [expandable?.expandedRowKeys],
   );
-  const defaultExpandedKeys = useMemo(() => {
-    if (expandable?.defaultExpandAllRows) {
-      return registry.keys.filter((key) =>
-        Boolean(registry.meta.get(key)?.childKeys.length),
-      );
-    }
-    return (expandable?.defaultExpandedRowKeys ?? []).filter(isTableRowKey);
-  }, [
-    expandable?.defaultExpandAllRows,
-    expandable?.defaultExpandedRowKeys,
-    registry,
-  ]);
-  const [expandedKeys, setExpandedKeys] = useMergedState<TableRowKey[]>(
-    defaultExpandedKeys,
-    {
-      value: controlledExpandedKeys,
-      onChange: (keys) => expandable?.onExpandedRowsChange?.(keys),
+  const [innerExpandedKeys, setInnerExpandedKeys] = useState<TableRowKey[]>(
+    () => {
+      if (expandable?.defaultExpandedRowKeys !== undefined)
+        return expandable.defaultExpandedRowKeys.filter(isTableRowKey);
+      if (expandable?.defaultExpandAllRows) {
+        // Expansion exists independently of the active drag mode.
+        const treeRegistry = buildRowRegistry(
+          dataSource,
+          getKey,
+          childrenKey,
+          true,
+        );
+        return treeRegistry.keys.filter((key) =>
+          Boolean(
+            expandable.expandedRowRender ||
+              treeRegistry.meta.get(key)?.childKeys.length,
+          ),
+        );
+      }
+      return [];
     },
+  );
+  const expandedKeys = controlledExpandedKeys ?? innerExpandedKeys;
+  useLayoutEffect(() => {
+    // Preserve the last controlled value when control is removed.
+    if (controlledExpandedKeys !== undefined)
+      setInnerExpandedKeys(controlledExpandedKeys);
+  }, [controlledExpandedKeys]);
+  const setExpandedKeys = useCallback(
+    (keys: TableRowKey[]) => {
+      if (controlledExpandedKeys === undefined) setInnerExpandedKeys(keys);
+      expandable?.onExpandedRowsChange?.(keys);
+    },
+    [controlledExpandedKeys, expandable?.onExpandedRowsChange],
   );
   const [dragExpandedKeys, setDragExpandedKeys] = useState<TableRowKey[]>([]);
   const mergedExpandedKeys = useMemo(
@@ -96,9 +117,22 @@ export function useRowDrag<RecordType>({
   );
 
   useEffect(() => {
-    if (controlledExpandedKeys !== undefined) return;
-    setExpandedKeys((keys) => keys.filter((key) => registry.meta.has(key)));
-  }, [controlledExpandedKeys, registry, setExpandedKeys]);
+    if (
+      !treeMode ||
+      !effectiveEnabled ||
+      controlledExpandedKeys !== undefined ||
+      expandedKeys.every((key) => registry.meta.has(key))
+    )
+      return;
+    setExpandedKeys(expandedKeys.filter((key) => registry.meta.has(key)));
+  }, [
+    controlledExpandedKeys,
+    effectiveEnabled,
+    expandedKeys,
+    registry,
+    setExpandedKeys,
+    treeMode,
+  ]);
 
   const handleExpandedRowsChange = useCallback(
     (keys: readonly React.Key[]) => setExpandedKeys(keys.filter(isTableRowKey)),
@@ -109,26 +143,31 @@ export function useRowDrag<RecordType>({
       setDragExpandedKeys((keys) =>
         keys.includes(key) ? keys : [...keys, key],
       );
-      setExpandedKeys((keys) => (keys.includes(key) ? keys : [...keys, key]));
+      setExpandedKeys([...new Set([...mergedExpandedKeys, key])]);
       expandable?.onExpand?.(true, record);
     },
-    [expandable, setExpandedKeys],
+    [expandable, mergedExpandedKeys, setExpandedKeys],
   );
 
   const mergedExpandable = useMemo<
     AntdTableProps<RecordType>['expandable']
   >(() => {
-    if (!treeMode) return expandable;
     return {
       ...expandable,
-      indentSize: expandable?.indentSize ?? 24,
-      expandIconColumnIndex:
-        expandable?.expandIconColumnIndex ?? (options.handle === false ? 0 : 1),
+      ...(treeMode && effectiveEnabled
+        ? {
+            indentSize: expandable?.indentSize ?? 24,
+            expandIconColumnIndex:
+              expandable?.expandIconColumnIndex ??
+              (options.handle === false ? 0 : 1),
+          }
+        : {}),
       expandedRowKeys: mergedExpandedKeys,
       onExpandedRowsChange: handleExpandedRowsChange,
     };
   }, [
     expandable,
+    effectiveEnabled,
     handleExpandedRowsChange,
     mergedExpandedKeys,
     options.handle,

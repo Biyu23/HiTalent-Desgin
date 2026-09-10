@@ -3,12 +3,16 @@ import type { TableRef as AntdTableRef, ColumnsType } from 'antd/es/table';
 import React, {
   forwardRef,
   memo,
+  useCallback,
   useImperativeHandle,
   useMemo,
   useRef,
 } from 'react';
 import { useLocale } from '../../configProvider/useLocale';
-import { usePrefixCls } from '../../configProvider/usePrefixCls';
+import {
+  useAntdPrefixCls,
+  usePrefixCls,
+} from '../../configProvider/usePrefixCls';
 import ColumnDragProvider from './columnDrag/ColumnDragProvider';
 import {
   TableCellAdapterProvider,
@@ -28,6 +32,8 @@ import type {
   TableRef,
 } from './type';
 import { processColumns } from './utils/columns';
+
+const EMPTY_DATA_SOURCE: readonly never[] = [];
 
 function InternalTable<RecordType = Record<string, unknown>>(
   props: TableProps<RecordType>,
@@ -62,31 +68,67 @@ function InternalTable<RecordType = Record<string, unknown>>(
   } = props;
 
   const prefixCls = usePrefixCls('table', customPrefixCls);
+  const antdPrefix = useAntdPrefixCls();
   const { styles: tableStyles, cx } = useStyles();
   const locale = useLocale('Table');
   const tableRef = useRef<AntdTableRef>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const scrollVirtual = useCallback((left: number) => {
+    // Virtual rc-table delegates position options to rc-virtual-list.
+    const position: { left: number; top?: number } = { left };
+    tableRef.current?.scrollTo(position);
+  }, []);
   const column = useColumnState({
     columns,
     value: columnState,
     defaultValue: defaultColumnState,
     onChange: onColumnStateChange,
   });
-  const rowDragEnabled = Boolean(rowDragProp);
+
+  const rowDragEnabled =
+    Boolean(rowDragProp) && typeof userComponents?.body !== 'function';
   const rowDragOptions = useMemo<RowDragOptions<RecordType>>(() => {
     const options = typeof rowDragProp === 'object' ? rowDragProp : {};
     return {
       ...options,
-      childrenKey: options.childrenKey ?? childrenColumnName ?? 'children',
+      childrenKey:
+        options.childrenKey ??
+        expandable?.childrenColumnName ??
+        childrenColumnName ??
+        'children',
     };
-  }, [childrenColumnName, rowDragProp]);
+  }, [childrenColumnName, expandable?.childrenColumnName, rowDragProp]);
   const rowKey = rowKeyProp ?? ('key' as keyof RecordType);
+  // Keep legacy top-level expansion inputs working when the hook owns expansion.
+  const expandableConfig = useMemo(
+    () => ({
+      expandedRowKeys: tableProps.expandedRowKeys,
+      defaultExpandedRowKeys: tableProps.defaultExpandedRowKeys,
+      defaultExpandAllRows: tableProps.defaultExpandAllRows,
+      expandedRowRender: tableProps.expandedRowRender,
+      onExpand: tableProps.onExpand,
+      onExpandedRowsChange: tableProps.onExpandedRowsChange
+        ? (keys: readonly React.Key[]) =>
+            tableProps.onExpandedRowsChange?.([...keys])
+        : undefined,
+      ...expandable,
+    }),
+    [
+      expandable,
+      tableProps.expandedRowKeys,
+      tableProps.defaultExpandedRowKeys,
+      tableProps.defaultExpandAllRows,
+      tableProps.expandedRowRender,
+      tableProps.onExpand,
+      tableProps.onExpandedRowsChange,
+    ],
+  );
   const row = useRowDrag({
-    dataSource: dataSource ?? [],
+    dataSource: dataSource ?? EMPTY_DATA_SOURCE,
     rowKey,
     enabled: rowDragEnabled,
     options: rowDragOptions,
-    expandable,
+    expandable: expandableConfig,
     onDragEnd: onRowDragEnd,
   });
 
@@ -151,7 +193,11 @@ function InternalTable<RecordType = Record<string, unknown>>(
   const toolbar = toolbarRender
     ? toolbarRender(defaultToolbar)
     : defaultToolbar;
-  const componentAdapters = useTableComponents(userComponents, row.enabled);
+  const componentAdapters = useTableComponents(
+    userComponents,
+    row.enabled,
+    tableProps.virtual,
+  );
 
   useImperativeHandle(
     ref,
@@ -169,6 +215,8 @@ function InternalTable<RecordType = Record<string, unknown>>(
     <TableContext.Provider value={contextValue}>
       <div
         ref={rootRef}
+        data-table-root=""
+        data-table-prefix={`${antdPrefix}-table`}
         className={cx(tableStyles.wrapper, rootClassName, classNames?.root)}
         style={styles?.root}
       >
@@ -176,8 +224,10 @@ function InternalTable<RecordType = Record<string, unknown>>(
         <ColumnDragProvider
           enabled={columnDrag}
           rootRef={rootRef}
+          scrollVirtual={scrollVirtual}
           columns={column.columnMeta}
           orderedKeys={column.orderedKeys}
+          committedState={column.committedState}
           onPreview={column.previewColumnOrder}
           onCommit={column.commitColumnOrder}
           onCancel={column.cancelPreview}
@@ -204,7 +254,6 @@ function InternalTable<RecordType = Record<string, unknown>>(
                   className,
                   {
                     zebra: zebraStripe,
-                    'no-hover': !hoverHighlight,
                     'row-drag-tree':
                       row.enabled && rowDragOptions.mode === 'tree',
                   },
@@ -222,8 +271,14 @@ function InternalTable<RecordType = Record<string, unknown>>(
                 components={componentAdapters.components}
                 tableLayout={columnResize ? 'fixed' : tableProps.tableLayout}
                 rowKey={rowKey}
+                rowHoverable={
+                  hoverHighlight && tableProps.rowHoverable !== false
+                }
                 dataSource={row.dataSource}
-                expandable={row.expandable}
+                expandable={{
+                  ...row.expandable,
+                  childrenColumnName: row.childrenKey,
+                }}
                 childrenColumnName={row.childrenKey}
               />
             </TableCellAdapterProvider>

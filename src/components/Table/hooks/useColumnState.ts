@@ -153,18 +153,18 @@ export function useColumnState<RecordType>({
   );
 
   const columnMeta = useMemo(() => collectColumnMeta(columns), [columns]);
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'production') return;
-    const seen = new Set<TableColumnKey>();
-    const duplicates = new Set<TableColumnKey>();
-    columnMeta.forEach((item) => {
-      if (seen.has(item.key)) duplicates.add(item.key);
-      else seen.add(item.key);
-    });
-    if (duplicates.size) {
-      console.warn('[Table] Column keys must be unique.', [...duplicates]);
-    }
-  }, [columnMeta]);
+  // useEffect(() => {
+  //   if (process.env.NODE_ENV === 'production') return;
+  //   const seen = new Set<TableColumnKey>();
+  //   const duplicates = new Set<TableColumnKey>();
+  //   columnMeta.forEach((item) => {
+  //     if (seen.has(item.key)) duplicates.add(item.key);
+  //     else seen.add(item.key);
+  //   });
+  //   if (duplicates.size) {
+  //     console.warn('[Table] Column keys must be unique.', [...duplicates]);
+  //   }
+  // }, [columnMeta]);
   const orderedKeys = useMemo(
     () => currentState.map((item) => item.key),
     [currentState],
@@ -178,6 +178,7 @@ export function useColumnState<RecordType>({
   );
   return {
     state: currentState,
+    committedState,
     columnMeta,
     orderedKeys,
     visibleKeys,
