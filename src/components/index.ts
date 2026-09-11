@@ -10,18 +10,23 @@ export type {
 export { default as PopoverSelect } from './PopoverSelect';
 export type {
   DefaultOptionType,
+  PopoverSelectBaseProps,
   PopoverSelectClassNameSlot,
   PopoverSelectClassNames,
   PopoverSelectFieldNames,
   PopoverSelectMultipleArrayProps,
   PopoverSelectMultipleStringProps,
+  PopoverSelectOptionRenderInfo,
   PopoverSelectProps,
+  PopoverSelectRenderContext,
   PopoverSelectSingleProps,
   PopoverSelectSlot,
   PopoverSelectStyleSlot,
   PopoverSelectStyles,
   RawValueType,
+  SelectorPopupProps,
   SelectorProps,
+  SelectorRenderContext,
 } from './PopoverSelect/type';
 
 export { default as Button } from './Button';

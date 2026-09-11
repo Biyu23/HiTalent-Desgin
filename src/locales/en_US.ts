@@ -31,6 +31,13 @@ const en_US = {
     noMatch: 'No matching results',
     noData: 'No data',
     searchPlaceholder: 'Search',
+    dragHandle: 'Drag to reorder',
+    sortInstructions:
+      'Press Space to start sorting, use the arrow keys to move, press Space to finish or Escape to cancel.',
+    sortPosition: (position: number, count: number) =>
+      `Position ${position} of ${count}`,
+    sortEnd: 'Drag ended',
+    sortCancel: 'Drag canceled',
   },
   Modal: {
     restore: 'Restore',

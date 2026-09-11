@@ -30,6 +30,13 @@ const zh_CN = {
     noMatch: '无匹配结果',
     noData: '暂无数据',
     searchPlaceholder: '搜索',
+    dragHandle: '拖拽排序',
+    sortInstructions:
+      '按空格键开始排序，使用上下方向键移动，再按空格键完成，按 Escape 取消。',
+    sortPosition: (position: number, count: number) =>
+      `第 ${position} 项，共 ${count} 项`,
+    sortEnd: '拖拽结束',
+    sortCancel: '已取消拖拽',
   },
   Modal: {
     restore: '还原',

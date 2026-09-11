@@ -24,7 +24,56 @@ Hosts a selection panel inside a Popover card, providing virtual scrolling, sear
 
 <code src="./demo/string-value.tsx" title="String Submission & Select All" description="valueType='string' parses and submits values using valueSeparator, restoring value types from options; showSelectAll supports selecting all filtered results."></code>
 
+## Reordering options
+
+<code src="./demo/sortable.tsx" title="Reordering options" description="Reorder options using a dedicated handle in regular or virtual lists, while confirming selection separately."></code>
+
+Enable `sortable` and feed the result of `onSortChange` back into `options`:
+
+```tsx | pure
+<PopoverSelect options={options} sortable onSortChange={setOptions} />
+```
+
+- `options` controls the displayed order. The callback returns a new full array containing the original option objects, including custom fields. The input array is never mutated. Without updating `options`, the original order is retained.
+- `onSortChange` fires immediately after reordering. It does not trigger `onChange` or reorder selected values. Confirm and Cancel only affect selection drafts; they do not undo option sorting.
+- Sorting pauses while the search contains non-whitespace text. Disabled options cannot initiate dragging but may shift when other options move.
+- Handles support mouse, touch, and keyboard: focus a handle, press Space to start, use Up/Down to move, then Space to finish or Escape to cancel.
+- `optionRender` still customizes option content. If `dropdownRender` replaces the default menu entirely, the custom menu is responsible for its own drag behavior.
+
 ## API
+
+### Responsibilities and extension points
+
+`PopoverSelect` manages selection, search, select-all and confirmation. `PopoverSelect.Selector` only manages the trigger, popup visibility and width, and can host arbitrary content independently.
+
+<code src="./demo/custom.tsx" title="Custom renderers and standalone popup" description="Reuse selection and confirmation through read-only state and explicit operations."></code>
+
+| Extension                       | Purpose                                                                        |
+| ------------------------------- | ------------------------------------------------------------------------------ |
+| `optionRender(item, info)`      | Render option content; `info` contains `value`, `selected`, `disabled`         |
+| `dropdownRender(menu, context)` | Wrap or replace the list; search and footer remain part of the panel           |
+| `footerRender(footer, context)` | Customize footer actions; return `null` to hide the footer                     |
+| `labelRender(label, info)`      | Render committed values; `info` contains `values` and their original `options` |
+
+`context` exposes `options`, `displayOptions` (normalized options with the original object in `source`), `selectedValues`, `searchValue`, `mode`, `confirmRequired`, and the operations `toggleValue(value)`, `selectAll(checked)`, `clear()`, `confirm()`, `cancel()`.
+
+With confirmation enabled, `context.selectedValues` contains the draft. Toggle, select-all and clear only change the draft; `confirm()` commits and requests close, while `cancel()` discards the draft and requests close. Changes to actual external selected values synchronize the draft; reordering options does not reset it. In immediate mode, selection changes commit directly and `confirm()` only requests close. The trigger's clear icon always clears committed values immediately.
+
+Existing single-argument `optionRender` and `dropdownRender` callbacks, and zero-argument `Selector.content` callbacks, remain supported. Controlled `open` must be updated through `onOpenChange`.
+
+### Standalone Selector
+
+```tsx | pure
+<PopoverSelect.Selector
+  content={({ close }) => <button onClick={close}>Done</button>}
+>
+  Open custom panel
+</PopoverSelect.Selector>
+```
+
+`content` accepts a node or `({ open, close }) => ReactNode`. Selector shares `open`, `defaultOpen`, `onOpenChange`, `afterOpenChange`, `placement`, `getPopupContainer`, `autoAdjustOverflow`, and `destroyTooltipOnHide`. It also accepts `children`, `hasValue`, `allowClear`, `onClear`, `disabled`, `showArrow`, `ellipsis`, and styling props. Selector owns no selection data; the caller handles clearing.
+
+### Base properties
 
 In addition to the properties below, the component also supports native props including `className`, `style`, and `rootClassName`.
 
@@ -33,6 +82,8 @@ In addition to the properties below, the component also supports native props in
 | Property               | Description                                                | Type                                        | Default               |
 | ---------------------- | ---------------------------------------------------------- | ------------------------------------------- | --------------------- |
 | `options`              | Data options list                                          | `OptionType[]`                              | `[]`                  |
+| `sortable`             | Enable option drag handles; paused while searching         | `boolean`                                   | `false`               |
+| `onSortChange`         | Receive all reordered original options; update `options`   | `(options: OptionType[]) => void`           | -                     |
 | `placeholder`          | Placeholder text                                           | `ReactNode`                                 | -                     |
 | `showSearch`           | Whether to show search box for local filtering             | `boolean`                                   | `false`               |
 | `allowClear`           | Whether to show clear button                               | `boolean`                                   | `false`               |
@@ -55,8 +106,11 @@ In addition to the properties below, the component also supports native props in
 | `listItemHeight`       | Virtual list item height in pixels                         | `number`                                    | `34`                  |
 | `showArrow`            | Whether to show dropdown arrow                             | `boolean`                                   | `true`                |
 | `disabled`             | Whether to disable the component                           | `boolean`                                   | `false`               |
-| `dropdownRender`       | Custom dropdown panel renderer                             | `(menu: ReactElement) => ReactElement`      | -                     |
-| `optionRender`         | Custom single option renderer                              | `(item: OptionType) => ReactNode`           | -                     |
+| `dropdownRender`       | Customize the option list                                  | `(menu, context) => ReactElement`           | -                     |
+| `optionRender`         | Custom option content                                      | `(item, info) => ReactNode`                 | -                     |
+| `footerRender`         | Custom footer actions                                      | `(footer, context) => ReactNode`            | -                     |
+| `labelRender`          | Custom committed-value label                               | `(label, info) => ReactNode`                | -                     |
+| `defaultOpen`          | Initial uncontrolled popup state                           | `boolean`                                   | `false`               |
 | `open`                 | Popover open state (controlled)                            | `boolean`                                   | -                     |
 | `onOpenChange`         | Callback when Popover open state changes                   | `(open: boolean) => void`                   | -                     |
 | `afterOpenChange`      | Callback when Popover open/close transition finishes       | `(open: boolean) => void`                   | -                     |

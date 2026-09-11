@@ -217,6 +217,62 @@ export const useStyles = createStyles(({ token }) => {
       white-space: nowrap;
       text-overflow: ellipsis;
     `,
+    sortableItem: css`
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      min-width: 0;
+
+      > label,
+      > div {
+        flex: 1;
+        min-width: 0;
+      }
+    `,
+    optionContainer: css`
+      min-width: 0;
+      width: 100%;
+    `,
+    sortableDragging: css`
+      opacity: 0.3;
+    `,
+    sortHandle: css`
+      display: inline-flex;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      width: ${token.controlHeightSM}px;
+      height: ${token.controlHeightSM}px;
+      margin-inline-start: ${token.marginXXS}px;
+      padding: 0;
+      border: 0;
+      border-radius: ${token.borderRadiusSM}px;
+      color: ${token.colorTextTertiary};
+      background: transparent;
+      cursor: grab;
+      touch-action: none;
+
+      &:active {
+        cursor: grabbing;
+      }
+      &:focus-visible {
+        outline: 2px solid ${token.colorPrimary};
+      }
+      &:disabled {
+        color: ${token.colorTextDisabled};
+        cursor: not-allowed;
+      }
+    `,
+    sortOverlay: css`
+      color: ${token.colorText};
+      font-size: ${token.fontSize}px;
+      font-family: ${token.fontFamily};
+      line-height: ${token.lineHeight};
+      background: ${token.colorBgElevated};
+      border-radius: ${token.borderRadiusSM}px;
+      box-shadow: ${token.boxShadowSecondary};
+      pointer-events: none;
+    `,
     search: css`
       padding: ${token.paddingXS}px ${token.paddingSM}px ${token.paddingXXS}px;
 

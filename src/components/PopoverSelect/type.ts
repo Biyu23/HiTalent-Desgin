@@ -83,10 +83,63 @@ export type PopoverSelectClassNameSlot = keyof PopoverSelectClassNames;
 export type PopoverSelectStyleSlot = keyof PopoverSelectStyles;
 export type PopoverSelectSlot = PopoverSelectClassNameSlot;
 
+/** 自定义菜单/底部操作区使用的选择上下文；所有操作遵循确认模式。 */
+export interface PopoverSelectRenderContext<
+  ValueType extends RawValueType = RawValueType,
+  OptionType extends object = DefaultOptionType,
+> {
+  options: readonly MappedOption<ValueType, OptionType>[];
+  displayOptions: readonly MappedOption<ValueType, OptionType>[];
+  selectedValues: readonly ValueType[];
+  searchValue: string;
+  mode: 'single' | 'multiple';
+  confirmRequired: boolean;
+  toggleValue(value: ValueType): void;
+  selectAll(checked: boolean): void;
+  clear(): void;
+  confirm(): void;
+  cancel(): void;
+}
+
+export interface PopoverSelectOptionRenderInfo<
+  ValueType extends RawValueType = RawValueType,
+> {
+  value: ValueType;
+  selected: boolean;
+  disabled: boolean;
+}
+
+/** PopoverSelect 与独立 Selector 共享的弹层配置。 */
+export interface SelectorPopupProps {
+  /** 受控展开状态 */
+  open?: boolean;
+  /** 非受控模式的初始展开状态，默认 false */
+  defaultOpen?: boolean;
+  /** 展开状态变化时的回调 */
+  onOpenChange?: (open: boolean) => void;
+  /** 显示/隐藏动画完成后的回调 */
+  afterOpenChange?: (open: boolean) => void;
+  /** 弹层位置，默认 bottomLeft */
+  placement?: TooltipPlacement;
+  /** 弹层挂载容器 */
+  getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
+  /** 被遮挡时自动调整位置，默认 true */
+  autoAdjustOverflow?: boolean;
+  /** 关闭时销毁弹层，默认 false */
+  destroyTooltipOnHide?: boolean;
+}
+
+export interface SelectorRenderContext {
+  open: boolean;
+  close: () => void;
+}
+
 /** PopoverSelect 基础属性 */
 export interface PopoverSelectBaseProps<
   OptionType extends object = DefaultOptionType,
-> extends Omit<NativeProps, 'children'> {
+  ValueType extends RawValueType = RawValueType,
+> extends Omit<NativeProps, 'children'>,
+    SelectorPopupProps {
   /**
    * @description 自定义组件样式前缀
    */
@@ -109,6 +162,15 @@ export interface PopoverSelectBaseProps<
    */
   options?: readonly OptionType[];
   /**
+   * @description 是否允许通过手柄拖拽排列候选项；搜索时暂停排序
+   * @default false
+   */
+  sortable?: boolean;
+  /**
+   * @description 拖拽完成后返回排序后的全部原始选项，请更新 options 回传；立即触发，不受选择确认/取消影响
+   */
+  onSortChange?: (options: OptionType[]) => void;
+  /**
    * @description 未选择时的占位文本
    */
   placeholder?: React.ReactNode;
@@ -129,7 +191,20 @@ export interface PopoverSelectBaseProps<
   /**
    * @description 自定义下拉菜单面板渲染
    */
-  dropdownRender?: (menu: React.ReactElement) => React.ReactElement;
+  dropdownRender?: (
+    menu: React.ReactElement,
+    context: PopoverSelectRenderContext<ValueType, OptionType>,
+  ) => React.ReactElement;
+  /** 自定义底部操作区；返回 null 可隐藏默认操作。 */
+  footerRender?: (
+    footer: React.ReactNode,
+    context: PopoverSelectRenderContext<ValueType, OptionType>,
+  ) => React.ReactNode;
+  /** 自定义触发器中的已提交值展示，不影响弹层草稿。 */
+  labelRender?: (
+    label: React.ReactNode,
+    info: { values: readonly ValueType[]; options: readonly OptionType[] },
+  ) => React.ReactNode;
   /**
    * @description 多选模式下是否显示确认按钮。开启时选择操作进入草稿状态，点击确认后生效
    * @default mode === 'multiple'
@@ -148,7 +223,10 @@ export interface PopoverSelectBaseProps<
   /**
    * @description 自定义单个选项的渲染逻辑
    */
-  optionRender?: (item: OptionType) => React.ReactNode;
+  optionRender?: (
+    item: OptionType,
+    info: PopoverSelectOptionRenderInfo<ValueType>,
+  ) => React.ReactNode;
   /**
    * @description 多选时选中项展示的分隔符
    * @default ', '
@@ -193,44 +271,13 @@ export interface PopoverSelectBaseProps<
    * @default true
    */
   ellipsis?: boolean | { tooltip?: string };
-  /**
-   * @description 弹层展开状态（受控）
-   */
-  open?: boolean;
-  /**
-   * @description 弹层展开状态变化时的回调
-   */
-  onOpenChange?: (open: boolean) => void;
-  /**
-   * @description 弹层显示/隐藏动画完成后的回调
-   */
-  afterOpenChange?: (open: boolean) => void;
-  /**
-   * @description 气泡框展开位置
-   * @default 'bottomLeft'
-   */
-  placement?: TooltipPlacement;
-  /**
-   * @description 浮层渲染挂载的父节点
-   */
-  getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
-  /**
-   * @description 气泡被遮挡时是否自动调整位置
-   * @default true
-   */
-  autoAdjustOverflow?: boolean;
-  /**
-   * @description 关闭时是否销毁 Popover 内部节点
-   * @default false
-   */
-  destroyTooltipOnHide?: boolean;
 }
 
 /** 单选模式属性 */
 export interface PopoverSelectSingleProps<
   ValueType extends RawValueType = RawValueType,
   OptionType extends object = DefaultOptionType,
-> extends PopoverSelectBaseProps<OptionType> {
+> extends PopoverSelectBaseProps<OptionType, ValueType> {
   /**
    * @description 选择模式，单选
    * @default 'single'
@@ -256,7 +303,7 @@ export interface PopoverSelectSingleProps<
 export interface PopoverSelectMultipleArrayProps<
   ValueType extends RawValueType = RawValueType,
   OptionType extends object = DefaultOptionType,
-> extends PopoverSelectBaseProps<OptionType> {
+> extends PopoverSelectBaseProps<OptionType, ValueType> {
   /**
    * @description 选择模式，多选
    */
@@ -284,7 +331,8 @@ export interface PopoverSelectMultipleArrayProps<
 /** 多选模式属性（分隔符字符串格式输出） */
 export interface PopoverSelectMultipleStringProps<
   OptionType extends object = DefaultOptionType,
-> extends PopoverSelectBaseProps<OptionType> {
+  ValueType extends RawValueType = RawValueType,
+> extends PopoverSelectBaseProps<OptionType, ValueType> {
   /**
    * @description 选择模式，多选
    */
@@ -319,7 +367,7 @@ export type PopoverSelectProps<
 > =
   | PopoverSelectSingleProps<ValueType, OptionType>
   | PopoverSelectMultipleArrayProps<ValueType, OptionType>
-  | PopoverSelectMultipleStringProps<OptionType>;
+  | PopoverSelectMultipleStringProps<OptionType, ValueType>;
 
 /** PopoverSelect 组件 Ref 属性类型 */
 export type PopoverSelectRefProps = { ref?: React.Ref<HTMLDivElement> };
@@ -340,15 +388,21 @@ export interface PopoverSelectComponent {
     props: PopoverSelectMultipleArrayProps<ValueType, OptionType> &
       PopoverSelectRefProps,
   ): React.ReactElement | null;
-  <OptionType extends object = DefaultOptionType>(
-    props: PopoverSelectMultipleStringProps<OptionType> & PopoverSelectRefProps,
+  <
+    OptionType extends object = DefaultOptionType,
+    ValueType extends RawValueType = RawValueType,
+  >(
+    props: PopoverSelectMultipleStringProps<OptionType, ValueType> &
+      PopoverSelectRefProps,
   ): React.ReactElement | null;
   displayName?: string;
   Selector: typeof import('./components/PopoverSelector').Selector;
 }
 
 /** PopoverSelect.Selector 独立触发器组件属性 */
-export interface SelectorProps extends Omit<NativeProps, 'children'> {
+export interface SelectorProps
+  extends Omit<NativeProps, 'children'>,
+    SelectorPopupProps {
   /**
    * @description 类名前缀
    */
@@ -356,7 +410,9 @@ export interface SelectorProps extends Omit<NativeProps, 'children'> {
   /**
    * @description 气泡框内部承载的内容或渲染函数
    */
-  content: React.ReactNode | (() => React.ReactNode);
+  content:
+    | React.ReactNode
+    | ((context: SelectorRenderContext) => React.ReactNode);
   /**
    * @description 根节点类名
    */
@@ -370,29 +426,12 @@ export interface SelectorProps extends Omit<NativeProps, 'children'> {
    */
   styles?: PopoverSelectStyles;
   /**
-   * @description 气泡被遮挡时是否自动调整位置
-   * @default true
-   */
-  autoAdjustOverflow?: boolean;
-  /**
-   * @description 弹层显示/隐藏动画完成后的回调
-   */
-  afterOpenChange?: (open: boolean) => void;
-  /**
    * @description 触发器内部展示的文本或节点
    */
   children?: React.ReactNode;
   /**
-   * @description 弹层展开状态（受控）
-   */
-  open?: boolean;
-  /**
-   * @description 弹层展开状态变化回调
-   */
-  onOpenChange?: (open: boolean) => void;
-  /**
    * @description 是否支持清除
-   * @default true
+   * @default false
    */
   allowClear?: boolean;
   /**
@@ -418,18 +457,4 @@ export interface SelectorProps extends Omit<NativeProps, 'children'> {
    * @description 点击清除图标时的回调
    */
   onClear?: (event: React.MouseEvent) => void;
-  /**
-   * @description 气泡框展开位置
-   * @default 'bottomLeft'
-   */
-  placement?: TooltipPlacement;
-  /**
-   * @description 浮层渲染挂载父节点
-   */
-  getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
-  /**
-   * @description 关闭时是否销毁浮层
-   * @default false
-   */
-  destroyTooltipOnHide?: boolean;
 }

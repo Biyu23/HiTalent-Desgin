@@ -12,6 +12,11 @@ export interface PopoverSelectLocale {
   noMatch: string;
   noData: string;
   searchPlaceholder: string;
+  dragHandle: string;
+  sortInstructions: string;
+  sortPosition: (position: number, count: number) => string;
+  sortEnd: string;
+  sortCancel: string;
 }
 
 /** ResponsiveButtonGroup 组件的国际化文案 */
