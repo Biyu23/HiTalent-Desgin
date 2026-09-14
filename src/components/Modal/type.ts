@@ -99,18 +99,6 @@ export interface ModalResizableConfig {
 export interface ModalClassNames
   extends NonNullable<AntdModalProps['classNames']> {
   /**
-   * @description 弹窗标题区域的 className
-   */
-  title?: string;
-  /**
-   * @description 标题栏操作按钮区域的 className
-   */
-  actions?: string;
-  /**
-   * @description 拖拽调整尺寸把手的 className
-   */
-  resizeHandle?: string;
-  /**
    * @description 最小化 Dock 卡片的 className
    */
   minimizedDock?: string;
@@ -120,10 +108,6 @@ export interface ModalClassNames
  * Modal 自定义样式配置
  */
 export interface ModalStyles extends NonNullable<AntdModalProps['styles']> {
-  /**
-   * @description 拖拽调整尺寸把手的行内样式
-   */
-  resizeHandle?: React.CSSProperties;
   /**
    * @description 最小化 Dock 卡片的行内样式
    */
@@ -136,11 +120,11 @@ export interface ModalStyles extends NonNullable<AntdModalProps['styles']> {
 export interface ModalProps
   extends Omit<AntdModalProps, 'title' | 'onCancel' | 'classNames' | 'styles'> {
   /**
-   * @description 自定义类名配置，扩展 `title`、`actions`、`resizeHandle`、`minimizedDock`
+   * @description Antd 原生类名配置，额外支持最小化卡片 `minimizedDock`
    */
   classNames?: ModalClassNames;
   /**
-   * @description 自定义样式配置，扩展 `resizeHandle`、`minimizedDock`
+   * @description Antd 原生样式配置，额外支持最小化卡片 `minimizedDock`
    */
   styles?: ModalStyles;
   /**

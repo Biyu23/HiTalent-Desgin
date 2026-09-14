@@ -44,7 +44,7 @@ export const ActiveFiltersBar: React.FC<ActiveFiltersBarProps> = ({
               e.preventDefault();
               filter.onRemove();
             }}
-            className={cx(barStyles.filterTag, classNames?.tag)}
+            className={barStyles.filterTag}
           >
             <Tooltip title={filter.tooltipText} placement="top">
               <span className={barStyles.filterTagContent}>
@@ -60,7 +60,7 @@ export const ActiveFiltersBar: React.FC<ActiveFiltersBarProps> = ({
         size="small"
         danger
         onClick={onClearAll}
-        className={cx(barStyles.clearAllBtn, classNames?.clearAll)}
+        className={barStyles.clearAllBtn}
       >
         {locale.clearAll}
       </Button>

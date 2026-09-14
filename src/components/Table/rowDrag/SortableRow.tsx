@@ -6,7 +6,6 @@ import { useComposeRef } from 'rc-util/lib/ref';
 import React, { useContext, useMemo, useRef } from 'react';
 import type { RowDropCandidate, RowRegistry } from '../internal';
 import { useStyles } from '../style';
-import TableContext from '../TableContext';
 import type { TableRowKey } from '../type';
 import { isTableRowKey } from './utils';
 
@@ -49,7 +48,6 @@ function stopRowEvent(event: React.SyntheticEvent) {
 
 export function RowDragHandle() {
   const drag = useContext(RowDragHandleContext);
-  const table = useContext(TableContext);
   const { styles, cx } = useStyles();
   if (!drag) return null;
 
@@ -67,7 +65,6 @@ export function RowDragHandle() {
         className={cx(
           styles.rowDragHandle,
           !drag.draggable && styles.rowDragHandleDisabled,
-          table.classNames?.rowDragHandle,
         )}
         {...(drag.draggable ? drag.listeners : undefined)}
         role="button"

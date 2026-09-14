@@ -22,28 +22,33 @@ Automatically calculates available space based on container width and smoothly c
 
 ## API
 
-In addition to the properties in the table below, the component also supports native properties such as `className`, `style`, and `rootClassName`.
+Responsive mode requires `ResizeObserver`; without it, all actions remain inline unless the application provides a polyfill.
+Space for More is reserved using the total item count. Smaller counts may leave a small gap to avoid layout feedback at width boundaries.
+`renderOverflowButton` also runs for hidden measurement with all `items` and `open=false`. Keep custom triggers at a fixed width independent of `count`, `collapsedItems`, and `open`, and avoid render side effects.
+Both item and group click callbacks run. Loading and menu closing wait for all returned tasks to settle; failures are reported through `onActionError`.
+
+Use `className` and `style` for the root wrapper. Slots cover only the overflow trigger and popup.
 
 ### ResponsiveButtonGroupProps
 
-| Property                | Description                                                                                    | Type                                                                 | Default                |
-| ----------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ---------------------- |
-| `items`                 | Action item list data source                                                                   | `readonly ResponsiveButtonGroupItem[]`                               | -                      |
-| `mode`                  | Display mode (`responsive` / `expanded` / `collapsed`)                                         | `'responsive' \| 'expanded' \| 'collapsed'`                          | `'responsive'`         |
-| `minVisibleCount`       | Minimum inline buttons to retain (excluding More button)                                       | `number`                                                             | `0`                    |
-| `gap`                   | Gap between buttons in pixels                                                                  | `number`                                                             | `8`                    |
-| `overflowLabel`         | Custom text for More trigger button                                                            | `ReactNode`                                                          | Locale text            |
-| `overflowIcon`          | Custom icon for More trigger button                                                            | `ReactNode`                                                          | `<EllipsisOutlined />` |
-| `showOverflowCount`     | Whether to show the count of collapsed items on More button                                    | `boolean`                                                            | `true`                 |
-| `overflowButtonProps`   | Props forwarded to More trigger Button                                                         | `ButtonProps`                                                        | -                      |
-| `overflowDropdownProps` | Props forwarded to overflow Dropdown                                                           | `DropdownProps`                                                      | -                      |
-| `overflowMenuProps`     | Props forwarded to overflow Menu                                                               | `MenuProps`                                                          | -                      |
-| `renderOverflowButton`  | Custom render function for More trigger button                                                 | `(info: ResponsiveButtonGroupOverflowRenderInfo) => ReactNode`       | -                      |
-| `onItemClick`           | Unified click callback for all actions; returns Promise to keep Loading state                  | `(info: ResponsiveButtonGroupClickInfo) => void \| Promise<unknown>` | -                      |
-| `onActionError`         | Callback when async action execution fails                                                     | `(error: unknown, info: ResponsiveButtonGroupClickInfo) => void`     | -                      |
-| `onVisibleChange`       | Callback when visible or collapsed item sets change                                            | `(visibleKeys: string[], collapsedKeys: string[]) => void`           | -                      |
-| `classNames`            | Semantic class names slot (supports `root`, `visible`, `overflowTrigger`, `popup`, `menuItem`) | `ResponsiveButtonGroupClassNames`                                    | -                      |
-| `styles`                | Semantic styles slot (supports `root`, `visible`, `overflowTrigger`, `popup`)                  | `ResponsiveButtonGroupStyles`                                        | -                      |
+| Property                | Description                                                                   | Type                                                                 | Default                |
+| ----------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------- | ---------------------- |
+| `items`                 | Action item list data source                                                  | `readonly ResponsiveButtonGroupItem[]`                               | -                      |
+| `mode`                  | Display mode (`responsive` / `expanded` / `collapsed`)                        | `'responsive' \| 'expanded' \| 'collapsed'`                          | `'responsive'`         |
+| `minVisibleCount`       | Minimum inline buttons to retain (excluding More button)                      | `number`                                                             | `0`                    |
+| `gap`                   | Gap between buttons in pixels                                                 | `number`                                                             | `8`                    |
+| `overflowLabel`         | Custom text for More trigger button                                           | `ReactNode`                                                          | Locale text            |
+| `overflowIcon`          | Custom icon for More trigger button                                           | `ReactNode`                                                          | `<EllipsisOutlined />` |
+| `showOverflowCount`     | Whether to show the count of collapsed items on More button                   | `boolean`                                                            | `true`                 |
+| `overflowButtonProps`   | Props forwarded to More trigger Button                                        | `ButtonProps`                                                        | -                      |
+| `overflowDropdownProps` | Props forwarded to overflow Dropdown                                          | `DropdownProps`                                                      | -                      |
+| `overflowMenuProps`     | Props forwarded to overflow Menu                                              | `MenuProps`                                                          | -                      |
+| `renderOverflowButton`  | Custom render function for More trigger button                                | `(info: ResponsiveButtonGroupOverflowRenderInfo) => ReactNode`       | -                      |
+| `onItemClick`           | Unified click callback for all actions; returns Promise to keep Loading state | `(info: ResponsiveButtonGroupClickInfo) => void \| Promise<unknown>` | -                      |
+| `onActionError`         | Callback when async action execution fails                                    | `(error: unknown, info: ResponsiveButtonGroupClickInfo) => void`     | -                      |
+| `onVisibleChange`       | Callback when visible or collapsed item sets change                           | `(visibleKeys: string[], collapsedKeys: string[]) => void`           | -                      |
+| `classNames`            | Supports `overflowTrigger`, `popup`                                           | `ResponsiveButtonGroupClassNames`                                    | -                      |
+| `styles`                | Supports `overflowTrigger`, `popup`                                           | `ResponsiveButtonGroupStyles`                                        | -                      |
 
 ### ResponsiveButtonGroupItem
 

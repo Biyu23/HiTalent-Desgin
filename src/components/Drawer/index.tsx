@@ -17,30 +17,14 @@ import MinimizedDock from '../_util/minimize/MinimizedDock';
 import DrawerResizeHandle from './components/DrawerResizeHandle';
 import { useDrawerPointerResize } from './hooks/useDrawerPointerResize';
 import { useStyles } from './style';
-import type { DrawerProps, DrawerRef, DrawerResizableConfig } from './type';
-import { getDrawerAxis } from './utils/placement';
+import type {
+  DrawerProps,
+  DrawerRef,
+  DrawerResizableConfig,
+  ManualSizes,
+} from './type';
+import { getDrawerAxis, resolveMinimizableClosable } from './utils/placement';
 import { DEFAULT_DRAWER_SIZE, resolveDrawerSize } from './utils/resize';
-
-interface ManualSizes {
-  horizontal?: number;
-  vertical?: number;
-}
-
-/**
- * 解析抽屉最小化模式下的 closable 配置，保证关闭按钮靠右对齐 (placement: 'end')
- */
-const resolveMinimizableClosable = (
-  closable: DrawerProps['closable'],
-  closeIcon: DrawerProps['closeIcon'],
-): DrawerProps['closable'] => {
-  if (closable === false || closeIcon === false || closeIcon === null) {
-    return false;
-  }
-  if (typeof closable === 'object') {
-    return { ...closable, placement: 'end' };
-  }
-  return { placement: 'end' };
-};
 
 const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
   const {
@@ -149,10 +133,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     onSizeChange: handleSizeChange,
   });
 
-  const draggerClassName = classNames?.dragger;
-  const minimizeButtonClassName = classNames?.minimizeButton;
   const minimizedDockClassName = classNames?.minimizedDock;
-  const draggerStyle = styles?.dragger;
   const minimizedDockStyle = styles?.minimizedDock;
 
   const mergedClassNames = useMemo(() => {
@@ -174,8 +155,6 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
       string,
       string | undefined
     >;
-    delete antdClassNames.dragger;
-    delete antdClassNames.minimizeButton;
     delete antdClassNames.minimizedDock;
 
     return {
@@ -204,7 +183,6 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
       string,
       React.CSSProperties | undefined
     >;
-    delete antdStyles.dragger;
     delete antdStyles.minimizedDock;
 
     return {
@@ -224,7 +202,6 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
           <Button
             size="small"
             type="text"
-            className={minimizeButtonClassName}
             onClick={minimize}
             icon={<MinusOutlined />}
           />
@@ -232,13 +209,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
       ) : (
         extra
       ),
-    [
-      drawerStyles.headerActions,
-      extra,
-      minimizable,
-      minimize,
-      minimizeButtonClassName,
-    ],
+    [drawerStyles.headerActions, extra, minimizable, minimize],
   );
 
   const mergedClosable = useMemo(
@@ -261,8 +232,6 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
         {!!resizable && !!open && !isMinimized && (
           <DrawerResizeHandle
             placement={placement}
-            className={draggerClassName}
-            style={draggerStyle}
             resizing={isResizing}
             onPointerDown={handlePointerDown}
           />
@@ -271,8 +240,6 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
       </>
     ),
     [
-      draggerClassName,
-      draggerStyle,
       handlePointerDown,
       isMinimized,
       isResizing,

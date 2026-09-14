@@ -33,19 +33,19 @@ toc: content
 
 ### ModalProps
 
-| 属性                | 说明                                                                     | 类型                                                                                                     | 默认值           |
-| ------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | ---------------- |
-| `draggable`         | 是否允许拖拽（把手为标题栏与底部）                                       | `boolean`                                                                                                | `false`          |
-| `resizable`         | 是否允许缩放，或提供缩放配置                                             | `boolean \| ModalResizableConfig`                                                                        | `false`          |
-| `maximizable`       | 是否支持最大化全屏                                                       | `boolean`                                                                                                | `false`          |
-| `minimizable`       | 是否支持最小化至全局 Dock（折叠期间保留 DOM 与表单输入）                 | `boolean`                                                                                                | `false`          |
-| `minimizePosition`  | 最小化悬浮窗的停靠方位                                                   | `'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right' \| 'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom-right'` |
-| `minimized`         | 受控最小化状态                                                           | `boolean`                                                                                                | -                |
-| `maximized`         | 受控最大化状态                                                           | `boolean`                                                                                                | -                |
-| `onMinimizeChange`  | 最小化状态切换时的回调                                                   | `(minimized: boolean) => void`                                                                           | -                |
-| `onMaximizedChange` | 最大化状态切换时的回调                                                   | `(maximized: boolean) => void`                                                                           | -                |
-| `classNames`        | 自定义类名配置，扩展 `title`、`actions`、`resizeHandle`、`minimizedDock` | `ModalClassNames`                                                                                        | -                |
-| `styles`            | 自定义样式配置，扩展 `resizeHandle`、`minimizedDock`                     | `ModalStyles`                                                                                            | -                |
+| 属性                | 说明                                                     | 类型                                                                                                     | 默认值           |
+| ------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------- |
+| `draggable`         | 是否允许拖拽（把手为标题栏与底部）                       | `boolean`                                                                                                | `false`          |
+| `resizable`         | 是否允许缩放，或提供缩放配置                             | `boolean \| ModalResizableConfig`                                                                        | `false`          |
+| `maximizable`       | 是否支持最大化全屏                                       | `boolean`                                                                                                | `false`          |
+| `minimizable`       | 是否支持最小化至全局 Dock（折叠期间保留 DOM 与表单输入） | `boolean`                                                                                                | `false`          |
+| `minimizePosition`  | 最小化悬浮窗的停靠方位                                   | `'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right' \| 'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom-right'` |
+| `minimized`         | 受控最小化状态                                           | `boolean`                                                                                                | -                |
+| `maximized`         | 受控最大化状态                                           | `boolean`                                                                                                | -                |
+| `onMinimizeChange`  | 最小化状态切换时的回调                                   | `(minimized: boolean) => void`                                                                           | -                |
+| `onMaximizedChange` | 最大化状态切换时的回调                                   | `(maximized: boolean) => void`                                                                           | -                |
+| `classNames`        | Antd 原生插槽，额外支持 `minimizedDock`                  | `ModalClassNames`                                                                                        | -                |
+| `styles`            | Antd 原生插槽，额外支持 `minimizedDock`                  | `ModalStyles`                                                                                            | -                |
 
 ### ModalResizableConfig
 
@@ -76,12 +76,9 @@ toc: content
 
 继承 Ant Design `ModalProps['classNames']`，扩展以下字段：
 
-| 属性            | 说明                           | 类型     |
-| --------------- | ------------------------------ | -------- |
-| `title`         | 弹窗标题区域的 className       | `string` |
-| `actions`       | 标题栏操作按钮区域的 className | `string` |
-| `resizeHandle`  | 拖拽调整尺寸把手的 className   | `string` |
-| `minimizedDock` | 最小化 Dock 卡片的 className   | `string` |
+| 属性            | 说明                         | 类型     |
+| --------------- | ---------------------------- | -------- |
+| `minimizedDock` | 最小化 Dock 卡片的 className | `string` |
 
 ### ModalStyles
 
@@ -89,5 +86,4 @@ toc: content
 
 | 属性            | 说明                       | 类型                  |
 | --------------- | -------------------------- | --------------------- |
-| `resizeHandle`  | 拖拽调整尺寸把手的行内样式 | `React.CSSProperties` |
 | `minimizedDock` | 最小化 Dock 卡片的行内样式 | `React.CSSProperties` |

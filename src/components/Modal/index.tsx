@@ -66,9 +66,6 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   const antdClassNames = useMemo(() => {
     if (!classNames) return undefined;
     const next = { ...classNames } as Record<string, string | undefined>;
-    delete next.title;
-    delete next.actions;
-    delete next.resizeHandle;
     delete next.minimizedDock;
     return next;
   }, [classNames]);
@@ -79,7 +76,6 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       string,
       React.CSSProperties | undefined
     >;
-    delete next.resizeHandle;
     delete next.minimizedDock;
     return next;
   }, [styles]);
@@ -207,8 +203,6 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       onMinimize: handleMinimize,
       onToggleMaximize: handleToggleMaximize,
       onClose: handleClose,
-      classNames,
-      styles,
     }),
     [
       draggable,
@@ -220,8 +214,6 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       handleMinimize,
       handleToggleMaximize,
       handleClose,
-      classNames,
-      styles,
     ],
   );
 
@@ -237,11 +229,8 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       setPosition: setWindowPosition,
       setSize: setWindowSize,
       setResizing,
-      classNames,
-      styles,
     }),
     [
-      classNames,
       draggable,
       isMaximized,
       isMinimized,
@@ -251,7 +240,6 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       setResizing,
       setWindowPosition,
       setWindowSize,
-      styles,
       windowPosition,
     ],
   );

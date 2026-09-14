@@ -8,7 +8,6 @@ import { useStyles } from '../style';
 import type { SelectorProps } from '../type';
 import SelectorTrigger from './SelectorTrigger';
 
-/** 独立弹层壳：管理开关与尺寸，完全不感知选项或选择草稿。 */
 export const Selector = forwardRef<
   React.ComponentRef<typeof Button>,
   SelectorProps
@@ -42,11 +41,7 @@ export const Selector = forwardRef<
       getPopupContainer={props.getPopupContainer}
       destroyTooltipOnHide={props.destroyTooltipOnHide}
       autoAdjustOverflow={props.autoAdjustOverflow ?? true}
-      rootClassName={cx(
-        styles.popover,
-        props.rootClassName,
-        props.classNames?.popup,
-      )}
+      rootClassName={cx(styles.popover, props.classNames?.popup)}
       styles={{
         root: {
           minWidth: triggerWidth,

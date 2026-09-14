@@ -16,7 +16,9 @@ Table extends Ant Design Table with column state, column settings, resizing, col
 
 <code src="./demo/candidate-sort.tsx" title="Candidate sorting" description="Controlled sorting in an isolated scenario without row dragging."></code>
 
-## API notes
+## API
+
+Use `className` and `style` for the outer wrapper including the toolbar. Both `classNames` and `styles` support `toolbar`, `settingPopup`, and `table`; `table` targets the inner Antd Table. Customize cells with `onCell` / `onHeaderCell`. notes
 
 - Passing `columnState` makes the column state controlled. Otherwise, `defaultColumnState` initializes internal state.
 - `onColumnStateChange` only reports the next state and does not determine whether state is controlled.

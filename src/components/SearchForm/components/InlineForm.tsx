@@ -73,9 +73,7 @@ export const InlineForm = <Values extends object>({
             {index > 0 && (
               <Divider type="vertical" className={formStyles.fieldDivider} />
             )}
-            <div
-              className={cx(formStyles.inlineFieldItem, classNames?.fieldItem)}
-            >
+            <div className={formStyles.inlineFieldItem}>
               <InlinePopoverField
                 field={field}
                 form={form}
@@ -99,10 +97,7 @@ export const InlineForm = <Values extends object>({
             >
               {hasThreshold && (
                 <span
-                  className={cx(
-                    formStyles.toggleButton,
-                    classNames?.collapseToggle,
-                  )}
+                  className={cx(formStyles.toggleButton)}
                   onClick={onToggleExpand}
                 >
                   <span>{expanded ? locale.collapse : locale.expand}</span>

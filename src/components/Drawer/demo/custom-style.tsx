@@ -7,13 +7,13 @@ const messages = {
   'zh-CN': {
     open: '打开自定义样式抽屉',
     title: '自定义样式',
-    content: '通过 styles 与 classNames 定制拖拽把手与最小化卡片样式。',
+    content: '通过 styles 定制面板与最小化卡片。',
     close: '关闭',
   },
   'en-US': {
     open: 'Open Styled Drawer',
     title: 'Custom Styles',
-    content: 'Customize dragger and minimizedDock via styles and classNames.',
+    content: 'Customize the panel and minimized card through styles.',
     close: 'Close',
   },
 };
@@ -38,7 +38,6 @@ export default (): React.ReactElement => {
         styles={{
           header: { background: '#f6ffed', borderBottom: '1px solid #b7eb8f' },
           body: { background: '#fcffe6' },
-          dragger: { backgroundColor: '#52c41a' },
           minimizedDock: { borderColor: '#52c41a', background: '#f6ffed' },
         }}
         extra={

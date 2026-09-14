@@ -49,8 +49,12 @@ export default function SortableOptions<
   locale,
   children,
 }: SortableOptionsProps<ValueType, OptionType>) {
-  const { styles, cx, theme } = useStyles();
+  const { styles, cx } = useStyles();
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+  const [overlayLayer, setOverlayLayer] = useState<{
+    container: HTMLElement;
+    zIndex: number;
+  } | null>(null);
   const dragOptions = useRef<typeof options | null>(null);
   useEffect(() => {
     if (!enabled) {
@@ -125,8 +129,24 @@ export default function SortableOptions<
           onDragCancel: () => locale.sortCancel,
         },
       }}
-      onDragStart={({ active }) => {
+      onDragStart={({ active, activatorEvent }) => {
         if (!enabled) return;
+        const target = activatorEvent.target as Node | null;
+        const ownerDocument = target?.ownerDocument;
+        if (!target || !ownerDocument?.defaultView) return;
+        let element =
+          target.nodeType === 1 ? (target as Element) : target.parentElement;
+        let zIndex = 0;
+        // 预览挂在 body 下，需要高于实际弹层及其祖先，包含嵌套弹窗和自定义层级。
+        while (element) {
+          const value = Number.parseInt(
+            ownerDocument.defaultView.getComputedStyle(element).zIndex,
+            10,
+          );
+          if (Number.isFinite(value)) zIndex = Math.max(zIndex, value);
+          element = element.parentElement;
+        }
+        setOverlayLayer({ container: ownerDocument.body, zIndex: zIndex + 1 });
         dragOptions.current = options;
         setActiveId(active.id);
       }}
@@ -136,12 +156,9 @@ export default function SortableOptions<
       <SortableContext items={items} strategy={verticalListSortingStrategy}>
         {children}
       </SortableContext>
-      {typeof document !== 'undefined' &&
+      {overlayLayer &&
         createPortal(
-          <DragOverlay
-            dropAnimation={null}
-            zIndex={theme.zIndexPopupBase + 100}
-          >
+          <DragOverlay dropAnimation={null} zIndex={overlayLayer.zIndex}>
             {enabled && dragOptions.current === options && activeOption ? (
               <div
                 aria-hidden
@@ -159,7 +176,7 @@ export default function SortableOptions<
               </div>
             ) : null}
           </DragOverlay>,
-          document.body,
+          overlayLayer.container,
         )}
     </DndContext>
   );

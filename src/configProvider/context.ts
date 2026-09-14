@@ -2,10 +2,12 @@ import type {
   ConfigProviderProps as AntdConfigProviderProps,
   ThemeConfig,
 } from 'antd';
-import { createContext, useContext } from 'react';
-import type { HtdLocale, LocaleDirection } from '../locales';
-import { zh_CN } from '../locales';
+import { ConfigProvider as AntdConfigProvider } from 'antd';
+import { createContext, useContext, useMemo } from 'react';
+import type { HtdLocale, LocaleDirection, LocaleOverrides } from '../locales';
+import { en_US, zh_CN } from '../locales';
 import { isNullOrBlank } from '../utils';
+import { mergeLocale } from './mergeLocale';
 
 export interface ConfigContextValue {
   /** HiTalent Design 默认/全局组件前缀，默认为 'htd' */
@@ -28,23 +30,81 @@ export interface ConfigContextValue {
 
 export const defaultPrefixCls = 'htd';
 
-export const defaultConfig: ConfigContextValue = {
+// Track internal snapshots by identity so object spreads remain public overrides.
+const resolvedLocales = new WeakMap<ConfigContextValue, HtdLocale>();
+
+export const markResolvedConfig = (
+  config: ConfigContextValue,
+): ConfigContextValue => {
+  resolvedLocales.set(config, config.locale);
+  return config;
+};
+
+export const getExplicitLocale = (
+  config: ConfigContextValue,
+): HtdLocale | undefined =>
+  config.locale !== resolvedLocales.get(config) ? config.locale : undefined;
+
+export const createGetPrefixCls =
+  (prefixCls: string) =>
+  (suffixCls?: string, customPrefix?: string): string => {
+    if (!isNullOrBlank(customPrefix)) return customPrefix;
+    return suffixCls ? `${prefixCls}-${suffixCls}` : prefixCls;
+  };
+
+// Keep explicit locale settings separate from host-derived defaults.
+export const LocaleSettingsContext = createContext<{
+  locale?: HtdLocale;
+  overrides?: LocaleOverrides;
+  /** Public context already incorporated by the nearest HTD provider. */
+  sourceConfig?: ConfigContextValue;
+}>({});
+
+export const defaultConfig = markResolvedConfig({
   prefixCls: defaultPrefixCls,
-  getPrefixCls: (suffixCls?: string, customPrefix?: string): string => {
-    if (!isNullOrBlank(customPrefix)) {
-      return customPrefix;
-    }
-    return suffixCls ? `${defaultPrefixCls}-${suffixCls}` : defaultPrefixCls;
-  },
+  getPrefixCls: createGetPrefixCls(defaultPrefixCls),
   locale: zh_CN,
   direction: zh_CN.direction,
-};
+});
 
 export const ConfigContext = createContext<ConfigContextValue>(defaultConfig);
 
-/**
- * 获取当前全局 ConfigContext 配置
- */
+export const useLocaleSettings = () => {
+  const config = useContext(ConfigContext);
+  const { locale, overrides, sourceConfig } = useContext(LocaleSettingsContext);
+  const antd = useContext(AntdConfigProvider.ConfigContext);
+  const base =
+    (config !== sourceConfig ? getExplicitLocale(config) : undefined) ??
+    locale ??
+    (antd.locale?.locale?.toLowerCase().startsWith('en') ? en_US : zh_CN);
+  const direction = antd.direction ?? base.direction;
+  return { base, overrides, direction };
+};
+
+export const useResolvedLocale = (): HtdLocale => {
+  const { base, overrides, direction } = useLocaleSettings();
+  return useMemo(() => {
+    const merged = mergeLocale(base, overrides);
+    return merged.direction === direction ? merged : { ...merged, direction };
+  }, [base, overrides, direction]);
+};
+
+/** 获取当前全局 ConfigContext 配置。 */
 export const useConfig = (): ConfigContextValue => {
-  return useContext(ConfigContext);
+  const config = useContext(ConfigContext);
+  const antd = useContext(AntdConfigProvider.ConfigContext);
+  const locale = useResolvedLocale();
+  return useMemo(
+    () =>
+      markResolvedConfig({
+        ...config,
+        antdPrefixCls: antd.getPrefixCls(),
+        iconPrefixCls: antd.iconPrefixCls,
+        antdLocale: antd.locale,
+        theme: antd.theme,
+        direction: locale.direction,
+        locale,
+      }),
+    [config, antd, locale],
+  );
 };

@@ -1,17 +1,10 @@
 export { default as SvgIcon, createSvgIcon } from './SvgIcon';
-export type {
-  SvgIconClassNames,
-  SvgIconProps,
-  SvgIconSize,
-  SvgIconSlot,
-  SvgIconStyles,
-} from './SvgIcon/type';
+export type { SvgIconProps, SvgIconSize } from './SvgIcon/type';
 
 export { default as PopoverSelect } from './PopoverSelect';
 export type {
   DefaultOptionType,
   PopoverSelectBaseProps,
-  PopoverSelectClassNameSlot,
   PopoverSelectClassNames,
   PopoverSelectFieldNames,
   PopoverSelectMultipleArrayProps,
@@ -20,8 +13,6 @@ export type {
   PopoverSelectProps,
   PopoverSelectRenderContext,
   PopoverSelectSingleProps,
-  PopoverSelectSlot,
-  PopoverSelectStyleSlot,
   PopoverSelectStyles,
   RawValueType,
   SelectorPopupProps,
@@ -80,7 +71,6 @@ export type {
   RowDropEvent,
   RowDropPlacement,
   RowDropTarget,
-  TableClassNameSlot,
   TableClassNames,
   TableColumn,
   TableColumnGroup,
@@ -91,20 +81,19 @@ export type {
   TableProps,
   TableRef,
   TableRowKey,
-  TableStyleSlot,
+  TableSlot,
   TableStyles,
 } from './Table/type';
 
 export { default as SearchForm } from './SearchForm';
 export type {
   SearchFieldGroup,
-  SearchFormClassNameSlot,
   SearchFormClassNames,
   SearchFormFieldItem,
   SearchFormMode,
   SearchFormProps,
   SearchFormRef,
-  SearchFormStyleSlot,
+  SearchFormSlot,
   SearchFormStyles,
   SearchSearchInfo,
   SearchTriggerMode,

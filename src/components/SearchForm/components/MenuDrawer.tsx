@@ -166,6 +166,7 @@ export const MenuDrawer = <Values extends object>({
               drawerStyles.quickFiltersSection,
               classNames?.quickFilters,
             )}
+            style={customStyles?.quickFilters}
           >
             <div className={drawerStyles.quickFiltersTitle}>
               {locale.quickFilters}
@@ -188,6 +189,7 @@ export const MenuDrawer = <Values extends object>({
           defaultActiveKey={defaultActiveKeys}
           ghost
           className={cx(drawerStyles.groupsAccordion, classNames?.group)}
+          style={customStyles?.group}
           items={collapseItems}
         />
       </div>
@@ -195,7 +197,8 @@ export const MenuDrawer = <Values extends object>({
       {/* 底部操作条 */}
       {(showResetButton || showSearchButton) && (
         <div
-          className={cx(drawerStyles.drawerFooter, classNames?.drawerFooter)}
+          className={cx(drawerStyles.drawerFooter, classNames?.actions)}
+          style={customStyles?.actions}
         >
           {showResetButton && (
             <Button onClick={handleResetClick} disabled={disabled}>

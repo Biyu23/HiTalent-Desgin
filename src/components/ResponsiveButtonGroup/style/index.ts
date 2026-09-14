@@ -27,6 +27,7 @@ export const useStyles = createStyles(({ token }) => {
     `,
     overflowCount: css`
       margin-inline-start: ${token.sizeXXS}px;
+      font-variant-numeric: tabular-nums;
     `,
     overflowArrow: css`
       margin-inline-start: ${token.sizeXXS}px;

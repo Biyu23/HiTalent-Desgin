@@ -26,6 +26,8 @@ toc: content
 
 ## API
 
+Use `className` and `style` for the root. Both `classNames` and `styles` support `form`, `actions`, `activeFilters`, `menu`, `drawer`, `quickFilters`, and `group`. `actions` also targets the drawer action area.
+
 ### SearchForm
 
 | Property            | Description                                            | Type                                                                                          | Default             |

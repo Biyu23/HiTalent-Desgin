@@ -26,6 +26,8 @@ toc: content
 
 ## API
 
+`className`、`style` 设置根容器。`classNames` 和 `styles` 均支持 `form`、`actions`、`activeFilters`、`menu`、`drawer`、`quickFilters`、`group`；`actions` 同时用于抽屉操作区。
+
 ### SearchForm
 
 | 属性                | 说明                                                                       | 类型                                                                                          | 默认值       |

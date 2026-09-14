@@ -56,7 +56,6 @@ export default function PopoverSelectList<
       selected={selectedSet.has(option.value)}
       disabled={option.disabled || !!config.disabled}
       virtual={virtual}
-      className={classNames?.item}
       onToggle={() => toggleValue(option.value)}
     >
       {optionRender ? (
@@ -116,7 +115,7 @@ export default function PopoverSelectList<
       )}
     </div>
   ) : (
-    <div className={cx(listStyles.empty, classNames?.empty)}>
+    <div className={listStyles.empty}>
       <Empty
         image={Empty.PRESENTED_IMAGE_SIMPLE}
         description={options.length ? locale.noMatch : locale.noData}

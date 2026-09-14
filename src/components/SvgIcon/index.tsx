@@ -35,8 +35,6 @@ function normalizeSvgElement(
   overrideProps?: {
     fill?: string;
     stroke?: string;
-    className?: string;
-    style?: React.CSSProperties;
   },
 ): React.ReactElement {
   if (!isValidElement(svgChild)) return svgChild;
@@ -96,11 +94,10 @@ function normalizeSvgElement(
         height="1em"
         {...(finalFill !== undefined ? { fill: finalFill } : {})}
         {...(finalStroke !== undefined ? { stroke: finalStroke } : {})}
-        className={clsx(extraClassName, overrideProps?.className)}
+        className={extraClassName}
         style={{
           ...childStyle,
           ...extraStyle,
-          ...overrideProps?.style,
         }}
       >
         {svgChild}
@@ -118,15 +115,10 @@ function normalizeSvgElement(
       height: '1em',
       ...(finalFill !== undefined ? { fill: finalFill } : {}),
       ...(finalStroke !== undefined ? { stroke: finalStroke } : {}),
-      className: clsx(
-        restChildProps.className,
-        extraClassName,
-        overrideProps?.className,
-      ),
+      className: clsx(restChildProps.className, extraClassName),
       style: {
         ...childStyle,
         ...extraStyle,
-        ...overrideProps?.style,
       },
     },
     svgChildren,
@@ -144,9 +136,6 @@ const SvgIcon = forwardRef<HTMLSpanElement, SvgIconProps>((props, ref) => {
     spin,
     rotate,
     prefixCls: customPrefixCls,
-    rootClassName,
-    classNames,
-    styles,
     className,
     style,
     tabIndex,
@@ -180,15 +169,14 @@ const SvgIcon = forwardRef<HTMLSpanElement, SvgIconProps>((props, ref) => {
 
   const RenderSvg = useMemo(() => {
     if (CustomComponent) {
-      const ComponentWithSlots: React.FC<
+      const ComponentFromProp: React.FC<
         CustomIconComponentProps | React.SVGProps<SVGSVGElement>
       > = (svgProps) =>
-        React.createElement(CustomComponent, {
-          ...(svgProps as CustomIconComponentProps),
-          className: clsx(svgProps.className, classNames?.svg),
-          style: { ...svgProps.style, ...styles?.svg },
-        });
-      return ComponentWithSlots;
+        React.createElement(
+          CustomComponent,
+          svgProps as CustomIconComponentProps,
+        );
+      return ComponentFromProp;
     }
     if (isValidElement<React.SVGProps<SVGSVGElement>>(children)) {
       const ComponentFromChild: React.FC<
@@ -197,13 +185,11 @@ const SvgIcon = forwardRef<HTMLSpanElement, SvgIconProps>((props, ref) => {
         normalizeSvgElement(children, svgProps, {
           fill,
           stroke,
-          className: classNames?.svg,
-          style: styles?.svg,
         });
       return ComponentFromChild;
     }
     return undefined;
-  }, [CustomComponent, children, classNames?.svg, fill, stroke, styles?.svg]);
+  }, [CustomComponent, children, fill, stroke]);
 
   if (!RenderSvg) {
     return null;
@@ -215,8 +201,8 @@ const SvgIcon = forwardRef<HTMLSpanElement, SvgIconProps>((props, ref) => {
       component={RenderSvg}
       spin={spin}
       rotate={rotate}
-      className={clsx(prefixCls, rootClassName, classNames?.root, className)}
-      style={{ ...styles?.root, ...mergedStyle }}
+      className={clsx(prefixCls, className)}
+      style={mergedStyle}
       tabIndex={tabIndex}
       title={title}
       onClick={onClick}

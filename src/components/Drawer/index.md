@@ -24,7 +24,7 @@ toc: content
 
 <code src="./demo/shared-dock.tsx" title="与 Modal 共享 Dock" description="抽屉与弹窗可同时停靠在同一全局 Dock 中，并支持独立恢复与关闭。"></code>
 
-<code src="./demo/custom-style.tsx" title="自定义样式" description="通过 styles 和 classNames 定制拖拽把手及最小化卡片样式。"></code>
+<code src="./demo/custom-style.tsx" title="自定义样式" description="通过 styles 和 classNames 定制面板与最小化卡片样式。"></code>
 
 ## API
 
@@ -32,20 +32,20 @@ toc: content
 
 ### DrawerProps
 
-| 属性               | 说明                                                              | 类型                                                                                                     | 默认值           |
-| ------------------ | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------- |
-| `size`             | 轴向受控尺寸（水平方向为宽，垂直方向为高）                        | `'default' \| 'large' \| number \| string`                                                               | -                |
-| `defaultSize`      | 非受控模式下的初始轴向尺寸                                        | `number \| string`                                                                                       | `378`            |
-| `minSize`          | 调整尺寸允许的最小像素尺寸                                        | `number`                                                                                                 | `100`            |
-| `maxSize`          | 调整尺寸允许的最大像素尺寸，同时受限于实际容器可用边界            | `number`                                                                                                 | -                |
-| `resizable`        | 是否允许通过内侧边缘拖拽调整尺寸，或提供生命周期回调配置          | `boolean \| DrawerResizableConfig`                                                                       | `false`          |
-| `minimizable`      | 是否支持最小化到全局 Dock（自动保留 DOM 与表单状态）              | `boolean`                                                                                                | `false`          |
-| `minimized`        | 受控最小化状态                                                    | `boolean`                                                                                                | -                |
-| `minimizePosition` | 最小化卡片停靠位置                                                | `'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right' \| 'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom-right'` |
-| `onMinimizeChange` | 最小化状态变化回调                                                | `(minimized: boolean) => void`                                                                           | -                |
-| `onClose`          | 关闭回调（从最小化 Dock 程序化关闭时 event 为 undefined）         | `(event?: React.MouseEvent \| React.KeyboardEvent) => void`                                              | -                |
-| `classNames`       | 自定义类名配置，扩展 `dragger`、`minimizeButton`、`minimizedDock` | `DrawerClassNames`                                                                                       | -                |
-| `styles`           | 自定义样式配置，扩展 `dragger`、`minimizedDock`                   | `DrawerStyles`                                                                                           | -                |
+| 属性               | 说明                                                      | 类型                                                                                                     | 默认值           |
+| ------------------ | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------- |
+| `size`             | 轴向受控尺寸（水平方向为宽，垂直方向为高）                | `'default' \| 'large' \| number \| string`                                                               | -                |
+| `defaultSize`      | 非受控模式下的初始轴向尺寸                                | `number \| string`                                                                                       | `378`            |
+| `minSize`          | 调整尺寸允许的最小像素尺寸                                | `number`                                                                                                 | `100`            |
+| `maxSize`          | 调整尺寸允许的最大像素尺寸，同时受限于实际容器可用边界    | `number`                                                                                                 | -                |
+| `resizable`        | 是否允许通过内侧边缘拖拽调整尺寸，或提供生命周期回调配置  | `boolean \| DrawerResizableConfig`                                                                       | `false`          |
+| `minimizable`      | 是否支持最小化到全局 Dock（自动保留 DOM 与表单状态）      | `boolean`                                                                                                | `false`          |
+| `minimized`        | 受控最小化状态                                            | `boolean`                                                                                                | -                |
+| `minimizePosition` | 最小化卡片停靠位置                                        | `'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right' \| 'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom-right'` |
+| `onMinimizeChange` | 最小化状态变化回调                                        | `(minimized: boolean) => void`                                                                           | -                |
+| `onClose`          | 关闭回调（从最小化 Dock 程序化关闭时 event 为 undefined） | `(event?: React.MouseEvent \| React.KeyboardEvent) => void`                                              | -                |
+| `classNames`       | Antd 原生插槽，额外支持 `minimizedDock`                   | `DrawerClassNames`                                                                                       | -                |
+| `styles`           | Antd 原生插槽，额外支持 `minimizedDock`                   | `DrawerStyles`                                                                                           | -                |
 
 ### DrawerRef
 
@@ -68,11 +68,9 @@ toc: content
 
 继承 Ant Design `DrawerProps['classNames']`，扩展以下字段：
 
-| 属性             | 说明                         | 类型     |
-| ---------------- | ---------------------------- | -------- |
-| `minimizeButton` | 标题栏最小化按钮的 className | `string` |
-| `minimizedDock`  | 最小化 Dock 卡片的 className | `string` |
-| `dragger`        | 拖拽调整尺寸把手的 className | `string` |
+| 属性            | 说明                         | 类型     |
+| --------------- | ---------------------------- | -------- |
+| `minimizedDock` | 最小化 Dock 卡片的 className | `string` |
 
 ### DrawerStyles
 
@@ -81,7 +79,6 @@ toc: content
 | 属性            | 说明                       | 类型                  |
 | --------------- | -------------------------- | --------------------- |
 | `minimizedDock` | 最小化 Dock 卡片的行内样式 | `React.CSSProperties` |
-| `dragger`       | 拖拽调整尺寸把手的行内样式 | `React.CSSProperties` |
 
 ## 注意事项
 

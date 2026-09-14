@@ -144,6 +144,7 @@ export const MenuFormView = <Values extends object>({
         defaultActiveKey={defaultActiveKeys}
         ghost
         className={cx(menuStyles.menuCollapse, classNames?.group)}
+        style={customStyles?.group}
         items={collapseItems}
       />
     </div>

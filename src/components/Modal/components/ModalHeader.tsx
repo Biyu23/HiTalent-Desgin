@@ -28,7 +28,6 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
     onMinimize,
     onToggleMaximize,
     onClose,
-    classNames,
   } = useModalOperations();
 
   const { styles, cx } = useStyles();
@@ -76,10 +75,10 @@ const ModalHeader = memo<ModalHeaderProps>(({ title, className }) => {
       )}
       onDoubleClick={maximizable ? onToggleMaximize : undefined}
     >
-      <div className={cx(styles.title, classNames?.title)}>{title}</div>
+      <div className={styles.title}>{title}</div>
       {actions.length > 0 && (
         <Flex
-          className={cx(styles.actions, classNames?.actions)}
+          className={styles.actions}
           data-modal-no-drag
           gap={8}
           align="center"

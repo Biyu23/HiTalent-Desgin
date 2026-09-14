@@ -3,8 +3,6 @@ import { useStyles } from '../style';
 
 interface ModalResizeHandleProps {
   onPointerDown: (event: React.PointerEvent<HTMLDivElement>) => void;
-  className?: string;
-  style?: React.CSSProperties;
 }
 
 const stopMouseDownPropagation = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -12,20 +10,17 @@ const stopMouseDownPropagation = (event: React.MouseEvent<HTMLDivElement>) => {
   event.stopPropagation();
 };
 
-const ModalResizeHandle = memo<ModalResizeHandleProps>(
-  ({ onPointerDown, className, style }) => {
-    const { styles, cx } = useStyles();
+const ModalResizeHandle = memo<ModalResizeHandleProps>(({ onPointerDown }) => {
+  const { styles } = useStyles();
 
-    return (
-      <div
-        className={cx(styles.resizeHandle, className)}
-        style={style}
-        data-modal-no-drag
-        onMouseDown={stopMouseDownPropagation}
-        onPointerDown={onPointerDown}
-      />
-    );
-  },
-);
+  return (
+    <div
+      className={styles.resizeHandle}
+      data-modal-no-drag
+      onMouseDown={stopMouseDownPropagation}
+      onPointerDown={onPointerDown}
+    />
+  );
+});
 
 export default ModalResizeHandle;

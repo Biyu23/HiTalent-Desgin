@@ -85,21 +85,10 @@ export interface ColumnSettingOptions {
   loading?: boolean;
 }
 
-export type TableClassNameSlot =
-  | 'root'
-  | 'toolbar'
-  | 'toolbarExtra'
-  | 'settingTrigger'
-  | 'settingPopup'
-  | 'table'
-  | 'headerCell'
-  | 'resizeHandle'
-  | 'rowDragHandle';
+export type TableSlot = 'toolbar' | 'settingPopup' | 'table';
 
-export type TableStyleSlot = 'root' | 'toolbar' | 'settingPopup' | 'table';
-
-export type TableClassNames = SemanticClassNames<TableClassNameSlot>;
-export type TableStyles = SemanticStyles<TableStyleSlot>;
+export type TableClassNames = SemanticClassNames<TableSlot>;
+export type TableStyles = SemanticStyles<TableSlot>;
 
 export interface TableOwnProps<RecordType> {
   columns: readonly TableColumn<RecordType>[];
@@ -122,7 +111,7 @@ export type TableProps<RecordType = Record<string, unknown>> = Omit<
   'columns' | 'className' | 'style' | 'rootClassName' | 'classNames' | 'styles'
 > &
   NativeProps &
-  SemanticStyleProps<TableClassNameSlot, TableStyleSlot> &
+  SemanticStyleProps<TableSlot> &
   TableOwnProps<RecordType>;
 
 export type TableRef = AntdTableRef & {

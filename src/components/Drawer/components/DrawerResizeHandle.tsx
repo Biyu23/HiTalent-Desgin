@@ -4,8 +4,6 @@ import type { DrawerPlacement } from '../type';
 
 interface DrawerResizeHandleProps {
   placement: DrawerPlacement;
-  className?: string;
-  style?: React.CSSProperties;
   resizing: boolean;
   onPointerDown: (event: React.PointerEvent<HTMLDivElement>) => void;
 }
@@ -18,7 +16,7 @@ const placementStyleKeyMap = {
 } as const;
 
 const DrawerResizeHandle = memo<DrawerResizeHandleProps>(
-  ({ placement, className, style, resizing, onPointerDown }) => {
+  ({ placement, resizing, onPointerDown }) => {
     const { styles: drawerStyles, cx } = useStyles();
 
     return (
@@ -27,9 +25,7 @@ const DrawerResizeHandle = memo<DrawerResizeHandleProps>(
           drawerStyles.resizeHandle,
           drawerStyles[placementStyleKeyMap[placement]],
           resizing && drawerStyles.resizeHandleResizing,
-          className,
         )}
-        style={style}
         onPointerDown={onPointerDown}
       />
     );

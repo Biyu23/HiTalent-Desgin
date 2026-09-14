@@ -22,28 +22,33 @@ toc: content
 
 ## API
 
-除下表属性外，组件同时支持 `className`、`style`、`rootClassName` 等原生属性。
+响应式模式依赖 `ResizeObserver`；不支持时保持全部平铺，可由应用提供 polyfill。
+“更多”按钮按全部操作项数量预留空间，数量减少时可能保留少量空隙，以避免临界宽度反复折叠。
+`renderOverflowButton` 会用于隐藏测量（传入全部 `items`、`open=false`）；自定义触发器应保持固定宽度，不随 `count`、`collapsedItems` 或 `open` 改变，并避免渲染副作用。
+单项与全局点击回调都会执行；返回的异步任务全部结束后才解除 loading、关闭菜单，并通过 `onActionError` 报告失败。
+
+`className`、`style` 设置根容器；插槽仅开放更多按钮和弹层。
 
 ### ResponsiveButtonGroupProps
 
-| 属性                    | 说明                                                                             | 类型                                                                 | 默认值                 |
-| ----------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ---------------------- |
-| `items`                 | 操作项列表数据源                                                                 | `readonly ResponsiveButtonGroupItem[]`                               | -                      |
-| `mode`                  | 展示模式（自适应 / 强制平铺 / 强制折叠）                                         | `'responsive' \| 'expanded' \| 'collapsed'`                          | `'responsive'`         |
-| `minVisibleCount`       | 必须保持平铺的最少按钮数（不包含“更多”按钮）                                     | `number`                                                             | `0`                    |
-| `gap`                   | 按钮之间的间距，单位为像素                                                       | `number`                                                             | `8`                    |
-| `overflowLabel`         | “更多”触发器按钮自定义展示文案                                                   | `ReactNode`                                                          | locale 文案            |
-| `overflowIcon`          | “更多”触发器按钮自定义图标                                                       | `ReactNode`                                                          | `<EllipsisOutlined />` |
-| `showOverflowCount`     | 是否在“更多”按钮上显示当前已折叠的项目数量                                       | `boolean`                                                            | `true`                 |
-| `overflowButtonProps`   | 透传给“更多”触发器 Button 的属性配置                                             | `ButtonProps`                                                        | -                      |
-| `overflowDropdownProps` | 透传给溢出 Dropdown 的属性配置                                                   | `DropdownProps`                                                      | -                      |
-| `overflowMenuProps`     | 透传给溢出 Menu 的属性配置                                                       | `MenuProps`                                                          | -                      |
-| `renderOverflowButton`  | 自定义“更多”触发器按钮的渲染函数                                                 | `(info: ResponsiveButtonGroupOverflowRenderInfo) => ReactNode`       | -                      |
-| `onItemClick`           | 所有操作项的统一点击回调，返回 Promise 时自动保持 Loading 状态                   | `(info: ResponsiveButtonGroupClickInfo) => void \| Promise<unknown>` | -                      |
-| `onActionError`         | 异步操作执行出错时的回调                                                         | `(error: unknown, info: ResponsiveButtonGroupClickInfo) => void`     | -                      |
-| `onVisibleChange`       | 平铺项与折叠项集合发生变化时的回调                                               | `(visibleKeys: string[], collapsedKeys: string[]) => void`           | -                      |
-| `classNames`            | 语义化类名插槽（支持 `root`、`visible`、`overflowTrigger`、`popup`、`menuItem`） | `ResponsiveButtonGroupClassNames`                                    | -                      |
-| `styles`                | 语义化样式插槽（支持 `root`、`visible`、`overflowTrigger`、`popup`）             | `ResponsiveButtonGroupStyles`                                        | -                      |
+| 属性                    | 说明                                                           | 类型                                                                 | 默认值                 |
+| ----------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------- | ---------------------- |
+| `items`                 | 操作项列表数据源                                               | `readonly ResponsiveButtonGroupItem[]`                               | -                      |
+| `mode`                  | 展示模式（自适应 / 强制平铺 / 强制折叠）                       | `'responsive' \| 'expanded' \| 'collapsed'`                          | `'responsive'`         |
+| `minVisibleCount`       | 必须保持平铺的最少按钮数（不包含“更多”按钮）                   | `number`                                                             | `0`                    |
+| `gap`                   | 按钮之间的间距，单位为像素                                     | `number`                                                             | `8`                    |
+| `overflowLabel`         | “更多”触发器按钮自定义展示文案                                 | `ReactNode`                                                          | locale 文案            |
+| `overflowIcon`          | “更多”触发器按钮自定义图标                                     | `ReactNode`                                                          | `<EllipsisOutlined />` |
+| `showOverflowCount`     | 是否在“更多”按钮上显示当前已折叠的项目数量                     | `boolean`                                                            | `true`                 |
+| `overflowButtonProps`   | 透传给“更多”触发器 Button 的属性配置                           | `ButtonProps`                                                        | -                      |
+| `overflowDropdownProps` | 透传给溢出 Dropdown 的属性配置                                 | `DropdownProps`                                                      | -                      |
+| `overflowMenuProps`     | 透传给溢出 Menu 的属性配置                                     | `MenuProps`                                                          | -                      |
+| `renderOverflowButton`  | 自定义“更多”触发器按钮的渲染函数                               | `(info: ResponsiveButtonGroupOverflowRenderInfo) => ReactNode`       | -                      |
+| `onItemClick`           | 所有操作项的统一点击回调，返回 Promise 时自动保持 Loading 状态 | `(info: ResponsiveButtonGroupClickInfo) => void \| Promise<unknown>` | -                      |
+| `onActionError`         | 异步操作执行出错时的回调                                       | `(error: unknown, info: ResponsiveButtonGroupClickInfo) => void`     | -                      |
+| `onVisibleChange`       | 平铺项与折叠项集合发生变化时的回调                             | `(visibleKeys: string[], collapsedKeys: string[]) => void`           | -                      |
+| `classNames`            | 支持 `overflowTrigger`、`popup`                                | `ResponsiveButtonGroupClassNames`                                    | -                      |
+| `styles`                | 支持 `overflowTrigger`、`popup`                                | `ResponsiveButtonGroupStyles`                                        | -                      |
 
 ### ResponsiveButtonGroupItem
 

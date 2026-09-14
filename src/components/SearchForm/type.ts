@@ -88,30 +88,7 @@ export interface SearchFormRef<
   closeMenu: () => void;
 }
 
-export type SearchFormClassNameSlot =
-  | 'root'
-  | 'form'
-  | 'fieldItem'
-  | 'actions'
-  | 'collapseToggle'
-  | 'activeFilters'
-  | 'tag'
-  | 'clearAll'
-  | 'menu'
-  | 'menuGroup'
-  | 'menuField'
-  | 'menuFieldLabel'
-  | 'menuFieldTags'
-  | 'drawer'
-  | 'drawerHeader'
-  | 'drawerBody'
-  | 'drawerFooter'
-  | 'quickFilters'
-  | 'group'
-  | 'groupHeader';
-
-export type SearchFormStyleSlot =
-  | 'root'
+export type SearchFormSlot =
   | 'form'
   | 'actions'
   | 'activeFilters'
@@ -120,14 +97,13 @@ export type SearchFormStyleSlot =
   | 'quickFilters'
   | 'group';
 
-export type SearchFormSlot = SearchFormClassNameSlot;
-export type SearchFormClassNames = SemanticClassNames<SearchFormClassNameSlot>;
-export type SearchFormStyles = SemanticStyles<SearchFormStyleSlot>;
+export type SearchFormClassNames = SemanticClassNames<SearchFormSlot>;
+export type SearchFormStyles = SemanticStyles<SearchFormSlot>;
 
 export interface SearchFormProps<
   Values extends object = Record<string, unknown>,
 > extends NativeProps,
-    SemanticStyleProps<SearchFormClassNameSlot, SearchFormStyleSlot> {
+    SemanticStyleProps<SearchFormSlot> {
   /**
    * 展示模式：
    * - 'inline': 平铺模式

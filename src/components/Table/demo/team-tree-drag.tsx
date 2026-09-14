@@ -304,7 +304,7 @@ export default function TeamTreeDragDemo() {
       }}
       onRowDragEnd={moveRow}
       zebraStripe={false}
-      classNames={{ root: styles.shell }}
+      className={styles.shell}
       toolbarExtra={
         <div className={styles.filters}>
           <div className={styles.filterFields}>

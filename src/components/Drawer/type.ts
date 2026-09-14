@@ -52,17 +52,9 @@ export interface DrawerResizableConfig {
 export interface DrawerClassNames
   extends NonNullable<AntdDrawerProps['classNames']> {
   /**
-   * @description 标题栏最小化按钮的 className
-   */
-  minimizeButton?: string;
-  /**
    * @description 最小化 Dock 卡片的 className
    */
   minimizedDock?: string;
-  /**
-   * @description 拖拽调整尺寸把手的 className
-   */
-  dragger?: string;
 }
 
 /**
@@ -73,10 +65,6 @@ export interface DrawerStyles extends NonNullable<AntdDrawerProps['styles']> {
    * @description 最小化 Dock 卡片的行内样式
    */
   minimizedDock?: React.CSSProperties;
-  /**
-   * @description 拖拽调整尺寸把手的行内样式
-   */
-  dragger?: React.CSSProperties;
 }
 
 /**
@@ -141,11 +129,11 @@ export interface DrawerProps
     event?: React.MouseEvent<Element> | React.KeyboardEvent<Element>,
   ) => void;
   /**
-   * @description 自定义类名配置，扩展 `dragger`、`minimizeButton`、`minimizedDock`
+   * @description Antd 原生类名配置，额外支持最小化卡片 `minimizedDock`
    */
   classNames?: DrawerClassNames;
   /**
-   * @description 自定义样式配置，扩展 `dragger`、`minimizedDock`
+   * @description Antd 原生样式配置，额外支持最小化卡片 `minimizedDock`
    */
   styles?: DrawerStyles;
   /**
@@ -156,4 +144,9 @@ export interface DrawerProps
    * @deprecated 请使用 size
    */
   height?: number | string;
+}
+
+export interface ManualSizes {
+  horizontal?: number;
+  vertical?: number;
 }

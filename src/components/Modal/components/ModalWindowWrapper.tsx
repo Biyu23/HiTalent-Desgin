@@ -22,8 +22,6 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
     setPosition: setWindowPosition,
     setSize: setWindowSize,
     setResizing,
-    classNames,
-    styles,
   } = useModalWindow();
   const antdPrefixCls = useAntdPrefixCls();
   const dragRef = useRef<HTMLDivElement>(null);
@@ -76,11 +74,7 @@ const ModalWindowWrapper = memo<ModalWindowWrapperProps>(({ children }) => {
       {children}
       {resizeActive && modalContent
         ? createPortal(
-            <ModalResizeHandle
-              onPointerDown={resize.onPointerDown}
-              className={classNames?.resizeHandle}
-              style={styles?.resizeHandle}
-            />,
+            <ModalResizeHandle onPointerDown={resize.onPointerDown} />,
             modalContent,
           )
         : null}

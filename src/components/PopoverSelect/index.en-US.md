@@ -6,27 +6,33 @@ toc: content
 
 # PopoverSelect
 
-Hosts a selection panel inside a Popover card, providing virtual scrolling, search filtering, select-all, field mapping, multi-select confirmation, and delimiter-separated string value serialization.
-
-## When to use
-
-- Need a Popover card form to host the selection panel and save screen space.
-- Large number of options where virtual scrolling is required to keep opening, searching, and scrolling responsive.
-- Backend records do not use a standard `label` / `value` structure and require field mapping.
-- Multi-select workflows require draft operations such as confirm, cancel, clear, or select-all scoped to the current search results.
-- Backend API requires a delimiter-separated string while option values need to recover their original number or string types.
+A popup selector for filters, with select-all, option reordering, and multiple value formats.
 
 ## Demos
 
-<code src="./demo/basic.tsx" title="Basic Single Selection" description="Supports Popover single selection, search filtering, clear button, and custom field mapping (fieldNames)."></code>
+<code src="./demo/batch.tsx" title="Select all" description="Select matching results, skipping disabled options."></code>
 
-<code src="./demo/multiple.tsx" title="Multiple Select with Confirmation" description="Multiple mode supports confirm, cancel, and clear draft operations, with maxTagCount auto (+N) truncation."></code>
+<code src="./demo/sortable.tsx" title="Drag to reorder" description="Drag handles to reorder options."></code>
 
-<code src="./demo/string-value.tsx" title="String Submission & Select All" description="valueType='string' parses and submits values using valueSeparator, restoring value types from options; showSelectAll supports selecting all filtered results."></code>
+### Custom trigger text
+
+Set the initial text with `placeholder` and retain the title with `labelRender`. Clearing restores the initial text.
+
+```tsx | pure
+<PopoverSelect
+  placeholder="Enabled"
+  options={[
+    { label: 'Yes', value: 1 },
+    { label: 'No', value: 0 },
+  ]}
+  labelRender={(label, { values }) =>
+    values.length ? <>Enabled: {label}</> : label
+  }
+  allowClear
+/>
+```
 
 ## Reordering options
-
-<code src="./demo/sortable.tsx" title="Reordering options" description="Reorder options using a dedicated handle in regular or virtual lists, while confirming selection separately."></code>
 
 Enable `sortable` and feed the result of `onSortChange` back into `options`:
 
@@ -45,8 +51,6 @@ Enable `sortable` and feed the result of `onSortChange` back into `options`:
 ### Responsibilities and extension points
 
 `PopoverSelect` manages selection, search, select-all and confirmation. `PopoverSelect.Selector` only manages the trigger, popup visibility and width, and can host arbitrary content independently.
-
-<code src="./demo/custom.tsx" title="Custom renderers and standalone popup" description="Reuse selection and confirmation through read-only state and explicit operations."></code>
 
 | Extension                       | Purpose                                                                        |
 | ------------------------------- | ------------------------------------------------------------------------------ |
@@ -75,7 +79,7 @@ Existing single-argument `optionRender` and `dropdownRender` callbacks, and zero
 
 ### Base properties
 
-In addition to the properties below, the component also supports native props including `className`, `style`, and `rootClassName`.
+Use `className` and `style` for the root wrapper; use `classNames` and `styles` for the regions below.
 
 ### PopoverSelectProps
 
@@ -123,25 +127,18 @@ In addition to the properties below, the component also supports native props in
 
 ### PopoverSelectClassNames
 
-| Property      | Description                                                     | Type     |
-| ------------- | --------------------------------------------------------------- | -------- |
-| `root`        | Class name of the root wrapper                                  | `string` |
-| `trigger`     | Class name of the trigger button                                | `string` |
-| `triggerText` | Class name of the trigger text container                        | `string` |
-| `actions`     | Class name of the right action container (arrow and clear icon) | `string` |
-| `popup`       | Class name of the popup container                               | `string` |
-| `search`      | Class name of the search input area                             | `string` |
-| `selectAll`   | Class name of the select-all checkbox area                      | `string` |
-| `menu`        | Class name of the options menu list                             | `string` |
-| `item`        | Class name of each option item                                  | `string` |
-| `footer`      | Class name of the footer button area                            | `string` |
-| `empty`       | Class name of the empty state area                              | `string` |
+| Property  | Description                          | Type     |
+| --------- | ------------------------------------ | -------- |
+| `trigger` | Class name of the trigger button     | `string` |
+| `popup`   | Class name of the popup container    | `string` |
+| `menu`    | Class name of the options menu list  | `string` |
+| `footer`  | Class name of the footer button area | `string` |
 
 ### PopoverSelectStyles
 
 | Property  | Description                           | Type                  |
 | --------- | ------------------------------------- | --------------------- |
-| `root`    | Inline style of the root wrapper      | `React.CSSProperties` |
 | `trigger` | Inline style of the trigger button    | `React.CSSProperties` |
 | `popup`   | Inline style of the popup container   | `React.CSSProperties` |
 | `menu`    | Inline style of the options menu list | `React.CSSProperties` |
+| `footer`  | Inline style of the footer            | `React.CSSProperties` |

@@ -42,46 +42,27 @@ export interface PopoverSelectFieldNames<
 
 /** 组件语义化类名配置 */
 export interface PopoverSelectClassNames {
-  /** 根容器的 className */
-  root?: string;
   /** 触发器按钮的 className */
   trigger?: string;
-  /** 触发器内部文本容器的 className */
-  triggerText?: string;
-  /** 触发器右侧操作区（箭头与清除图标）的 className */
-  actions?: string;
   /** 弹出气泡容器的 className */
   popup?: string;
-  /** 搜索输入框区域的 className */
-  search?: string;
-  /** 全选复选框区域的 className */
-  selectAll?: string;
   /** 选项菜单列表的 className */
   menu?: string;
-  /** 单个选项节点的 className */
-  item?: string;
   /** 底部操作按钮区域的 className */
   footer?: string;
-  /** 无数据/无匹配空状态区域的 className */
-  empty?: string;
 }
 
 /** 组件语义化行内样式配置 */
 export interface PopoverSelectStyles {
-  /** 根容器的行内样式 */
-  root?: React.CSSProperties;
   /** 触发器按钮的行内样式 */
   trigger?: React.CSSProperties;
   /** 弹出气泡容器的行内样式 */
   popup?: React.CSSProperties;
   /** 选项菜单列表的行内样式 */
   menu?: React.CSSProperties;
+  /** 底部操作区的行内样式 */
+  footer?: React.CSSProperties;
 }
-
-/** 兼容旧版插槽类型别名 */
-export type PopoverSelectClassNameSlot = keyof PopoverSelectClassNames;
-export type PopoverSelectStyleSlot = keyof PopoverSelectStyles;
-export type PopoverSelectSlot = PopoverSelectClassNameSlot;
 
 /** 自定义菜单/底部操作区使用的选择上下文；所有操作遵循确认模式。 */
 export interface PopoverSelectRenderContext<
@@ -144,10 +125,6 @@ export interface PopoverSelectBaseProps<
    * @description 自定义组件样式前缀
    */
   prefixCls?: string;
-  /**
-   * @description 根节点类名
-   */
-  rootClassName?: string;
   /**
    * @description 语义化类名插槽
    */
@@ -413,10 +390,6 @@ export interface SelectorProps
   content:
     | React.ReactNode
     | ((context: SelectorRenderContext) => React.ReactNode);
-  /**
-   * @description 根节点类名
-   */
-  rootClassName?: string;
   /**
    * @description 语义化类名插槽
    */

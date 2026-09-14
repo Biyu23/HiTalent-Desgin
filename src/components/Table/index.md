@@ -16,7 +16,9 @@ Table 在 Ant Design Table 基础上提供列状态、列设置、列宽调整�
 
 <code src="./demo/candidate-sort.tsx" title="候选人排序" description="独立展示受控排序状态，不与行拖拽混用。"></code>
 
-## API 要点
+## API
+
+`className`、`style` 设置包含工具栏的外层容器。`classNames` 和 `styles` 均支持 `toolbar`、`settingPopup`、`table`；`table` 作用于内层 Antd Table。单元格通过 `onCell` / `onHeaderCell` 定制。 要点
 
 - `columnState` 存在时为受控状态，不存在时使用 `defaultColumnState` 初始化内部状态。
 - `onColumnStateChange` 仅通知新的列状态，不参与受控判断。

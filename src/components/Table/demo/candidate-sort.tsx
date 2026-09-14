@@ -155,7 +155,7 @@ export default function CandidateSortDemo() {
       columnDrag={false}
       rowDrag={false}
       zebraStripe={false}
-      classNames={{ root: styles.shell }}
+      className={styles.shell}
       toolbarExtra={
         <div className={styles.toolbar}>
           <Space>

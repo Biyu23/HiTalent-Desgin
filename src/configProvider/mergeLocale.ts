@@ -5,18 +5,26 @@ import { isNullOrBlank, isPlainObject } from '../utils';
  * 递归深度合并语言包对象，保留所有默认兜底字段
  */
 export function deepMergeLocale<T>(base: T, overrides?: unknown): T {
-  if (isNullOrBlank(overrides)) return base;
+  if (isNullOrBlank(overrides) || Object.is(base, overrides)) return base;
 
   if (!isPlainObject(base) || !isPlainObject(overrides)) {
-    return (overrides !== undefined ? overrides : base) as T;
+    return overrides as T;
   }
 
-  const merged: Record<string, unknown> = { ...base };
+  let merged = base;
 
   Object.keys(overrides).forEach((key) => {
     const overrideVal = (overrides as Record<string, unknown>)[key];
-    if (!isNullOrBlank(overrideVal)) {
-      merged[key] = deepMergeLocale(merged[key], overrideVal);
+    const value = deepMergeLocale(base[key], overrideVal);
+    if (!Object.is(value, base[key])) {
+      // Copy only changed branches, keeping untouched component locales stable.
+      if (merged === base) merged = { ...base };
+      Object.defineProperty(merged, key, {
+        value,
+        enumerable: true,
+        configurable: true,
+        writable: true,
+      });
     }
   });
 
@@ -28,7 +36,5 @@ export function mergeLocale(
   locale: HtdLocale,
   overrides?: LocaleOverrides,
 ): HtdLocale {
-  if (isNullOrBlank(overrides)) return locale;
-
   return deepMergeLocale(locale, overrides);
 }

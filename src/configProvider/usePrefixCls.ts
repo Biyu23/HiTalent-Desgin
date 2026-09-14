@@ -1,7 +1,7 @@
 import { ConfigProvider as AntdConfigProvider } from 'antd';
 import { useContext } from 'react';
 import { isNullOrBlank } from '../utils';
-import { ConfigContext, defaultPrefixCls } from './context';
+import { ConfigContext } from './context';
 
 /**
  * 获取 HiTalent Design 组件类名前缀 Hook
@@ -20,38 +20,22 @@ export const usePrefixCls = (
   customPrefix?: string,
 ): string => {
   const { getPrefixCls } = useContext(ConfigContext);
-  if (getPrefixCls) {
-    return getPrefixCls(suffixCls, customPrefix);
-  }
-  if (!isNullOrBlank(customPrefix)) {
-    return customPrefix;
-  }
-  return suffixCls ? `${defaultPrefixCls}-${suffixCls}` : defaultPrefixCls;
+  return getPrefixCls(suffixCls, customPrefix);
 };
 
 /**
  * 获取底层 Ant Design 组件类名前缀 Hook
  *
- * 优先级：显式传入 customAntdPrefix > HiTalent ConfigContext antdPrefixCls > Antd 原生 ConfigContext prefixCls > 默认 'ant'
+ * 优先级：显式传入 customAntdPrefix > 最近的 Antd ConfigContext。
  *
  * @param customAntdPrefix 显式自定义的 Ant Design 前缀
  * @returns 完整的 Ant Design class 前缀字符串，默认为 'ant'
  */
 export const useAntdPrefixCls = (customAntdPrefix?: string): string => {
-  const { antdPrefixCls: contextAntdPrefix } = useContext(ConfigContext);
   const antdGlobalConfig = useContext(AntdConfigProvider.ConfigContext);
-  const antdContextPrefix = antdGlobalConfig?.getPrefixCls
-    ? antdGlobalConfig.getPrefixCls()
-    : undefined;
 
   if (!isNullOrBlank(customAntdPrefix)) {
     return customAntdPrefix;
   }
-  if (!isNullOrBlank(contextAntdPrefix)) {
-    return contextAntdPrefix;
-  }
-  if (!isNullOrBlank(antdContextPrefix)) {
-    return antdContextPrefix;
-  }
-  return 'ant';
+  return antdGlobalConfig.getPrefixCls();
 };

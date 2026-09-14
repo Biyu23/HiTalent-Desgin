@@ -12,8 +12,6 @@ export interface ModalOperationsContextValue {
   onMinimize: () => void;
   onToggleMaximize: () => void;
   onClose: NonNullable<ModalProps['onCancel']>;
-  classNames?: ModalProps['classNames'];
-  styles?: ModalProps['styles'];
 }
 
 export interface ModalWindowContextValue {
@@ -27,8 +25,6 @@ export interface ModalWindowContextValue {
   setPosition: (position: ModalWindowPosition) => void;
   setSize: (size: ModalWindowSize) => void;
   setResizing: (resizing: boolean) => void;
-  classNames?: ModalProps['classNames'];
-  styles?: ModalProps['styles'];
 }
 
 export const ModalOperationsContext =

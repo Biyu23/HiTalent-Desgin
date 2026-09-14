@@ -1,5 +1,5 @@
-import { SvgIcon, createSvgIcon } from 'hi-talent-design';
 import { Button, Space } from 'antd';
+import { SvgIcon, createSvgIcon } from 'hi-talent-design';
 import React from 'react';
 
 // 方式 1: 使用 createSvgIcon 封装带渐变的 AI 图标组件
@@ -45,7 +45,7 @@ const AiAgentIcon = createSvgIcon(
     </defs>
   </svg>,
   {},
-  'AiAgentIcon'
+  'AiAgentIcon',
 );
 
 export default () => {
@@ -107,9 +107,7 @@ export default () => {
       </Button>
 
       {/* 3. 支持旋转与大尺寸 */}
-      <Button icon={<AiAgentIcon spin />}>
-        AI 分析中...
-      </Button>
+      <Button icon={<AiAgentIcon spin />}>AI 分析中...</Button>
     </Space>
   );
 };

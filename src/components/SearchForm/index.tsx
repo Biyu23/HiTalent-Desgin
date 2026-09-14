@@ -48,7 +48,6 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
     prefixCls: customPrefixCls,
     className,
     style,
-    rootClassName,
     classNames,
     styles: customStyles,
   } = props;
@@ -153,16 +152,7 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
   );
 
   return (
-    <div
-      className={cx(
-        prefixCls,
-        formStyles.root,
-        className,
-        rootClassName,
-        classNames?.root,
-      )}
-      style={{ ...customStyles?.root, ...style }}
-    >
+    <div className={cx(prefixCls, formStyles.root, className)} style={style}>
       <Form
         form={form}
         initialValues={initialValues}

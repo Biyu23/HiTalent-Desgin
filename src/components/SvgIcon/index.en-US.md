@@ -24,7 +24,7 @@ Designed to encapsulate and render arbitrary SVG icons provided by designers, re
 
 <code src="./demo/button-usage.tsx" title="Usage in Button" description="Seamlessly integrate with Ant Design Button and Space."></code>
 
-<code src="./demo/semantic-styles.tsx" title="Semantic Styles" description="Customize the icon wrapper and rendered SVG slots independently."></code>
+<code src="./demo/semantic-styles.tsx" title="Custom styles" description="Style the icon wrapper and the supplied SVG."></code>
 
 ## API
 
@@ -50,6 +50,6 @@ Designed to encapsulate and render arbitrary SVG icons provided by designers, re
 | defaultProps | Default props injected into SvgIcon           | `Partial<SvgIconProps>`         | -                 |
 | displayName  | Component display name                        | `string`                        | `'CustomSvgIcon'` |
 
-## Semantic styles
+## Custom styles
 
-`className` and `style` target the focusable icon wrapper. `rootClassName`, `classNames`, and `styles` expose the strongly typed `root` and `svg` slots for the wrapper and rendered SVG.
+`className` and `style` target the icon wrapper. Set SVG classes and stroke styles directly on the supplied `<svg>` or custom component.

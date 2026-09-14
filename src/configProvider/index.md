@@ -23,7 +23,7 @@ toc: content
 - `antdPrefixCls` 与 `iconPrefixCls` 自动透传并同步控制底层 Ant Design 组件和图标 class 前缀。
 - 提供 `usePrefixCls`、`useAntdPrefixCls` 与 `useConfig` 供业务组件读取并接入全局配置与类名前缀。
 - `antdLocale` 支持同步透传底层 Ant Design 语言包。
-- `localeOverrides` 支持只覆盖指定组件文案（具备深度合并与中文兜底）。
+- `localeOverrides` 支持只覆盖指定组件文案（基于当前语言深度合并）。
 - 嵌套 Provider 自动合并并继承外层配置（支持 `theme.inherit: false` 独立隔离）。
 - `direction` 支持 `ltr` 和 `rtl`。
 
@@ -39,17 +39,17 @@ toc: content
 
 ## API
 
-| 属性              | 说明                                                              | 类型              | 默认值         |
-| ----------------- | ----------------------------------------------------------------- | ----------------- | -------------- |
-| `prefixCls`       | HiTalent Design 组件 class 前缀                                   | `string`          | `htd`          |
-| `antdPrefixCls`   | 底层 Ant Design 组件 class 前缀，透传给 antd                      | `string`          | `ant`          |
-| `iconPrefixCls`   | 图标 class 前缀，透传给 antd                                      | `string`          | `anticon`      |
-| `theme`           | Ant Design 5 主题配置（Token、算法、组件 Token 等，自动深度合并） | `ThemeConfig`     | -              |
-| `locale`          | HiTalent Design 完整组件语言包                                    | `HtdLocale`       | `zh_CN`        |
-| `antdLocale`      | 底层 Ant Design 语言包，透传给 antd                               | `Locale`          | -              |
-| `localeOverrides` | 基于当前语言包的局部组件文案覆盖                                  | `LocaleOverrides` | -              |
-| `direction`       | 文字与布局方向                                                    | `ltr \| rtl`      | 继承语言包方向 |
-| `children`        | 使用当前配置的子节点                                              | `ReactNode`       | -              |
+| 属性              | 说明                                                                  | 类型              | 默认值         |
+| ----------------- | --------------------------------------------------------------------- | ----------------- | -------------- |
+| `prefixCls`       | HiTalent Design 组件 class 前缀                                       | `string`          | `htd`          |
+| `antdPrefixCls`   | 底层 Ant Design 组件 class 前缀，透传给 antd                          | `string`          | `ant`          |
+| `iconPrefixCls`   | 图标 class 前缀，透传给 antd                                          | `string`          | `anticon`      |
+| `theme`           | Ant Design 5 主题配置（Token、算法、组件 Token 等，由 Antd 处理继承） | `ThemeConfig`     | -              |
+| `locale`          | HiTalent Design 完整组件语言包                                        | `HtdLocale`       | `zh_CN`        |
+| `antdLocale`      | 底层 Ant Design 语言包，透传给 antd                                   | `Locale`          | -              |
+| `localeOverrides` | 基于当前语言包的局部组件文案覆盖                                      | `LocaleOverrides` | -              |
+| `direction`       | 文字与布局方向                                                        | `ltr \| rtl`      | 继承 Antd 方向 |
+| `children`        | 使用当前配置的子节点                                                  | `ReactNode`       | -              |
 
 > 此外，`ConfigProvider` 继承了 Ant Design 5 原生 `ConfigProvider` 的全量配置属性（如 `componentSize`、`getPopupContainer`、`wave` 等），会完整透传至底层组件。
 
@@ -90,5 +90,9 @@ export default () => (
 ## 注意事项
 
 - `antdPrefixCls` 会直接透传给 Ant Design 5 的底层 `<ConfigProvider>`，同步控制 antd 组件的类名前缀与动态 CSS-in-JS 生成。
-- `theme` 会与外层 Theme 深度合并，支持动态切换主题色与暗黑模式；设置 `inherit: false` 可实现独立局部主题。
+- `theme` 直接透传给 Ant Design，由 Antd 处理 Token、组件主题、算法和 CSS 变量的继承；`inherit: false` 遵循 Antd 的原生隔离规则。
 - `localeOverrides` 会在完整语言包之上深度合并，未覆盖字段继续继承默认 fallback。
+- 语言优先级为本层显式 `locale`、父级显式语言、最近的 Antd 语言（英文映射到 `en_US`），最后回退 `zh_CN`。`locale` 不会自动设置 `antdLocale`。
+- 自动跟随宿主语言时，`localeOverrides` 会随语言切换重新应用；本层传入新的完整 `locale` 会替换父级语言和父级文案覆盖。
+- 方向优先级为本层 `direction`、本层显式 `locale.direction`、最近的 Antd 方向，最后回退语言包方向。空的嵌套 Provider 不会覆盖宿主 RTL。
+- `useConfig` 与 `useAntdPrefixCls` 从最近的 Antd Context 读取原生配置，支持与原生 Provider 交错嵌套。直接读取 `ConfigContext` 得到最近一个 HiTalent Provider 的配置快照；需要感知其下层原生 Provider 时请使用 Hook。

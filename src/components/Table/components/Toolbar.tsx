@@ -30,11 +30,7 @@ function Toolbar<RecordType>({
       className={cx(styles.toolbar, context.classNames?.toolbar)}
       style={context.styles?.toolbar}
     >
-      <div
-        className={cx(styles.toolbarExtra, context.classNames?.toolbarExtra)}
-      >
-        {extra}
-      </div>
+      <div className={styles.toolbarExtra}>{extra}</div>
       {columnSetting ? (
         <ColumnSetting
           columns={columns}

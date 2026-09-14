@@ -102,11 +102,7 @@ function ColumnSetting<RecordType>({
       styles={{ root: context.styles?.settingPopup }}
       classNames={{ body: styles.columnSettingPopoverBody }}
     >
-      <Button
-        type="text"
-        className={context.classNames?.settingTrigger}
-        icon={<SettingOutlined />}
-      />
+      <Button type="text" icon={<SettingOutlined />} />
     </Popover>
   );
 }

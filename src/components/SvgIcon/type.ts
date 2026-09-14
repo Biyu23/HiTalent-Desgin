@@ -8,24 +8,14 @@ export interface CustomIconComponentProps {
 }
 import type React from 'react';
 import type { NativeProps } from '../../types';
-import type {
-  SemanticClassNames,
-  SemanticStyleProps,
-  SemanticStyles,
-} from '../_util/semanticStyles';
 
 export type SvgIconSize = 'small' | 'middle' | 'large' | number | string;
-
-export type SvgIconSlot = 'root' | 'svg';
-export type SvgIconClassNames = SemanticClassNames<SvgIconSlot>;
-export type SvgIconStyles = SemanticStyles<SvgIconSlot>;
 
 /**
  * @deprecated SvgIcon 即将废弃，推荐直接使用 `@ant-design/icons` 的 `Icon` 组件或原生 SVG
  */
 export interface SvgIconProps
   extends NativeProps,
-    SemanticStyleProps<SvgIconSlot>,
     Omit<
       React.HTMLAttributes<HTMLSpanElement>,
       'color' | 'style' | 'className' | 'children' | 'onClick'

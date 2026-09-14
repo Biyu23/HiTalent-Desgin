@@ -6,27 +6,33 @@ toc: content
 
 # PopoverSelect 气泡选择
 
-以 Popover 气泡卡片承载选择面板，提供虚拟滚动、搜索过滤、全选、字段映射、多选确认机制与分隔符字符串提交格式。
-
-## 何时使用
-
-- 需要以气泡卡片（Popover）形态呈现选择面板，节省页面空间。
-- 选项数量大，需要虚拟滚动保持打开、搜索和滚动流畅。
-- 后端字段并非固定的 `label` / `value` 结构，需要直接映射。
-- 多选需要确认、取消、清空等草稿确认操作或针对当前搜索结果全选。
-- 接口要求提交分隔符字符串字段，同时根据选项恢复数字或字符串值类型。
+面向筛选场景的气泡选择器，支持全选、拖拽排序和多种值格式。
 
 ## 代码演示
 
-<code src="./demo/basic.tsx" title="基础单选" description="支持气泡单选、搜索过滤、一键清空与自定义字段名映射（fieldNames）。"></code>
+<code src="./demo/batch.tsx" title="全选" description="全选当前搜索结果，跳过禁用项。"></code>
 
-<code src="./demo/multiple.tsx" title="多选确认与标签截断" description="多选模式支持确认、取消与清空草稿操作，并可通过 maxTagCount 实现超出标签自动 (+N) 截断展示。"></code>
+<code src="./demo/sortable.tsx" title="拖拽" description="拖动手柄调整候选项顺序。"></code>
 
-<code src="./demo/string-value.tsx" title="字符串提交与全选" description="valueType='string' 按 valueSeparator 分割和提交字符串，并根据 options 恢复值类型；showSelectAll 支持全选联动当前搜索过滤结果。"></code>
+### 自定义展示文案
+
+使用 `placeholder` 设置初始文案，`labelRender` 为选中结果保留标题；清空后恢复初始文案。
+
+```tsx | pure
+<PopoverSelect
+  placeholder="是否启用"
+  options={[
+    { label: '是', value: 1 },
+    { label: '否', value: 0 },
+  ]}
+  labelRender={(label, { values }) =>
+    values.length ? <>是否启用：{label}</> : label
+  }
+  allowClear
+/>
+```
 
 ## 候选项拖拽排序
-
-<code src="./demo/sortable.tsx" title="候选项拖拽排序" description="通过独立手柄调整候选项顺序，支持普通列表与虚拟滚动，勾选结果单独确认。"></code>
 
 设置 `sortable` 开启排序，并通过 `onSortChange` 更新 `options`：
 
@@ -45,8 +51,6 @@ toc: content
 ### 组件分工与扩展
 
 `PopoverSelect` 提供选择状态、搜索、全选和确认流程；`PopoverSelect.Selector` 只负责触发器、弹层开关和宽度跟随，可以独立承载任意内容。
-
-<code src="./demo/custom.tsx" title="自定义菜单、底部与独立弹层" description="渲染回调获得只读状态与语义化操作，复用组件内部确认流程。"></code>
 
 | 扩展点                          | 用途                                                            |
 | ------------------------------- | --------------------------------------------------------------- |
@@ -75,7 +79,7 @@ toc: content
 
 ### 基础属性
 
-除下表属性外，组件同时支持 `className`、`style`、`rootClassName` 等原生属性。
+`className`、`style` 设置根容器；`classNames`、`styles` 设置下列内部区域。
 
 ### PopoverSelectProps
 
@@ -123,25 +127,18 @@ toc: content
 
 ### PopoverSelectClassNames
 
-| 属性          | 说明                                           | 类型     |
-| ------------- | ---------------------------------------------- | -------- |
-| `root`        | 根容器的 className                             | `string` |
-| `trigger`     | 触发器按钮的 className                         | `string` |
-| `triggerText` | 触发器内部文本容器的 className                 | `string` |
-| `actions`     | 触发器右侧操作区（箭头与清除图标）的 className | `string` |
-| `popup`       | 弹出气泡容器的 className                       | `string` |
-| `search`      | 搜索输入框区域的 className                     | `string` |
-| `selectAll`   | 全选复选框区域的 className                     | `string` |
-| `menu`        | 选项菜单列表的 className                       | `string` |
-| `item`        | 单个选项节点的 className                       | `string` |
-| `footer`      | 底部操作按钮区域的 className                   | `string` |
-| `empty`       | 空状态区域的 className                         | `string` |
+| 属性      | 说明                         | 类型     |
+| --------- | ---------------------------- | -------- |
+| `trigger` | 触发器按钮的 className       | `string` |
+| `popup`   | 弹出气泡容器的 className     | `string` |
+| `menu`    | 选项菜单列表的 className     | `string` |
+| `footer`  | 底部操作按钮区域的 className | `string` |
 
 ### PopoverSelectStyles
 
 | 属性      | 说明                   | 类型                  |
 | --------- | ---------------------- | --------------------- |
-| `root`    | 根容器的行内样式       | `React.CSSProperties` |
 | `trigger` | 触发器按钮的行内样式   | `React.CSSProperties` |
 | `popup`   | 弹出气泡容器的行内样式 | `React.CSSProperties` |
 | `menu`    | 选项菜单列表的行内样式 | `React.CSSProperties` |
+| `footer`  | 底部操作区的行内样式   | `React.CSSProperties` |

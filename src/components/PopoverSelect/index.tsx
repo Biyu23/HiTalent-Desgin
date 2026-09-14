@@ -42,14 +42,8 @@ function InternalPopoverSelect<
   return (
     <div
       ref={ref}
-      className={cx(
-        prefixCls,
-        styles.root,
-        props.className,
-        props.rootClassName,
-        props.classNames?.root,
-      )}
-      style={{ ...props.styles?.root, ...props.style }}
+      className={cx(prefixCls, styles.root, props.className)}
+      style={props.style}
     >
       <Selector
         prefixCls={prefixCls}

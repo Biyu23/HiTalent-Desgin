@@ -1,10 +1,15 @@
 import { ConfigProvider as AntdConfigProvider } from 'antd';
-import React, { useCallback, useContext, useMemo } from 'react';
-import { isNullOrBlank } from '../utils';
-import type { ConfigContextValue } from './context';
-import { ConfigContext, defaultPrefixCls, useConfig } from './context';
-import { mergeLocale } from './mergeLocale';
-import { mergeTheme } from './mergeTheme';
+import React, { useContext, useMemo } from 'react';
+import {
+  ConfigContext,
+  createGetPrefixCls,
+  defaultPrefixCls,
+  getExplicitLocale,
+  LocaleSettingsContext,
+  markResolvedConfig,
+  useConfig,
+} from './context';
+import { deepMergeLocale } from './mergeLocale';
 import type { ConfigProviderProps } from './type';
 
 export { ConfigContext, defaultPrefixCls, useConfig } from './context';
@@ -19,87 +24,75 @@ export interface ConfigProviderType extends React.FC<ConfigProviderProps> {
   defaultPrefixCls: typeof defaultPrefixCls;
 }
 
+// Read native values below AntdConfigProvider; do not merge or reapply them.
+const ConfigContextBridge: React.FC<{ prefixCls?: string }> = ({
+  prefixCls,
+  children,
+}) => {
+  const inherited = useConfig();
+  const mergedPrefixCls = prefixCls ?? inherited.prefixCls;
+  const getPrefixCls = useMemo(
+    () => createGetPrefixCls(mergedPrefixCls),
+    [mergedPrefixCls],
+  );
+  const config = useMemo(
+    () =>
+      markResolvedConfig({
+        ...inherited,
+        prefixCls: mergedPrefixCls,
+        getPrefixCls,
+      }),
+    [inherited, mergedPrefixCls, getPrefixCls],
+  );
+  return (
+    <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>
+  );
+};
+
 const InternalConfigProvider: React.FC<ConfigProviderProps> = ({
   prefixCls,
   antdPrefixCls,
-  iconPrefixCls,
   locale,
   antdLocale,
   localeOverrides,
   direction,
-  theme,
   children,
-  ...restAntdProps
+  ...antdProps
 }) => {
+  const parentLocale = useContext(LocaleSettingsContext);
   const parentConfig = useContext(ConfigContext);
-  const mergedPrefixCls =
-    prefixCls ?? parentConfig.prefixCls ?? defaultPrefixCls;
-  const mergedAntdPrefixCls = antdPrefixCls ?? parentConfig.antdPrefixCls;
-  const mergedIconPrefixCls = iconPrefixCls ?? parentConfig.iconPrefixCls;
-  const mergedTheme = useMemo(
-    () => mergeTheme(parentConfig.theme, theme),
-    [parentConfig.theme, theme],
-  );
-  const mergedAntdLocale = antdLocale ?? parentConfig.antdLocale;
-
-  const getPrefixCls = useCallback(
-    (suffixCls?: string, customPrefix?: string): string => {
-      if (!isNullOrBlank(customPrefix)) {
-        return customPrefix;
-      }
-      return suffixCls ? `${mergedPrefixCls}-${suffixCls}` : mergedPrefixCls;
-    },
-    [mergedPrefixCls],
-  );
-
-  const baseLocale = locale ?? parentConfig.locale;
-  const resolvedDirection =
-    direction ?? locale?.direction ?? parentConfig.direction;
-
-  const mergedLocale = useMemo(() => {
-    const merged = mergeLocale(baseLocale, localeOverrides);
-    if (merged.direction === resolvedDirection) {
-      return merged;
-    }
-    return {
-      ...merged,
-      direction: resolvedDirection,
-    };
-  }, [baseLocale, localeOverrides, resolvedDirection]);
-
-  const config: ConfigContextValue = useMemo(
+  const inheritedLocale =
+    getExplicitLocale(parentConfig) ?? parentLocale.locale;
+  const localeSettings = useMemo(
     () => ({
-      prefixCls: mergedPrefixCls,
-      antdPrefixCls: mergedAntdPrefixCls,
-      iconPrefixCls: mergedIconPrefixCls,
-      getPrefixCls,
-      locale: mergedLocale,
-      antdLocale: mergedAntdLocale,
-      direction: resolvedDirection,
-      theme: mergedTheme,
+      locale: locale ?? inheritedLocale,
+      sourceConfig: parentConfig,
+      // A new complete locale replaces parent copy; otherwise inherit overrides.
+      overrides: locale
+        ? localeOverrides
+        : deepMergeLocale(parentLocale.overrides, localeOverrides),
     }),
     [
-      mergedPrefixCls,
-      mergedAntdPrefixCls,
-      mergedIconPrefixCls,
-      getPrefixCls,
-      mergedLocale,
-      mergedAntdLocale,
-      resolvedDirection,
-      mergedTheme,
+      locale,
+      localeOverrides,
+      inheritedLocale,
+      parentLocale.overrides,
+      parentConfig,
     ],
   );
 
   return (
     <AntdConfigProvider
-      {...restAntdProps}
-      prefixCls={mergedAntdPrefixCls}
-      iconPrefixCls={mergedIconPrefixCls}
-      direction={resolvedDirection}
-      theme={mergedTheme}
-      locale={mergedAntdLocale}
+      {...antdProps}
+      prefixCls={antdPrefixCls}
+      direction={direction ?? locale?.direction}
+      locale={antdLocale}
     >
-      <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>
+      <LocaleSettingsContext.Provider value={localeSettings}>
+        <ConfigContextBridge prefixCls={prefixCls}>
+          {children}
+        </ConfigContextBridge>
+      </LocaleSettingsContext.Provider>
     </AntdConfigProvider>
   );
 };

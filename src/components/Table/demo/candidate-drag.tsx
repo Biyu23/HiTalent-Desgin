@@ -222,7 +222,7 @@ export default function CandidateDragDemo() {
       rowDrag={{ mode: 'flat', handle: { title: '' } }}
       onRowDragEnd={moveRow}
       zebraStripe={false}
-      classNames={{ root: styles.shell }}
+      className={styles.shell}
       toolbarExtra={
         <div className={styles.toolbar}>
           <div className={styles.titleGroup}>

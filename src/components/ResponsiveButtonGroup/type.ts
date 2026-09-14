@@ -148,14 +148,6 @@ export interface ResponsiveButtonGroupItem {
 /** 组件语义化类名插槽 */
 export interface ResponsiveButtonGroupClassNames {
   /**
-   * @description 根容器节点类名
-   */
-  root?: string;
-  /**
-   * @description 平铺可见按钮容器类名
-   */
-  visible?: string;
-  /**
    * @description “更多”触发器按钮类名
    */
   overflowTrigger?: string;
@@ -163,22 +155,10 @@ export interface ResponsiveButtonGroupClassNames {
    * @description 溢出下拉菜单浮层类名
    */
   popup?: string;
-  /**
-   * @description 折叠菜单项内容类名
-   */
-  menuItem?: string;
 }
 
 /** 组件语义化样式插槽 */
 export interface ResponsiveButtonGroupStyles {
-  /**
-   * @description 根容器节点行内样式
-   */
-  root?: React.CSSProperties;
-  /**
-   * @description 平铺可见按钮容器行内样式
-   */
-  visible?: React.CSSProperties;
   /**
    * @description “更多”触发器按钮行内样式
    */
@@ -195,10 +175,6 @@ export interface ResponsiveButtonGroupProps extends NativeProps {
    * @description 自定义组件样式前缀
    */
   prefixCls?: string;
-  /**
-   * @description 根节点类名
-   */
-  rootClassName?: string;
   /**
    * @description 语义化类名插槽
    */
@@ -266,7 +242,7 @@ export interface ResponsiveButtonGroupProps extends NativeProps {
    */
   overflowMenuProps?: Omit<MenuProps, 'items' | 'onClick'>;
   /**
-   * @description 自定义“更多”触发器按钮的渲染函数
+   * @description 自定义“更多”触发器；请保持宽度固定，不随 count、collapsedItems 或 open 变化。响应式测量传入全部 items 和 open=false。
    */
   renderOverflowButton?: (
     info: ResponsiveButtonGroupOverflowRenderInfo,

@@ -37,7 +37,7 @@ function EnhancedHeaderCell<RecordType>({
     onCancel: context.cancelColumnPreview,
   });
   const content = (
-    <div className={cx(styles.headerCell, context.classNames?.headerCell)}>
+    <div className={styles.headerCell}>
       <span className={styles.headerCellTitle}>{children}</span>
     </div>
   );

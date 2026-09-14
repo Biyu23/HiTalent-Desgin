@@ -24,7 +24,7 @@ Extends Ant Design Drawer with directional resize handles, minimization to a glo
 
 <code src="./demo/shared-dock.tsx" title="Shared Dock with Modal" description="Drawers and Modals can dock together in the same global Dock with independent restore and close."></code>
 
-<code src="./demo/custom-style.tsx" title="Custom Styles" description="Customize resize handle and minimized dock card via styles and classNames."></code>
+<code src="./demo/custom-style.tsx" title="Custom Styles" description="Customize the panel and minimized dock card via styles and classNames."></code>
 
 ## API
 
@@ -32,20 +32,20 @@ Inherits all native properties from [Ant Design Drawer](https://ant.design/compo
 
 ### DrawerProps
 
-| Property           | Description                                                                                  | Type                                                                                                     | Default          |
-| ------------------ | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------- |
-| `size`             | Controlled axis size (width for horizontal, height for vertical)                             | `'default' \| 'large' \| number \| string`                                                               | -                |
-| `defaultSize`      | Initial axis size in uncontrolled mode                                                       | `number \| string`                                                                                       | `378`            |
-| `minSize`          | Minimum resize size in pixels                                                                | `number`                                                                                                 | `100`            |
-| `maxSize`          | Maximum resize size in pixels, constrained by container bounds                               | `number`                                                                                                 | -                |
-| `resizable`        | Enable resize dragging or provide lifecycle callbacks                                        | `boolean \| DrawerResizableConfig`                                                                       | `false`          |
-| `minimizable`      | Allow minimizing to the global Dock (keeps DOM and form state)                               | `boolean`                                                                                                | `false`          |
-| `minimized`        | Controlled minimized state                                                                   | `boolean`                                                                                                | -                |
-| `minimizePosition` | Dock position for minimized card                                                             | `'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right' \| 'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom-right'` |
-| `onMinimizeChange` | Callback when minimized or restored                                                          | `(minimized: boolean) => void`                                                                           | -                |
-| `onClose`          | Callback for close button or Dock close (event is undefined for programmatic close)          | `(event?: React.MouseEvent \| React.KeyboardEvent) => void`                                              | -                |
-| `classNames`       | Custom class names configuration, extended with `dragger`, `minimizeButton`, `minimizedDock` | `DrawerClassNames`                                                                                       | -                |
-| `styles`           | Custom styles configuration, extended with `dragger`, `minimizedDock`                        | `DrawerStyles`                                                                                           | -                |
+| Property           | Description                                                                         | Type                                                                                                     | Default          |
+| ------------------ | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------- |
+| `size`             | Controlled axis size (width for horizontal, height for vertical)                    | `'default' \| 'large' \| number \| string`                                                               | -                |
+| `defaultSize`      | Initial axis size in uncontrolled mode                                              | `number \| string`                                                                                       | `378`            |
+| `minSize`          | Minimum resize size in pixels                                                       | `number`                                                                                                 | `100`            |
+| `maxSize`          | Maximum resize size in pixels, constrained by container bounds                      | `number`                                                                                                 | -                |
+| `resizable`        | Enable resize dragging or provide lifecycle callbacks                               | `boolean \| DrawerResizableConfig`                                                                       | `false`          |
+| `minimizable`      | Allow minimizing to the global Dock (keeps DOM and form state)                      | `boolean`                                                                                                | `false`          |
+| `minimized`        | Controlled minimized state                                                          | `boolean`                                                                                                | -                |
+| `minimizePosition` | Dock position for minimized card                                                    | `'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right' \| 'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom-right'` |
+| `onMinimizeChange` | Callback when minimized or restored                                                 | `(minimized: boolean) => void`                                                                           | -                |
+| `onClose`          | Callback for close button or Dock close (event is undefined for programmatic close) | `(event?: React.MouseEvent \| React.KeyboardEvent) => void`                                              | -                |
+| `classNames`       | Antd native slots plus `minimizedDock`                                              | `DrawerClassNames`                                                                                       | -                |
+| `styles`           | Antd native slots plus `minimizedDock`                                              | `DrawerStyles`                                                                                           | -                |
 
 ### DrawerRef
 
@@ -68,11 +68,9 @@ Imperative control handle via `ref`. Panel DOM element remains accessible via `p
 
 Inherits Ant Design `DrawerProps['classNames']`, extended with:
 
-| Property         | Description                              | Type     |
-| ---------------- | ---------------------------------------- | -------- |
-| `minimizeButton` | Class name of the header minimize button | `string` |
-| `minimizedDock`  | Class name of the minimized Dock card    | `string` |
-| `dragger`        | Class name of the resize drag handle     | `string` |
+| Property        | Description                           | Type     |
+| --------------- | ------------------------------------- | -------- |
+| `minimizedDock` | Class name of the minimized Dock card | `string` |
 
 ### DrawerStyles
 
@@ -81,7 +79,6 @@ Inherits Ant Design `DrawerProps['styles']`, extended with:
 | Property        | Description                             | Type                  |
 | --------------- | --------------------------------------- | --------------------- |
 | `minimizedDock` | Inline style of the minimized Dock card | `React.CSSProperties` |
-| `dragger`       | Inline style of the resize drag handle  | `React.CSSProperties` |
 
 ## Notes
 

@@ -1,6 +1,5 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useStyles } from '../style';
-import TableContext from '../TableContext';
 
 interface ResizeHandleProps {
   active: boolean;
@@ -18,7 +17,6 @@ export default function ResizeHandle({
   disabled = false,
   onPointerDown,
 }: ResizeHandleProps) {
-  const table = useContext(TableContext);
   const { styles, cx } = useStyles();
   return (
     <div
@@ -28,11 +26,7 @@ export default function ResizeHandle({
       style={
         disabled ? { visibility: 'hidden', pointerEvents: 'none' } : undefined
       }
-      className={cx(
-        styles.resizeHandle,
-        active && styles.resizeHandleActive,
-        table.classNames?.resizeHandle,
-      )}
+      className={cx(styles.resizeHandle, active && styles.resizeHandleActive)}
       onPointerDown={
         disabled
           ? undefined

@@ -55,7 +55,6 @@ function InternalTable<RecordType = Record<string, unknown>>(
     toolbarExtra,
     prefixCls: customPrefixCls,
     className,
-    rootClassName,
     style,
     classNames,
     styles,
@@ -217,8 +216,8 @@ function InternalTable<RecordType = Record<string, unknown>>(
         ref={rootRef}
         data-table-root=""
         data-table-prefix={`${antdPrefix}-table`}
-        className={cx(tableStyles.wrapper, rootClassName, classNames?.root)}
-        style={styles?.root}
+        className={cx(tableStyles.wrapper, className)}
+        style={style}
       >
         {toolbar}
         <ColumnDragProvider
@@ -247,24 +246,17 @@ function InternalTable<RecordType = Record<string, unknown>>(
               <AntdTable<RecordType>
                 {...tableProps}
                 ref={tableRef}
-                className={cx(
-                  prefixCls,
-                  tableStyles.root,
-                  classNames?.table,
-                  className,
-                  {
-                    zebra: zebraStripe,
-                    'row-drag-tree':
-                      row.enabled && rowDragOptions.mode === 'tree',
-                  },
-                )}
+                className={cx(prefixCls, tableStyles.root, classNames?.table, {
+                  zebra: zebraStripe,
+                  'row-drag-tree':
+                    row.enabled && rowDragOptions.mode === 'tree',
+                })}
                 style={
                   {
                     '--table-tree-indent-size': `${
                       row.expandable?.indentSize ?? 24
                     }px`,
                     ...styles?.table,
-                    ...style,
                   } as React.CSSProperties
                 }
                 columns={processedColumns as ColumnsType<RecordType>}
@@ -305,7 +297,6 @@ export type {
   RowDropPlacement,
   RowDropTarget,
   TableClassNames,
-  TableClassNameSlot,
   TableColumn,
   TableColumnGroup,
   TableColumnKey,
@@ -315,6 +306,6 @@ export type {
   TableProps,
   TableRef,
   TableRowKey,
+  TableSlot,
   TableStyles,
-  TableStyleSlot,
 } from './type';

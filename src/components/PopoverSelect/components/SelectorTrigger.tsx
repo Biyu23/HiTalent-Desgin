@@ -69,15 +69,12 @@ const SelectorTrigger = forwardRef<
           className={cx(
             triggerStyles.selectorText,
             ellipsis && triggerStyles.selectorTextEllipsis,
-            classNames?.triggerText,
           )}
         >
           {children}
         </span>
         {(hasClear || showArrow) && (
-          <span
-            className={cx(triggerStyles.selectorActions, classNames?.actions)}
-          >
+          <span className={triggerStyles.selectorActions}>
             {hasClear && (
               <CloseCircleOutlined
                 className={triggerStyles.selectorClear}

@@ -62,7 +62,7 @@ export default function PopoverSelectContent<
       }
     >
       {config.showSearch && (
-        <div className={cx(styles.search, classNames?.search)}>
+        <div className={styles.search}>
           <Input
             prefix={<SearchOutlined />}
             placeholder={locale.searchPlaceholder}
@@ -75,7 +75,7 @@ export default function PopoverSelectContent<
       {context.mode === 'multiple' &&
         config.showSelectAll &&
         context.displayOptions.length > 0 && (
-          <div className={cx(styles.selectAll, classNames?.selectAll)}>
+          <div className={styles.selectAll}>
             <Checkbox
               checked={
                 enabledOptions.length > 0 &&
@@ -93,7 +93,12 @@ export default function PopoverSelectContent<
         )}
       {menu}
       {footer !== null && footer !== undefined && footer !== false && (
-        <div className={cx(styles.footer, classNames?.footer)}>{footer}</div>
+        <div
+          className={cx(styles.footer, classNames?.footer)}
+          style={config.styles?.footer}
+        >
+          {footer}
+        </div>
       )}
     </div>
   );
