@@ -4,6 +4,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import type { SearchFormLocale } from '../../../locales';
 import { useStyles } from '../style';
 import type { SearchFormFieldItem } from '../type';
+import { isEmptyValue } from '../utils';
+import { FieldRenderer } from './FieldRenderer';
 
 interface InlinePopoverFieldProps<Values extends object> {
   field: SearchFormFieldItem<Values>;
@@ -11,14 +13,8 @@ interface InlinePopoverFieldProps<Values extends object> {
   disabled?: boolean;
   locale: SearchFormLocale;
   onConfirm: (fieldName: string, value: unknown) => void;
+  onRemove: (field: SearchFormFieldItem<Values>) => void;
   className?: string;
-}
-
-function isEmptyValue(value: unknown): boolean {
-  if (value === undefined || value === null) return true;
-  if (typeof value === 'string' && value.trim() === '') return true;
-  if (Array.isArray(value) && value.length === 0) return true;
-  return false;
 }
 
 export const InlinePopoverField = <Values extends object>({
@@ -27,9 +23,10 @@ export const InlinePopoverField = <Values extends object>({
   disabled,
   locale,
   onConfirm,
+  onRemove,
   className,
 }: InlinePopoverFieldProps<Values>) => {
-  const { name, label, children, formItemProps, hidden } = field;
+  const { name, label } = field;
   const { styles: formStyles, cx } = useStyles();
 
   const [open, setOpen] = useState(false);
@@ -46,54 +43,21 @@ export const InlinePopoverField = <Values extends object>({
   }, [form, name, open, popoverForm]);
 
   const handleConfirm = useCallback(async () => {
+    if (disabled) return;
+    let values;
     try {
-      const values = await popoverForm.validateFields([name]);
-      const confirmedVal = values[name];
-      form.setFieldValue(name as never, confirmedVal as never);
-      onConfirm(name, confirmedVal);
-      setOpen(false);
+      values = await popoverForm.validateFields([name]);
     } catch {
-      // 校验未通过，保留在弹层中展示错误提示
-    }
-  }, [form, name, onConfirm, popoverForm]);
-
-  const handleClear = useCallback(() => {
-    if (field.onClear) {
-      field.onClear(form);
-    } else {
-      form.setFieldValue(name as never, undefined as never);
-    }
-    popoverForm.setFieldValue(name, undefined);
-    onConfirm(name, undefined);
+      return;
+    } // 校验失败时留在弹层展示错误，不吞掉业务回调异常。
+    onConfirm(name, values[name]);
     setOpen(false);
-  }, [field, form, name, onConfirm, popoverForm]);
+  }, [disabled, name, onConfirm, popoverForm]);
 
-  const isHidden =
-    typeof hidden === 'function'
-      ? hidden(form.getFieldsValue(), form)
-      : !!hidden;
-
-  if (isHidden) {
-    return null;
-  }
-
-  // 渲染 children 控件
-  const renderControl = () => {
-    if (typeof children === 'function') {
-      return children(form);
-    }
-
-    if (React.isValidElement(children)) {
-      if (disabled) {
-        return React.cloneElement(children, {
-          disabled: true,
-          ...children.props,
-        });
-      }
-      return children;
-    }
-
-    return children;
+  const handleClear = () => {
+    if (disabled) return;
+    onRemove(field);
+    setOpen(false);
   };
 
   const popoverContent = (
@@ -101,19 +65,28 @@ export const InlinePopoverField = <Values extends object>({
       <Form
         form={popoverForm}
         component={false}
+        disabled={disabled}
         initialValues={{ [name]: currentValue }}
       >
         <div className={formStyles.popoverPanelContent}>
-          <Form.Item name={name} {...formItemProps}>
-            {renderControl()}
-          </Form.Item>
+          <FieldRenderer
+            field={field}
+            form={form}
+            disabled={disabled}
+            showLabel={false}
+          />
         </div>
       </Form>
       <div className={formStyles.popoverPanelFooter}>
-        <Button size="small" onClick={handleClear}>
+        <Button size="small" onClick={handleClear} disabled={disabled}>
           {locale.clear}
         </Button>
-        <Button size="small" type="primary" onClick={handleConfirm}>
+        <Button
+          size="small"
+          type="primary"
+          onClick={handleConfirm}
+          disabled={disabled}
+        >
           {locale.confirm}
         </Button>
       </div>
@@ -124,7 +97,7 @@ export const InlinePopoverField = <Values extends object>({
     <Popover
       content={popoverContent}
       trigger="click"
-      open={open}
+      open={open && !disabled}
       onOpenChange={(nextOpen) => {
         if (disabled) return;
         setOpen(nextOpen);
@@ -132,7 +105,9 @@ export const InlinePopoverField = <Values extends object>({
       placement="bottomLeft"
       destroyTooltipOnHide
     >
-      <span
+      <button
+        type="button"
+        disabled={disabled}
         className={cx(
           formStyles.fieldTrigger,
           open && formStyles.fieldTriggerActive,
@@ -147,7 +122,7 @@ export const InlinePopoverField = <Values extends object>({
             open && formStyles.fieldTriggerArrowOpen,
           )}
         />
-      </span>
+      </button>
     </Popover>
   );
 };

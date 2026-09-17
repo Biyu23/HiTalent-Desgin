@@ -1,7 +1,7 @@
-// Components
+// 组件
 export * from './components';
 
-// ConfigProvider
+// 全局配置
 export {
   ConfigContext,
   ConfigProvider,
@@ -13,7 +13,7 @@ export {
 } from './configProvider';
 export type { ConfigContextValue, ConfigProviderProps } from './configProvider';
 
-// Locales
+// 语言包
 export { en_US, zh_CN } from './locales';
 export type {
   ButtonLocale,
@@ -30,7 +30,7 @@ export type {
   TableLocale,
 } from './locales';
 
-// Types
+// 类型
 export type {
   CSSPropertiesWithVars,
   CSSVariableName,

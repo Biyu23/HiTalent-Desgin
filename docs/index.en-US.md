@@ -21,7 +21,6 @@ hero:
   install:
     label: Install
     command: npm install hi-talent-design antd
-    copyLabel: Copy install command
     copiedLabel: Install command copied
     failedLabel: Copy is unavailable; select the command manually
 features:

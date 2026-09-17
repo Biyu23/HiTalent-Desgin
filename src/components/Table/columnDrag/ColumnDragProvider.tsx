@@ -129,7 +129,7 @@ export default function ColumnDragProvider<RecordType>({
       moveMotion(drag.x, drag.y);
       if (!isInsideHeader(drag, drag.y)) return;
 
-      // Project in the frozen content coordinates; scrolling must not move the pointer overlay.
+      // 使用冻结的内容坐标计算投影，滚动时不移动指针浮层。
       const deltaX =
         pointerDelta + drag.horizontalScroller.scrollLeft - drag.scrollLeft;
       const pointerX =
@@ -139,11 +139,11 @@ export default function ColumnDragProvider<RecordType>({
       if (movement === 0) return;
       const visible = drag.previewOrder.filter((key) => drag.rects.has(key));
       if (drag.direction === -1) visible.reverse();
-      // Reconstruct current slots without reading animated cell rectangles.
-      // Frozen original slots stop matching the targets after the first swap.
+      // 重建当前位置，无需读取动画中的单元格矩形。
+      // 首次交换后，冻结的原始位置已不再对应当前目标。
       const slots = new Map(drag.rects);
-      // Sticky cells retain viewport coordinates when a drag starts after scrolling.
-      // Anchor content coordinates to the active (always non-fixed) column.
+      // 滚动后开始拖拽时，固定单元格仍保持视口坐标。
+      // 以当前拖拽列作为内容坐标的基准，该列始终为非固定列。
       const originalVisible = drag.order.filter((key) => drag.rects.has(key));
       if (drag.direction === -1) originalVisible.reverse();
       let left =
@@ -211,7 +211,7 @@ export default function ColumnDragProvider<RecordType>({
             scrollVirtual,
           );
       }
-      // Coalesce pointer events and scroll events into one projection per frame.
+      // 将指针事件与滚动事件合并为每帧一次投影计算。
       unstable_batchedUpdates(() => project(drag));
       scrollFrameRef.current = requestAnimationFrame(autoScroll);
     },
@@ -238,7 +238,7 @@ export default function ColumnDragProvider<RecordType>({
         setActiveKey(drag.key);
         scrollFrameRef.current = requestAnimationFrame(autoScroll);
       }
-      // Follow input immediately; table layout projection remains frame-coalesced.
+      // 立即跟随输入更新浮层，表格布局投影仍按帧合并计算。
       moveMotion(drag.x, drag.y);
     },
     [autoScroll, moveMotion, startMotion],
@@ -253,8 +253,8 @@ export default function ColumnDragProvider<RecordType>({
           if (isInsideHeader(drag, event.clientY)) {
             drag.x = event.clientX;
             drag.y = event.clientY;
-            // Flush unprocessed input if release beats RAF. project skips unchanged
-            // coordinates, so a settled preview does not swap again on release.
+            // 若释放早于动画帧回调，则立即处理尚未处理的输入；project 会跳过未变化的
+            // 坐标，因此已稳定的预览不会在释放时再次交换。
             project(drag);
             onCommit(drag.previewOrder);
           } else {
@@ -334,7 +334,7 @@ export default function ColumnDragProvider<RecordType>({
       if (
         event.target instanceof Element &&
         event.target.closest(
-          'a, button, input, select, textarea, [role="button"], [role="separator"]',
+          'a, button, input, select, textarea, [tabindex], [data-table-resize-handle]',
         )
       )
         return;
@@ -401,7 +401,7 @@ export default function ColumnDragProvider<RecordType>({
   const previousColumns = useRef(columns);
   const previousState = useRef(committedState);
   useLayoutEffect(() => {
-    // Preview order changes are transient; only committed inputs invalidate a drag.
+    // 预览顺序仅为临时状态，只有已提交的输入变化才会使拖拽失效。
     if (
       previousColumns.current !== columns ||
       previousState.current !== committedState

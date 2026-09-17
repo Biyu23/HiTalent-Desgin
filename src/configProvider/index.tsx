@@ -24,7 +24,7 @@ export interface ConfigProviderType extends React.FC<ConfigProviderProps> {
   defaultPrefixCls: typeof defaultPrefixCls;
 }
 
-// Read native values below AntdConfigProvider; do not merge or reapply them.
+// 在 AntdConfigProvider 下读取原生配置，不再合并或重复应用。
 const ConfigContextBridge: React.FC<{ prefixCls?: string }> = ({
   prefixCls,
   children,
@@ -67,7 +67,7 @@ const InternalConfigProvider: React.FC<ConfigProviderProps> = ({
     () => ({
       locale: locale ?? inheritedLocale,
       sourceConfig: parentConfig,
-      // A new complete locale replaces parent copy; otherwise inherit overrides.
+      // 新的完整语言包替换父级文案；否则继承父级覆盖配置。
       overrides: locale
         ? localeOverrides
         : deepMergeLocale(parentLocale.overrides, localeOverrides),

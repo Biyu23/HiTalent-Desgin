@@ -73,8 +73,8 @@ export function useRowCollisionDetection(
       if (!next) return;
       keyboardTarget.current = next;
       target.current = next;
-      // Tree rows stay in place. A sensor move schedules collision/preview
-      // evaluation; the logical keyboard target does not depend on pointer XY.
+      // 树形行保持原位，传感器移动时调度碰撞与预览计算；
+      // 键盘操作的逻辑目标不依赖指针坐标。
       return { ...currentCoordinates, y: currentCoordinates.y + 1 };
     },
     [],
@@ -109,8 +109,8 @@ export function useRowCollisionDetection(
       const keyMap = new Map(
         options.current.originalKeys.map((key) => [String(key), key]),
       );
-      // Tree rows keep their order until release. Use actual mounted rectangles
-      // to account for detail rows, expansion and virtual scrolling.
+      // 释放前保持树形行的顺序，使用已挂载节点的实际矩形，
+      // 以兼顾详情行、展开状态和虚拟滚动。
       for (const row of tableRows(root)) {
         const key = keyMap.get(row.dataset.rowKey ?? '');
         if (key === undefined) continue;

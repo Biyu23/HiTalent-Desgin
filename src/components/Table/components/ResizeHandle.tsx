@@ -20,9 +20,7 @@ export default function ResizeHandle({
   const { styles, cx } = useStyles();
   return (
     <div
-      role="separator"
-      aria-orientation="vertical"
-      aria-disabled={disabled}
+      data-table-resize-handle
       style={
         disabled ? { visibility: 'hidden', pointerEvents: 'none' } : undefined
       }

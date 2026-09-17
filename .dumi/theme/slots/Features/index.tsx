@@ -70,7 +70,7 @@ const Features: FC = () => {
             {features.map((feature) => (
               <article className="htd-doc-capability" key={feature.title}>
                 <div className="htd-doc-capability-top">
-                  <i aria-hidden="true">{feature.mark}</i>
+                  <i>{feature.mark}</i>
                   {feature.meta && <span>{feature.meta}</span>}
                 </div>
                 <h3>{feature.title}</h3>

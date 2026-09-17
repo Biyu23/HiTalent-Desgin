@@ -7,8 +7,8 @@ import type {
   SearchFormClassNames,
   SearchFormFieldItem,
   SearchFormStyles,
-  SearchSearchInfo,
 } from '../type';
+import { groupFields } from '../utils';
 import { MenuFieldItem } from './MenuFieldItem';
 
 interface MenuFormViewProps<Values extends object> {
@@ -17,8 +17,7 @@ interface MenuFormViewProps<Values extends object> {
   fields: SearchFormFieldItem<Values>[];
   groups?: SearchFieldGroup[];
   currentValues: Partial<Values>;
-  searchMode?: 'submit' | 'change';
-  onSearch?: (values: Values, info: SearchSearchInfo) => void;
+  onRemove: (field: SearchFormFieldItem<Values>, index?: number) => void;
   disabled?: boolean;
   locale: SearchFormLocale;
   classNames?: SearchFormClassNames;
@@ -30,8 +29,7 @@ export const MenuFormView = <Values extends object>({
   fields,
   groups,
   currentValues,
-  searchMode,
-  onSearch,
+  onRemove,
   disabled,
   locale,
   classNames,
@@ -39,101 +37,28 @@ export const MenuFormView = <Values extends object>({
 }: MenuFormViewProps<Values>) => {
   const { styles: menuStyles, cx } = useStyles();
 
-  // 分组解析逻辑：支持用户自定义 groups，未分配的归入默认分组或保留
-  const collapseItems = useMemo(() => {
-    if (!groups || groups.length === 0) {
-      // 未定义 groups 时，将所有字段归于统一的基础分组
-      return [
-        {
-          key: 'default-all',
-          label: locale.basicInfo,
-          children: fields.map((field) => (
-            <MenuFieldItem
-              key={field.name}
-              field={field}
-              form={form}
-              currentValues={currentValues}
-              searchMode={searchMode}
-              onSearch={onSearch}
-              disabled={disabled}
-            />
-          )),
-        },
-      ];
-    }
-
-    const groupMap = new Map<string, SearchFormFieldItem<Values>[]>();
-    groups.forEach((g) => groupMap.set(g.key, []));
-    const ungrouped: SearchFormFieldItem<Values>[] = [];
-
-    fields.forEach((field) => {
-      if (field.group && groupMap.has(field.group)) {
-        groupMap.get(field.group)!.push(field);
-      } else {
-        ungrouped.push(field);
-      }
-    });
-
-    const items = groups.map((g) => ({
-      key: g.key,
-      label: g.title,
-      extra: g.extra,
-      children: (groupMap.get(g.key) || []).map((field) => (
-        <MenuFieldItem
-          key={field.name}
-          field={field}
-          form={form}
-          currentValues={currentValues}
-          searchMode={searchMode}
-          onSearch={onSearch}
-          disabled={disabled}
-        />
-      )),
-    }));
-
-    // 若有未在 groups 中声明 group key 的字段，作为追加分组展示
-    if (ungrouped.length > 0) {
-      items.push({
-        key: 'ungrouped',
-        label: locale.searchCriteria,
-        extra: undefined,
-        children: ungrouped.map((field) => (
-          <MenuFieldItem
-            key={field.name}
-            field={field}
-            form={form}
-            currentValues={currentValues}
-            searchMode={searchMode}
-            onSearch={onSearch}
-            disabled={disabled}
-          />
-        )),
-      });
-    }
-
-    return items;
-  }, [
-    currentValues,
-    disabled,
-    fields,
-    form,
-    groups,
-    locale.basicInfo,
-    locale.searchCriteria,
-    onSearch,
-    searchMode,
-  ]);
-
-  // 默认展开所有声明为 defaultExpanded 或默认全部展开的分组
-  const defaultActiveKeys = useMemo(() => {
-    if (!groups || groups.length === 0) {
-      return ['default-all'];
-    }
-    return groups
-      .filter((g) => g.defaultExpanded !== false)
-      .map((g) => g.key)
-      .concat(['ungrouped']);
-  }, [groups]);
+  const sections = useMemo(
+    () => groupFields(fields, groups, locale.basicInfo),
+    [fields, groups, locale.basicInfo],
+  );
+  const collapseItems = sections.map((group) => ({
+    key: group.key,
+    label: group.title,
+    extra: group.extra,
+    children: group.fields.map((field) => (
+      <MenuFieldItem
+        key={field.name}
+        field={field}
+        form={form}
+        currentValues={currentValues}
+        onRemove={onRemove}
+        disabled={disabled}
+      />
+    )),
+  }));
+  const defaultActiveKeys = sections
+    .filter((group) => group.defaultExpanded !== false)
+    .map((group) => group.key);
 
   return (
     <div

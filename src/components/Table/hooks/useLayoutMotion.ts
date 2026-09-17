@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 
-/** Capture before changing preview data; invert after React commits, before paint. */
+/** 修改预览数据前记录位置，在 React 提交后、绘制前应用反向位移。 */
 export function useLayoutMotion(axis: 'x' | 'y') {
   const pending = useRef<Map<HTMLElement, DOMRect> | null>(null);
   const animations = useRef(new Map<HTMLElement, Animation>());
@@ -12,8 +12,8 @@ export function useLayoutMotion(axis: 'x' | 'y') {
   }, []);
 
   const capture = useCallback((elements: Iterable<HTMLElement>) => {
-    // Keep the first snapshot when several updates are batched in one commit.
-    // getBoundingClientRect includes the current animation, allowing reversal.
+    // 多个更新合并为一次提交时，保留最初的位置快照。
+    // getBoundingClientRect 包含当前动画的位置变化，因此支持反向过渡。
     if (pending.current) return;
     pending.current = new Map(
       Array.from(elements, (element) => [
@@ -27,8 +27,8 @@ export function useLayoutMotion(axis: 'x' | 'y') {
     const before = pending.current;
     if (!before) return;
     pending.current = null;
-    // Retarget only captured cells. Unrelated columns must finish their existing
-    // motion instead of snapping to the end on every neighbouring swap.
+    // 仅更新已记录位置的单元格动画目标；无关列应继续完成已有动画，
+    // 避免每次相邻列交换时都直接跳到动画终点。
     before.forEach((_, element) => {
       animations.current.get(element)?.cancel();
       animations.current.delete(element);
@@ -38,7 +38,7 @@ export function useLayoutMotion(axis: 'x' | 'y') {
       return;
     }
 
-    // Finish all geometry reads before starting any new animation.
+    // 启动新动画前，先完成全部几何尺寸读取。
     const changes = Array.from(before, ([element, previous]) => {
       if (!element.isConnected) return null;
       const next = element.getBoundingClientRect();

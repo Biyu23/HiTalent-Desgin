@@ -75,7 +75,7 @@ export interface RowDragOptions<RecordType> {
   childrenKey?: string;
   canDrag?: (record: RecordType) => boolean;
   canDrop?: (event: RowDropEvent<RecordType>) => boolean;
-  /** Hover delay in milliseconds (default 600). False cancels automatic expansion. */
+  /** 悬停延迟，单位为毫秒，默认 600；设为 false 时关闭自动展开。 */
   autoExpandDelay?: number | false;
   handle?: false | RowDragHandleOptions;
 }

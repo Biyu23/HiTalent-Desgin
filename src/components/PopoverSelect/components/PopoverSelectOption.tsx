@@ -39,9 +39,6 @@ const PopoverSelectOption = forwardRef<
           </Checkbox>
         ) : (
           <div
-            role="radio"
-            aria-checked={selected}
-            aria-disabled={disabled}
             tabIndex={disabled ? -1 : 0}
             className={cx(
               styles.menuRadio,

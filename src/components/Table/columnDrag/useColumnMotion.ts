@@ -6,7 +6,7 @@ import {
   visibleTableRows,
 } from '../utils/dragPreview';
 
-/** A small header label follows the pointer; actual cells stay in the table. */
+/** 小型表头标签跟随指针移动，实际单元格保留在表格中。 */
 export function useColumnMotion(rootRef: React.RefObject<HTMLElement>) {
   const preview = useRef<HTMLDivElement | null>(null);
   const previewSize = useRef({ width: 0, height: 0 });
@@ -30,7 +30,6 @@ export function useColumnMotion(rootRef: React.RefObject<HTMLElement>) {
       const computed = getComputedStyle(header);
       const label = document.createElement('div');
       label.dataset.tableColumnPreview = key;
-      label.setAttribute('aria-hidden', 'true');
       label.setAttribute('inert', '');
       label.textContent = header.textContent?.trim() || key;
       Object.assign(label.style, {

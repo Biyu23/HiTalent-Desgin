@@ -130,7 +130,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     items.length === 0 ||
     (containerWidth !== null &&
       items.every((item) => itemWidths.has(item.key)) &&
-      (items.length === 0 || overflowWidth !== null));
+      overflowWidth !== null);
 
   // 当平铺项集合或折叠项集合发生实质变化时向外触发 onVisibleChange 回调
   useEffect(() => {
@@ -197,7 +197,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
       const result = run(
         item.key,
         () => {
-          // Convert sync throws to rejections so both callbacks are observed.
+          // 将同步异常转为 Promise 拒绝，以统一处理两个回调的结果。
           const invoke = (callback?: ResponsiveButtonGroupItem['onClick']) => {
             try {
               return callback?.(info);
@@ -399,7 +399,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
         {overflowNode}
       </div>
       {isResponsive && items.length > 0 && (
-        <div className={buttonGroupStyles.measure} aria-hidden="true">
+        <div className={buttonGroupStyles.measure} data-rbg-measure-container>
           {items.map((item) => (
             <span
               key={item.key}

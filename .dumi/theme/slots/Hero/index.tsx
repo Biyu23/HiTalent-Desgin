@@ -17,7 +17,6 @@ type HeroSignal = {
 type HeroInstall = {
   label: string;
   command: string;
-  copyLabel: string;
   copiedLabel: string;
   failedLabel: string;
 };
@@ -107,10 +106,10 @@ const Hero: FC = () => {
           )}
         </div>
 
-        <aside className="htd-doc-hero-console" aria-label="Capabilities">
+        <aside className="htd-doc-hero-console">
           <div className="htd-doc-hero-console-head">
             <span>HI·TALENT / UI SYSTEM</span>
-            <i aria-hidden="true" />
+            <i />
           </div>
           <div className="htd-doc-hero-signals">
             {hero.signals?.map((signal, index) => (
@@ -126,11 +125,7 @@ const Hero: FC = () => {
               <span>{hero.install.label}</span>
               <div>
                 <code>{hero.install.command}</code>
-                <button
-                  type="button"
-                  onClick={handleCopy}
-                  aria-label={hero.install.copyLabel}
-                >
+                <button type="button" onClick={handleCopy}>
                   {copyState === 'copied' ? (
                     <CheckOutlined />
                   ) : (
@@ -138,7 +133,7 @@ const Hero: FC = () => {
                   )}
                 </button>
               </div>
-              <small aria-live="polite">
+              <small>
                 {copyState === 'copied'
                   ? hero.install.copiedLabel
                   : copyState === 'failed'

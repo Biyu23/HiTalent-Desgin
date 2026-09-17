@@ -1,6 +1,6 @@
 import React, { forwardRef, memo } from 'react';
 import { useLocale, usePrefixCls } from '../../configProvider';
-import { attachPropertiesToComponent } from '../../utils';
+import { attachPropertiesToComponent, withNativeProps } from '../../utils';
 import PopoverSelectContent from './components/PopoverSelectContent';
 import PopoverSelectLabel from './components/PopoverSelectLabel';
 import Selector from './components/PopoverSelector';
@@ -39,12 +39,9 @@ function InternalPopoverSelect<
       ellipsis={props.ellipsis ?? true}
     />
   );
-  return (
-    <div
-      ref={ref}
-      className={cx(prefixCls, styles.root, props.className)}
-      style={props.style}
-    >
+  return withNativeProps(
+    props,
+    <div ref={ref} className={cx(prefixCls, styles.root)}>
       <Selector
         prefixCls={prefixCls}
         autoAdjustOverflow={props.autoAdjustOverflow}
@@ -81,7 +78,7 @@ function InternalPopoverSelect<
             })
           : label}
       </Selector>
-    </div>
+    </div>,
   );
 }
 

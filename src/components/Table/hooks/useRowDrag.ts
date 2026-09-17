@@ -76,7 +76,7 @@ export function useRowDrag<RecordType>({
       if (expandable?.defaultExpandedRowKeys !== undefined)
         return expandable.defaultExpandedRowKeys.filter(isTableRowKey);
       if (expandable?.defaultExpandAllRows) {
-        // Expansion exists independently of the active drag mode.
+        // 展开状态独立于当前拖拽模式。
         const treeRegistry = buildRowRegistry(
           dataSource,
           getKey,
@@ -95,7 +95,7 @@ export function useRowDrag<RecordType>({
   );
   const expandedKeys = controlledExpandedKeys ?? innerExpandedKeys;
   useLayoutEffect(() => {
-    // Preserve the last controlled value when control is removed.
+    // 退出受控模式时保留最后一次受控值。
     if (controlledExpandedKeys !== undefined)
       setInnerExpandedKeys(controlledExpandedKeys);
   }, [controlledExpandedKeys]);

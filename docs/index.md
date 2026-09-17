@@ -21,7 +21,6 @@ hero:
   install:
     label: 安装
     command: npm install hi-talent-design antd
-    copyLabel: 复制安装命令
     copiedLabel: 已复制安装命令
     failedLabel: 无法自动复制，请手动选择命令
 features:

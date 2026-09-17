@@ -37,12 +37,13 @@ export interface SearchFormFieldItem<
   children?:
     | React.ReactNode
     | ((form: FormInstance<Values>) => React.ReactNode);
-  /** 字段在 Form.Item 上的额外配置（如 rules, dependencies, valuePropName 等） */
-  formItemProps?: Omit<FormItemProps, 'name' | 'label' | 'children'>;
+  /** 字段在 Form.Item 上的额外配置（如 rules, dependencies, valuePropName 等）；初始值使用字段 initialValue */
+  formItemProps?: Omit<
+    FormItemProps,
+    'name' | 'label' | 'children' | 'initialValue'
+  >;
   /** 初始默认值 */
   initialValue?: unknown;
-  /** 字段所占的栅格列数（24栅格制），不传则根据布局自适应 */
-  span?: number;
   /** 分组标识（在 menu 模式下归属的分组 key） */
   group?: string;
   /** 是否作为快捷筛选（在 menu 模式下呈现在顶部的 Quick Filters 快速勾选区） */
@@ -82,9 +83,9 @@ export interface SearchFormRef<
   submit: () => void;
   /** 重置所有字段到初始值并触发查询 */
   resetFields: () => void;
-  /** 打开菜单/抽屉面板（在 menu 或 combined 模式下有效） */
+  /** 打开高级筛选抽屉（仅 combined 模式有效） */
   openMenu: () => void;
-  /** 关闭菜单/抽屉面板 */
+  /** 关闭高级筛选抽屉（仅 combined 模式有效） */
   closeMenu: () => void;
 }
 
@@ -114,7 +115,7 @@ export interface SearchFormProps<
   mode?: SearchFormMode;
   /** 筛选项字段定义列表 */
   fields: SearchFormFieldItem<Values>[];
-  /** 字段业务分组配置（menu 模式下有效） */
+  /** 字段业务分组配置（menu 模式及 combined 抽屉中有效） */
   groups?: SearchFieldGroup[];
   /** 外部传入的 Ant Design Form 实例（支持外层受控，非必填，未传内部自动使用 Form.useForm） */
   form?: FormInstance<Values>;
@@ -150,9 +151,9 @@ export interface SearchFormProps<
   onExpandedChange?: (expanded: boolean) => void;
   /** 是否展示已选条件区（Active Filters Bar），默认 true */
   showActiveFilters?: boolean;
-  /** 是否展示搜索操作按钮（MenuDrawer 中），默认 true */
+  /** 是否展示搜索操作按钮（menu 模式及 combined 抽屉中），默认 true */
   showSearchButton?: boolean;
-  /** 是否展示重置操作按钮（MenuDrawer 中），默认 true */
+  /** 是否展示重置操作按钮（menu 模式及 combined 抽屉中），默认 true */
   showResetButton?: boolean;
   /** 搜索按钮文案，默认 "搜索" */
   searchText?: React.ReactNode;

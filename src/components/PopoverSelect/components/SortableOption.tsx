@@ -17,7 +17,6 @@ const SortableOption = forwardRef<HTMLDivElement, SortableOptionProps>(
   ({ id, disabled, handleLabel, children }, ref) => {
     const { styles, cx } = useStyles();
     const {
-      attributes,
       listeners,
       setNodeRef,
       setActivatorNodeRef,
@@ -48,11 +47,9 @@ const SortableOption = forwardRef<HTMLDivElement, SortableOptionProps>(
         <button
           type="button"
           ref={setActivatorNodeRef}
-          {...attributes}
           {...listeners}
           disabled={disabled}
           className={styles.sortHandle}
-          aria-label={handleLabel}
           title={handleLabel}
           onClick={(event) => event.stopPropagation()}
         >

@@ -16,11 +16,11 @@ import {
 } from '@dnd-kit/sortable';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { PopoverSelectLocale } from '../../../locales';
+import { silentDragAnnouncements } from '../../_util/silentDragAnnouncements';
 import { createSortKeyboardCoordinates } from '../hooks/sortKeyboardCoordinates';
 import { useStyles } from '../style';
 import type { MappedOption, RawValueType } from '../type';
-import { getNodeText, getOptionKey } from '../utils';
+import { getOptionKey } from '../utils';
 
 interface SortableOptionsProps<
   ValueType extends RawValueType,
@@ -33,7 +33,6 @@ interface SortableOptionsProps<
     option: MappedOption<ValueType, OptionType>,
   ) => React.ReactNode;
   listItemHeight: number;
-  locale: PopoverSelectLocale;
   children: React.ReactNode;
 }
 
@@ -46,7 +45,6 @@ export default function SortableOptions<
   onSortChange,
   renderOption,
   listItemHeight,
-  locale,
   children,
 }: SortableOptionsProps<ValueType, OptionType>) {
   const { styles, cx } = useStyles();
@@ -102,33 +100,13 @@ export default function SortableOptions<
       arrayMove([...options], from, to).map((option) => option.source),
     );
   };
-  const describePosition = (id: UniqueIdentifier) => {
-    const index = items.indexOf(String(id));
-    return index < 0 ? undefined : locale.sortPosition(index + 1, items.length);
-  };
 
   return (
     <DndContext
       key={enabled ? 'enabled' : 'disabled'}
       sensors={sensors}
       collisionDetection={closestCenter}
-      accessibility={{
-        screenReaderInstructions: { draggable: locale.sortInstructions },
-        announcements: {
-          onDragStart: ({ active }) =>
-            `${locale.dragHandle}: ${getNodeText(
-              options.find((option) => getOptionKey(option.value) === active.id)
-                ?.label,
-            )}. ${describePosition(active.id) ?? ''}`,
-          onDragOver: ({ over }) =>
-            over ? describePosition(over.id) : undefined,
-          onDragEnd: ({ over }) =>
-            over
-              ? `${locale.sortEnd}. ${describePosition(over.id) ?? ''}`
-              : locale.sortCancel,
-          onDragCancel: () => locale.sortCancel,
-        },
-      }}
+      accessibility={silentDragAnnouncements}
       onDragStart={({ active, activatorEvent }) => {
         if (!enabled) return;
         const target = activatorEvent.target as Node | null;
@@ -161,7 +139,6 @@ export default function SortableOptions<
           <DragOverlay dropAnimation={null} zIndex={overlayLayer.zIndex}>
             {enabled && dragOptions.current === options && activeOption ? (
               <div
-                aria-hidden
                 className={cx(styles.sortableItem, styles.sortOverlay)}
                 style={
                   {

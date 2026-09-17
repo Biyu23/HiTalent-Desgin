@@ -13,16 +13,11 @@ export interface PopoverSelectLocale {
   noData: string;
   searchPlaceholder: string;
   dragHandle: string;
-  sortInstructions: string;
-  sortPosition: (position: number, count: number) => string;
-  sortEnd: string;
-  sortCancel: string;
 }
 
 /** ResponsiveButtonGroup 组件的国际化文案 */
 export interface ResponsiveButtonGroupLocale {
   more: string;
-  moreActions: (count: number) => string;
 }
 
 /** Button 组件的国际化文案 */
@@ -33,48 +28,18 @@ export interface ButtonLocale {
 
 /** Drawer 组件的国际化文案 */
 export interface DrawerLocale {
-  /** 左侧 Drawer 右边缘的缩放把手 */
-  resizeLeft: string;
-  /** 右侧 Drawer 左边缘的缩放把手 */
-  resizeRight: string;
-  /** 顶部 Drawer 下边缘的缩放把手 */
-  resizeTop: string;
-  /** 底部 Drawer 上边缘的缩放把手 */
-  resizeBottom: string;
-  minimize: string;
   restore: string;
   close: string;
-  /** 最小化 Drawer 卡片 */
-  minimizedDockLabel: string;
-  /** 最小化 Drawer 卡片拖拽把手 */
-  minimizedDockDragHandle: string;
 }
 
 /** Modal 组件的国际化文案 */
 export interface ModalLocale {
   restore: string;
-  minimize: string;
-  maximize: string;
-  unmaximize: string;
   close: string;
-  /** 拖拽把手 */
-  dragHandle: string;
-  /** 右下角缩放把手 */
-  resizeBottomRight: string;
-  /** 标题栏描述 */
-  headerTitle: string;
-  /** 最小化悬浮窗容器 */
-  minimizedDockLabel: string;
-  /** 最小化悬浮窗拖拽把手 */
-  minimizedDockDragHandle: string;
 }
 
 /** Table 组件的国际化文案 */
 export interface TableLocale {
-  rowDropBefore: string;
-  rowDropAfter: string;
-  rowDropInside: string;
-  rowDropInvalid: string;
   /** 列设置标题 */
   columnSetting: string;
   /** 保存 */
@@ -83,8 +48,6 @@ export interface TableLocale {
   cancel: string;
   /** 拖拽手柄 */
   dragHandle: string;
-  /** 列宽调整手柄 */
-  resizeHandle: string;
   /** 空值占位文本 */
   emptyText: string;
   /** 是 */

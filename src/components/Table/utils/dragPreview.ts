@@ -6,7 +6,7 @@ function getRoot(element: HTMLElement) {
   );
 }
 
-/** Exclude tables rendered in expanded rows, cells or toolbars. */
+/** 排除展开行、单元格或工具栏内渲染的嵌套表格。 */
 export function tableElements(
   root: HTMLElement,
   selector: string,
@@ -49,9 +49,9 @@ export function scrollTableHorizontally(
   const scroller = getHorizontalScroller(root);
   scroller.scrollLeft += delta;
   if (scroller !== viewport) {
-    // rc-table forwards scrollTo to its virtual list. Its offset is unsigned,
-    // while DOM scrollLeft is negative in RTL. Imperative scrollTo does not
-    // emit onVirtualScroll, so keep the fixed summary in sync here as well.
+    // rc-table 将 scrollTo 转交给虚拟列表，其偏移量为非负值，
+    // 而 RTL 布局中的 DOM scrollLeft 为负值；命令式调用 scrollTo 不会
+    // 触发 onVirtualScroll，因此需在此同步固定汇总行。
     scrollVirtual(Math.abs(scroller.scrollLeft));
     tableElements(root, `div${tableSelector(root)}-summary`).forEach(
       (summary) => {

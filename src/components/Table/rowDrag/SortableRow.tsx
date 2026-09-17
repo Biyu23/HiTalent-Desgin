@@ -2,8 +2,8 @@ import { HolderOutlined } from '@ant-design/icons';
 import type { DraggableSyntheticListeners } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useComposeRef } from 'rc-util/lib/ref';
-import React, { useContext, useMemo, useRef } from 'react';
+import React, { useCallback, useContext, useMemo, useRef } from 'react';
+import { setRef } from '../../../utils/ref';
 import type { RowDropCandidate, RowRegistry } from '../internal';
 import { useStyles } from '../style';
 import type { TableRowKey } from '../type';
@@ -67,7 +67,6 @@ export function RowDragHandle() {
           !drag.draggable && styles.rowDragHandleDisabled,
         )}
         {...(drag.draggable ? drag.listeners : undefined)}
-        role="button"
         tabIndex={drag.draggable ? 0 : undefined}
       >
         <HolderOutlined />
@@ -122,10 +121,13 @@ function SortableRow({
     () => ({ listeners, setActivatorNodeRef, draggable }),
     [draggable, listeners, setActivatorNodeRef],
   );
-  const rowRef = useComposeRef(
-    forwardedRef ?? null,
-    setNodeRef,
-    handleEnabled ? null : setActivatorNodeRef,
+  const rowRef = useCallback(
+    (node: HTMLElement | null) => {
+      setRef(forwardedRef, node);
+      setNodeRef(node);
+      if (!handleEnabled) setActivatorNodeRef(node);
+    },
+    [forwardedRef, setNodeRef, handleEnabled, setActivatorNodeRef],
   );
 
   return (
@@ -136,8 +138,8 @@ function SortableRow({
         tabIndex={!handleEnabled && draggable ? 0 : rowProps.tabIndex}
         onPointerDown={(event: React.PointerEvent<HTMLTableRowElement>) => {
           rowProps.onPointerDown?.(event);
-          // Preserve the existing onRow preventDefault contract when the
-          // subsequent mouse event activates MouseSensor.
+          // 后续鼠标事件激活 MouseSensor 时，
+          // 保留现有 onRow 中 preventDefault 的行为约定。
           blockedMouse.current = event.defaultPrevented;
         }}
         onMouseDown={(event: React.MouseEvent<HTMLTableRowElement>) => {

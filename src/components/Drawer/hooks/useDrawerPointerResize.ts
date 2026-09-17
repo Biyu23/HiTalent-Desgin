@@ -50,7 +50,7 @@ export function useDrawerPointerResize(
   const resize = usePointerResize<DrawerResizeValue>({
     cursor: getResizeCursor(axis),
     disabled: !active,
-    getInitialValue: () => {
+    getInitialValue: (event) => {
       const panel = panelRef.current;
       const panelRect = panel?.getBoundingClientRect();
       const measuredSize = panelRect ? getAxisSize(panelRect, axis) : undefined;
@@ -60,11 +60,10 @@ export function useDrawerPointerResize(
           : typeof currentSize === 'number'
           ? currentSize
           : DEFAULT_DRAWER_SIZE;
-      const wrapper = panel?.offsetParent as HTMLElement | null;
-      const container =
-        (wrapper?.offsetParent as HTMLElement | null) ||
-        wrapper?.parentElement ||
-        document.documentElement;
+      // 缩放把手是内容容器的直接子节点，位于 userDrawerRender 自定义内容之外，
+      // 因此其父级结构不会随自定义内容的包裹层变化。
+      const wrapper = event.currentTarget.parentElement;
+      const container = wrapper?.parentElement || document.documentElement;
       const rect = container.getBoundingClientRect();
       const fallback =
         axis === 'horizontal' ? window.innerWidth : window.innerHeight;

@@ -3,8 +3,10 @@ import React, {
   forwardRef,
   memo,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
 } from 'react';
 import { useLocale } from '../../configProvider/useLocale';
 import { usePrefixCls } from '../../configProvider/usePrefixCls';
@@ -56,6 +58,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     ...restProps
   } = props;
 
+  const nativeElementRef = useRef<HTMLDivElement>(null);
   const prefixCls = usePrefixCls('modal', customPrefixCls);
   const modalLocale = useLocale('Modal');
   const { styles: modalStyles, cx } = useStyles(prefixCls);
@@ -108,9 +111,12 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   } = useModalWindowState();
 
   // 最小化模式下隐藏时保留 DOM，防止表单数据丢失；彻底关闭时遵循传入配置
-  const resolvedDestroyOnHidden = isMinimized
-    ? false
-    : destroyOnHidden ?? destroyOnClose;
+  const resolvedDestroyOnHidden =
+    open && isMinimized ? false : destroyOnHidden ?? destroyOnClose;
+
+  useEffect(() => {
+    if (!open) handleReset();
+  }, [open, handleReset]);
 
   const handleClose = useCallback(
     (e?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>) => {
@@ -133,10 +139,7 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
     ref,
     () => ({
       get nativeElement() {
-        if (typeof document === 'undefined') return null;
-        return (
-          (document.querySelector(`.${prefixCls}`) as HTMLDivElement) || null
-        );
+        return nativeElementRef.current;
       },
       restore: handleRestore,
       maximize: () => {
@@ -153,7 +156,6 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
       handleMinimize,
       handleMaximize,
       handleUnmaximize,
-      prefixCls,
       resetWindowPosition,
       resetWindowSize,
     ],
@@ -162,7 +164,11 @@ const Modal = forwardRef<ModalRef, ModalProps>((props, ref) => {
   const finalModalRender = useCallback(
     (modalNode: React.ReactNode) => {
       const rendered = modalRender ? modalRender(modalNode) : modalNode;
-      return <ModalWindowWrapper>{rendered}</ModalWindowWrapper>;
+      return (
+        <ModalWindowWrapper>
+          <div ref={nativeElementRef}>{rendered}</div>
+        </ModalWindowWrapper>
+      );
     },
     [modalRender],
   );

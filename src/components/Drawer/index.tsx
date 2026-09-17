@@ -4,6 +4,7 @@ import React, {
   forwardRef,
   memo,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -82,6 +83,10 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
   );
   const resizeConfig: DrawerResizableConfig =
     typeof resizable === 'object' ? resizable : {};
+
+  useEffect(() => {
+    if (!open) reset();
+  }, [open, reset]);
 
   const handleClose = useCallback(
     (event?: React.MouseEvent<Element> | React.KeyboardEvent<Element>) => {
@@ -264,7 +269,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
         closeIcon={closeIcon}
         maskClosable={maskClosable}
         destroyOnHidden={
-          isMinimized ? false : destroyOnHidden ?? destroyOnClose
+          open && isMinimized ? false : destroyOnHidden ?? destroyOnClose
         }
         onClose={handleClose}
         rootClassName={cx(prefixCls, drawerStyles.root, rootClassName)}

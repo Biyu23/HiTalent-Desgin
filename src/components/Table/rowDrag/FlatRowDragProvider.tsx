@@ -13,10 +13,10 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import React, { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
+import { silentDragAnnouncements } from '../../_util/silentDragAnnouncements';
 import type { RowDragProviderProps, RowRegistry } from '../internal';
 import type { TableRowKey } from '../type';
 import { RowDragStateContext, RowRuntimeContext } from './SortableRow';
-import { dragAccessibility } from './sensors';
 import {
   createRowDragEndEvent,
   isTableRowKey,
@@ -43,7 +43,7 @@ const restrictToVertical: Modifier = ({
   return {
     ...transform,
     x: 0,
-    // A transformed table row must not grow its own scroll container at the end.
+    // 表格末尾的行发生变换时，不应撑大其所在的滚动容器。
     y:
       bounds && draggingNodeRect
         ? Math.max(
@@ -140,7 +140,7 @@ export default function FlatRowDragProvider<RecordType>(
 
   return (
     <DndContext
-      accessibility={dragAccessibility}
+      accessibility={silentDragAnnouncements}
       modifiers={flatModifiers}
       sensors={sensors}
       collisionDetection={closestCenter}

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * HiTalent Design MCP Server
+ * HiTalent Design MCP 服务
  *
  * 为 HiTalent Design 组件库提供 AI 驱动的代码生成能力。
  * 通过 MCP 协议（Model Context Protocol）暴露 3 个工具：
@@ -29,7 +29,7 @@ const server = new McpServer({
   version: '0.0.1',
 });
 
-// ==================== Tool 1: list_components ====================
+// ==================== 工具 1：list_components ====================
 
 server.tool(
   'list_components',
@@ -48,7 +48,7 @@ server.tool(
   },
 );
 
-// ==================== Tool 2: get_component ====================
+// ==================== 工具 2：get_component ====================
 
 server.tool(
   'get_component',
@@ -73,7 +73,7 @@ server.tool(
   },
 );
 
-// ==================== Tool 3: generate_code ====================
+// ==================== 工具 3：generate_code ====================
 
 server.tool(
   'generate_code',

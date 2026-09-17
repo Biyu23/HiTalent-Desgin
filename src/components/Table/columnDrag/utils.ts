@@ -19,7 +19,7 @@ export function captureColumnLayout(
     (element) => {
       const key = element.dataset.columnDragKey;
       if (key === undefined || result.has(key)) return;
-      // The whole cell is the drag lane, including its vertical padding.
+      // 整个单元格都是拖拽区域，包括上下内边距。
       const rect = (element.closest('th') ?? element).getBoundingClientRect();
       result.set(key, {
         top: rect.top,

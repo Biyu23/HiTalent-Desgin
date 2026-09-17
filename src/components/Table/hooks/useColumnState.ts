@@ -1,6 +1,6 @@
-import useMergedState from 'rc-util/lib/hooks/useMergedState';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { unstable_batchedUpdates } from 'react-dom';
+import { useMergeState } from '../../../hooks/useMergeState';
 import type { TableColumn, TableColumnKey, TableColumnState } from '../type';
 import {
   areColumnStatesEqual,
@@ -36,10 +36,12 @@ export function useColumnState<RecordType>({
       value === undefined ? undefined : normalizeColumnState(columns, value),
     [columns, value],
   );
-  const [mergedState, setMergedState] = useMergedState<TableColumnState>(
-    () => normalizeColumnState(columns, defaultValue),
-    { value: controlledValue, onChange },
-  );
+  const [mergedState, { set: setMergedState }] =
+    useMergeState<TableColumnState>({
+      defaultValue: () => normalizeColumnState(columns, defaultValue),
+      value: controlledValue,
+      onChange,
+    });
   const committedState = useMemo(
     () => normalizeColumnState(columns, mergedState),
     [columns, mergedState],
@@ -71,21 +73,18 @@ export function useColumnState<RecordType>({
   const commit = useCallback(
     (next: TableColumnState) => {
       const normalized = normalizeColumnState(columns, next);
-      // Pointer listeners are native events in React 17. Never expose the old
-      // committed order between clearing the preview and saving its result.
+      // React 17 中的指针监听使用原生事件；清除预览与保存结果之间，
+      // 不得短暂渲染旧的已提交顺序。
       unstable_batchedUpdates(() => {
         if (!areColumnStatesEqual(committedRef.current, normalized)) {
           committedRef.current = normalized;
-          // Controlled owners must update in this batch too. useMergedState
-          // reports changes from a layout effect, after an old-order render.
-          if (controlledValue !== undefined) onChange?.(normalized);
-          else setMergedState(normalized);
+          setMergedState(normalized);
         }
         previewRef.current = null;
         setPreviewState(null);
       });
     },
-    [columns, controlledValue, onChange, setMergedState],
+    [columns, setMergedState],
   );
 
   const setVisibleKeys = useCallback(

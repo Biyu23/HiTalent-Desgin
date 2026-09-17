@@ -17,7 +17,6 @@ const Header: FC = () => {
   const { themeConfig } = useSiteData();
   const locale = useLocale();
   const [showMenu, setShowMenu] = useState(false);
-  const menuLabel = locale.id === 'en-US' ? 'Navigation menu' : '导航菜单';
 
   const socialIcons = useMemo(() => {
     const { socialLinks } = themeConfig;
@@ -74,9 +73,6 @@ const Header: FC = () => {
         <button
           type="button"
           className="dumi-default-header-menu-btn htd-doc-header-menu"
-          aria-label={menuLabel}
-          aria-expanded={showMenu}
-          aria-controls="htd-doc-mobile-nav"
           onClick={(event) => {
             event.stopPropagation();
             setShowMenu((value) => !value);

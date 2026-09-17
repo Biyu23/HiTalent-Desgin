@@ -1,10 +1,4 @@
-import {
-  NavLink,
-  useLocale,
-  useLocation,
-  useRouteMeta,
-  useSidebarData,
-} from 'dumi';
+import { NavLink, useLocation, useRouteMeta, useSidebarData } from 'dumi';
 import Toc from 'dumi/theme/slots/Toc';
 import type { FC } from 'react';
 import React from 'react';
@@ -14,15 +8,11 @@ const Sidebar: FC = () => {
   const { pathname } = useLocation();
   const meta = useRouteMeta();
   const sidebar = useSidebarData();
-  const locale = useLocale();
 
   if (!sidebar) return null;
 
   return (
-    <nav
-      className="dumi-default-sidebar htd-doc-sidebar"
-      aria-label={locale.id === 'en-US' ? 'Documentation' : '文档导航'}
-    >
+    <nav className="dumi-default-sidebar htd-doc-sidebar">
       {sidebar.map((group, index) => (
         <dl className="dumi-default-sidebar-group" key={String(index)}>
           {group.title && <dt>{group.title}</dt>}

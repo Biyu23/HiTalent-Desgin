@@ -23,6 +23,7 @@ interface InlineFormProps<Values extends object> {
   onOpenMenu?: () => void;
   actionExtra?: React.ReactNode;
   onFieldConfirm: (name: string, value: unknown) => void;
+  onRemove: (field: SearchFormFieldItem<Values>) => void;
   disabled?: boolean;
   locale: SearchFormLocale;
   classNames?: SearchFormClassNames;
@@ -40,6 +41,7 @@ export const InlineForm = <Values extends object>({
   onOpenMenu,
   actionExtra,
   onFieldConfirm,
+  onRemove,
   disabled,
   locale,
   classNames,
@@ -48,19 +50,22 @@ export const InlineForm = <Values extends object>({
   const { styles: formStyles, cx } = useStyles();
 
   // 计算可见字段：未展开时只显示前 defaultVisibleCount 个，或者带 pinned 的
-  const hasThreshold = fields.length > defaultVisibleCount;
+  const limit = Number.isFinite(defaultVisibleCount)
+    ? Math.max(0, Math.floor(defaultVisibleCount))
+    : 4;
+  const hasThreshold =
+    fields.length >
+    Math.max(limit, fields.filter((field) => field.pinned).length);
   const visibleFields = React.useMemo(() => {
     if (!hasThreshold || expanded) {
       return fields;
     }
-    const pinnedFields = fields.filter((f) => f.pinned);
-    const normalFields = fields.filter((f) => !f.pinned);
-    const takeNormalCount = Math.max(
+    let remaining = Math.max(
       0,
-      defaultVisibleCount - pinnedFields.length,
+      limit - fields.filter((field) => field.pinned).length,
     );
-    return [...pinnedFields, ...normalFields.slice(0, takeNormalCount)];
-  }, [defaultVisibleCount, expanded, fields, hasThreshold]);
+    return fields.filter((field) => field.pinned || remaining-- > 0);
+  }, [limit, expanded, fields, hasThreshold]);
 
   return (
     <div
@@ -80,6 +85,7 @@ export const InlineForm = <Values extends object>({
                 disabled={disabled}
                 locale={locale}
                 onConfirm={onFieldConfirm}
+                onRemove={onRemove}
               />
             </div>
           </React.Fragment>
@@ -96,7 +102,9 @@ export const InlineForm = <Values extends object>({
               style={customStyles?.actions}
             >
               {hasThreshold && (
-                <span
+                <button
+                  type="button"
+                  disabled={disabled}
                   className={cx(formStyles.toggleButton)}
                   onClick={onToggleExpand}
                 >
@@ -107,7 +115,7 @@ export const InlineForm = <Values extends object>({
                       expanded && formStyles.toggleButtonArrowExpanded,
                     )}
                   />
-                </span>
+                </button>
               )}
 
               {mode === 'combined' && (

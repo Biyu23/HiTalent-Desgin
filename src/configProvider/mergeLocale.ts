@@ -17,7 +17,7 @@ export function deepMergeLocale<T>(base: T, overrides?: unknown): T {
     const overrideVal = (overrides as Record<string, unknown>)[key];
     const value = deepMergeLocale(base[key], overrideVal);
     if (!Object.is(value, base[key])) {
-      // Copy only changed branches, keeping untouched component locales stable.
+      // 仅复制发生变化的分支，保持未修改的组件语言包引用稳定。
       if (merged === base) merged = { ...base };
       Object.defineProperty(merged, key, {
         value,

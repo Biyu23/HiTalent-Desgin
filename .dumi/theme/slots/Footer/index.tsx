@@ -28,7 +28,7 @@ const Footer: FC = () => {
     <footer className="dumi-default-footer htd-doc-footer">
       <div>
         <div className="htd-doc-footer-brand">
-          <span aria-hidden="true">HT</span>
+          <span>HT</span>
           <div>
             <strong>HiTalent Design</strong>
             <p>{copy.description}</p>

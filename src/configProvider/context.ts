@@ -30,7 +30,7 @@ export interface ConfigContextValue {
 
 export const defaultPrefixCls = 'htd';
 
-// Track internal snapshots by identity so object spreads remain public overrides.
+// 通过对象引用识别内部快照，使对象展开后的配置仍被视为外部覆盖。
 const resolvedLocales = new WeakMap<ConfigContextValue, HtdLocale>();
 
 export const markResolvedConfig = (
@@ -52,11 +52,11 @@ export const createGetPrefixCls =
     return suffixCls ? `${prefixCls}-${suffixCls}` : prefixCls;
   };
 
-// Keep explicit locale settings separate from host-derived defaults.
+// 将显式语言设置与从宿主获取的默认值分开保存。
 export const LocaleSettingsContext = createContext<{
   locale?: HtdLocale;
   overrides?: LocaleOverrides;
-  /** Public context already incorporated by the nearest HTD provider. */
+  /** 已由最近的 HTD 配置提供者合并的公共上下文。 */
   sourceConfig?: ConfigContextValue;
 }>({});
 

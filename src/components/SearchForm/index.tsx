@@ -3,7 +3,10 @@ import React, {
   forwardRef,
   memo,
   useCallback,
+  useEffect,
   useImperativeHandle,
+  useMemo,
+  useRef,
   useState,
 } from 'react';
 import { useLocale, usePrefixCls } from '../../configProvider';
@@ -12,9 +15,14 @@ import { ActiveFiltersBar } from './components/ActiveFiltersBar';
 import { InlineForm } from './components/InlineForm';
 import { MenuDrawer } from './components/MenuDrawer';
 import { MenuFormView } from './components/MenuFormView';
+import { SearchActions } from './components/SearchActions';
 import { useActiveFilters } from './hooks/useActiveFilters';
 import { useStyles } from './style';
-import type { SearchFormProps, SearchFormRef, SearchSearchInfo } from './type';
+import type {
+  SearchFormFieldItem,
+  SearchFormProps,
+  SearchFormRef,
+} from './type';
 
 export type * from './type';
 
@@ -67,58 +75,104 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
     onChange: onExpandedChange,
   });
 
-  // 抽屉菜单开启/关闭状态（在 menu 与 combined 模式下使用）
-  const [menuOpen, setMenuOpen] = useState(mode === 'menu');
+  // combined 模式下的高级筛选抽屉状态。
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  // 监听当前表单值，用于驱动 ActiveFilters
-  const [currentValues, setCurrentValues] = useState<Partial<Values>>(() => {
-    return initialValues || {};
-  });
+  // 未挂载的弹层字段也保存在主表单中，初始值统一在此设置。
+  const defaults = useMemo(
+    () => ({
+      ...Object.fromEntries(
+        fields
+          .filter((field) => field.initialValue !== undefined)
+          .map((field) => [field.name, field.initialValue]),
+      ),
+      ...initialValues,
+    }),
+    [fields, initialValues],
+  );
+  // 初始化新增字段，不覆盖已有值或已清空的值。
+  const initializedFields = useRef({ form, names: new Set<string>() });
+  useEffect(() => {
+    if (initializedFields.current.form !== form) {
+      initializedFields.current = { form, names: new Set<string>() };
+    }
+    const names = initializedFields.current.names;
+    const additions = fields.filter((field) => !names.has(field.name));
+    fields.forEach((field) => names.add(field.name));
+    additions.forEach((field) => {
+      const name = field.name as never;
+      const value = (defaults as Record<string, unknown>)[field.name];
+      if (
+        value !== undefined &&
+        form.getFieldValue(name) === undefined &&
+        !form.isFieldTouched(name)
+      ) {
+        form.setFields([{ name, value }]);
+      }
+    });
+  }, [fields, defaults, form]);
+
+  const watchedValues = Form.useWatch([], { form, preserve: true });
+  const currentValues = (watchedValues ?? defaults) as Values;
+  const visibleFields = useMemo(
+    () =>
+      fields.filter(
+        (field) =>
+          !(typeof field.hidden === 'function'
+            ? field.hidden(currentValues, form)
+            : field.hidden),
+      ),
+    [fields, currentValues, form],
+  );
 
   // 提交搜索
   const handleSubmit = useCallback(() => {
-    const values = form.getFieldsValue();
-    setCurrentValues(values);
+    if (disabled) return;
+    const values = form.getFieldsValue(true);
     onSearch?.(values, { source: 'submit' });
-  }, [form, onSearch]);
+  }, [disabled, form, onSearch]);
 
   // 重置表单
   const handleReset = useCallback(() => {
-    if (initialValues) {
-      form.setFieldsValue(initialValues as never);
-    } else {
-      form.resetFields();
-    }
-    const resetVals = form.getFieldsValue();
-    setCurrentValues(resetVals);
+    if (disabled) return;
+    form.resetFields();
+    const resetVals = form.getFieldsValue(true);
     onReset?.();
     onSearch?.(resetVals, { source: 'reset' });
-  }, [form, initialValues, onReset, onSearch]);
+  }, [disabled, form, onReset, onSearch]);
 
   // 表单字段值变动
   const handleValuesChange = useCallback(
-    (changedValues: Partial<Values>, allValues: Values) => {
-      setCurrentValues(allValues);
+    (changedValues: Partial<Values>) => {
+      if (disabled) return;
+      const allValues = form.getFieldsValue(true);
       onValuesChange?.(changedValues, allValues);
 
       if (searchMode === 'change') {
         onSearch?.(allValues, { source: 'change' });
       }
     },
-    [onSearch, onValuesChange, searchMode],
+    [disabled, form, onSearch, onValuesChange, searchMode],
   );
 
-  // 活跃已选条件管理
-  const { activeFilters, clearAll } = useActiveFilters<Values>({
-    fields,
+  const handleRemove = useCallback(
+    (field: SearchFormFieldItem<Values>, index?: number) => {
+      if (disabled) return;
+      const value = form.getFieldValue(field.name as never);
+      if (index !== undefined && Array.isArray(value)) {
+        const next = value.filter((_, position) => position !== index);
+        form.setFieldValue(field.name as never, next.length ? next : undefined);
+      } else if (field.onClear) field.onClear(form);
+      else form.setFieldValue(field.name as never, undefined);
+      onSearch?.(form.getFieldsValue(true), { source: 'tag-remove' });
+    },
+    [disabled, form, onSearch],
+  );
+  const activeFilters = useActiveFilters({
+    fields: showActiveFilters ? visibleFields : [],
     form,
     currentValues,
-    initialValues,
-    searchMode,
-    onSearch: (values, info: SearchSearchInfo) => {
-      setCurrentValues(values);
-      onSearch?.(values, info);
-    },
+    onRemove: handleRemove,
   });
 
   // 暴露给外部的 ref 方法
@@ -137,25 +191,22 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
   // 单个字段弹窗确认
   const handleFieldConfirm = useCallback(
     (name: string, value: unknown) => {
-      const nextValues = {
-        ...form.getFieldsValue(),
-        [name]: value,
-      } as Values;
-      setCurrentValues(nextValues);
+      if (disabled) return;
+      form.setFieldValue(name as never, value);
+      const nextValues = form.getFieldsValue(true);
       onValuesChange?.({ [name]: value } as Partial<Values>, nextValues);
-
-      if (searchMode === 'change') {
-        onSearch?.(nextValues, { source: 'change' });
-      }
+      onSearch?.(nextValues, {
+        source: searchMode === 'change' ? 'change' : 'submit',
+      });
     },
-    [form, onSearch, onValuesChange, searchMode],
+    [disabled, form, onSearch, onValuesChange, searchMode],
   );
 
   return (
     <div className={cx(prefixCls, formStyles.root, className)} style={style}>
       <Form
         form={form}
-        initialValues={initialValues}
+        initialValues={defaults}
         onValuesChange={handleValuesChange}
         disabled={disabled}
         component={false}
@@ -165,7 +216,7 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
           <InlineForm
             prefixCls={prefixCls}
             form={form}
-            fields={fields}
+            fields={visibleFields}
             mode={mode}
             expanded={expanded}
             onToggleExpand={() => setExpanded(!expanded)}
@@ -174,6 +225,7 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
             onOpenMenu={() => setMenuOpen(true)}
             actionExtra={actionExtra}
             onFieldConfirm={handleFieldConfirm}
+            onRemove={handleRemove}
             disabled={disabled}
             locale={locale}
             classNames={classNames}
@@ -186,11 +238,10 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
           <MenuFormView
             prefixCls={prefixCls}
             form={form}
-            fields={fields}
+            fields={visibleFields}
             groups={groups}
             currentValues={currentValues}
-            searchMode={searchMode}
-            onSearch={onSearch}
+            onRemove={handleRemove}
             disabled={disabled}
             locale={locale}
             classNames={classNames}
@@ -205,7 +256,7 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
             open={menuOpen}
             onClose={() => setMenuOpen(false)}
             form={form}
-            fields={fields}
+            fields={visibleFields}
             groups={groups}
             menuTitle={menuTitle}
             showSearchButton={showSearchButton}
@@ -220,6 +271,20 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
             styles={customStyles}
           />
         )}
+        {mode === 'menu' && (
+          <SearchActions
+            showSearchButton={showSearchButton}
+            showResetButton={showResetButton}
+            searchText={searchText}
+            resetText={resetText}
+            disabled={disabled}
+            classNames={classNames}
+            styles={customStyles}
+            onSubmit={handleSubmit}
+            onReset={handleReset}
+            locale={locale}
+          />
+        )}
       </Form>
 
       {/* 已选条件区（Active Filters Bar） */}
@@ -227,7 +292,8 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
         <ActiveFiltersBar
           prefixCls={prefixCls}
           filters={activeFilters}
-          onClearAll={clearAll}
+          onClearAll={handleReset}
+          disabled={disabled}
           locale={locale}
           classNames={classNames}
           styles={customStyles}
@@ -237,14 +303,10 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
   );
 };
 
-const ForwardSearchForm = forwardRef(
-  InternalSearchForm as never,
-) as unknown as <Values extends object = Record<string, unknown>>(
+const SearchForm = memo(forwardRef(InternalSearchForm)) as <
+  Values extends object = Record<string, unknown>,
+>(
   props: SearchFormProps<Values> & { ref?: React.Ref<SearchFormRef<Values>> },
 ) => React.ReactElement | null;
-
-const SearchForm = memo(
-  ForwardSearchForm,
-) as unknown as typeof ForwardSearchForm;
 
 export default SearchForm;

@@ -8,14 +8,8 @@ const Logo: FC = () => {
   const home = 'base' in locale ? locale.base : '/';
 
   return (
-    <Link
-      className="dumi-default-logo htd-doc-logo"
-      to={home}
-      aria-label="HiTalent Design"
-    >
-      <span className="htd-doc-logo-mark" aria-hidden="true">
-        HT
-      </span>
+    <Link className="dumi-default-logo htd-doc-logo" to={home}>
+      <span className="htd-doc-logo-mark">HT</span>
       <span className="htd-doc-logo-copy">
         <strong>HiTalent Design</strong>
         <small>Business UI</small>

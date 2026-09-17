@@ -1,4 +1,4 @@
-import { Button, Collapse, type FormInstance } from 'antd';
+import { Collapse, type FormInstance } from 'antd';
 import React, { useMemo } from 'react';
 import type { SearchFormLocale } from '../../../locales';
 import Drawer from '../../Drawer';
@@ -9,7 +9,9 @@ import type {
   SearchFormFieldItem,
   SearchFormStyles,
 } from '../type';
+import { groupFields } from '../utils';
 import { FieldRenderer } from './FieldRenderer';
+import { SearchActions } from './SearchActions';
 
 interface MenuDrawerProps<Values extends object> {
   prefixCls?: string;
@@ -61,86 +63,30 @@ export const MenuDrawer = <Values extends object>({
     return fields.filter((field) => !field.quick);
   }, [fields]);
 
-  // 分组解析
-  const collapseItems = useMemo(() => {
-    if (!groups || groups.length === 0) {
-      // 未定义分组，全部归入默认“基础信息”
-      return [
-        {
-          key: 'default',
-          label: locale.basicInfo,
-          children: nonQuickFields.map((field) => (
-            <FieldRenderer
-              key={field.name}
-              field={field}
-              form={form}
-              disabled={disabled}
-            />
-          )),
-        },
-      ];
-    }
-
-    const groupMap = new Map<string, SearchFormFieldItem<Values>[]>();
-    groups.forEach((g) => groupMap.set(g.key, []));
-    const ungrouped: SearchFormFieldItem<Values>[] = [];
-
-    nonQuickFields.forEach((field) => {
-      if (field.group && groupMap.has(field.group)) {
-        groupMap.get(field.group)!.push(field);
-      } else {
-        ungrouped.push(field);
-      }
-    });
-
-    const items = groups.map((g) => ({
-      key: g.key,
-      label: g.title,
-      extra: g.extra,
-      children: (groupMap.get(g.key) || []).map((field) => (
-        <FieldRenderer
-          key={field.name}
-          field={field}
-          form={form}
-          disabled={disabled}
-        />
-      )),
-    }));
-
-    if (ungrouped.length > 0) {
-      items.push({
-        key: 'other',
-        label: locale.basicInfo,
-        extra: undefined,
-        children: ungrouped.map((field) => (
-          <FieldRenderer
-            key={field.name}
-            field={field}
-            form={form}
-            disabled={disabled}
-          />
-        )),
-      });
-    }
-
-    return items;
-  }, [disabled, form, groups, locale.basicInfo, nonQuickFields]);
-
-  const defaultActiveKeys = useMemo(() => {
-    if (!groups || groups.length === 0) return ['default'];
-    const active = groups
-      .filter((g) => g.defaultExpanded !== false)
-      .map((g) => g.key);
-    return active.length > 0 ? active : [groups[0].key];
-  }, [groups]);
+  const sections = useMemo(
+    () => groupFields(nonQuickFields, groups, locale.basicInfo),
+    [nonQuickFields, groups, locale.basicInfo],
+  );
+  const collapseItems = sections.map((group) => ({
+    key: group.key,
+    label: group.title,
+    extra: group.extra,
+    children: group.fields.map((field) => (
+      <FieldRenderer
+        key={field.name}
+        field={field}
+        form={form}
+        disabled={disabled}
+      />
+    )),
+  }));
+  const defaultActiveKeys = sections
+    .filter((group) => group.defaultExpanded !== false)
+    .map((group) => group.key);
 
   const handleSearchClick = () => {
     onSubmit();
     onClose();
-  };
-
-  const handleResetClick = () => {
-    onReset();
   };
 
   return (
@@ -195,27 +141,18 @@ export const MenuDrawer = <Values extends object>({
       </div>
 
       {/* 底部操作条 */}
-      {(showResetButton || showSearchButton) && (
-        <div
-          className={cx(drawerStyles.drawerFooter, classNames?.actions)}
-          style={customStyles?.actions}
-        >
-          {showResetButton && (
-            <Button onClick={handleResetClick} disabled={disabled}>
-              {resetText || locale.reset}
-            </Button>
-          )}
-          {showSearchButton && (
-            <Button
-              type="primary"
-              onClick={handleSearchClick}
-              disabled={disabled}
-            >
-              {searchText || locale.search}
-            </Button>
-          )}
-        </div>
-      )}
+      <SearchActions
+        showSearchButton={showSearchButton}
+        showResetButton={showResetButton}
+        searchText={searchText}
+        resetText={resetText}
+        disabled={disabled}
+        classNames={classNames}
+        styles={customStyles}
+        onSubmit={handleSearchClick}
+        onReset={onReset}
+        locale={locale}
+      />
     </Drawer>
   );
 };

@@ -13,7 +13,7 @@ const initialMeasurements: Measurements = {
   overflowWidth: null,
 };
 
-/** Observe only the container and hidden measurement nodes; resize entries already contain widths. */
+/** 仅监听容器与隐藏测量节点，尺寸变化记录中已包含宽度。 */
 export function useResponsiveMeasurements(
   enabled: boolean,
   items: readonly ResponsiveButtonGroupItem[],
@@ -37,16 +37,16 @@ export function useResponsiveMeasurements(
 
     const nodes = Array.from(
       container.querySelectorAll<HTMLElement>(
-        ':scope > [aria-hidden] > [data-rbg-measure]',
+        ':scope > [data-rbg-measure-container] > [data-rbg-measure]',
       ),
     );
     const keys = new Map(
       nodes
-        .slice(0, items.length)
+        .slice(0, keysInOrder.length)
         .map((node, index) => [node, keysInOrder[index]]),
     );
     const overflow = nodes[keysInOrder.length];
-    // This snapshot belongs to this subscription; removed keys never survive a new item list.
+    // 快照仅属于当前订阅，操作项列表变化后不保留已删除的键。
     let current = initialMeasurements;
     const observer = new ResizeObserver((entries) => {
       let { containerWidth, overflowWidth } = current;

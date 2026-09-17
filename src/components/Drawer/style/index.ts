@@ -1,8 +1,8 @@
 import { createStyles, css } from 'antd-style';
 
 export const useStyles = createStyles(({ token }) => {
-  const handleGripSize = token.lineWidthBold * 2; // ~4px
-  const handleHitOffset = -(token.marginXXS - token.lineWidth); // ~ -3px
+  const handleGripSize = token.lineWidthBold * 2; // 约 4px
+  const handleHitOffset = -(token.marginXXS - token.lineWidth); // 约 -3px
 
   return {
     root: css`

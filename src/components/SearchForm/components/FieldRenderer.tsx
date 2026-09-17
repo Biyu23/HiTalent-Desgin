@@ -6,49 +6,28 @@ interface FieldRendererProps<Values extends object> {
   field: SearchFormFieldItem<Values>;
   form: FormInstance<Values>;
   disabled?: boolean;
+  showLabel?: boolean;
 }
 
 export const FieldRenderer = <Values extends object>({
   field,
   form,
   disabled,
+  showLabel = true,
 }: FieldRendererProps<Values>) => {
-  const { name, label, children, formItemProps, initialValue, hidden } = field;
-
-  // 判断是否隐藏
-  const isHidden =
-    typeof hidden === 'function'
-      ? hidden(form.getFieldsValue(), form)
-      : !!hidden;
-
-  if (isHidden) {
-    return null;
-  }
-
-  const renderContent = () => {
-    if (typeof children === 'function') {
-      return children(form);
-    }
-    if (React.isValidElement(children)) {
-      if (disabled) {
-        return React.cloneElement(children, {
-          disabled: true,
-          ...children.props,
-        });
-      }
-      return children;
-    }
-    return children;
-  };
-
+  const control =
+    typeof field.children === 'function'
+      ? field.children(form)
+      : field.children;
   return (
     <Form.Item
-      name={name}
-      label={label}
-      initialValue={initialValue}
-      {...formItemProps}
+      {...field.formItemProps}
+      name={field.name}
+      label={showLabel ? field.label : undefined}
     >
-      {renderContent()}
+      {disabled && React.isValidElement<{ disabled?: boolean }>(control)
+        ? React.cloneElement(control, { disabled: true })
+        : control}
     </Form.Item>
   );
 };

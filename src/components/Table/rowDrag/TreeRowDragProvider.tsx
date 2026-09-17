@@ -17,6 +17,7 @@ import React, {
   useState,
 } from 'react';
 import { unstable_batchedUpdates } from 'react-dom';
+import { silentDragAnnouncements } from '../../_util/silentDragAnnouncements';
 import { useLayoutMotion } from '../hooks/useLayoutMotion';
 import type {
   RowDragProviderProps,
@@ -26,7 +27,6 @@ import type {
 import type { TableRowKey } from '../type';
 import { visibleTableRows } from '../utils/dragPreview';
 import { RowDragStateContext, RowRuntimeContext } from './SortableRow';
-import { dragAccessibility } from './sensors';
 import { useRowCollisionDetection } from './useRowCollisionDetection';
 import {
   collectSubtreeKeys,
@@ -226,7 +226,7 @@ export default function TreeRowDragProvider<RecordType>(
       const result = { candidate: resolved, nextDataSource };
       resultRef.current = result;
       setCandidate(resolved);
-      // Keep the tree in place until release; candidate drives the insertion guide.
+      // 释放前保持树结构不变，使用候选位置更新插入指示线。
       scheduleExpand(result, registry);
       return result;
     },
@@ -260,7 +260,7 @@ export default function TreeRowDragProvider<RecordType>(
   }, [evaluate]);
 
   const end = useCallback(() => {
-    // A sensor may release after this provider has been removed or cancelled.
+    // 当前提供者卸载或拖拽取消后，传感器仍可能触发释放事件。
     if (activeKeyRef.current === null) return;
     clearFrame();
     const result = evaluate(true);
@@ -339,7 +339,7 @@ export default function TreeRowDragProvider<RecordType>(
 
   return (
     <DndContext
-      accessibility={dragAccessibility}
+      accessibility={silentDragAnnouncements}
       modifiers={rowModifiers}
       sensors={sensors}
       collisionDetection={collisionDetection}

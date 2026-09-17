@@ -6,7 +6,7 @@ toc: content
 
 # Table
 
-Table 在 Ant Design Table 基础上提供列状态、列设置、列宽调整、列拖拽和行拖拽能力。列状态使用 `useMergedState` 管理，行列拖拽保持相互隔离。
+Table 在 Ant Design Table 基础上提供列状态、列设置、列宽调整、列拖拽和行拖拽能力，支持受控与非受控列状态，行列拖拽保持相互隔离。
 
 ## 代码演示
 

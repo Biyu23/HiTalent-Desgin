@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMergeState } from '../../../hooks';
 import type {
   PopoverSelectProps,
@@ -65,7 +65,7 @@ export function usePopoverSelectState<V extends RawValueType, O extends object>(
     [props.mode, props.onChange, props.valueType],
   );
 
-  const [selectedValues, { set: setSelectedValues }] = useMergeState<
+  const [storedValues, { set: setSelectedValues }] = useMergeState<
     V[],
     ExternalValue<V>,
     [O[]]
@@ -77,6 +77,22 @@ export function usePopoverSelectState<V extends RawValueType, O extends object>(
     transformToOrigin,
     transformToResult,
   });
+
+  const normalizeValues = useCallback(
+    (values: V[]) =>
+      valueType === 'string'
+        ? Array.from(
+            new Set(
+              values.map((value) => stringValueMap.get(String(value)) ?? value),
+            ),
+          )
+        : values,
+    [stringValueMap, valueType],
+  );
+  const selectedValues = useMemo(
+    () => normalizeValues(storedValues),
+    [storedValues, normalizeValues],
+  );
 
   const [requestedOpen, { set: setOpen }] = useMergeState<boolean>({
     defaultValue: props.defaultOpen ?? false,
@@ -92,8 +108,10 @@ export function usePopoverSelectState<V extends RawValueType, O extends object>(
     const last = previous.current;
     const changed =
       last.selectedValues.length !== selectedValues.length ||
-      last.selectedValues.some(
-        (value, index) => value !== selectedValues[index],
+      last.selectedValues.some((value, index) =>
+        valueType === 'string'
+          ? String(value) !== String(selectedValues[index])
+          : value !== selectedValues[index],
       );
 
     // 重排 options 会重新解析 value；等值结果不覆盖未确认的草稿。
@@ -109,7 +127,7 @@ export function usePopoverSelectState<V extends RawValueType, O extends object>(
     }
 
     previous.current = { open, selectedValues, confirmRequired };
-  }, [open, selectedValues, confirmRequired]);
+  }, [open, selectedValues, confirmRequired, valueType]);
 
   useEffect(() => {
     if (disabled && requestedOpen) {
@@ -117,7 +135,11 @@ export function usePopoverSelectState<V extends RawValueType, O extends object>(
     }
   }, [disabled, requestedOpen, setOpen]);
 
-  const targetValues = confirmRequired ? draftValues : selectedValues;
+  const normalizedDraftValues = useMemo(
+    () => normalizeValues(draftValues),
+    [draftValues, normalizeValues],
+  );
+  const targetValues = confirmRequired ? normalizedDraftValues : selectedValues;
 
   const emitValue = useCallback(
     (values: V[]) => {
@@ -208,11 +230,11 @@ export function usePopoverSelectState<V extends RawValueType, O extends object>(
     }
 
     if (confirmRequired) {
-      emitValue(draftValues);
+      emitValue(normalizedDraftValues);
     }
 
     setOpen(false);
-  }, [disabled, confirmRequired, emitValue, draftValues, setOpen]);
+  }, [disabled, confirmRequired, emitValue, normalizedDraftValues, setOpen]);
 
   const context: PopoverSelectRenderContext<V, O> = {
     options: normalized.options,

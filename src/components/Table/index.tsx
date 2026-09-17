@@ -73,7 +73,7 @@ function InternalTable<RecordType = Record<string, unknown>>(
   const tableRef = useRef<AntdTableRef>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const scrollVirtual = useCallback((left: number) => {
-    // Virtual rc-table delegates position options to rc-virtual-list.
+    // 虚拟表格 rc-table 将位置参数转交给 rc-virtual-list。
     const position: { left: number; top?: number } = { left };
     tableRef.current?.scrollTo(position);
   }, []);
@@ -98,7 +98,7 @@ function InternalTable<RecordType = Record<string, unknown>>(
     };
   }, [childrenColumnName, expandable?.childrenColumnName, rowDragProp]);
   const rowKey = rowKeyProp ?? ('key' as keyof RecordType);
-  // Keep legacy top-level expansion inputs working when the hook owns expansion.
+  // 由钩子管理展开状态时，仍兼容原有的顶层展开参数。
   const expandableConfig = useMemo(
     () => ({
       expandedRowKeys: tableProps.expandedRowKeys,

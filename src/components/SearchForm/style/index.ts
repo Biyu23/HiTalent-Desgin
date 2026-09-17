@@ -33,6 +33,13 @@ export const useStyles = createStyles(({ token }) => {
     `,
 
     fieldTrigger: css`
+      border: 0;
+      background: transparent;
+      font: inherit;
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -105,6 +112,13 @@ export const useStyles = createStyles(({ token }) => {
     `,
 
     toggleButton: css`
+      border: 0;
+      background: transparent;
+      font: inherit;
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
       display: inline-flex;
       align-items: center;
       gap: 4px;

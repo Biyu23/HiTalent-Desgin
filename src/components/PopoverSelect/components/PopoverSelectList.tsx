@@ -129,7 +129,6 @@ export default function PopoverSelectList<
       onSortChange={config.onSortChange}
       renderOption={renderOption}
       listItemHeight={listItemHeight}
-      locale={locale}
     >
       {menu}
     </SortableOptions>

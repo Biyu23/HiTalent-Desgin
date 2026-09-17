@@ -19,8 +19,6 @@ export type MinimizeStack = boolean | MinimizeStackConfig;
 export interface MinimizeLocale {
   restore: string;
   close: string;
-  minimizedDockLabel: string;
-  minimizedDockDragHandle: string;
 }
 
 export interface DockItem {

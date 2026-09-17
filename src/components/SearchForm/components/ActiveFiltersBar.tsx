@@ -9,6 +9,7 @@ interface ActiveFiltersBarProps {
   prefixCls?: string;
   filters: ActiveFilterItem[];
   onClearAll: () => void;
+  disabled?: boolean;
   locale: SearchFormLocale;
   classNames?: SearchFormClassNames;
   styles?: SearchFormStyles;
@@ -17,6 +18,7 @@ interface ActiveFiltersBarProps {
 export const ActiveFiltersBar: React.FC<ActiveFiltersBarProps> = ({
   filters,
   onClearAll,
+  disabled,
   locale,
   classNames,
   styles: customStyles,
@@ -39,14 +41,17 @@ export const ActiveFiltersBar: React.FC<ActiveFiltersBarProps> = ({
         {filters.map((filter) => (
           <Tag
             key={filter.name}
-            closable
+            closable={!disabled}
             onClose={(e) => {
               e.preventDefault();
               filter.onRemove();
             }}
             className={barStyles.filterTag}
           >
-            <Tooltip title={filter.tooltipText} placement="top">
+            <Tooltip
+              title={filter.tooltipText ?? filter.content}
+              placement="top"
+            >
               <span className={barStyles.filterTagContent}>
                 {filter.content}
               </span>
@@ -60,6 +65,7 @@ export const ActiveFiltersBar: React.FC<ActiveFiltersBarProps> = ({
         size="small"
         danger
         onClick={onClearAll}
+        disabled={disabled}
         className={barStyles.clearAllBtn}
       >
         {locale.clearAll}

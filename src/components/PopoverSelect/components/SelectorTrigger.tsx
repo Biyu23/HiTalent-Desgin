@@ -52,8 +52,6 @@ const SelectorTrigger = forwardRef<
         ref={ref}
         type="text"
         disabled={disabled}
-        aria-expanded={open}
-        aria-haspopup="dialog"
         className={cx(
           `${prefixCls}-selector`,
           triggerStyles.selectorBtn,

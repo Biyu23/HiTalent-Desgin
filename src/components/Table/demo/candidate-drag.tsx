@@ -132,7 +132,6 @@ export default function CandidateDragDemo() {
                   <Button
                     type="link"
                     size="small"
-                    aria-label={channelLabels[channel]}
                     icon={channelIcons[channel]}
                   />
                 </Tooltip>
@@ -234,11 +233,7 @@ export default function CandidateDragDemo() {
             <Badge count={candidateData.length * 9} overflowCount={99} />
           </div>
           <Tooltip title="Fullscreen preview">
-            <Button
-              type="text"
-              aria-label="Fullscreen preview"
-              icon={<FullscreenOutlined />}
-            />
+            <Button type="text" icon={<FullscreenOutlined />} />
           </Tooltip>
         </div>
       }

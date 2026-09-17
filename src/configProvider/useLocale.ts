@@ -3,7 +3,7 @@ import type { LocaleComponentMap } from '../locales';
 import { useLocaleSettings } from './context';
 import { deepMergeLocale } from './mergeLocale';
 
-/** Explicit HTD locale takes precedence over the host language; instance copy overrides both. */
+/** 显式指定的 HTD 语言包优先于宿主语言；实例文案覆盖两者。 */
 export const useLocale = <K extends keyof LocaleComponentMap>(
   componentName: K,
   customLocale?: Partial<LocaleComponentMap[K]>,

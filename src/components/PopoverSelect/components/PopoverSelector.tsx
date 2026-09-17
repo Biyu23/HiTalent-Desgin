@@ -2,7 +2,7 @@ import { Button, Popover } from 'antd';
 import React, { forwardRef, useCallback, useEffect, useRef } from 'react';
 import { usePrefixCls } from '../../../configProvider';
 import { useMergeState } from '../../../hooks';
-import { setRef } from '../../../utils';
+import { setRef, withNativeProps } from '../../../utils';
 import { useTriggerWidth } from '../hooks/useTriggerWidth';
 import { useStyles } from '../style';
 import type { SelectorProps } from '../type';
@@ -60,23 +60,24 @@ export const Selector = forwardRef<
       }
       onOpenChange={props.disabled ? undefined : setOpen}
     >
-      <SelectorTrigger
-        ref={handleRef}
-        prefixCls={prefixCls}
-        open={open}
-        disabled={props.disabled}
-        allowClear={props.allowClear}
-        hasValue={props.hasValue}
-        onClear={props.onClear}
-        showArrow={props.showArrow}
-        ellipsis={props.ellipsis}
-        className={props.className}
-        style={props.style}
-        classNames={props.classNames}
-        styles={props.styles}
-      >
-        {props.children}
-      </SelectorTrigger>
+      {withNativeProps(
+        props,
+        <SelectorTrigger
+          ref={handleRef}
+          prefixCls={prefixCls}
+          open={open}
+          disabled={props.disabled}
+          allowClear={props.allowClear}
+          hasValue={props.hasValue}
+          onClear={props.onClear}
+          showArrow={props.showArrow}
+          ellipsis={props.ellipsis}
+          classNames={props.classNames}
+          styles={props.styles}
+        >
+          {props.children}
+        </SelectorTrigger>,
+      )}
     </Popover>
   );
 });

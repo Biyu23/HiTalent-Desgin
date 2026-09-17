@@ -26,6 +26,14 @@ toc: content
 
 ## API
 
+表单值统一由 `Form` 实例管理，外部 `setFieldsValue`、`setFieldValue`、`resetFields` 会同步标签与字段显隐，但不会自动触发查询。组件内部查询会读取完整表单值，包括尚未打开的弹层字段；隐藏字段保留已有值。
+
+平铺弹层使用独立草稿，点击确定时校验当前字段并提交查询；关闭弹层不提交。`children(form)` 始终接收主表单，可读取其他字段实现联动。菜单及抽屉直接修改主表单，`change` 模式下随字段修改查询，`submit` 模式下点击搜索查询。
+
+删除标签或点击字段清空统一触发 `tag-remove` 查询，并保留自定义 `onClear` 的实际结果。重置和“清空全部”均恢复初始值，同时触发 `onReset` 与 `reset` 查询。`initialValues` 优先于字段 `initialValue`；不再从 `formItemProps.initialValue` 设置默认值。
+
+`menu` 模式在页面内展示分组和操作按钮；只有 `combined` 模式使用抽屉。移除了从未生效的 `span` 属性。默认标签统一显示值的文本形式，业务文案（如布尔值、长数组摘要）请使用 `formatTag`。
+
 `className`、`style` 设置根容器。`classNames` 和 `styles` 均支持 `form`、`actions`、`activeFilters`、`menu`、`drawer`、`quickFilters`、`group`；`actions` 同时用于抽屉操作区。
 
 ### SearchForm
@@ -66,7 +74,6 @@ toc: content
 | children      | 字段表单控件渲染内容（元素或接收 form 的渲染函数）   | `ReactNode \| ((form: FormInstance) => ReactNode)`       | -       |
 | formItemProps | 传递给内部 `Form.Item` 的属性                        | `FormItemProps`                                          | -       |
 | initialValue  | 初始默认值                                           | `unknown`                                                | -       |
-| span          | 栅格列数（24 栅格制）                                | `number`                                                 | -       |
 | group         | 所属分组 key（menu 模式有效）                        | `string`                                                 | -       |
 | quick         | 是否作为快捷布尔筛选（呈现在抽屉顶部 Quick Filters） | `boolean`                                                | `false` |
 | pinned        | 是否在平铺收起状态下始终固定展示                     | `boolean`                                                | `false` |
