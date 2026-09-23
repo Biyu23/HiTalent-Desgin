@@ -66,8 +66,7 @@ HiTalent-Design/
 │   │   ├── Modal/                  # 增强弹窗（拖拽 / 缩放 / 最大化 / 最小化 Dock）
 │   │   ├── PopoverSelect/          # 气泡选择器（虚拟滚动 / 字段映射 / 字符串格式转换）
 │   │   ├── ResponsiveButtonGroup/  # 响应式自适应操作按钮组
-│   │   ├── Table/                  # 增强表格（列配置 / 列宽缩放 / 行列拖拽排序）
-│   │   └── SvgIcon/                # 图标组件
+│   │   └── Table/                  # 增强表格（列配置 / 列宽缩放 / 行列拖拽排序）
 │   ├── configProvider/  # ConfigProvider 全局配置上下文与命名空间 hook
 │   ├── hooks/           # 通用 Hooks (useMergeState, useDragBounds, useFieldNames)
 │   ├── locales/         # 双语语言包定义 (zh_CN, en_US)
