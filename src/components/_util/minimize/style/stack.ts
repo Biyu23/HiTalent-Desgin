@@ -3,7 +3,7 @@ import { createStyles, css, keyframes } from 'antd-style';
 const minimizeDockIn = keyframes`
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(var(--dock-enter-offset, 16px));
   }
   to {
     opacity: 1;
@@ -20,7 +20,11 @@ export const useStackStyles = createStyles(({ token }) => ({
     overflow: visible;
     background: transparent;
     pointer-events: auto;
-    transition: height ${token.motionDurationSlow} cubic-bezier(0.16, 1, 0.3, 1);
+    transition: height ${token.motionDurationSlow} ${token.motionEaseOutCirc};
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
 
     &::after {
       position: absolute;
@@ -50,10 +54,8 @@ export const useStackStyles = createStyles(({ token }) => ({
   `,
   canvas: css`
     position: relative;
-    display: flex;
+    --dock-enter-offset: -16px;
     width: 100%;
-    flex-direction: column;
-    gap: ${token.margin}px;
     background: transparent;
   `,
   canvasBottom: css`
@@ -61,15 +63,17 @@ export const useStackStyles = createStyles(({ token }) => ({
     right: 0;
     bottom: 0;
     left: 0;
-    flex-direction: column-reverse;
+    --dock-enter-offset: 16px;
   `,
   cardItem: css`
-    position: relative;
+    position: absolute;
     width: 100%;
-    flex: 0 0 auto;
-    transition: transform ${token.motionDurationSlow},
+    transition: transform ${token.motionDurationSlow} ${token.motionEaseOutCirc},
       opacity ${token.motionDurationMid};
-    will-change: transform, opacity;
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
   `,
   stackCard: css`
     position: relative;
@@ -81,7 +85,11 @@ export const useStackStyles = createStyles(({ token }) => ({
     border-radius: ${token.borderRadiusLG}px;
     box-shadow: ${token.boxShadowTertiary};
     animation: ${minimizeDockIn} ${token.motionDurationSlow}
-      cubic-bezier(0.16, 1, 0.3, 1) both;
+      ${token.motionEaseOutCirc} both;
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
     transition: box-shadow ${token.motionDurationMid}
         cubic-bezier(0.16, 1, 0.3, 1),
       border-color ${token.motionDurationFast} ease;

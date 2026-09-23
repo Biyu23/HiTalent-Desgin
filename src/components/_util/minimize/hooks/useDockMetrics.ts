@@ -2,6 +2,7 @@ import type React from 'react';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 
 export interface DockCardMetrics {
+  // 距离停靠边缘的累计偏移，与卡片动画中的实际位置解耦。
   top: number;
   width: number;
   height: number;
@@ -22,6 +23,7 @@ export interface UseDockMetricsOptions {
   itemIds: string[];
   revision: string;
   fallbackHeight: number;
+  gap: number;
 }
 
 const sameCardMetrics = (
@@ -50,6 +52,7 @@ const useDockMetrics = ({
   itemIds,
   revision,
   fallbackHeight,
+  gap,
 }: UseDockMetricsOptions): DockMetrics => {
   const cardNodesRef = useRef(new Map<string, HTMLDivElement>());
   const cardCallbacksRef = useRef(
@@ -78,19 +81,21 @@ const useDockMetrics = ({
     if (!content) return;
 
     const cards = new Map<string, DockCardMetrics>();
+    let contentHeight = 0;
     itemIds.forEach((id) => {
       const card = cardNodesRef.current.get(id);
       if (!card) return;
+      const height = card.offsetHeight;
       cards.set(id, {
-        top: card.offsetTop,
+        top: contentHeight,
         width: card.offsetWidth,
-        height: card.offsetHeight,
+        height,
       });
+      contentHeight += height + gap;
     });
 
     const latestHeight = cards.get(itemIds[0])?.height || fallbackHeight;
-    const contentHeight =
-      content.offsetHeight || content.scrollHeight || latestHeight;
+    contentHeight = cards.size ? contentHeight - gap : latestHeight;
 
     setMetrics((current) =>
       current.contentHeight === contentHeight &&
@@ -99,7 +104,7 @@ const useDockMetrics = ({
         ? current
         : { contentHeight, latestHeight, cards },
     );
-  }, [contentRef, fallbackHeight, itemIds]);
+  }, [contentRef, fallbackHeight, gap, itemIds]);
 
   useLayoutEffect(() => {
     measure();

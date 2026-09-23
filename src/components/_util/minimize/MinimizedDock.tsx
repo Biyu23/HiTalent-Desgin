@@ -32,9 +32,9 @@ const MinimizedDockInner = memo<MinimizedDockProps>(
     const { styles: containerStyles, cx } = useContainerStyles();
     const dockId = useDockId(propId);
     const items = useDockItems(dockPosition);
-    const [scrollWrapperEl, setScrollWrapperEl] = useState<HTMLElement | null>(
-      null,
-    );
+    const [dockContainer, setDockContainer] = useState<ReturnType<
+      typeof acquireDockContainer
+    > | null>(null);
     const positionClassName = {
       'top-left': containerStyles.topLeft,
       'top-right': containerStyles.topRight,
@@ -92,7 +92,7 @@ const MinimizedDockInner = memo<MinimizedDockProps>(
         scrollWrapperClassName,
         position: dockPosition,
       });
-      setScrollWrapperEl(entry.scrollWrapper);
+      setDockContainer(entry);
       return entry.release;
     }, [
       containerStyles.container,
@@ -103,15 +103,16 @@ const MinimizedDockInner = memo<MinimizedDockProps>(
 
     // 每个位置由最早注册的承载容器
     const isLeader = items.length > 0 && items[0].id === dockId;
-    if (!scrollWrapperEl || !isLeader) return null;
+    if (!dockContainer || !isLeader) return null;
 
     return createPortal(
       <DockStack
         items={items}
         position={dockPosition}
         dockPrefixCls={dockPrefixCls}
+        presentedIds={dockContainer.presentedIds}
       />,
-      scrollWrapperEl,
+      dockContainer.scrollWrapper,
     );
   },
 );

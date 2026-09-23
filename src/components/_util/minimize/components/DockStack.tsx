@@ -23,12 +23,13 @@ export interface DockStackProps {
   items: DockItem[];
   position: MinimizePosition;
   dockPrefixCls: string;
+  presentedIds: Set<string>;
 }
 
 const DEFAULT_CARD_HEIGHT = 48;
 
 export const DockStack = memo<DockStackProps>(
-  ({ items, position, dockPrefixCls }) => {
+  ({ items, position, dockPrefixCls, presentedIds }) => {
     const { token } = theme.useToken();
     const { styles, cx } = useStackStyles();
     const { dragRef, bounds, onStart, updateBounds } = useDragBounds();
@@ -62,6 +63,7 @@ export const DockStack = memo<DockStackProps>(
       itemIds,
       revision: itemRevision,
       fallbackHeight: DEFAULT_CARD_HEIGHT,
+      gap: token.margin,
     });
 
     const maxAllowedHeight = Math.max(
@@ -89,6 +91,21 @@ export const DockStack = memo<DockStackProps>(
     const latestMetrics = metrics.cards.get(latestItem.id);
     const hasMeasuredCards = metrics.cards.size === totalCount;
     const draggable = !collapsible;
+    const layoutReadyRef = useRef(false);
+    const layoutReady = layoutReadyRef.current;
+
+    useLayoutEffect(() => {
+      // 首次测量直接落位，避免承载组件切换后从零偏移弹入。
+      if (hasMeasuredCards) layoutReadyRef.current = true;
+    }, [hasMeasuredCards]);
+
+    useLayoutEffect(() => {
+      const activeIds = new Set(itemIds);
+      presentedIds.forEach((id) => {
+        if (!activeIds.has(id)) presentedIds.delete(id);
+      });
+      itemIds.forEach((id) => presentedIds.add(id));
+    }, [itemIds, presentedIds]);
 
     return (
       <DraggablePointerContainer
@@ -101,7 +118,11 @@ export const DockStack = memo<DockStackProps>(
         onDrag={setDragOffset}
         handle={`.${styles.header}`}
         className={cx(styles.stackWrapper)}
-        style={{ height: containerHeight, maxHeight: maxAllowedHeight }}
+        style={{
+          height: containerHeight,
+          maxHeight: maxAllowedHeight,
+          transition: layoutReady ? undefined : 'none',
+        }}
         onMouseEnter={expansion.onMouseEnter}
         onMouseLeave={expansion.onMouseLeave}
         onFocusCapture={expansion.onFocusCapture}
@@ -118,6 +139,7 @@ export const DockStack = memo<DockStackProps>(
           <div
             ref={contentRef}
             className={cx(styles.canvas, anchorBottom && styles.canvasBottom)}
+            style={{ height: metrics.contentHeight }}
           >
             {displayItems.map((item, index) => {
               const cardMetrics = metrics.cards.get(item.id);
@@ -126,16 +148,14 @@ export const DockStack = memo<DockStackProps>(
                 expanded ||
                 index === 0 ||
                 (hasMeasuredCards && index < NOTIFICATION_STACK_LAYERS);
-              let transform = 'translateY(0) scaleX(1)';
+              // 所有卡片都从停靠边缘定位，新增项只改变 transform，避免文档流跳位。
+              const direction = anchorBottom ? -1 : 1;
+              let transform = `translateY(${
+                direction * (cardMetrics?.top ?? 0)
+              }px) scaleX(1)`;
 
               if (!expanded && latestMetrics && cardMetrics) {
-                const targetTop = anchorBottom
-                  ? latestMetrics.top +
-                    latestMetrics.height -
-                    cardMetrics.height -
-                    index * NOTIFICATION_STACK_OFFSET
-                  : latestMetrics.top + index * NOTIFICATION_STACK_OFFSET;
-                const offsetY = targetTop - cardMetrics.top;
+                const offsetY = direction * index * NOTIFICATION_STACK_OFFSET;
                 const scaleX = getCollapsedStackScale(
                   latestMetrics.width,
                   cardMetrics.width,
@@ -145,8 +165,11 @@ export const DockStack = memo<DockStackProps>(
               }
 
               const itemStyle: React.CSSProperties = {
+                top: anchorBottom ? undefined : 0,
+                bottom: anchorBottom ? 0 : undefined,
                 transform,
                 transformOrigin,
+                transition: layoutReady ? undefined : 'none',
                 opacity: visible ? 1 : 0,
                 zIndex: totalCount - index,
                 pointerEvents: interactive ? 'auto' : 'none',
@@ -161,6 +184,7 @@ export const DockStack = memo<DockStackProps>(
                 >
                   <DockCard
                     item={item}
+                    entering={!presentedIds.has(item.id)}
                     interactive={interactive}
                     draggable={draggable}
                     elevated={!expanded && index < NOTIFICATION_STACK_LAYERS}

@@ -1,11 +1,12 @@
 import { CloseOutlined, ExpandOutlined } from '@ant-design/icons';
 import { Button, Flex } from 'antd';
-import React, { memo } from 'react';
+import React, { memo, useRef } from 'react';
 import { useStackStyles } from '../style';
 import type { DockItem } from '../type';
 
 export interface DockCardProps {
   item: DockItem;
+  entering: boolean;
   interactive: boolean;
   draggable: boolean;
   elevated?: boolean;
@@ -13,8 +14,10 @@ export interface DockCardProps {
 }
 
 export const DockCard = memo<DockCardProps>(
-  ({ item, interactive, draggable, elevated, count }) => {
+  ({ item, entering, interactive, draggable, elevated, count }) => {
     const { styles, cx } = useStackStyles();
+    // 入场资格固定在本次挂载，后续更新不打断正在播放的动画。
+    const enteringRef = useRef(entering);
 
     return (
       <div
@@ -23,7 +26,10 @@ export const DockCard = memo<DockCardProps>(
           elevated && styles.stackCardElevated,
           item.className,
         )}
-        style={item.style}
+        style={{
+          ...item.style,
+          ...(!enteringRef.current && { animation: 'none' }),
+        }}
       >
         <div
           className={cx(

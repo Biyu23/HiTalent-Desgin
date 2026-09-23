@@ -5,6 +5,8 @@ type ClassReferences = Map<string, number>;
 interface DockRegistryEntry {
   container: HTMLDivElement;
   scrollWrapper: HTMLDivElement;
+  // 记录已展示卡片，承载组件切换时不重复播放入场动画。
+  presentedIds: Set<string>;
   references: number;
   containerClasses: ClassReferences;
   scrollWrapperClasses: ClassReferences;
@@ -62,6 +64,7 @@ export interface AcquireDockContainerOptions {
 export function acquireDockContainer(options: AcquireDockContainerOptions): {
   container: HTMLDivElement;
   scrollWrapper: HTMLDivElement;
+  presentedIds: Set<string>;
   release: () => void;
 } {
   const {
@@ -81,6 +84,7 @@ export function acquireDockContainer(options: AcquireDockContainerOptions): {
     entry = {
       container,
       scrollWrapper,
+      presentedIds: new Set(),
       references: 0,
       containerClasses: new Map(),
       scrollWrapperClasses: new Map(),
@@ -97,6 +101,7 @@ export function acquireDockContainer(options: AcquireDockContainerOptions): {
   return {
     container: entry.container,
     scrollWrapper: entry.scrollWrapper,
+    presentedIds: entry.presentedIds,
     release: () => {
       if (released) return;
       released = true;
