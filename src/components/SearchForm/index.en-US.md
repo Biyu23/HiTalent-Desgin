@@ -11,12 +11,14 @@ toc: content
 ## When to Use
 
 - When filtering fields are few (4~8 items), and you want quick inline filtering on top of the page with fold/expand capability.
-- When filtering fields are numerous and categorized, requiring a side drawer for business grouping and quick boolean filters.
+- When filtering fields are numerous and categorized, requiring on-page business grouping and quick filters.
 - When you want to combine inline quick filtering with an advanced drawer filter while sharing the same active tags and query state.
 
 ## Examples
 
 <code src="./demo/basic.tsx" title="Inline Mode & Threshold Expand" description="Display filter items inline. When the count exceeds defaultVisibleCount, smooth expand/collapse is provided."></code>
+
+<code src="./demo/inline-form.tsx" title="Direct Form Layout" description="Set inlineLayout to form for responsive control columns with search, reset, and validation."></code>
 
 <code src="./demo/menu.tsx" title="Menu Mode & Business Groups" description="Display categorized filters and search/reset actions directly on the page."></code>
 
@@ -36,11 +38,25 @@ Menu mode renders groups and action buttons on the page; only combined mode uses
 
 Use `className` and `style` for the root. Both `classNames` and `styles` support `form`, `actions`, `activeFilters`, `menu`, `drawer`, `quickFilters`, and `group`. `actions` also targets the drawer action area.
 
+### Layout and extension
+
+- `inlineLayout="popover"` (default) uses equal-height filter buttons with selected-value summaries. `formatTag` also controls the button summary.
+- `inlineLayout="form"` renders controls directly. `inlineMinWidth` sets the minimum column width; narrow containers use one column. Search validates visible, enabled fields, including collapsed fields, and expands on failure. Collapsing preserves values. Hidden fields retain values but are excluded from this validation.
+- `menu` renders filter content only, without a title, fixed dimensions, or a scroll container. `quick` fields appear in a separate, initially collapsed section. Groups use trailing arrows; fields use plus/minus icons.
+- Menu actions stay in normal document flow. `actionExtra` works in all modes. Hide both built-in buttons to supply your own actions.
+- `fields[].disabled` disables editing and individual tag removal; a full reset still restores all initial values. Tag removal also calls `onValuesChange`, including related fields changed by `onClear`.
+
+For a fixed-height menu, set `style={{ height: 560 }}` and `styles={{ menu: { flex: 1, minHeight: 0, overflowY: 'auto' } }}`. The surrounding title and layout belong to the application.
+
+Menu and combined-mode submissions validate visible, enabled fields, including collapsed groups and controls. Validation failure expands the panels and keeps the drawer open. Stale async submissions do not search or expand panels; resetting cancels pending submissions.
+
 ### SearchForm
 
 | Property            | Description                                                               | Type                                                                                          | Default             |
 | ------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------- |
 | mode                | Display mode: `inline` \| `menu` \| `combined`                            | `'inline' \| 'menu' \| 'combined'`                                                            | `'inline'`          |
+| inlineLayout        | Inline layout: filter buttons or direct controls                          | `'popover' \| 'form'`                                                                         | `'popover'`         |
+| inlineMinWidth      | Minimum direct-form column width in pixels                                | `number`                                                                                      | `200`               |
 | fields              | List of field definitions                                                 | `SearchFormFieldItem[]`                                                                       | `[]`                |
 | groups              | Business groups configuration (used in menu mode and the combined drawer) | `SearchFieldGroup[]`                                                                          | -                   |
 | form                | Ant Design Form instance                                                  | `FormInstance`                                                                                | -                   |
@@ -67,19 +83,22 @@ Use `className` and `style` for the root. Both `classNames` and `styles` support
 
 ### SearchFormFieldItem
 
-| Property      | Description                                           | Type                                                     | Default |
-| ------------- | ----------------------------------------------------- | -------------------------------------------------------- | ------- |
-| name          | Unique field identifier, maps to Form name            | `string`                                                 | -       |
-| label         | Field label                                           | `ReactNode`                                              | -       |
-| children      | Field control element or render function              | `ReactNode \| ((form: FormInstance) => ReactNode)`       | -       |
-| formItemProps | Extra props for underlying `Form.Item`                | `FormItemProps`                                          | -       |
-| initialValue  | Initial default value                                 | `unknown`                                                | -       |
-| group         | Group key (used in menu mode and the combined drawer) | `string`                                                 | -       |
-| quick         | Whether field belongs to quick boolean filter         | `boolean`                                                | `false` |
-| pinned        | Whether field is always visible when collapsed        | `boolean`                                                | `false` |
-| formatTag     | Custom tag text generator. Return false/null to skip  | `(value, allValues, form) => ReactNode \| false \| null` | -       |
-| onClear       | Custom clear logic for tag removal                    | `(form: FormInstance) => void`                           | -       |
-| hidden        | Whether field is hidden                               | `boolean \| ((values, form) => boolean)`                 | -       |
+| Property        | Description                                           | Type                                                     | Default |
+| --------------- | ----------------------------------------------------- | -------------------------------------------------------- | ------- |
+| name            | Unique field identifier, maps to Form name            | `string`                                                 | -       |
+| label           | Field label                                           | `ReactNode`                                              | -       |
+| children        | Field control element or render function              | `ReactNode \| ((form: FormInstance) => ReactNode)`       | -       |
+| formItemProps   | Extra props for underlying `Form.Item`                | `FormItemProps`                                          | -       |
+| initialValue    | Initial default value                                 | `unknown`                                                | -       |
+| group           | Group key (used in menu mode and the combined drawer) | `string`                                                 | -       |
+| quick           | Whether field belongs to quick boolean filter         | `boolean`                                                | `false` |
+| pinned          | Whether field is always visible when collapsed        | `boolean`                                                | `false` |
+| formatTag       | Custom tag text generator. Return false/null to skip  | `(value, allValues, form) => ReactNode \| false \| null` | -       |
+| onClear         | Custom clear logic for tag removal                    | `(form: FormInstance) => void`                           | -       |
+| hidden          | Whether field is hidden                               | `boolean \| ((values, form) => boolean)`                 | -       |
+| disabled        | Disable field editing and individual removal          | `boolean`                                                | `false` |
+| defaultExpanded | Expand the menu field initially                       | `boolean`                                                | `false` |
+| maxTagCount     | Visible menu tags before overflow                     | `number`                                                 | `3`     |
 
 ### SearchFieldGroup
 
@@ -92,10 +111,10 @@ Use `className` and `style` for the root. Both `classNames` and `styles` support
 
 ### SearchFormRef
 
-| Method      | Description                             | Type           |
-| ----------- | --------------------------------------- | -------------- |
-| form        | Get underlying Ant Design Form instance | `FormInstance` |
-| submit      | Trigger search query manually           | `() => void`   |
-| resetFields | Reset all fields and trigger search     | `() => void`   |
-| openMenu    | Open drawer menu                        | `() => void`   |
-| closeMenu   | Close drawer menu                       | `() => void`   |
+| Method      | Description                                                                                                      | Type                     |
+| ----------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| form        | Get underlying Ant Design Form instance                                                                          | `FormInstance`           |
+| submit      | Trigger search; direct, menu and combined layouts await validation; resolves false if disabled, stale or invalid | `() => Promise<boolean>` |
+| resetFields | Reset all fields and trigger search                                                                              | `() => void`             |
+| openMenu    | Open drawer menu                                                                                                 | `() => void`             |
+| closeMenu   | Close drawer menu                                                                                                | `() => void`             |

@@ -1,5 +1,5 @@
 import { HolderOutlined } from '@ant-design/icons';
-import type { DragEndEvent, UniqueIdentifier } from '@dnd-kit/core';
+import type { DragEndEvent, Modifier, UniqueIdentifier } from '@dnd-kit/core';
 import {
   closestCenter,
   DndContext,
@@ -53,6 +53,28 @@ export default function SortableOptions<
     container: HTMLElement;
     zIndex: number;
   } | null>(null);
+  const listContainer = useRef<HTMLElement | null>(null);
+  const modifiers = useMemo<Modifier[]>(
+    () => [
+      ({ transform, draggingNodeRect }) => {
+        const container = listContainer.current;
+        if (!container || !draggingNodeRect) return { ...transform, x: 0 };
+        const rect = container.getBoundingClientRect();
+        const top = rect.top + container.clientTop;
+        const bottom = top + container.clientHeight;
+        return {
+          ...transform,
+          x: 0,
+          y: Math.min(
+            Math.max(transform.y, top - draggingNodeRect.top),
+            Math.max(top, bottom - draggingNodeRect.height) -
+              draggingNodeRect.top,
+          ),
+        };
+      },
+    ],
+    [],
+  );
   const dragOptions = useRef<typeof options | null>(null);
   useEffect(() => {
     if (!enabled) {
@@ -105,6 +127,7 @@ export default function SortableOptions<
     <DndContext
       key={enabled ? 'enabled' : 'disabled'}
       sensors={sensors}
+      modifiers={modifiers}
       collisionDetection={closestCenter}
       accessibility={silentDragAnnouncements}
       onDragStart={({ active, activatorEvent }) => {
@@ -114,6 +137,13 @@ export default function SortableOptions<
         if (!target || !ownerDocument?.defaultView) return;
         let element =
           target.nodeType === 1 ? (target as Element) : target.parentElement;
+        const menu = element?.closest<HTMLElement>(
+          '[data-popover-select-list]',
+        );
+        listContainer.current =
+          menu?.querySelector<HTMLElement>('.rc-virtual-list-holder') ??
+          menu ??
+          null;
         let zIndex = 0;
         // 预览挂在 body 下，需要高于实际弹层及其祖先，包含嵌套弹窗和自定义层级。
         while (element) {

@@ -148,10 +148,17 @@ function SortableRow({
             !(event.target instanceof Element) ||
             event.target.closest('[data-table-root]') ===
               event.currentTarget.closest('[data-table-root]');
+          const interactiveTarget =
+            event.target instanceof Element
+              ? event.target.closest(
+                  'a, button, input, select, textarea, label, [contenteditable]:not([contenteditable="false"]), [tabindex], [role="button"], [role="checkbox"], [role="switch"]',
+                )
+              : null;
           if (
             !handleEnabled &&
             draggable &&
             ownTable &&
+            (!interactiveTarget || interactiveTarget === event.currentTarget) &&
             !blockedMouse.current &&
             !event.defaultPrevented
           )

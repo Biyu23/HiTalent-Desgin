@@ -1,7 +1,9 @@
 import { Collapse, type FormInstance } from 'antd';
-import React, { useMemo } from 'react';
+import React from 'react';
 import type { SearchFormLocale } from '../../../locales';
 import Drawer from '../../Drawer';
+import { useSearchFormGroups } from '../hooks/useSearchFormGroups';
+import { useValidationExpand } from '../hooks/useValidationExpand';
 import { useStyles } from '../style';
 import type {
   SearchFieldGroup,
@@ -9,14 +11,15 @@ import type {
   SearchFormFieldItem,
   SearchFormStyles,
 } from '../type';
-import { groupFields } from '../utils';
 import { FieldRenderer } from './FieldRenderer';
 import { SearchActions } from './SearchActions';
 
 interface MenuDrawerProps<Values extends object> {
   prefixCls?: string;
   open: boolean;
+  forceRender: boolean;
   onClose: () => void;
+  validationAttempt: number;
   form: FormInstance<Values>;
   fields: SearchFormFieldItem<Values>[];
   groups?: SearchFieldGroup[];
@@ -25,7 +28,8 @@ interface MenuDrawerProps<Values extends object> {
   showResetButton?: boolean;
   searchText?: React.ReactNode;
   resetText?: React.ReactNode;
-  onSubmit: () => void;
+  actionExtra?: React.ReactNode;
+  onSubmit: () => Promise<boolean>;
   onReset: () => void;
   disabled?: boolean;
   locale: SearchFormLocale;
@@ -35,8 +39,10 @@ interface MenuDrawerProps<Values extends object> {
 
 export const MenuDrawer = <Values extends object>({
   open,
+  forceRender,
   onClose,
   form,
+  validationAttempt,
   fields,
   groups,
   menuTitle,
@@ -46,6 +52,7 @@ export const MenuDrawer = <Values extends object>({
   resetText,
   onSubmit,
   onReset,
+  actionExtra,
   disabled,
   locale,
   classNames,
@@ -53,22 +60,21 @@ export const MenuDrawer = <Values extends object>({
 }: MenuDrawerProps<Values>) => {
   const { styles: drawerStyles, cx } = useStyles();
 
-  // 快捷筛选字段
-  const quickFields = useMemo(() => {
-    return fields.filter((field) => field.quick);
-  }, [fields]);
-
-  // 非快捷字段，用于分组
-  const nonQuickFields = useMemo(() => {
-    return fields.filter((field) => !field.quick);
-  }, [fields]);
-
-  const sections = useMemo(
-    () => groupFields(nonQuickFields, groups, locale.basicInfo),
-    [nonQuickFields, groups, locale.basicInfo],
+  const { quickFields, sections } = useSearchFormGroups(
+    fields,
+    groups,
+    locale.basicInfo,
+  );
+  const collapseState = useValidationExpand(
+    sections
+      .filter((group) => group.defaultExpanded !== false)
+      .map((group) => group.key),
+    sections.map((group) => group.key),
+    validationAttempt,
   );
   const collapseItems = sections.map((group) => ({
     key: group.key,
+    forceRender: true,
     label: group.title,
     extra: group.extra,
     children: group.fields.map((field) => (
@@ -80,22 +86,18 @@ export const MenuDrawer = <Values extends object>({
       />
     )),
   }));
-  const defaultActiveKeys = sections
-    .filter((group) => group.defaultExpanded !== false)
-    .map((group) => group.key);
-
-  const handleSearchClick = () => {
-    onSubmit();
-    onClose();
+  const handleSearchClick = async () => {
+    if (await onSubmit()) onClose();
   };
 
   return (
     <Drawer
-      title={menuTitle || locale.searchCriteria}
+      title={menuTitle ?? locale.searchCriteria}
       placement="right"
       width={360}
       open={open}
       onClose={onClose}
+      forceRender={forceRender}
       destroyOnClose={false}
       classNames={{
         wrapper: classNames?.drawer,
@@ -132,7 +134,7 @@ export const MenuDrawer = <Values extends object>({
 
         {/* 业务分组折叠面板 */}
         <Collapse
-          defaultActiveKey={defaultActiveKeys}
+          {...collapseState}
           ghost
           className={cx(drawerStyles.groupsAccordion, classNames?.group)}
           style={customStyles?.group}
@@ -142,6 +144,8 @@ export const MenuDrawer = <Values extends object>({
 
       {/* 底部操作条 */}
       <SearchActions
+        variant="drawer"
+        actionExtra={actionExtra}
         showSearchButton={showSearchButton}
         showResetButton={showResetButton}
         searchText={searchText}

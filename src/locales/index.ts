@@ -7,6 +7,7 @@ export type {
   LocaleDirection,
   LocaleOverrides,
   ModalLocale,
+  NumberRangeInputLocale,
   PopoverSelectLocale,
   ResponsiveButtonGroupLocale,
   SearchFormLocale,

@@ -83,6 +83,7 @@ Inherits Ant Design `DrawerProps['styles']`, extended with:
 ## Notes
 
 - **Minimum Size & Boundary Protection**: `minSize` defaults to 100px to prevent the drawer from collapsing to 0px and losing its handle. `maxSize` is always capped by the host container's available size.
-- **State Persistence**: When `minimizable` is enabled, `destroyOnHidden: false` is maintained internally so that DOM nodes and form state remain intact during minimization.
+- **State Persistence**: While `open` is true and the drawer is minimized, `destroyOnHidden` is forced to false to preserve mounted DOM nodes and form state. The configured destruction behavior resumes when the drawer is closed.
+- **Closing & Minimization**: `onClose` only requests closure; cancelling closure preserves minimization. When `open` changes from true to false, internal minimization is cleared. If the drawer was minimized, `onMinimizeChange(false)` fires; controlled consumers should update `minimized` accordingly. The initial controlled minimization state is preserved.
 - **Controlled vs Uncontrolled**: When `size` is omitted, the component operates in uncontrolled mode and remembers resized dimensions; in controlled mode, update `size` via `onResize`.
 - **Shared Global Dock**: Modals and Drawers share the same floating dock manager, and cards are arranged automatically.

@@ -85,11 +85,18 @@ export type {
   TableStyles,
 } from './Table/type';
 
+export { default as NumberRangeInput } from './NumberRangeInput';
+export type {
+  NumberRangeInputProps,
+  NumberRangeValue,
+} from './NumberRangeInput/type';
+
 export { default as SearchForm } from './SearchForm';
 export type {
   SearchFieldGroup,
   SearchFormClassNames,
   SearchFormFieldItem,
+  SearchFormInlineLayout,
   SearchFormMode,
   SearchFormProps,
   SearchFormRef,

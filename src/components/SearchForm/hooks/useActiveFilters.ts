@@ -8,6 +8,7 @@ export interface ActiveFilterItem {
   content: React.ReactNode;
   tooltipText?: string;
   onRemove: () => void;
+  disabled?: boolean;
 }
 
 interface UseActiveFiltersOptions<Values extends object> {
@@ -42,6 +43,7 @@ export function useActiveFilters<Values extends object>({
         return [
           {
             name: field.name,
+            disabled: field.disabled,
             content,
             tooltipText: typeof content === 'string' ? content : undefined,
             onRemove: () => onRemove(field),

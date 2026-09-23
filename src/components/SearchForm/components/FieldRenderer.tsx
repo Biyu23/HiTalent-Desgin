@@ -25,7 +25,8 @@ export const FieldRenderer = <Values extends object>({
       name={field.name}
       label={showLabel ? field.label : undefined}
     >
-      {disabled && React.isValidElement<{ disabled?: boolean }>(control)
+      {(disabled || field.disabled) &&
+      React.isValidElement<{ disabled?: boolean }>(control)
         ? React.cloneElement(control, { disabled: true })
         : control}
     </Form.Item>

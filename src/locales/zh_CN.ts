@@ -37,6 +37,10 @@ const zh_CN = {
     yes: '是',
     no: '否',
   },
+  NumberRangeInput: {
+    min: '最小值',
+    max: '最大值',
+  },
   SearchForm: {
     searchCriteria: '搜索条件',
     quickFilters: '快捷筛选',

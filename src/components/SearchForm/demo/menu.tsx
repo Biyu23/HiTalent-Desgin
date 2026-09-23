@@ -1,4 +1,4 @@
-import { DatePicker, Input, Select } from 'antd';
+import { Checkbox, DatePicker, Input, Select } from 'antd';
 import {
   SearchForm,
   type SearchFieldGroup,
@@ -11,6 +11,8 @@ const { RangePicker } = DatePicker;
 
 interface CandidateFilter {
   keyword?: string;
+  followed?: boolean;
+  radius?: string;
   name?: string;
   phone?: string;
   stage?: string[];
@@ -21,7 +23,7 @@ interface CandidateFilter {
 export default () => {
   const formRef = useRef<SearchFormRef<CandidateFilter>>(null);
   const [result, setResult] = useState<CandidateFilter>({
-    stage: ['s1', 's2', 's3', 's4'],
+    stage: ['简历初筛', '用人部门评估', '现场面试', '背景调查'],
   });
 
   const groups: SearchFieldGroup[] = [
@@ -31,12 +33,26 @@ export default () => {
   ];
 
   const fields: SearchFormFieldItem<CandidateFilter>[] = [
+    {
+      name: 'followed',
+      label: '我关注的候选人',
+      quick: true,
+      formItemProps: { valuePropName: 'checked' },
+      formatTag: (value) => (value ? '我关注的候选人' : null),
+      children: <Checkbox />,
+    },
+    {
+      name: 'radius',
+      label: '半径（选择所在地后可用）',
+      group: 'basic',
+      disabled: true,
+      children: <Input placeholder="请先选择所在地" />,
+    },
     // 基础信息分组
     {
       name: 'keyword',
       label: '综合关键词',
       group: 'basic',
-      defaultExpanded: true,
       children: <Input placeholder="搜索姓名 / 手机 / 邮箱" allowClear />,
     },
     {
@@ -57,7 +73,6 @@ export default () => {
       name: 'stage',
       label: '候选阶段',
       group: 'status',
-      defaultExpanded: true,
       maxTagCount: 2, // 最多展示 2 个 Tag，其余折叠为 +2... 并在 Popover 提示
       children: (
         <Select
@@ -65,10 +80,10 @@ export default () => {
           placeholder="请选择阶段"
           allowClear
           options={[
-            { label: '简历初筛', value: 's1' },
-            { label: '用人部门评估', value: 's2' },
-            { label: '现场面试', value: 's3' },
-            { label: '背景调查', value: 's4' },
+            { label: '简历初筛', value: '简历初筛' },
+            { label: '用人部门评估', value: '用人部门评估' },
+            { label: '现场面试', value: '现场面试' },
+            { label: '背景调查', value: '背景调查' },
           ]}
         />
       ),
@@ -102,28 +117,41 @@ export default () => {
   ];
 
   return (
-    <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 24,
+        alignItems: 'flex-start',
+      }}
+    >
       {/* 模拟左侧/侧边菜单栏 */}
       <div
         style={{
           width: 300,
-          flexShrink: 0,
+          maxWidth: '100%',
+          minWidth: 0,
           border: '1px solid #f0f0f0',
           borderRadius: 8,
-          padding: 16,
+          padding: '16px 0 0',
           background: '#fff',
         }}
       >
-        <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 12 }}>
+        <div style={{ fontWeight: 600, fontSize: 16, padding: '0 16px 16px' }}>
           筛选菜单
         </div>
         <SearchForm<CandidateFilter>
           ref={formRef}
           mode="menu"
-          searchMode="change"
+          searchMode="submit"
+          showActiveFilters={false}
           fields={fields}
           groups={groups}
-          initialValues={{ stage: ['s1', 's2', 's3', 's4'] }}
+          style={{ maxHeight: 520 }}
+          styles={{ menu: { overflowY: 'auto', minHeight: 0, flex: 1 } }}
+          initialValues={{
+            stage: ['简历初筛', '用人部门评估', '现场面试', '背景调查'],
+          }}
           onSearch={(values) => setResult(values)}
         />
       </div>
@@ -131,7 +159,8 @@ export default () => {
       {/* 右侧数据展示区 */}
       <div
         style={{
-          flex: 1,
+          flex: '1 1 240px',
+          minWidth: 0,
           padding: 16,
           background: '#fafafa',
           borderRadius: 8,
@@ -141,7 +170,15 @@ export default () => {
         <div style={{ fontWeight: 600, marginBottom: 8 }}>
           查询结果数据演示：
         </div>
-        <pre style={{ margin: 0 }}>{JSON.stringify(result, null, 2)}</pre>
+        <pre
+          style={{
+            margin: 0,
+            whiteSpace: 'pre-wrap',
+            overflowWrap: 'anywhere',
+          }}
+        >
+          {JSON.stringify(result, null, 2)}
+        </pre>
       </div>
     </div>
   );

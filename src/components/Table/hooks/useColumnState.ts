@@ -36,12 +36,11 @@ export function useColumnState<RecordType>({
       value === undefined ? undefined : normalizeColumnState(columns, value),
     [columns, value],
   );
-  const [mergedState, { set: setMergedState }] =
-    useMergeState<TableColumnState>({
-      defaultValue: () => normalizeColumnState(columns, defaultValue),
-      value: controlledValue,
-      onChange,
-    });
+  const [mergedState, setMergedState] = useMergeState<TableColumnState>({
+    defaultValue: () => normalizeColumnState(columns, defaultValue),
+    ...(controlledValue !== undefined ? { value: controlledValue } : {}),
+    onChange,
+  });
   const committedState = useMemo(
     () => normalizeColumnState(columns, mergedState),
     [columns, mergedState],
@@ -77,14 +76,15 @@ export function useColumnState<RecordType>({
       // 不得短暂渲染旧的已提交顺序。
       unstable_batchedUpdates(() => {
         if (!areColumnStatesEqual(committedRef.current, normalized)) {
-          committedRef.current = normalized;
+          // 受控值由父组件确认；未采纳的请求不能成为后续操作的基准。
+          if (controlledValue === undefined) committedRef.current = normalized;
           setMergedState(normalized);
         }
         previewRef.current = null;
         setPreviewState(null);
       });
     },
-    [columns, setMergedState],
+    [columns, controlledValue, setMergedState],
   );
 
   const setVisibleKeys = useCallback(

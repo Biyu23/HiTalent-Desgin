@@ -63,6 +63,7 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
 
   const prefixCls = usePrefixCls('drawer', customPrefixCls);
   const drawerLocale = useLocale('Drawer');
+  const { styles: drawerStyles, cx } = useStyles(prefixCls);
 
   const panelRef = useRef<HTMLDivElement | null>(null);
   const [manualSizes, setManualSizes] = useState<ManualSizes>({});
@@ -70,7 +71,6 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     minimized: controlledMinimized,
     onMinimizeChange,
   });
-  const { styles: drawerStyles, cx } = useStyles(prefixCls);
 
   const axis = getDrawerAxis(placement);
   const legacySize = axis === 'horizontal' ? width : height;
@@ -84,17 +84,25 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
   const resizeConfig: DrawerResizableConfig =
     typeof resizable === 'object' ? resizable : {};
 
+  const panelOpen = !!open && !isMinimized;
+  const resizeEnabled = panelOpen && !!resizable;
+  const previousOpenRef = useRef(open);
+
   useEffect(() => {
-    if (!open) reset();
-  }, [open, reset]);
+    const wasOpen = previousOpenRef.current;
+    previousOpenRef.current = open;
+    if (!open) {
+      // 仅在实际关闭后退出最小化，关闭请求被拦截时保持当前状态。
+      if (wasOpen && isMinimized) restore();
+      reset();
+    }
+  }, [open, isMinimized, reset, restore]);
 
   const handleClose = useCallback(
     (event?: React.MouseEvent<Element> | React.KeyboardEvent<Element>) => {
-      if (isMinimized) restore();
-      reset();
       onClose?.(event);
     },
-    [isMinimized, onClose, reset, restore],
+    [onClose],
   );
 
   useImperativeHandle(
@@ -131,17 +139,13 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     placement,
     minSize,
     maxSize,
-    active: !!open && !isMinimized && !!resizable,
+    active: resizeEnabled,
     config: resizeConfig,
-    panelRef,
     currentSize,
     onSizeChange: handleSizeChange,
   });
 
-  const minimizedDockClassName = classNames?.minimizedDock;
-  const minimizedDockStyle = styles?.minimizedDock;
-
-  const mergedClassNames = useMemo(() => {
+  const { minimizedDockClassName, mergedClassNames } = useMemo(() => {
     const wrapperClass = cx(
       drawerStyles.wrapper,
       isResizing && drawerStyles.wrapperResizing,
@@ -150,25 +154,18 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
         : drawerStyles.wrapperVertical,
     );
 
-    if (!classNames) {
-      return {
-        wrapper: wrapperClass,
-      };
-    }
-
-    const antdClassNames = { ...classNames } as Record<
-      string,
-      string | undefined
-    >;
-    delete antdClassNames.minimizedDock;
+    const { minimizedDock, ...antdClassNames } = classNames ?? {};
 
     return {
-      ...antdClassNames,
-      wrapper: cx(classNames.wrapper, wrapperClass),
+      minimizedDockClassName: minimizedDock,
+      mergedClassNames: {
+        ...antdClassNames,
+        wrapper: cx(antdClassNames.wrapper, wrapperClass),
+      },
     };
   }, [axis, classNames, cx, drawerStyles, isResizing]);
 
-  const mergedStyles = useMemo(() => {
+  const { minimizedDockStyle, mergedStyles } = useMemo(() => {
     const resizingStyle: React.CSSProperties = isResizing
       ? { transition: 'none' }
       : {};
@@ -178,23 +175,16 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
       ...resizingStyle,
     };
 
-    if (!styles) {
-      return {
-        wrapper: baseWrapperStyle,
-      };
-    }
-
-    const antdStyles = { ...styles } as Record<
-      string,
-      React.CSSProperties | undefined
-    >;
-    delete antdStyles.minimizedDock;
+    const { minimizedDock, ...antdStyles } = styles ?? {};
 
     return {
-      ...antdStyles,
-      wrapper: {
-        ...baseWrapperStyle,
-        ...styles.wrapper,
+      minimizedDockStyle: minimizedDock,
+      mergedStyles: {
+        ...antdStyles,
+        wrapper: {
+          ...baseWrapperStyle,
+          ...antdStyles.wrapper,
+        },
       },
     };
   }, [styles, axis, isResizing]);
@@ -217,24 +207,20 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
     [drawerStyles.headerActions, extra, minimizable, minimize],
   );
 
-  const mergedClosable = useMemo(
-    () =>
-      minimizable ? resolveMinimizableClosable(closable, closeIcon) : closable,
-    [closable, closeIcon, minimizable],
-  );
-
-  const mergedTitle = useMemo(() => {
-    if (title === null) return null;
-    if (minimizable && isNullOrBlank(title)) {
-      return <span className={drawerStyles.emptyTitle} />;
-    }
-    return title;
-  }, [drawerStyles.emptyTitle, minimizable, title]);
+  const mergedClosable = minimizable
+    ? resolveMinimizableClosable(closable, closeIcon)
+    : closable;
+  const mergedTitle =
+    title !== null && minimizable && isNullOrBlank(title) ? (
+      <span className={drawerStyles.emptyTitle} />
+    ) : (
+      title
+    );
 
   const finalDrawerRender = useCallback(
     (drawerNode: React.ReactNode) => (
       <>
-        {!!resizable && !!open && !isMinimized && (
+        {resizeEnabled && (
           <DrawerResizeHandle
             placement={placement}
             resizing={isResizing}
@@ -244,22 +230,14 @@ const Drawer = forwardRef<DrawerRef, DrawerProps>((props, ref) => {
         {userDrawerRender ? userDrawerRender(drawerNode) : drawerNode}
       </>
     ),
-    [
-      handlePointerDown,
-      isMinimized,
-      isResizing,
-      open,
-      placement,
-      resizable,
-      userDrawerRender,
-    ],
+    [handlePointerDown, isResizing, placement, resizeEnabled, userDrawerRender],
   );
 
   return (
     <>
       <AntdDrawer
         {...restProps}
-        open={open && !isMinimized}
+        open={panelOpen}
         placement={placement}
         width={axis === 'horizontal' ? currentSize : undefined}
         height={axis === 'vertical' ? currentSize : undefined}

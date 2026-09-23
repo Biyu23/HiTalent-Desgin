@@ -9,6 +9,8 @@ import type {
 
 export type SearchFormMode = 'inline' | 'menu' | 'combined';
 
+export type SearchFormInlineLayout = 'popover' | 'form';
+
 export type SearchTriggerMode = 'submit' | 'change';
 
 export interface SearchFieldGroup {
@@ -66,6 +68,8 @@ export interface SearchFormFieldItem<
   ) => React.ReactNode | false | null;
   /** 自定义单个 Tag 清空时的逻辑，默认执行 form.setFieldValue(name, undefined) */
   onClear?: (form: FormInstance<Values>) => void;
+  /** 禁用字段编辑与单独清除；整体重置仍恢复所有初始值 */
+  disabled?: boolean;
   /** 是否隐藏该字段 */
   hidden?: boolean | ((values: Values, form: FormInstance<Values>) => boolean);
 }
@@ -80,7 +84,7 @@ export interface SearchFormRef<
   /** 访问内部的 Ant Design Form 实例 */
   form: FormInstance<Values>;
   /** 手动触发提交查询 */
-  submit: () => void;
+  submit: () => Promise<boolean>;
   /** 重置所有字段到初始值并触发查询 */
   resetFields: () => void;
   /** 打开高级筛选抽屉（仅 combined 模式有效） */
@@ -113,6 +117,10 @@ export interface SearchFormProps<
    * @default 'inline'
    */
   mode?: SearchFormMode;
+  /** 平铺布局：紧凑筛选按钮或直接显示控件，默认 popover */
+  inlineLayout?: SearchFormInlineLayout;
+  /** 直接表单布局的最小列宽（px），窄容器自动收为单列，默认 200 */
+  inlineMinWidth?: number;
   /** 筛选项字段定义列表 */
   fields: SearchFormFieldItem<Values>[];
   /** 字段业务分组配置（menu 模式及 combined 抽屉中有效） */
@@ -151,9 +159,9 @@ export interface SearchFormProps<
   onExpandedChange?: (expanded: boolean) => void;
   /** 是否展示已选条件区（Active Filters Bar），默认 true */
   showActiveFilters?: boolean;
-  /** 是否展示搜索操作按钮（menu 模式及 combined 抽屉中），默认 true */
+  /** 是否展示搜索操作按钮（menu、直接表单布局及 combined 抽屉中），默认 true */
   showSearchButton?: boolean;
-  /** 是否展示重置操作按钮（menu 模式及 combined 抽屉中），默认 true */
+  /** 是否展示重置操作按钮（menu、直接表单布局及 combined 抽屉中），默认 true */
   showResetButton?: boolean;
   /** 搜索按钮文案，默认 "搜索" */
   searchText?: React.ReactNode;

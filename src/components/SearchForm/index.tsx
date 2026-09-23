@@ -3,10 +3,7 @@ import React, {
   forwardRef,
   memo,
   useCallback,
-  useEffect,
   useImperativeHandle,
-  useMemo,
-  useRef,
   useState,
 } from 'react';
 import { useLocale, usePrefixCls } from '../../configProvider';
@@ -17,12 +14,10 @@ import { MenuDrawer } from './components/MenuDrawer';
 import { MenuFormView } from './components/MenuFormView';
 import { SearchActions } from './components/SearchActions';
 import { useActiveFilters } from './hooks/useActiveFilters';
+import { useSearchFormActions } from './hooks/useSearchFormActions';
+import { useSearchFormFields } from './hooks/useSearchFormFields';
 import { useStyles } from './style';
-import type {
-  SearchFormFieldItem,
-  SearchFormProps,
-  SearchFormRef,
-} from './type';
+import type { SearchFormProps, SearchFormRef } from './type';
 
 export type * from './type';
 
@@ -32,6 +27,8 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
 ) => {
   const {
     mode = 'inline',
+    inlineLayout = 'popover',
+    inlineMinWidth = 200,
     fields,
     groups,
     form: customForm,
@@ -69,105 +66,46 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
   const form = customForm || internalForm;
 
   // 平铺展开/收起状态
-  const [expanded, { set: setExpanded }] = useMergeState<boolean>({
+  const [expanded, setExpanded] = useMergeState<boolean>({
     defaultValue: defaultExpanded,
-    value: controlledExpanded,
+    ...(controlledExpanded !== undefined ? { value: controlledExpanded } : {}),
     onChange: onExpandedChange,
   });
 
   // combined 模式下的高级筛选抽屉状态。
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // 未挂载的弹层字段也保存在主表单中，初始值统一在此设置。
-  const defaults = useMemo(
-    () => ({
-      ...Object.fromEntries(
-        fields
-          .filter((field) => field.initialValue !== undefined)
-          .map((field) => [field.name, field.initialValue]),
-      ),
-      ...initialValues,
-    }),
-    [fields, initialValues],
-  );
-  // 初始化新增字段，不覆盖已有值或已清空的值。
-  const initializedFields = useRef({ form, names: new Set<string>() });
-  useEffect(() => {
-    if (initializedFields.current.form !== form) {
-      initializedFields.current = { form, names: new Set<string>() };
-    }
-    const names = initializedFields.current.names;
-    const additions = fields.filter((field) => !names.has(field.name));
-    fields.forEach((field) => names.add(field.name));
-    additions.forEach((field) => {
-      const name = field.name as never;
-      const value = (defaults as Record<string, unknown>)[field.name];
-      if (
-        value !== undefined &&
-        form.getFieldValue(name) === undefined &&
-        !form.isFieldTouched(name)
-      ) {
-        form.setFields([{ name, value }]);
-      }
-    });
-  }, [fields, defaults, form]);
+  const { defaults, currentValues, visibleFields } = useSearchFormFields({
+    fields,
+    initialValues,
+    form,
+  });
+  const [validationAttempt, setValidationAttempt] = useState(0);
+  const handleValidationFailed = useCallback(() => {
+    if (mode !== 'menu' && inlineLayout === 'form') setExpanded(true);
+    if (mode === 'combined') setMenuOpen(true);
+    setValidationAttempt((attempt) => attempt + 1);
+  }, [mode, inlineLayout, setExpanded]);
+  const {
+    handleSubmit,
+    handleReset,
+    handleValuesChange,
+    handleRemove,
+    handleFieldConfirm,
+  } = useSearchFormActions({
+    fields,
+    visibleFields,
+    form,
+    mode,
+    inlineLayout,
+    searchMode,
+    disabled,
+    onSearch,
+    onReset,
+    onValuesChange,
+    onValidationFailed: handleValidationFailed,
+  });
 
-  const watchedValues = Form.useWatch([], { form, preserve: true });
-  const currentValues = (watchedValues ?? defaults) as Values;
-  const visibleFields = useMemo(
-    () =>
-      fields.filter(
-        (field) =>
-          !(typeof field.hidden === 'function'
-            ? field.hidden(currentValues, form)
-            : field.hidden),
-      ),
-    [fields, currentValues, form],
-  );
-
-  // 提交搜索
-  const handleSubmit = useCallback(() => {
-    if (disabled) return;
-    const values = form.getFieldsValue(true);
-    onSearch?.(values, { source: 'submit' });
-  }, [disabled, form, onSearch]);
-
-  // 重置表单
-  const handleReset = useCallback(() => {
-    if (disabled) return;
-    form.resetFields();
-    const resetVals = form.getFieldsValue(true);
-    onReset?.();
-    onSearch?.(resetVals, { source: 'reset' });
-  }, [disabled, form, onReset, onSearch]);
-
-  // 表单字段值变动
-  const handleValuesChange = useCallback(
-    (changedValues: Partial<Values>) => {
-      if (disabled) return;
-      const allValues = form.getFieldsValue(true);
-      onValuesChange?.(changedValues, allValues);
-
-      if (searchMode === 'change') {
-        onSearch?.(allValues, { source: 'change' });
-      }
-    },
-    [disabled, form, onSearch, onValuesChange, searchMode],
-  );
-
-  const handleRemove = useCallback(
-    (field: SearchFormFieldItem<Values>, index?: number) => {
-      if (disabled) return;
-      const value = form.getFieldValue(field.name as never);
-      if (index !== undefined && Array.isArray(value)) {
-        const next = value.filter((_, position) => position !== index);
-        form.setFieldValue(field.name as never, next.length ? next : undefined);
-      } else if (field.onClear) field.onClear(form);
-      else form.setFieldValue(field.name as never, undefined);
-      onSearch?.(form.getFieldsValue(true), { source: 'tag-remove' });
-    },
-    [disabled, form, onSearch],
-  );
   const activeFilters = useActiveFilters({
     fields: showActiveFilters ? visibleFields : [],
     form,
@@ -188,27 +126,22 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
     [form, handleReset, handleSubmit],
   );
 
-  // 单个字段弹窗确认
-  const handleFieldConfirm = useCallback(
-    (name: string, value: unknown) => {
-      if (disabled) return;
-      form.setFieldValue(name as never, value);
-      const nextValues = form.getFieldsValue(true);
-      onValuesChange?.({ [name]: value } as Partial<Values>, nextValues);
-      onSearch?.(nextValues, {
-        source: searchMode === 'change' ? 'change' : 'submit',
-      });
-    },
-    [disabled, form, onSearch, onValuesChange, searchMode],
-  );
-
   return (
-    <div className={cx(prefixCls, formStyles.root, className)} style={style}>
+    <div
+      className={cx(
+        prefixCls,
+        `${prefixCls}-${mode}`,
+        formStyles.root,
+        className,
+      )}
+      style={style}
+    >
       <Form
         form={form}
         initialValues={defaults}
         onValuesChange={handleValuesChange}
         disabled={disabled}
+        layout="vertical"
         component={false}
       >
         {/* 平铺模式及联合模式下的顶部平铺表单 */}
@@ -218,6 +151,14 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
             form={form}
             fields={visibleFields}
             mode={mode}
+            inlineLayout={inlineLayout}
+            inlineMinWidth={inlineMinWidth}
+            showSearchButton={showSearchButton}
+            showResetButton={showResetButton}
+            searchText={searchText}
+            resetText={resetText}
+            onSubmit={handleSubmit}
+            onReset={handleReset}
             expanded={expanded}
             onToggleExpand={() => setExpanded(!expanded)}
             defaultVisibleCount={defaultVisibleCount}
@@ -236,6 +177,7 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
         {/* 菜单模式：直接在页面像侧边菜单一样渲染所有分组及字段，无弹窗抽屉 */}
         {mode === 'menu' && (
           <MenuFormView
+            validationAttempt={validationAttempt}
             prefixCls={prefixCls}
             form={form}
             fields={visibleFields}
@@ -252,6 +194,8 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
         {/* 联合模式下的侧边抽屉高级筛选表单 */}
         {mode === 'combined' && (
           <MenuDrawer
+            forceRender={inlineLayout === 'popover'}
+            validationAttempt={validationAttempt}
             prefixCls={prefixCls}
             open={menuOpen}
             onClose={() => setMenuOpen(false)}
@@ -259,6 +203,7 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
             fields={visibleFields}
             groups={groups}
             menuTitle={menuTitle}
+            actionExtra={actionExtra}
             showSearchButton={showSearchButton}
             showResetButton={showResetButton}
             searchText={searchText}
@@ -273,6 +218,7 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
         )}
         {mode === 'menu' && (
           <SearchActions
+            actionExtra={actionExtra}
             showSearchButton={showSearchButton}
             showResetButton={showResetButton}
             searchText={searchText}

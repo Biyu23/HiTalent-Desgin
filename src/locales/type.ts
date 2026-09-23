@@ -68,6 +68,12 @@ export interface LocaleComponentMap {
   Modal: ModalLocale;
   Table: TableLocale;
   SearchForm: SearchFormLocale;
+  NumberRangeInput: NumberRangeInputLocale;
+}
+
+export interface NumberRangeInputLocale {
+  min: string;
+  max: string;
 }
 
 /** SearchForm 组件的国际化文案 */

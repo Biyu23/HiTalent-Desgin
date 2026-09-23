@@ -7,65 +7,155 @@ export const useStyles = createStyles(({ token }) => {
       flex-direction: column;
       gap: ${token.marginSM}px;
       width: 100%;
+      min-width: 0;
     `,
 
     inlineForm: css`
       width: 100%;
+      min-width: 0;
     `,
 
     inlineFieldsWrapper: css`
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0;
+      gap: ${token.marginXS}px;
       width: 100%;
+      min-width: 0;
     `,
 
     inlineFieldItem: css`
-      display: inline-flex;
-      align-items: center;
-      padding: ${token.paddingXXS}px 0;
+      display: flex;
+      min-width: 0;
+      max-width: 100%;
     `,
 
-    fieldDivider: css`
-      height: 14px;
-      margin: 0 ${token.marginXS}px;
+    inlineGrid: css`
+      display: grid;
+      gap: ${token.marginSM}px ${token.margin}px;
+      min-width: 0;
+    `,
+    inlineControl: css`
+      min-width: 0;
+      .ant-form-item {
+        margin-bottom: 0;
+      }
+      .ant-form-item-row {
+        flex-direction: column;
+      }
+      .ant-form-item-label {
+        text-align: start;
+        padding-bottom: ${token.paddingXXS}px;
+      }
+      .ant-form-item-control {
+        width: 100%;
+        min-width: 0;
+      }
+      .ant-select,
+      .ant-picker,
+      .ant-input-number {
+        width: 100%;
+        max-width: 100%;
+      }
+    `,
+    fieldTriggerLabel: css`
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    `,
+    fieldTriggerSummary: css`
+      max-width: 160px;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 500;
+    `,
+    searchActions: css`
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: ${token.marginXS}px;
+      flex-shrink: 0;
+    `,
+    menuActions: css`
+      padding: ${token.paddingSM}px ${token.padding}px;
+      border-top: 1px solid ${token.colorBorderSecondary};
+      > .ant-btn {
+        flex: 1;
+      }
+    `,
+    inlineActions: css`
+      justify-content: flex-end;
+      margin-top: ${token.marginSM}px;
+    `,
+    menuQuickFields: css`
+      display: flex;
+      flex-direction: column;
+      gap: ${token.marginXS}px;
+      padding: ${token.paddingSM}px ${token.padding}px;
+      .ant-form-item {
+        margin-bottom: 0;
+      }
+    `,
+    menuFieldDisabled: css`
+      .ant-collapse-header-text,
+      .ant-collapse-header-text * {
+        color: ${token.colorTextDisabled};
+      }
+      .ant-collapse-item > .ant-collapse-header {
+        cursor: not-allowed;
+      }
+    `,
+    menuFieldTagText: css`
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     `,
 
     fieldTrigger: css`
-      border: 0;
-      background: transparent;
-      font: inherit;
-      &:disabled {
-        cursor: not-allowed;
-        opacity: 0.5;
-      }
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: ${token.paddingXXS}px ${token.paddingXS}px;
-      border-radius: ${token.borderRadiusSM}px;
+      gap: ${token.marginXS}px;
+      min-height: ${token.controlHeight}px;
+      max-width: 100%;
+      padding: ${token.paddingXXS}px ${token.paddingSM}px;
+      border: 1px solid ${token.colorBorderSecondary};
+      border-radius: ${token.borderRadius}px;
+      background: ${token.colorBgContainer};
+      font: inherit;
       font-size: ${token.fontSize}px;
       color: ${token.colorText};
       cursor: pointer;
-      user-select: none;
-      transition: all ${token.motionDurationMid};
-
-      &:hover {
-        background-color: ${token.colorFillTertiary};
+      transition: border-color ${token.motionDurationMid},
+        background-color ${token.motionDurationMid};
+      &:hover:not(:disabled) {
+        background: ${token.colorPrimaryBg};
+        border-color: ${token.colorPrimaryBorder};
         color: ${token.colorPrimary};
+      }
+      &:focus-visible {
+        outline: 2px solid ${token.colorPrimary};
+        outline-offset: 2px;
+      }
+      &:disabled {
+        cursor: not-allowed;
+        color: ${token.colorTextDisabled};
+        background: ${token.colorFillTertiary};
       }
     `,
 
     fieldTriggerActive: css`
-      background-color: ${token.colorFillAlter};
+      border-color: ${token.colorPrimary};
+      background: ${token.colorPrimaryBg};
       color: ${token.colorPrimary};
-      font-weight: 500;
     `,
 
     fieldTriggerHasValue: css`
+      border-color: ${token.colorPrimaryBorder};
+      background: ${token.colorPrimaryBg};
       color: ${token.colorPrimary};
-      font-weight: 500;
     `,
 
     fieldTriggerArrow: css`
@@ -80,7 +170,8 @@ export const useStyles = createStyles(({ token }) => {
     `,
 
     popoverPanel: css`
-      min-width: 240px;
+      width: 280px;
+      max-width: calc(100vw - 48px);
       display: flex;
       flex-direction: column;
       gap: ${token.marginXS}px;
@@ -88,9 +179,15 @@ export const useStyles = createStyles(({ token }) => {
 
     popoverPanelContent: css`
       padding-top: ${token.paddingXXS}px;
-
+      min-width: 0;
       .ant-form-item {
         margin-bottom: 0;
+      }
+      .ant-select,
+      .ant-picker,
+      .ant-input-number {
+        width: 100%;
+        max-width: 100%;
       }
     `,
 
@@ -106,31 +203,35 @@ export const useStyles = createStyles(({ token }) => {
 
     actionsWrapper: css`
       display: inline-flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: ${token.marginXS}px;
-      padding: ${token.paddingXXS}px 0;
+      min-height: ${token.controlHeight}px;
     `,
 
     toggleButton: css`
-      border: 0;
-      background: transparent;
-      font: inherit;
-      &:disabled {
-        cursor: not-allowed;
-        opacity: 0.5;
-      }
       display: inline-flex;
       align-items: center;
       gap: 4px;
+      min-height: ${token.controlHeight}px;
       padding: 0 ${token.paddingXS}px;
+      border: 0;
+      border-radius: ${token.borderRadius}px;
+      background: transparent;
+      font: inherit;
+      font-size: ${token.fontSize}px;
       color: ${token.colorPrimary};
-      font-size: ${token.fontSizeSM}px;
       cursor: pointer;
-      user-select: none;
-      transition: color ${token.motionDurationMid};
-
-      &:hover {
-        color: ${token.colorPrimaryHover};
+      &:hover:not(:disabled) {
+        background: ${token.colorFillTertiary};
+      }
+      &:focus-visible {
+        outline: 2px solid ${token.colorPrimary};
+        outline-offset: 2px;
+      }
+      &:disabled {
+        cursor: not-allowed;
+        color: ${token.colorTextDisabled};
       }
     `,
 
@@ -148,13 +249,13 @@ export const useStyles = createStyles(({ token }) => {
 
     activeFiltersBar: css`
       display: flex;
+      flex-wrap: wrap;
       align-items: flex-start;
       justify-content: space-between;
-      gap: ${token.marginSM}px;
+      gap: ${token.marginXS}px;
       padding: ${token.paddingXS}px ${token.paddingSM}px;
-      background-color: ${token.colorFillAlter};
-      border: 1px dashed ${token.colorBorderSecondary};
-      border-radius: ${token.borderRadiusSM}px;
+      background: ${token.colorFillAlter};
+      border-radius: ${token.borderRadius}px;
     `,
 
     activeFiltersLeft: css`
@@ -179,7 +280,8 @@ export const useStyles = createStyles(({ token }) => {
     filterTag: css`
       display: inline-flex;
       align-items: center;
-      max-width: 280px;
+      max-width: min(280px, 100%);
+      min-width: 0;
       margin-inline-end: 0;
       font-size: ${token.fontSizeSM}px;
 
@@ -197,6 +299,7 @@ export const useStyles = createStyles(({ token }) => {
     filterTagContent: css`
       display: inline-block;
       max-width: 240px;
+      min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -214,7 +317,6 @@ export const useStyles = createStyles(({ token }) => {
       display: flex;
       flex-direction: column;
       gap: ${token.marginMD}px;
-      padding-bottom: 64px;
     `,
 
     quickFiltersSection: css`
@@ -249,107 +351,82 @@ export const useStyles = createStyles(({ token }) => {
     `,
 
     drawerFooter: css`
-      position: absolute;
-      right: 0;
+      position: sticky;
       bottom: 0;
-      left: 0;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: ${token.marginXS}px;
-      padding: ${token.paddingSM}px ${token.padding}px;
+      padding: ${token.paddingSM}px 0;
       background: ${token.colorBgElevated};
       border-top: 1px solid ${token.colorBorderSecondary};
-      box-shadow: ${token.boxShadowSecondary};
-      z-index: 10;
+      z-index: 1;
     `,
 
     // === Menu 模式专属样式 ===
     menuContainer: css`
       display: flex;
       flex-direction: column;
-      gap: ${token.marginSM}px;
+      min-width: 0;
       width: 100%;
-      background-color: ${token.colorBgContainer};
     `,
 
     menuCollapse: css`
-      background: transparent !important;
-      border: none !important;
-
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      > .ant-collapse-item:last-child > .ant-collapse-header {
+        border-radius: 0;
+      }
       > .ant-collapse-item {
-        border-bottom: 1px solid ${token.colorBorderSecondary} !important;
-
-        &:last-child {
-          border-bottom: none !important;
-        }
-
+        border-bottom: none;
         > .ant-collapse-header {
-          padding: ${token.paddingSM}px 0 !important;
-          font-weight: 600;
-          font-size: ${token.fontSize}px;
-          color: ${token.colorTextHeading};
-        }
-
-        > .ant-collapse-content {
-          border-top: none !important;
-
-          > .ant-collapse-content-box {
-            padding: 0 0 ${token.paddingSM}px 0 !important;
-            display: flex;
-            flex-direction: column;
-            gap: ${token.marginXS}px;
+          padding: ${token.paddingSM}px ${token.padding}px;
+          border-radius: 0;
+          background: ${token.colorPrimaryBg};
+          align-items: center;
+          font-weight: 500;
+          color: ${token.colorText};
+          .ant-collapse-expand-icon {
+            color: ${token.colorTextSecondary};
           }
+          .ant-collapse-header-text {
+            min-width: 0;
+            overflow-wrap: anywhere;
+          }
+        }
+        > .ant-collapse-content > .ant-collapse-content-box {
+          padding: ${token.paddingXXS}px 0;
         }
       }
     `,
 
     menuFieldWrapper: css`
-      padding: ${token.paddingXXS}px 0;
-      border-bottom: 1px dashed ${token.colorBorderSecondary};
-
-      &:last-child {
-        border-bottom: none;
-      }
+      min-width: 0;
     `,
 
     menuSubCollapse: css`
-      background: transparent !important;
-      border: none !important;
-
+      background: transparent;
+      border: none;
       > .ant-collapse-item {
-        border: none !important;
-
+        border: none;
         > .ant-collapse-header {
-          padding: 6px 0 !important;
-          align-items: flex-start !important;
+          padding: ${token.paddingSM}px ${token.padding}px;
+          align-items: flex-start;
+          border-radius: ${token.borderRadiusSM}px;
           cursor: pointer;
           user-select: none;
-
+          &:hover {
+            background: ${token.colorFillAlter};
+          }
           .ant-collapse-header-text {
             flex: 1;
             min-width: 0;
           }
-
           .ant-collapse-expand-icon {
-            padding-inline-start: 8px !important;
-            padding-top: 3px;
+            padding-inline-start: ${token.paddingXS}px;
             font-size: 12px;
             color: ${token.colorTextDescription};
-            transition: color ${token.motionDurationMid};
-
-            &:hover {
-              color: ${token.colorPrimary};
-            }
           }
         }
-
-        > .ant-collapse-content {
-          border-top: none !important;
-
-          > .ant-collapse-content-box {
-            padding: 4px 0 10px 0 !important;
-          }
+        > .ant-collapse-content > .ant-collapse-content-box {
+          padding: 0 ${token.padding}px ${token.paddingSM}px;
         }
       }
     `,
@@ -366,17 +443,13 @@ export const useStyles = createStyles(({ token }) => {
       align-items: center;
       justify-content: space-between;
       color: ${token.colorText};
-      font-size: ${token.fontSizeSM}px;
-      transition: color ${token.motionDurationMid};
-
-      &:hover {
-        color: ${token.colorPrimary};
-      }
+      font-size: ${token.fontSize}px;
     `,
 
     menuFieldLabel: css`
-      font-weight: 500;
-      line-height: 20px;
+      font-weight: 400;
+      line-height: ${token.lineHeight};
+      overflow-wrap: anywhere;
     `,
 
     menuFieldTagsWrapper: css`
@@ -415,16 +488,30 @@ export const useStyles = createStyles(({ token }) => {
     menuFieldTagMore: css`
       display: inline-flex;
       align-items: center;
-      cursor: pointer;
-      font-size: ${token.fontSizeSM - 1}px;
+      border: 0;
+      background: ${token.colorPrimaryBg};
+      border-radius: ${token.borderRadiusSM}px;
+      font: inherit;
+      font-size: ${token.fontSizeSM}px;
       color: ${token.colorPrimary};
-      padding: 0 4px;
-      user-select: none;
+      padding: 0 6px;
+      line-height: 22px;
+      cursor: pointer;
+      &:focus-visible {
+        outline: 2px solid ${token.colorPrimary};
+      }
     `,
 
     menuFieldControlBox: css`
+      min-width: 0;
       .ant-form-item {
         margin-bottom: 0;
+      }
+      .ant-select,
+      .ant-picker,
+      .ant-input-number {
+        width: 100%;
+        max-width: 100%;
       }
     `,
   };

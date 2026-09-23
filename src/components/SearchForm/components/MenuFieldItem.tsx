@@ -1,6 +1,7 @@
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons';
 import { Collapse, Popover, Tag, type FormInstance } from 'antd';
 import React from 'react';
+import { useValidationExpand } from '../hooks/useValidationExpand';
 import { useStyles } from '../style';
 import type { SearchFormFieldItem } from '../type';
 import { formatFilterValue, isEmptyValue } from '../utils';
@@ -8,6 +9,7 @@ import { FieldRenderer } from './FieldRenderer';
 
 interface MenuFieldItemProps<Values extends object> {
   field: SearchFormFieldItem<Values>;
+  validationAttempt: number;
   form: FormInstance<Values>;
   currentValues: Partial<Values>;
   onRemove: (field: SearchFormFieldItem<Values>, index?: number) => void;
@@ -17,11 +19,13 @@ interface MenuFieldItemProps<Values extends object> {
 export const MenuFieldItem = <Values extends object>({
   field,
   form,
+  validationAttempt,
   currentValues,
   onRemove,
-  disabled,
+  disabled: formDisabled,
 }: MenuFieldItemProps<Values>) => {
-  const { styles: menuStyles } = useStyles();
+  const { styles: menuStyles, cx } = useStyles();
+  const disabled = formDisabled || field.disabled;
   const {
     name,
     label,
@@ -29,6 +33,12 @@ export const MenuFieldItem = <Values extends object>({
     defaultExpanded = false,
     maxTagCount = 3,
   } = field;
+
+  const collapseState = useValidationExpand(
+    defaultExpanded ? [name] : [],
+    [name],
+    validationAttempt,
+  );
 
   const rawValue = currentValues[name as keyof Values];
   const hasValue = !isEmptyValue(rawValue);
@@ -77,8 +87,11 @@ export const MenuFieldItem = <Values extends object>({
   const tagList = getTags();
 
   // 拆分展示的和超出折叠的 Tag
-  const visibleTags = tagList.slice(0, maxTagCount);
-  const overflowTags = tagList.slice(maxTagCount);
+  const tagLimit = Number.isFinite(maxTagCount)
+    ? Math.max(0, Math.floor(maxTagCount))
+    : 3;
+  const visibleTags = tagList.slice(0, tagLimit);
+  const overflowTags = tagList.slice(tagLimit);
 
   // 面板头部 Label 与 Tag 区域
   const headerContent = (
@@ -91,7 +104,8 @@ export const MenuFieldItem = <Values extends object>({
       {tagList.length > 0 && (
         <div
           className={menuStyles.menuFieldTagsWrapper}
-          onClick={(e) => e.stopPropagation()} // 防止点击 Tag 触发手风琴折叠
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
         >
           {visibleTags.map((tag) => (
             <Tag
@@ -104,7 +118,7 @@ export const MenuFieldItem = <Values extends object>({
               }}
               className={menuStyles.menuFieldTag}
             >
-              {tag.text}
+              <span className={menuStyles.menuFieldTagText}>{tag.text}</span>
             </Tag>
           ))}
 
@@ -112,6 +126,7 @@ export const MenuFieldItem = <Values extends object>({
           {overflowTags.length > 0 && (
             <Popover
               placement="top"
+              trigger={['hover', 'focus']}
               content={
                 <div
                   style={{
@@ -132,15 +147,17 @@ export const MenuFieldItem = <Values extends object>({
                       }}
                       className={menuStyles.menuFieldTag}
                     >
-                      {tag.text}
+                      <span className={menuStyles.menuFieldTagText}>
+                        {tag.text}
+                      </span>
                     </Tag>
                   ))}
                 </div>
               }
             >
-              <span className={menuStyles.menuFieldTagMore}>
-                +{overflowTags.length}...
-              </span>
+              <button type="button" className={menuStyles.menuFieldTagMore}>
+                +{overflowTags.length}
+              </button>
             </Popover>
           )}
         </div>
@@ -151,6 +168,8 @@ export const MenuFieldItem = <Values extends object>({
   const collapseItems = [
     {
       key: name,
+      forceRender: true,
+      collapsible: disabled ? ('disabled' as const) : undefined,
       label: headerContent,
       children: (
         <div className={menuStyles.menuFieldControlBox}>
@@ -166,10 +185,15 @@ export const MenuFieldItem = <Values extends object>({
   ];
 
   return (
-    <div className={menuStyles.menuFieldWrapper}>
+    <div
+      className={cx(
+        menuStyles.menuFieldWrapper,
+        disabled && menuStyles.menuFieldDisabled,
+      )}
+    >
       <Collapse
         ghost
-        defaultActiveKey={defaultExpanded ? [name] : []}
+        {...collapseState}
         expandIconPosition="end"
         expandIcon={({ isActive }) =>
           isActive ? <MinusOutlined /> : <PlusOutlined />

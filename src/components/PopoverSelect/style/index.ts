@@ -270,7 +270,6 @@ export const useStyles = createStyles(({ token }) => {
       line-height: ${token.lineHeight};
       background: ${token.colorBgElevated};
       border-radius: ${token.borderRadiusSM}px;
-      box-shadow: ${token.boxShadowSecondary};
       pointer-events: none;
     `,
     search: css`

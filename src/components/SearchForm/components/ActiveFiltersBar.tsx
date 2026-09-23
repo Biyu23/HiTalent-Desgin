@@ -41,7 +41,7 @@ export const ActiveFiltersBar: React.FC<ActiveFiltersBarProps> = ({
         {filters.map((filter) => (
           <Tag
             key={filter.name}
-            closable={!disabled}
+            closable={!disabled && !filter.disabled}
             onClose={(e) => {
               e.preventDefault();
               filter.onRemove();

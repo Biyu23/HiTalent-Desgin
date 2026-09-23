@@ -179,6 +179,9 @@ const useTableStyles = createStyles(
         height: 1.6em;
         background: ${token.colorBorderSecondary};
         transform: translateY(-50%);
+        transition: height ${token.motionDurationMid},
+          width ${token.motionDurationMid},
+          background-color ${token.motionDurationMid};
         content: '';
       }
 

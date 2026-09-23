@@ -37,6 +37,10 @@ const en_US = {
     yes: 'Yes',
     no: 'No',
   },
+  NumberRangeInput: {
+    min: 'Minimum',
+    max: 'Maximum',
+  },
   SearchForm: {
     searchCriteria: 'Search Criteria',
     quickFilters: 'Quick Filters',

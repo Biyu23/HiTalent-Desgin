@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import type { SearchFormLocale } from '../../../locales';
 import { useStyles } from '../style';
 import type { SearchFormFieldItem } from '../type';
-import { isEmptyValue } from '../utils';
+import { formatFilterValue, isEmptyValue } from '../utils';
 import { FieldRenderer } from './FieldRenderer';
 
 interface InlinePopoverFieldProps<Values extends object> {
@@ -20,25 +20,31 @@ interface InlinePopoverFieldProps<Values extends object> {
 export const InlinePopoverField = <Values extends object>({
   field,
   form,
-  disabled,
+  disabled: formDisabled,
   locale,
   onConfirm,
   onRemove,
   className,
 }: InlinePopoverFieldProps<Values>) => {
   const { name, label } = field;
+  const disabled = formDisabled || field.disabled;
   const { styles: formStyles, cx } = useStyles();
 
   const [open, setOpen] = useState(false);
   const currentValue = form.getFieldValue(name as never);
   const hasValue = !isEmptyValue(currentValue);
+  const summary = hasValue
+    ? field.formatTag
+      ? field.formatTag(currentValue, form.getFieldsValue(true), form)
+      : formatFilterValue(currentValue)
+    : null;
 
   const [popoverForm] = Form.useForm();
 
   useEffect(() => {
     if (open) {
       const val = form.getFieldValue(name as never);
-      popoverForm.setFieldsValue({ [name]: val });
+      popoverForm.setFields([{ name, value: val, errors: [], warnings: [] }]);
     }
   }, [form, name, open, popoverForm]);
 
@@ -108,6 +114,7 @@ export const InlinePopoverField = <Values extends object>({
       <button
         type="button"
         disabled={disabled}
+        aria-expanded={open && !disabled}
         className={cx(
           formStyles.fieldTrigger,
           open && formStyles.fieldTriggerActive,
@@ -115,7 +122,15 @@ export const InlinePopoverField = <Values extends object>({
           className,
         )}
       >
-        <span>{label}</span>
+        <span className={formStyles.fieldTriggerLabel}>{label}</span>
+        {summary !== null && summary !== undefined && summary !== false && (
+          <span
+            className={formStyles.fieldTriggerSummary}
+            title={typeof summary === 'string' ? summary : undefined}
+          >
+            {summary}
+          </span>
+        )}
         <DownOutlined
           className={cx(
             formStyles.fieldTriggerArrow,

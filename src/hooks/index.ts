@@ -13,7 +13,7 @@ export type {
 export { useFieldNames } from './useFieldNames';
 export type { FieldNames, MergedFieldNames } from './useFieldNames';
 export { useMergeState } from './useMergeState';
-export type { UseMergeStateProps } from './useMergeState';
+export type { UseMergeStateOptions, UseMergeStateProps } from './useMergeState';
 export { useMinimizeState } from './useMinimizeState';
 export type {
   UseMinimizeStateOptions,

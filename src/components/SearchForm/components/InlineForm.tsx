@@ -1,21 +1,26 @@
 import { DownOutlined, FilterOutlined } from '@ant-design/icons';
-import { Button, Divider, type FormInstance } from 'antd';
+import { Button, type FormInstance } from 'antd';
 import React from 'react';
 import type { SearchFormLocale } from '../../../locales';
 import { useStyles } from '../style';
 import type {
   SearchFormClassNames,
   SearchFormFieldItem,
+  SearchFormInlineLayout,
   SearchFormMode,
   SearchFormStyles,
 } from '../type';
+import { FieldRenderer } from './FieldRenderer';
 import { InlinePopoverField } from './InlinePopoverField';
+import { SearchActions } from './SearchActions';
 
 interface InlineFormProps<Values extends object> {
   prefixCls?: string;
   form: FormInstance<Values>;
   fields: SearchFormFieldItem<Values>[];
   mode: SearchFormMode;
+  inlineLayout: SearchFormInlineLayout;
+  inlineMinWidth: number;
   expanded: boolean;
   onToggleExpand: () => void;
   defaultVisibleCount: number;
@@ -24,6 +29,12 @@ interface InlineFormProps<Values extends object> {
   actionExtra?: React.ReactNode;
   onFieldConfirm: (name: string, value: unknown) => void;
   onRemove: (field: SearchFormFieldItem<Values>) => void;
+  onSubmit: () => void;
+  onReset: () => void;
+  showSearchButton?: boolean;
+  showResetButton?: boolean;
+  searchText?: React.ReactNode;
+  resetText?: React.ReactNode;
   disabled?: boolean;
   locale: SearchFormLocale;
   classNames?: SearchFormClassNames;
@@ -34,6 +45,8 @@ export const InlineForm = <Values extends object>({
   form,
   fields,
   mode,
+  inlineLayout,
+  inlineMinWidth,
   expanded,
   onToggleExpand,
   defaultVisibleCount,
@@ -42,43 +55,100 @@ export const InlineForm = <Values extends object>({
   actionExtra,
   onFieldConfirm,
   onRemove,
+  onSubmit,
+  onReset,
+  showSearchButton,
+  showResetButton,
+  searchText,
+  resetText,
   disabled,
   locale,
   classNames,
   styles: customStyles,
 }: InlineFormProps<Values>) => {
-  const { styles: formStyles, cx } = useStyles();
-
-  // 计算可见字段：未展开时只显示前 defaultVisibleCount 个，或者带 pinned 的
+  const { styles, cx } = useStyles();
+  const direct = inlineLayout === 'form';
   const limit = Number.isFinite(defaultVisibleCount)
     ? Math.max(0, Math.floor(defaultVisibleCount))
     : 4;
-  const hasThreshold =
-    fields.length >
-    Math.max(limit, fields.filter((field) => field.pinned).length);
-  const visibleFields = React.useMemo(() => {
-    if (!hasThreshold || expanded) {
-      return fields;
-    }
-    let remaining = Math.max(
-      0,
-      limit - fields.filter((field) => field.pinned).length,
-    );
-    return fields.filter((field) => field.pinned || remaining-- > 0);
-  }, [limit, expanded, fields, hasThreshold]);
+  const pinnedCount = fields.filter((field) => field.pinned).length;
+  const hasThreshold = fields.length > Math.max(limit, pinnedCount);
+  let remaining = Math.max(0, limit - pinnedCount);
+  const collapsedFields = new Set(
+    fields
+      .filter((field) => field.pinned || remaining-- > 0)
+      .map((field) => field.name),
+  );
+  const visibleFields = fields.filter(
+    (field) => expanded || collapsedFields.has(field.name),
+  );
+  const minWidth =
+    Number.isFinite(inlineMinWidth) && inlineMinWidth > 0
+      ? inlineMinWidth
+      : 200;
+
+  const extra = (
+    <>
+      {hasThreshold && (
+        <button
+          type="button"
+          disabled={disabled}
+          aria-expanded={expanded}
+          className={styles.toggleButton}
+          onClick={onToggleExpand}
+        >
+          <span>{expanded ? locale.collapse : locale.expand}</span>
+          <DownOutlined
+            className={cx(
+              styles.toggleButtonArrow,
+              expanded && styles.toggleButtonArrowExpanded,
+            )}
+          />
+        </button>
+      )}
+      {mode === 'combined' && (
+        <Button
+          type="link"
+          icon={<FilterOutlined />}
+          onClick={onOpenMenu}
+          disabled={disabled}
+        >
+          {menuTrigger ?? locale.advancedSearch}
+        </Button>
+      )}
+      {actionExtra}
+    </>
+  );
 
   return (
     <div
-      className={cx(formStyles.inlineForm, classNames?.form)}
+      className={cx(styles.inlineForm, classNames?.form)}
       style={customStyles?.form}
     >
-      <div className={formStyles.inlineFieldsWrapper}>
-        {visibleFields.map((field, index) => (
-          <React.Fragment key={field.name}>
-            {index > 0 && (
-              <Divider type="vertical" className={formStyles.fieldDivider} />
-            )}
-            <div className={formStyles.inlineFieldItem}>
+      <div
+        className={direct ? styles.inlineGrid : styles.inlineFieldsWrapper}
+        style={
+          direct
+            ? {
+                gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, ${minWidth}px), 1fr))`,
+              }
+            : undefined
+        }
+      >
+        {/* 直接表单折叠时保留字段挂载，避免丢值和重复注册。 */}
+        {(direct ? fields : visibleFields).map((field) => (
+          <div
+            key={field.name}
+            className={direct ? styles.inlineControl : styles.inlineFieldItem}
+            style={
+              direct && !expanded && !collapsedFields.has(field.name)
+                ? { display: 'none' }
+                : undefined
+            }
+          >
+            {direct ? (
+              <FieldRenderer field={field} form={form} disabled={disabled} />
+            ) : (
               <InlinePopoverField
                 field={field}
                 form={form}
@@ -87,54 +157,43 @@ export const InlineForm = <Values extends object>({
                 onConfirm={onFieldConfirm}
                 onRemove={onRemove}
               />
-            </div>
-          </React.Fragment>
-        ))}
-
-        {/* 右侧/尾部展开与操作：紧跟左侧筛选条件，平级对齐 */}
-        {(hasThreshold || mode === 'combined' || actionExtra) && (
-          <>
-            {visibleFields.length > 0 && (
-              <Divider type="vertical" className={formStyles.fieldDivider} />
             )}
+          </div>
+        ))}
+        {!direct &&
+          (hasThreshold ||
+            mode === 'combined' ||
+            (actionExtra !== null && actionExtra !== undefined)) && (
             <div
-              className={cx(formStyles.actionsWrapper, classNames?.actions)}
+              className={cx(styles.actionsWrapper, classNames?.actions)}
               style={customStyles?.actions}
             >
-              {hasThreshold && (
-                <button
-                  type="button"
-                  disabled={disabled}
-                  className={cx(formStyles.toggleButton)}
-                  onClick={onToggleExpand}
-                >
-                  <span>{expanded ? locale.collapse : locale.expand}</span>
-                  <DownOutlined
-                    className={cx(
-                      formStyles.toggleButtonArrow,
-                      expanded && formStyles.toggleButtonArrowExpanded,
-                    )}
-                  />
-                </button>
-              )}
-
-              {mode === 'combined' && (
-                <Button
-                  size="small"
-                  type="link"
-                  icon={<FilterOutlined />}
-                  onClick={onOpenMenu}
-                  disabled={disabled}
-                >
-                  {menuTrigger || locale.advancedSearch}
-                </Button>
-              )}
-
-              {actionExtra}
+              {extra}
             </div>
-          </>
-        )}
+          )}
       </div>
+      {direct && (
+        <SearchActions
+          variant="inline"
+          showSearchButton={showSearchButton}
+          showResetButton={showResetButton}
+          searchText={searchText}
+          resetText={resetText}
+          disabled={disabled}
+          classNames={classNames}
+          styles={customStyles}
+          onSubmit={onSubmit}
+          onReset={onReset}
+          locale={locale}
+          actionExtra={
+            hasThreshold ||
+            mode === 'combined' ||
+            (actionExtra !== null && actionExtra !== undefined)
+              ? extra
+              : undefined
+          }
+        />
+      )}
     </div>
   );
 };

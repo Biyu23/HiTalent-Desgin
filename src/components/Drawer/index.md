@@ -83,6 +83,7 @@ toc: content
 ## 注意事项
 
 - **最小尺寸与边界保护**：`minSize` 默认保底为 100px，防止抽屉被拖拽折叠至 0px 导致把手不可抓取；`maxSize` 始终会自动与宿主容器可用尺寸取较小值。
-- **状态保留机制**：开启 `minimizable` 时内部会保持 `destroyOnHidden: false`，最小化时抽屉隐藏但 DOM 节点与表单输入状态完全保留。
+- **状态保留机制**：在 `open` 为 `true` 且处于最小化状态时，内部强制 `destroyOnHidden: false`，保留已挂载的 DOM 与表单状态；实际关闭后恢复用户的销毁配置。
+- **关闭与最小化**：`onClose` 仅发起关闭请求，取消关闭时保持最小化状态。`open` 从 `true` 变为 `false` 时清理最小化状态；若关闭前已最小化，会触发 `onMinimizeChange(false)`，受控模式下需同步更新 `minimized`。初始传入的受控最小化状态保持不变。
 - **受控与非受控**：未传 `size` 时为非受控模式，拖拽尺寸由组件内部持久记录；传入 `size` 时需在 `onResize` 回调中同步更新。
 - **全局 Dock 协同**：与 Modal 共用相同的全局悬浮 Dock 管理器，多个弹窗和抽屉卡片会自动流式排列。

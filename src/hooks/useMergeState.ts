@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 export interface UseMergeStateProps<
   TOrigin,
@@ -7,15 +7,9 @@ export interface UseMergeStateProps<
 > {
   /**
    * 外部传入的值 (受控)。
-   * 当 value !== undefined 时为受控模式；当 value === undefined 时为非受控模式。
+   * 传入 value 属性即为受控模式（包括 undefined）；省略该属性则为非受控模式。
    */
   value?: TResult;
-
-  /**
-   * 是否强制按受控模式运行。
-   * 未指定时沿用 value !== undefined 的默认判断。
-   */
-  controlled?: boolean;
 
   /**
    * 默认初始值 (非受控)
@@ -38,58 +32,55 @@ export interface UseMergeStateProps<
   transformToResult?: (value: TOrigin) => TResult;
 }
 
+/**
+ * Defaults and value conversions, separate from the original component props.
+ * props.defaultValue takes precedence; conversion functions in options override props.
+ */
+export type UseMergeStateOptions<TOrigin, TResult = TOrigin> = Pick<
+  UseMergeStateProps<TOrigin, TResult>,
+  'defaultValue' | 'transformToOrigin' | 'transformToResult'
+>;
+
+/**
+ * Pass original props to preserve controlled undefined without conditional spreads.
+ * @example useMergeState(props, { defaultValue: 0 })
+ * The one-argument form remains supported.
+ */
 export function useMergeState<
   TOrigin,
   TResult = TOrigin,
   ChangeArgs extends unknown[] = unknown[],
->(props: UseMergeStateProps<TOrigin, TResult, ChangeArgs> = {}) {
-  const {
-    value,
-    controlled,
-    defaultValue,
-    onChange,
-    // 如果没有传转换函数，默认原样返回。
-    // 由于 TOrigin 和 TResult 可能不同，通过 unknown 作为中间桥梁
-    // 绕过 TypeScript 的类型检查（当 TOrigin === TResult 时默认函数才是安全的）
-    transformToOrigin = (v) => v as unknown as TOrigin,
-    transformToResult = (v) => v as unknown as TResult,
-  } = props;
+>(
+  props: UseMergeStateProps<TOrigin, TResult, ChangeArgs> = {},
+  options: UseMergeStateOptions<TOrigin, TResult> = {},
+) {
+  const { value, onChange, transformToOrigin, transformToResult } = {
+    ...props,
+    ...options,
+  };
+  const defaultValue =
+    props.defaultValue === undefined
+      ? options.defaultValue
+      : props.defaultValue;
 
-  // 默认以 value 是否为 undefined 判断；允许组件显式声明 undefined 代表受控空值
-  const isControlled = controlled ?? value !== undefined;
+  // 属性是否存在决定受控语义，undefined 可以作为合法的受控空值。
+  const isControlled = Object.prototype.hasOwnProperty.call(props, 'value');
 
   // 使用 useRef 缓存转换函数、控制模式与回调，避免无意义的闭包依赖
-  const transformOriginRef = useRef(transformToOrigin);
   const transformResultRef = useRef(transformToResult);
   const onChangeRef = useRef(onChange);
   const isControlledRef = useRef(isControlled);
-  transformOriginRef.current = transformToOrigin;
   transformResultRef.current = transformToResult;
   onChangeRef.current = onChange;
   isControlledRef.current = isControlled;
 
-  // 缓存受控模式下的 origin 转换结果，避免相同 value 重新计算导致对象/数组引用发生无意义变化
-  const prevControlledRef = useRef<{
-    value?: TResult;
-    transform?: (v: TResult | undefined) => TOrigin;
-    origin: TOrigin;
-  }>();
-
-  let controlledOriginValue: TOrigin;
-  if (
-    prevControlledRef.current &&
-    Object.is(prevControlledRef.current.value, value) &&
-    prevControlledRef.current.transform === transformToOrigin
-  ) {
-    controlledOriginValue = prevControlledRef.current.origin;
-  } else {
-    controlledOriginValue = transformToOrigin(value);
-    prevControlledRef.current = {
-      value,
-      transform: transformToOrigin,
-      origin: controlledOriginValue,
-    };
-  }
+  const controlledOriginValue = useMemo(
+    () =>
+      transformToOrigin
+        ? transformToOrigin(value)
+        : (value as unknown as TOrigin),
+    [value, transformToOrigin],
+  );
 
   // 初始化非受控内部状态 (TOrigin)
   const [internalValue, setInternalValue] = useState<TOrigin>(() => {
@@ -100,7 +91,9 @@ export function useMergeState<
       typeof defaultValue === 'function'
         ? (defaultValue as () => TResult)()
         : defaultValue;
-    return transformToOrigin(initVal);
+    return transformToOrigin
+      ? transformToOrigin(initVal)
+      : (initVal as unknown as TOrigin);
   });
 
   // 受控值或受控模式变化时同步回退 state，避免之后切回非受控读取陈旧值
@@ -129,7 +122,9 @@ export function useMergeState<
       internalValueRef.current = nextValue;
 
       if (onChangeRef.current) {
-        const resultValue = transformResultRef.current(nextValue);
+        const resultValue = transformResultRef.current
+          ? transformResultRef.current(nextValue)
+          : (nextValue as unknown as TResult);
         onChangeRef.current(resultValue, ...args);
       }
     },
@@ -147,34 +142,5 @@ export function useMergeState<
     [triggerChange],
   );
 
-  const merge = useCallback(
-    (patch: Partial<TOrigin>, ...args: ChangeArgs) => {
-      const current = internalValueRef.current;
-      const nextValue =
-        typeof current === 'object' &&
-        current !== null &&
-        !Array.isArray(current)
-          ? ({ ...current, ...patch } as TOrigin)
-          : (patch as unknown as TOrigin);
-
-      triggerChange(nextValue, ...args);
-    },
-    [triggerChange],
-  );
-
-  const clear = useCallback(
-    (emptyValue?: TOrigin, ...args: ChangeArgs) => {
-      triggerChange(emptyValue as TOrigin, ...args);
-    },
-    [triggerChange],
-  );
-
-  const refresh = useCallback(
-    (...args: ChangeArgs) => {
-      triggerChange(internalValueRef.current, ...args);
-    },
-    [triggerChange],
-  );
-
-  return [mergedValue, { set, merge, clear, refresh }] as const;
+  return [mergedValue, set] as const;
 }

@@ -18,7 +18,7 @@ interface QueryParams {
 }
 
 export default () => {
-  const [result, setResult] = useState<QueryParams>({});
+  const [result, setResult] = useState<QueryParams>({ department: 'rd' });
 
   const fields: SearchFormFieldItem<QueryParams>[] = [
     {
@@ -32,11 +32,15 @@ export default () => {
     {
       name: 'department',
       label: '所属部门',
+      formatTag: (value) =>
+        ({ rd: '研发中心', pd: '产品中心', mkt: '市场运营', fa: '财务行政' }[
+          String(value)
+        ] ?? String(value)),
       children: (
         <Select
           placeholder="请选择部门"
           allowClear
-          style={{ width: 160 }}
+          style={{ width: '100%' }}
           options={[
             { label: '研发中心', value: 'rd' },
             { label: '产品中心', value: 'pd' },
@@ -65,7 +69,7 @@ export default () => {
     {
       name: 'createdDate',
       label: '创建时间',
-      children: <RangePicker style={{ width: 240 }} />,
+      children: <RangePicker style={{ width: '100%' }} />,
     },
     {
       name: 'remark',
@@ -80,7 +84,7 @@ export default () => {
           mode="multiple"
           placeholder="请选择标签"
           allowClear
-          style={{ width: 200 }}
+          style={{ width: '100%' }}
           options={[
             { label: '985/211', value: 'top_edu' },
             { label: '大厂背景', value: 'big_company' },
@@ -96,6 +100,7 @@ export default () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <SearchForm<QueryParams>
         mode="inline"
+        initialValues={{ department: 'rd' }}
         defaultVisibleCount={4}
         fields={fields}
         onSearch={(values) => setResult(values)}
@@ -103,7 +108,13 @@ export default () => {
 
       <div style={{ padding: 12, background: '#fafafa', borderRadius: 6 }}>
         <strong>当前提交查询参数：</strong>
-        <pre style={{ margin: '8px 0 0' }}>
+        <pre
+          style={{
+            margin: '8px 0 0',
+            whiteSpace: 'pre-wrap',
+            overflowWrap: 'anywhere',
+          }}
+        >
           {JSON.stringify(result, null, 2)}
         </pre>
       </div>

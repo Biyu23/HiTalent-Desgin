@@ -23,7 +23,6 @@ interface UseDrawerPointerResizeOptions {
   maxSize?: number;
   active: boolean;
   config: DrawerResizableConfig;
-  panelRef: React.RefObject<HTMLDivElement | null>;
   currentSize?: number | string;
   onSizeChange: (size: number) => void;
 }
@@ -42,7 +41,6 @@ export function useDrawerPointerResize(
     maxSize,
     active,
     config,
-    panelRef,
     currentSize,
     onSizeChange,
   } = options;
@@ -51,18 +49,19 @@ export function useDrawerPointerResize(
     cursor: getResizeCursor(axis),
     disabled: !active,
     getInitialValue: (event) => {
-      const panel = panelRef.current;
-      const panelRect = panel?.getBoundingClientRect();
-      const measuredSize = panelRect ? getAxisSize(panelRect, axis) : undefined;
+      const wrapper = event.currentTarget.parentElement;
+      const wrapperRect = wrapper?.getBoundingClientRect();
+      const measuredSize = wrapperRect
+        ? getAxisSize(wrapperRect, axis)
+        : undefined;
       const startSize =
-        measuredSize && measuredSize > 20
+        measuredSize && Number.isFinite(measuredSize) && measuredSize > 0
           ? measuredSize
           : typeof currentSize === 'number'
           ? currentSize
           : DEFAULT_DRAWER_SIZE;
       // 缩放把手是内容容器的直接子节点，位于 userDrawerRender 自定义内容之外，
       // 因此其父级结构不会随自定义内容的包裹层变化。
-      const wrapper = event.currentTarget.parentElement;
       const container = wrapper?.parentElement || document.documentElement;
       const rect = container.getBoundingClientRect();
       const fallback =

@@ -91,6 +91,7 @@ export default function PopoverSelectList<
     );
   const menu = displayOptions.length ? (
     <div
+      data-popover-select-list=""
       className={cx(
         listStyles.menu,
         !virtual && listStyles.menuScroll,

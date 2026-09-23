@@ -13,13 +13,16 @@ type SearchActionsProps = Pick<
   | 'disabled'
   | 'classNames'
   | 'styles'
+  | 'actionExtra'
 > & {
+  variant?: 'menu' | 'drawer' | 'inline';
   onSubmit: () => void;
   onReset: () => void;
   locale: SearchFormLocale;
 };
 
 export function SearchActions({
+  variant = 'menu',
   showSearchButton = true,
   showResetButton = true,
   searchText,
@@ -27,27 +30,40 @@ export function SearchActions({
   disabled,
   classNames,
   styles,
+  actionExtra,
   onSubmit,
   onReset,
   locale,
 }: SearchActionsProps) {
   const { styles: formStyles, cx } = useStyles();
-  if (!showSearchButton && !showResetButton) return null;
+  if (
+    !showSearchButton &&
+    !showResetButton &&
+    (actionExtra === null || actionExtra === undefined)
+  )
+    return null;
   return (
     <div
-      className={cx(formStyles.drawerFooter, classNames?.actions)}
+      className={cx(
+        formStyles.searchActions,
+        variant === 'menu' && formStyles.menuActions,
+        variant === 'drawer' && formStyles.drawerFooter,
+        variant === 'inline' && formStyles.inlineActions,
+        classNames?.actions,
+      )}
       style={styles?.actions}
     >
-      {showResetButton && (
-        <Button onClick={onReset} disabled={disabled}>
-          {resetText ?? locale.reset}
-        </Button>
-      )}
       {showSearchButton && (
         <Button type="primary" onClick={onSubmit} disabled={disabled}>
           {searchText ?? locale.search}
         </Button>
       )}
+      {showResetButton && (
+        <Button onClick={onReset} disabled={disabled}>
+          {resetText ?? locale.reset}
+        </Button>
+      )}
+      {actionExtra}
     </div>
   );
 }

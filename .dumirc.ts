@@ -101,9 +101,14 @@ export default defineConfig({
               link: '/components/popover-select',
             },
             {
-              title: 'SearchForm 搜索表单',
-              link: '/components/search-form',
+              title: 'NumberRangeInput 数值区间',
+              link: '/components/number-range-input',
             },
+            // 暂时隐藏 SearchForm，恢复展示时取消注释。
+            // {
+            //   title: 'SearchForm 搜索表单',
+            //   link: '/components/search-form',
+            // },
           ],
         },
         {
@@ -140,10 +145,10 @@ export default defineConfig({
               title: 'ResponsiveButtonGroup',
               link: '/en-US/components/responsive-button-group',
             },
-            {
-              title: 'SvgIcon【废弃】',
-              link: '/en-US/components/svg-icon',
-            },
+            // {
+            //   title: 'SvgIcon【废弃】',
+            //   link: '/en-US/components/svg-icon',
+            // },
           ],
         },
         {
@@ -154,9 +159,14 @@ export default defineConfig({
               link: '/en-US/components/popover-select',
             },
             {
-              title: 'SearchForm',
-              link: '/en-US/components/search-form',
+              title: 'NumberRangeInput',
+              link: '/en-US/components/number-range-input',
             },
+            // Temporarily hidden; uncomment to restore.
+            // {
+            //   title: 'SearchForm',
+            //   link: '/en-US/components/search-form',
+            // },
           ],
         },
         {

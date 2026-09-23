@@ -14,7 +14,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useConfig, useLocale, usePrefixCls } from '../../configProvider';
+import { useLocale, usePrefixCls } from '../../configProvider';
 import { useKeyedActionRunner } from '../../hooks';
 import {
   areArraysEqual,
@@ -67,7 +67,6 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
   const prefixCls = usePrefixCls('responsive-button-group', customPrefixCls);
   const { styles: buttonGroupStyles, cx } = useStyles(prefixCls);
   const locale = useLocale('ResponsiveButtonGroup');
-  const { direction } = useConfig();
 
   const gap = normalizeGap(gapProp);
   const minVisibleCount = normalizeMinVisibleCount(
@@ -389,11 +388,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
 
   return withNativeProps(
     props,
-    <div
-      ref={setMergedRef}
-      className={cx(prefixCls, buttonGroupStyles.root)}
-      dir={direction}
-    >
+    <div ref={setMergedRef} className={cx(prefixCls, buttonGroupStyles.root)}>
       <div className={buttonGroupStyles.visible} style={{ gap }}>
         {layout.visibleItems.map((item) => renderItemButton(item))}
         {overflowNode}

@@ -331,12 +331,14 @@ export default function ColumnDragProvider<RecordType>({
         dragRef.current
       )
         return;
-      if (
-        event.target instanceof Element &&
-        event.target.closest(
-          'a, button, input, select, textarea, [tabindex], [data-table-resize-handle]',
-        )
-      )
+      const interactiveTarget =
+        event.target instanceof Element
+          ? event.target.closest(
+              'a, button, input, select, textarea, label, [contenteditable]:not([contenteditable="false"]), [tabindex], [role="button"], [role="checkbox"], [role="switch"], [data-table-resize-handle]',
+            )
+          : null;
+      // Antd 的可排序表头自身有 tabIndex；只排除表头内的交互控件。
+      if (interactiveTarget && interactiveTarget !== event.currentTarget)
         return;
       const meta = columns.find((item) => item.key === key);
       const root = rootRef.current;

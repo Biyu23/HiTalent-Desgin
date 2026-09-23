@@ -65,13 +65,12 @@ export function usePopoverSelectState<V extends RawValueType, O extends object>(
     [props.mode, props.onChange, props.valueType],
   );
 
-  const [storedValues, { set: setSelectedValues }] = useMergeState<
+  const [storedValues, setSelectedValues] = useMergeState<
     V[],
     ExternalValue<V>,
     [O[]]
   >({
-    value: props.value,
-    controlled: Object.prototype.hasOwnProperty.call(props, 'value'),
+    ...props,
     defaultValue: props.defaultValue,
     onChange,
     transformToOrigin,
@@ -94,9 +93,9 @@ export function usePopoverSelectState<V extends RawValueType, O extends object>(
     [storedValues, normalizeValues],
   );
 
-  const [requestedOpen, { set: setOpen }] = useMergeState<boolean>({
+  const [requestedOpen, setOpen] = useMergeState<boolean>({
     defaultValue: props.defaultOpen ?? false,
-    value: props.open,
+    ...(props.open !== undefined ? { value: props.open } : {}),
     onChange: props.onOpenChange,
   });
   const open = requestedOpen && !disabled;

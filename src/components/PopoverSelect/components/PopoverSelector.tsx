@@ -14,9 +14,9 @@ export const Selector = forwardRef<
 >((props, ref) => {
   const prefixCls = usePrefixCls('popover-select', props.prefixCls);
   const { styles, cx } = useStyles();
-  const [requestedOpen, { set: setOpen }] = useMergeState<boolean>({
+  const [requestedOpen, setOpen] = useMergeState<boolean>({
     defaultValue: props.defaultOpen ?? false,
-    value: props.open,
+    ...(props.open !== undefined ? { value: props.open } : {}),
     onChange: props.onOpenChange,
   });
   const open = requestedOpen && !props.disabled;
