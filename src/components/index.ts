@@ -84,7 +84,9 @@ export type {
 
 export { default as NumberRangeInput } from './NumberRangeInput';
 export type {
+  NumberRangeInputFieldProps,
   NumberRangeInputProps,
+  NumberRangeInputRef,
   NumberRangeValue,
 } from './NumberRangeInput/type';
 
