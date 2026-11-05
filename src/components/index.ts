@@ -17,6 +17,15 @@ export type {
   SelectorRenderContext,
 } from './PopoverSelect/type';
 
+export { default as EditableField } from './EditableField';
+export type {
+  EditableFieldClassNames,
+  EditableFieldEditorContext,
+  EditableFieldProps,
+  EditableFieldSlot,
+  EditableFieldStyles,
+} from './EditableField/type';
+
 export { default as Button } from './Button';
 export type { ButtonProps, ButtonRef } from './Button/type';
 

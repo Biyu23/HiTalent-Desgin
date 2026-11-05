@@ -3,6 +3,11 @@ import type { HtdLocale } from './type';
 const en_US = {
   locale: 'en-US',
   direction: 'ltr' as const,
+  EditableField: {
+    edit: 'Edit',
+    save: 'Save',
+    cancel: 'Cancel',
+  },
   Button: {
     loading: 'Loading',
   },

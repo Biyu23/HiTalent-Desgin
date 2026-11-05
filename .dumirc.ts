@@ -100,6 +100,10 @@ export default defineConfig({
               title: 'NumberRangeInput 数值区间',
               link: '/components/number-range-input',
             },
+            {
+              title: 'EditableField 可编辑字段',
+              link: '/components/editable-field',
+            },
             // 暂时隐藏 SearchForm，恢复展示时取消注释。
             {
               title: 'SearchForm 搜索表单',
@@ -153,6 +157,10 @@ export default defineConfig({
             {
               title: 'NumberRangeInput',
               link: '/en-US/components/number-range-input',
+            },
+            {
+              title: 'EditableField',
+              link: '/en-US/components/editable-field',
             },
             // Temporarily hidden; uncomment to restore.
             {

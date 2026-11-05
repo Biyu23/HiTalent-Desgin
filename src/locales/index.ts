@@ -2,6 +2,7 @@ export type {
   ButtonLocale,
   DeepPartial,
   DrawerLocale,
+  EditableFieldLocale,
   HtdLocale,
   LocaleComponentMap,
   LocaleDirection,

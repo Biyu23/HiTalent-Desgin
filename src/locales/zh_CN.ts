@@ -3,6 +3,11 @@ import type { HtdLocale } from './type';
 const zh_CN = {
   locale: 'zh-CN',
   direction: 'ltr' as const,
+  EditableField: {
+    edit: '编辑',
+    save: '保存',
+    cancel: '取消',
+  },
   Button: {
     loading: '加载中',
   },

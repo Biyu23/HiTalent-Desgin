@@ -59,8 +59,16 @@ export interface TableLocale {
 /** 文字方向 */
 export type LocaleDirection = 'ltr' | 'rtl';
 
+/** EditableField 组件的国际化文案。 */
+export interface EditableFieldLocale {
+  edit: string;
+  save: string;
+  cancel: string;
+}
+
 /** 组件名称到对应 locale 类型的映射 */
 export interface LocaleComponentMap {
+  EditableField: EditableFieldLocale;
   Button: ButtonLocale;
   Drawer: DrawerLocale;
   PopoverSelect: PopoverSelectLocale;
