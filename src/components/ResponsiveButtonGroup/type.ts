@@ -248,13 +248,13 @@ export interface ResponsiveButtonGroupProps extends NativeProps {
     info: ResponsiveButtonGroupOverflowRenderInfo,
   ) => React.ReactNode;
   /**
-   * @description 所有操作项的统一点击回调，返回 Promise 时自动保持 Loading 状态
+   * @description 在单项 onClick 之后立即调用，单项抛错也不阻断；两个回调返回的 Promise 全部结束后清除 Loading
    */
   onItemClick?: (
     info: ResponsiveButtonGroupClickInfo,
   ) => void | Promise<unknown>;
   /**
-   * @description 异步操作执行出错时的回调
+   * @description 点击回调同步抛错或异步失败时触发；等待两个回调完成后，按单项、统一回调的顺序报告第一个错误
    */
   onActionError?: (
     error: unknown,

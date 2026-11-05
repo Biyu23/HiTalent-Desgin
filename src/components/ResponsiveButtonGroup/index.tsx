@@ -68,6 +68,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
   const { styles: buttonGroupStyles, cx } = useStyles(prefixCls);
   const locale = useLocale('ResponsiveButtonGroup');
 
+  // 外部数值在入口归一化，布局计算直接使用处理后的值。
   const gap = normalizeGap(gapProp);
   const minVisibleCount = normalizeMinVisibleCount(
     minVisibleCountProp,
@@ -124,6 +125,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     ],
   );
 
+  // 首次测量前的全量平铺只是临时布局，不应通知业务方或触发菜单关闭。
   const measurementReady =
     !isResponsive ||
     items.length === 0 ||
@@ -171,8 +173,9 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     nextOpen,
     info,
   ) => {
-    if (overflowDropdownProps?.open === undefined) setInnerOpen(nextOpen);
-    overflowDropdownProps?.onOpenChange?.(nextOpen, info);
+    // 受控时只通知调用方，非受控时同时更新内部状态。
+    if (controlledOpen === undefined) setInnerOpen(nextOpen);
+    onOpenChange?.(nextOpen, info);
   };
 
   const execute = (
@@ -186,44 +189,43 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
       if (source === 'overflow') changeOpen(false, { source: 'menu' });
     };
     const fail = (error: unknown) => {
+      // 错误通知即使抛错，也要完成本次菜单收尾。
       try {
         onActionError?.(error, info);
       } finally {
         finish();
       }
     };
-    try {
-      const result = run(
-        item.key,
-        () => {
-          // 将同步异常转为 Promise 拒绝，以统一处理两个回调的结果。
-          const invoke = (callback?: ResponsiveButtonGroupItem['onClick']) => {
-            try {
-              return callback?.(info);
-            } catch (error) {
-              return Promise.reject(error);
-            }
-          };
-          const first = invoke(item.onClick);
-          const second = invoke(onItemClick);
-          return isThenable(first) || isThenable(second)
-            ? Promise.allSettled([first, second]).then((results) => {
-                for (const result of results) {
-                  if (result.status === 'rejected') throw result.reason;
-                }
-              })
-            : undefined;
-        },
-        [info],
-        item.buttonProps?.throttle,
-      );
-      if (isThenable(result)) void Promise.resolve(result).then(finish, fail);
-      else finish();
-    } catch (error) {
-      fail(error);
-    }
+    const result = run(
+      item.key,
+      () => {
+        // 按顺序立即调用两个业务回调；单项回调抛错也不阻断统一回调。
+        const results = [item.onClick, onItemClick].map((callback) => {
+          try {
+            return callback?.(info);
+          } catch (error) {
+            return Promise.reject(error);
+          }
+        });
+
+        // 纯同步操作不创建异步任务，避免短暂进入 Loading。
+        if (!results.some(isThenable)) return;
+
+        // 等待全部任务结束再清除 Loading；按回调顺序报告第一个错误。
+        return Promise.allSettled(results).then((settledResults) => {
+          for (const result of settledResults) {
+            if (result.status === 'rejected') throw result.reason;
+          }
+        });
+      },
+      [info],
+      item.buttonProps?.throttle,
+    );
+    if (isThenable(result)) void Promise.resolve(result).then(finish, fail);
+    else finish();
   };
 
+  // 测量副本保留影响宽度的外观，移除交互属性并退出键盘导航。
   const renderItemButton = (
     item: ResponsiveButtonGroupItem,
     measuring = false,
@@ -233,6 +235,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
       {...(measuring
         ? getMeasurementButtonProps(item.buttonProps)
         : item.buttonProps)}
+      // 两种展示形态共用组内执行器，按钮自身不再重复管理 Loading 和节流。
       autoLoading={false}
       throttle={0}
       disabled={item.disabled}
@@ -279,6 +282,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     );
     if (!renderOverflowButton) return defaultNode;
     const info: ResponsiveButtonGroupOverflowRenderInfo = {
+      // 测量时传入全部项，预留计数所需宽度，避免折叠数量反过来影响布局。
       collapsedItems: collapsed,
       count,
       open: measuring ? false : open,
@@ -293,7 +297,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
       layout.collapsedItems.map((item) => {
         const loading = Boolean(item.loading || pendingKeys.has(item.key));
         const defaultNode = (
-          <span className={cx(buttonGroupStyles.menuItemContent)}>
+          <span className={buttonGroupStyles.menuItemContent}>
             {(loading || item.icon) && (
               <span className={buttonGroupStyles.menuItemIcon}>
                 {loading ? <LoadingOutlined spin /> : item.icon}
@@ -318,8 +322,8 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
               : item.tooltip;
           label = (
             <Tooltip
-              {...tooltipProps}
               placement="right"
+              {...tooltipProps}
               overlayStyle={{
                 pointerEvents: 'none',
                 ...tooltipProps.overlayStyle,
@@ -340,7 +344,6 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
       buttonGroupStyles.menuItemContent,
       buttonGroupStyles.menuItemIcon,
       buttonGroupStyles.menuItemLabel,
-      cx,
       layout.collapsedItems,
       pendingKeys,
     ],
@@ -355,7 +358,7 @@ const InternalResponsiveButtonGroup: React.ForwardRefRenderFunction<
     nextOpen,
     info,
   ) => {
-    // 异步操作期间阻止点击菜单项立即关闭
+    // 菜单点击统一由 execute 收尾：同步立即关闭，异步等待全部回调结束。
     if (!nextOpen && info.source === 'menu') return;
 
     changeOpen(nextOpen, info);
