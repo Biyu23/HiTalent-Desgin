@@ -45,11 +45,15 @@ export const MenuFormView = <Values extends object>({
     groups,
     locale.basicInfo,
   );
+  // 只为显式配置的业务分组显示分组标题，普通字段直接作为一级菜单项。
+  const groupedSections = sections.filter((group) => group.key !== 'ungrouped');
+  const ungroupedFields =
+    sections.find((group) => group.key === 'ungrouped')?.fields ?? [];
   const groupCollapse = useValidationExpand(
-    sections
+    groupedSections
       .filter((group) => group.defaultExpanded !== false)
       .map((group) => group.key),
-    sections.map((group) => group.key),
+    groupedSections.map((group) => group.key),
     validationAttempt,
   );
   const quickCollapse = useValidationExpand([], ['quick'], validationAttempt);
@@ -87,30 +91,43 @@ export const MenuFormView = <Values extends object>({
           ]}
         />
       )}
-      <Collapse
-        {...groupCollapse}
-        expandIconPosition="end"
-        ghost
-        className={cx(styles.menuCollapse, classNames?.group)}
-        style={customStyles?.group}
-        items={sections.map((group) => ({
-          key: group.key,
-          forceRender: true,
-          label: group.title,
-          extra: group.extra,
-          children: group.fields.map((field) => (
-            <MenuFieldItem
-              validationAttempt={validationAttempt}
-              key={field.name}
-              field={field}
-              form={form}
-              currentValues={currentValues}
-              onRemove={onRemove}
-              disabled={disabled}
-            />
-          )),
-        }))}
-      />
+      {groupedSections.length > 0 && (
+        <Collapse
+          {...groupCollapse}
+          expandIconPosition="end"
+          ghost
+          className={cx(styles.menuCollapse, classNames?.group)}
+          style={customStyles?.group}
+          items={groupedSections.map((group) => ({
+            key: group.key,
+            forceRender: true,
+            label: group.title,
+            extra: group.extra,
+            children: group.fields.map((field) => (
+              <MenuFieldItem
+                validationAttempt={validationAttempt}
+                key={field.name}
+                field={field}
+                form={form}
+                currentValues={currentValues}
+                onRemove={onRemove}
+                disabled={disabled}
+              />
+            )),
+          }))}
+        />
+      )}
+      {ungroupedFields.map((field) => (
+        <MenuFieldItem
+          validationAttempt={validationAttempt}
+          key={field.name}
+          field={field}
+          form={form}
+          currentValues={currentValues}
+          onRemove={onRemove}
+          disabled={disabled}
+        />
+      ))}
     </div>
   );
 };

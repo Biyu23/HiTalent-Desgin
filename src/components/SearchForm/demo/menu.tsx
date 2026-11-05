@@ -1,121 +1,93 @@
-import { Checkbox, DatePicker, Input, Select } from 'antd';
-import {
-  SearchForm,
-  type SearchFieldGroup,
-  type SearchFormFieldItem,
-  type SearchFormRef,
-} from 'hi-talent-design';
-import React, { useRef, useState } from 'react';
+import { DatePicker, Input, InputNumber, Select } from 'antd';
+import { SearchForm, type SearchFormFieldItem } from 'hi-talent-design';
+import React, { useState } from 'react';
 
-const { RangePicker } = DatePicker;
-
-interface CandidateFilter {
+interface JobFilter {
   keyword?: string;
-  followed?: boolean;
-  radius?: string;
-  name?: string;
-  phone?: string;
-  stage?: string[];
-  skills?: string[];
+  position?: string;
+  company?: string;
+  participant?: string;
+  priority?: string;
   createdTime?: [unknown, unknown];
+  contact?: string;
+  startDate?: unknown;
+  workMode?: string;
+  location?: string;
+  salary?: number;
 }
 
+// 未配置 groups 时按声明顺序展示一级条件项，点击右侧加号展开控件。
+const fields: SearchFormFieldItem<JobFilter>[] = [
+  {
+    name: 'keyword',
+    label: '关键词',
+    children: <Input placeholder="输入关键词" allowClear />,
+  },
+  {
+    name: 'position',
+    label: '职位名称 & 职位ID & 职位编码',
+    children: <Input placeholder="输入职位名称、ID 或编码" allowClear />,
+  },
+  {
+    name: 'company',
+    label: '公司',
+    children: <Input placeholder="输入公司名称" allowClear />,
+  },
+  {
+    name: 'participant',
+    label: '负责人或创建人或参与者',
+    children: <Input placeholder="输入成员姓名" allowClear />,
+  },
+  {
+    name: 'priority',
+    label: '优先级',
+    children: (
+      <Select
+        placeholder="选择优先级"
+        allowClear
+        options={['高', '中', '低'].map((value) => ({ label: value, value }))}
+      />
+    ),
+  },
+  {
+    name: 'createdTime',
+    label: '创建时间',
+    children: <DatePicker.RangePicker />,
+  },
+  {
+    name: 'contact',
+    label: '客户联系人',
+    children: <Input placeholder="输入客户联系人" allowClear />,
+  },
+  { name: 'startDate', label: '开始日期', children: <DatePicker /> },
+  {
+    name: 'workMode',
+    label: '工作模式',
+    children: (
+      <Select
+        placeholder="选择工作模式"
+        allowClear
+        options={['现场办公', '混合办公', '远程办公'].map((value) => ({
+          label: value,
+          value,
+        }))}
+      />
+    ),
+  },
+  {
+    name: 'location',
+    label: '地点',
+    children: <Input placeholder="输入工作地点" allowClear />,
+  },
+  {
+    name: 'salary',
+    label: '薪资',
+    children: <InputNumber min={0} placeholder="最低年薪（万元）" />,
+  },
+];
+
 export default () => {
-  const formRef = useRef<SearchFormRef<CandidateFilter>>(null);
-  const [result, setResult] = useState<CandidateFilter>({
-    stage: ['简历初筛', '用人部门评估', '现场面试', '背景调查'],
-  });
-
-  const groups: SearchFieldGroup[] = [
-    { key: 'basic', title: '基本信息', defaultExpanded: true },
-    { key: 'status', title: '流程与能力', defaultExpanded: true },
-    { key: 'time', title: '时间维度', defaultExpanded: false },
-  ];
-
-  const fields: SearchFormFieldItem<CandidateFilter>[] = [
-    {
-      name: 'followed',
-      label: '我关注的候选人',
-      quick: true,
-      formItemProps: { valuePropName: 'checked' },
-      formatTag: (value) => (value ? '我关注的候选人' : null),
-      children: <Checkbox />,
-    },
-    {
-      name: 'radius',
-      label: '半径（选择所在地后可用）',
-      group: 'basic',
-      disabled: true,
-      children: <Input placeholder="请先选择所在地" />,
-    },
-    // 基础信息分组
-    {
-      name: 'keyword',
-      label: '综合关键词',
-      group: 'basic',
-      children: <Input placeholder="搜索姓名 / 手机 / 邮箱" allowClear />,
-    },
-    {
-      name: 'name',
-      label: '候选人姓名',
-      group: 'basic',
-      children: <Input placeholder="输入候选人姓名" allowClear />,
-    },
-    {
-      name: 'phone',
-      label: '手机号码',
-      group: 'basic',
-      children: <Input placeholder="输入手机号" allowClear />,
-    },
-
-    // 流程与能力分组
-    {
-      name: 'stage',
-      label: '候选阶段',
-      group: 'status',
-      maxTagCount: 2, // 最多展示 2 个 Tag，其余折叠为 +2... 并在 Popover 提示
-      children: (
-        <Select
-          mode="multiple"
-          placeholder="请选择阶段"
-          allowClear
-          options={[
-            { label: '简历初筛', value: '简历初筛' },
-            { label: '用人部门评估', value: '用人部门评估' },
-            { label: '现场面试', value: '现场面试' },
-            { label: '背景调查', value: '背景调查' },
-          ]}
-        />
-      ),
-    },
-    {
-      name: 'skills',
-      label: '技能标签',
-      group: 'status',
-      children: (
-        <Select
-          mode="tags"
-          placeholder="输入或选择技能标签"
-          allowClear
-          options={[
-            { label: 'React', value: 'React' },
-            { label: 'TypeScript', value: 'TypeScript' },
-            { label: 'Node.js', value: 'Node.js' },
-            { label: 'Ant Design', value: 'Ant Design' },
-          ]}
-        />
-      ),
-    },
-
-    // 时间维度分组
-    {
-      name: 'createdTime',
-      label: '投递时间',
-      group: 'time',
-      children: <RangePicker style={{ width: '100%' }} />,
-    },
-  ];
-
+  const [result, setResult] = useState<JobFilter>({});
   return (
     <div
       style={{
@@ -125,51 +97,18 @@ export default () => {
         alignItems: 'flex-start',
       }}
     >
-      {/* 模拟左侧/侧边菜单栏 */}
-      <div
-        style={{
-          width: 300,
-          maxWidth: '100%',
-          minWidth: 0,
-          border: '1px solid #f0f0f0',
-          borderRadius: 8,
-          padding: '16px 0 0',
-          background: '#fff',
-        }}
-      >
-        <div style={{ fontWeight: 600, fontSize: 16, padding: '0 16px 16px' }}>
-          筛选菜单
-        </div>
-        <SearchForm<CandidateFilter>
-          ref={formRef}
-          mode="menu"
-          searchMode="submit"
-          showActiveFilters={false}
-          fields={fields}
-          groups={groups}
-          style={{ maxHeight: 520 }}
-          styles={{ menu: { overflowY: 'auto', minHeight: 0, flex: 1 } }}
-          initialValues={{
-            stage: ['简历初筛', '用人部门评估', '现场面试', '背景调查'],
-          }}
-          onSearch={(values) => setResult(values)}
-        />
-      </div>
-
-      {/* 右侧数据展示区 */}
-      <div
-        style={{
-          flex: '1 1 240px',
-          minWidth: 0,
-          padding: 16,
-          background: '#fafafa',
-          borderRadius: 8,
-          minHeight: 300,
-        }}
-      >
-        <div style={{ fontWeight: 600, marginBottom: 8 }}>
-          查询结果数据演示：
-        </div>
+      {/* 宽高交给业务布局，标题、内部滚动、底部操作和侧栏收起由组件负责。 */}
+      <SearchForm<JobFilter>
+        mode="menu"
+        menuTitle="搜索条件"
+        fields={fields}
+        showActiveFilters={false}
+        resetText="清空"
+        style={{ width: 360, maxWidth: '100%', height: 640 }}
+        onSearch={setResult}
+      />
+      <div style={{ flex: '1 1 240px', minWidth: 0, padding: 16 }}>
+        <div style={{ fontWeight: 600, marginBottom: 8 }}>查询结果</div>
         <pre
           style={{
             margin: 0,

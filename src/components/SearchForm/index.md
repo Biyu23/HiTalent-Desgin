@@ -20,7 +20,7 @@ toc: content
 
 <code src="./demo/inline-form.tsx" title="直接表单布局" description="设置 inlineLayout 为 form，直接展示控件，按容器宽度自动换列，支持搜索、重置和字段校验。"></code>
 
-<code src="./demo/menu.tsx" title="菜单模式与业务分组" description="只封装分组、快捷筛选和字段内容；标题、宽高与滚动区域由业务侧设置。"></code>
+<code src="./demo/menu.tsx" title="侧栏菜单筛选" description="顶部标题与侧栏收起入口、单层可展开条件列表、底部搜索与清空操作；条件区独立滚动。"></code>
 
 <code src="./demo/combined.tsx" title="联合协同模式" description="顶部平铺高频常用筛选，末尾按钮唤起侧边高级抽屉，状态统一互通。"></code>
 
@@ -34,19 +34,20 @@ toc: content
 
 删除标签或点击字段清空统一触发 `tag-remove` 查询，并保留自定义 `onClear` 的实际结果。重置和“清空全部”均恢复初始值，同时触发 `onReset` 与 `reset` 查询。`initialValues` 优先于字段 `initialValue`；不再从 `formItemProps.initialValue` 设置默认值。
 
-`menu` 模式在页面内展示分组和操作按钮；只有 `combined` 模式使用抽屉。移除了从未生效的 `span` 属性。默认标签统一显示值的文本形式，业务文案（如布尔值、长数组摘要）请使用 `formatTag`。
+`menu` 模式在页面内展示完整筛选侧栏：顶部标题、条件列表和底部操作区；只有 `combined` 模式使用抽屉。移除了从未生效的 `span` 属性。默认标签统一显示值的文本形式，业务文案（如布尔值、长数组摘要）请使用 `formatTag`。
 
-`className`、`style` 设置根容器。`classNames` 和 `styles` 均支持 `form`、`actions`、`activeFilters`、`menu`、`drawer`、`quickFilters`、`group`；`actions` 同时用于抽屉操作区。
+`className`、`style` 设置根容器。`classNames` 和 `styles` 均支持 `form`、`actions`、`activeFilters`、`menu`、`menuHeader`、`drawer`、`quickFilters`、`group`；`actions` 同时用于抽屉操作区。
 
 ### 布局与扩展
 
 - 默认 `inlineLayout="popover"`：等高筛选按钮，选中后展示值摘要，确认弹层后查询；`formatTag` 同时控制按钮摘要。
 - `inlineLayout="form"`：直接显示表单控件，`inlineMinWidth` 控制最小列宽；窄容器自动单列。搜索会校验可见且未禁用的字段（包含折叠项），校验失败会展开全部字段；折叠不丢值。隐藏字段保留值但不参与此校验。
-- `menu` 只输出筛选内容，不内置标题、宽高或滚动容器。`quick` 字段放入顶部“快捷筛选”，默认收起；分组标题右侧为展开箭头，字段右侧为加减号。
-- 菜单操作区在正常文档流中。`actionExtra` 支持平铺、菜单和抽屉；同时关闭 `showSearchButton`、`showResetButton` 可完全由业务侧提供操作。
+- `menu` 内置标题栏，`menuTitle` 自定义标题；右侧按钮收起整个侧栏，收起后保留展开入口，字段值与展开状态不丢失。可用 `menuCollapsed` / `onMenuCollapsedChange` 与业务布局联动。
+- 未配置业务分组的字段直接展示为一级条件项，右侧加减号控制展开。显式配置的 `groups` 仍显示业务分组；`quick` 字段放入顶部“快捷筛选”，默认收起。
+- 菜单标题和底部操作区保持可见，只有中间条件区滚动。已选条件区开启时显示在操作区上方，并随侧栏一起收起。`actionExtra` 支持平铺、菜单和抽屉；同时关闭 `showSearchButton`、`showResetButton` 可完全由业务侧提供操作。
 - 设置 `fields[].disabled` 可禁用单个字段及其标签删除；整体重置仍恢复所有初始值。删除标签会额外调用 `onValuesChange`，包括 `onClear` 修改的关联字段。
 
-如需固定高度、内部滚动，由业务侧设置：
+宽高由业务布局设置；指定高度后，组件自动安排条件区滚动，无需额外覆盖滚动样式：
 
 ```tsx | pure
 <SearchForm
@@ -55,40 +56,41 @@ toc: content
   groups={groups}
   showActiveFilters={false}
   style={{ height: 560 }}
-  styles={{ menu: { flex: 1, minHeight: 0, overflowY: 'auto' } }}
 />
 ```
 
 ### SearchForm
 
-| 属性                | 说明                                                                         | 类型                                                                                          | 默认值       |
-| ------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------ |
-| mode                | 展示模式：`inline`（平铺） \| `menu`（页面内菜单） \| `combined`（联合模式） | `'inline' \| 'menu' \| 'combined'`                                                            | `'inline'`   |
-| inlineLayout        | 平铺布局：筛选按钮或直接表单                                                 | `'popover' \| 'form'`                                                                         | `'popover'`  |
-| inlineMinWidth      | 直接表单最小列宽（px）                                                       | `number`                                                                                      | `200`        |
-| fields              | 筛选项字段定义列表                                                           | `SearchFormFieldItem[]`                                                                       | `[]`         |
-| groups              | 业务分组配置（菜单及 combined 抽屉）                                         | `SearchFieldGroup[]`                                                                          | -            |
-| form                | 外部传入的 Ant Design Form 实例（支持外部受控操作）                          | `FormInstance`                                                                                | -            |
-| initialValues       | 初始默认表单值                                                               | `Record<string, unknown>`                                                                     | -            |
-| onSearch            | 触发搜索查询回调                                                             | `(values: Values, info: { source: 'submit' \| 'change' \| 'tag-remove' \| 'reset' }) => void` | -            |
-| onReset             | 触发重置回调                                                                 | `() => void`                                                                                  | -            |
-| onValuesChange      | 字段值变动回调                                                               | `(changedValues: Partial<Values>, allValues: Values) => void`                                 | -            |
-| searchMode          | 搜索触发方式：`submit`（点击搜索统一提交） \| `change`（表单项变动即触发）   | `'submit' \| 'change'`                                                                        | `'submit'`   |
-| defaultVisibleCount | 平铺展示模式下默认显示的字段数量阈值，超出部分支持展开/收起                  | `number`                                                                                      | `4`          |
-| defaultExpanded     | 是否默认展开全部平铺字段                                                     | `boolean`                                                                                     | `false`      |
-| expanded            | 是否受控平铺展开状态                                                         | `boolean`                                                                                     | -            |
-| onExpandedChange    | 平铺展开/收起状态变化回调                                                    | `(expanded: boolean) => void`                                                                 | -            |
-| showActiveFilters   | 是否展示已选条件区（Active Filters Bar）                                     | `boolean`                                                                                     | `true`       |
-| showSearchButton    | 是否展示搜索按钮                                                             | `boolean`                                                                                     | `true`       |
-| showResetButton     | 是否展示重置按钮                                                             | `boolean`                                                                                     | `true`       |
-| searchText          | 搜索按钮文案                                                                 | `ReactNode`                                                                                   | `'搜索'`     |
-| resetText           | 重置按钮文案                                                                 | `ReactNode`                                                                                   | `'重置'`     |
-| menuTitle           | 抽屉面板标题（仅 combined 模式）                                             | `ReactNode`                                                                                   | `'搜索条件'` |
-| menuTrigger         | 唤起抽屉的按钮文案或节点                                                     | `ReactNode`                                                                                   | `'高级筛选'` |
-| actionExtra         | 自定义操作区额外内容渲染                                                     | `ReactNode`                                                                                   | -            |
-| disabled            | 是否禁用全部字段                                                             | `boolean`                                                                                     | `false`      |
-| classNames          | 语义化类名定制                                                               | `SearchFormClassNames`                                                                        | -            |
-| styles              | 语义化样式定制                                                               | `SearchFormStyles`                                                                            | -            |
+| 属性                  | 说明                                                                         | 类型                                                                                          | 默认值       |
+| --------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------ |
+| mode                  | 展示模式：`inline`（平铺） \| `menu`（页面内菜单） \| `combined`（联合模式） | `'inline' \| 'menu' \| 'combined'`                                                            | `'inline'`   |
+| inlineLayout          | 平铺布局：筛选按钮或直接表单                                                 | `'popover' \| 'form'`                                                                         | `'popover'`  |
+| inlineMinWidth        | 直接表单最小列宽（px）                                                       | `number`                                                                                      | `200`        |
+| fields                | 筛选项字段定义列表                                                           | `SearchFormFieldItem[]`                                                                       | `[]`         |
+| groups                | 业务分组配置（菜单及 combined 抽屉）                                         | `SearchFieldGroup[]`                                                                          | -            |
+| form                  | 外部传入的 Ant Design Form 实例（支持外部受控操作）                          | `FormInstance`                                                                                | -            |
+| initialValues         | 初始默认表单值                                                               | `Record<string, unknown>`                                                                     | -            |
+| onSearch              | 触发搜索查询回调                                                             | `(values: Values, info: { source: 'submit' \| 'change' \| 'tag-remove' \| 'reset' }) => void` | -            |
+| onReset               | 触发重置回调                                                                 | `() => void`                                                                                  | -            |
+| onValuesChange        | 字段值变动回调                                                               | `(changedValues: Partial<Values>, allValues: Values) => void`                                 | -            |
+| searchMode            | 搜索触发方式：`submit`（点击搜索统一提交） \| `change`（表单项变动即触发）   | `'submit' \| 'change'`                                                                        | `'submit'`   |
+| defaultVisibleCount   | 平铺展示模式下默认显示的字段数量阈值，超出部分支持展开/收起                  | `number`                                                                                      | `4`          |
+| defaultExpanded       | 是否默认展开全部平铺字段                                                     | `boolean`                                                                                     | `false`      |
+| expanded              | 是否受控平铺展开状态                                                         | `boolean`                                                                                     | -            |
+| onExpandedChange      | 平铺展开/收起状态变化回调                                                    | `(expanded: boolean) => void`                                                                 | -            |
+| showActiveFilters     | 是否展示已选条件区（Active Filters Bar）                                     | `boolean`                                                                                     | `true`       |
+| showSearchButton      | 是否展示搜索按钮                                                             | `boolean`                                                                                     | `true`       |
+| showResetButton       | 是否展示重置按钮                                                             | `boolean`                                                                                     | `true`       |
+| searchText            | 搜索按钮文案                                                                 | `ReactNode`                                                                                   | `'搜索'`     |
+| resetText             | 重置按钮文案                                                                 | `ReactNode`                                                                                   | `'重置'`     |
+| menuTitle             | 菜单侧栏及 combined 抽屉标题                                                 | `ReactNode`                                                                                   | `'搜索条件'` |
+| menuCollapsed         | 菜单侧栏受控收起状态，未传时内部管理                                         | `boolean`                                                                                     | `false`      |
+| onMenuCollapsedChange | 菜单侧栏收起状态变化，可同步业务布局                                         | `(collapsed: boolean) => void`                                                                | -            |
+| menuTrigger           | 唤起抽屉的按钮文案或节点                                                     | `ReactNode`                                                                                   | `'高级筛选'` |
+| actionExtra           | 自定义操作区额外内容渲染                                                     | `ReactNode`                                                                                   | -            |
+| disabled              | 是否禁用全部字段                                                             | `boolean`                                                                                     | `false`      |
+| classNames            | 语义化类名定制                                                               | `SearchFormClassNames`                                                                        | -            |
+| styles                | 语义化样式定制                                                               | `SearchFormStyles`                                                                            | -            |
 
 ### SearchFormFieldItem
 

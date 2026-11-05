@@ -1,51 +1,22 @@
 import { HolderOutlined } from '@ant-design/icons';
-import type { DraggableSyntheticListeners } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import React, { useCallback, useContext, useMemo, useRef } from 'react';
 import { setRef } from '../../../utils/ref';
-import type { RowDropCandidate, RowRegistry } from '../internal';
 import { useStyles } from '../style';
 import type { TableRowKey } from '../type';
+import {
+  RowDragHandleContext,
+  RowDragStateContext,
+  RowRuntimeContext,
+} from './RowDragContext';
 import { isTableRowKey } from './utils';
-
-interface RowDragHandleContextValue {
-  listeners: DraggableSyntheticListeners;
-  setActivatorNodeRef: (node: HTMLElement | null) => void;
-  draggable: boolean;
-}
-
-const RowDragHandleContext =
-  React.createContext<RowDragHandleContextValue | null>(null);
-
-interface RowDragStateValue {
-  candidate: RowDropCandidate | null;
-  treeMode: boolean;
-  draggedKeys: ReadonlySet<TableRowKey>;
-}
-
-export const RowDragStateContext = React.createContext<RowDragStateValue>({
-  candidate: null,
-  treeMode: false,
-  draggedKeys: new Set(),
-});
-
-interface RowRuntimeValue {
-  registry: RowRegistry<unknown>;
-  treeMode: boolean;
-  canDrag?: (record: unknown) => boolean;
-  handleEnabled: boolean;
-  rowComponent?: React.ElementType;
-}
-
-export const RowRuntimeContext = React.createContext<RowRuntimeValue | null>(
-  null,
-);
 
 function stopRowEvent(event: React.SyntheticEvent) {
   event.stopPropagation();
 }
 
+/** 独立手柄只绑定所属行的传感器，阻断行点击等业务事件。 */
 export function RowDragHandle() {
   const drag = useContext(RowDragHandleContext);
   const { styles, cx } = useStyles();
@@ -76,6 +47,7 @@ export function RowDragHandle() {
 }
 
 interface SortableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
+  enabled: boolean;
   rowKey: TableRowKey;
   draggable: boolean;
   handleEnabled: boolean;
@@ -86,7 +58,9 @@ interface SortableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
 
 const disableLayoutAnimation = () => false;
 
+/** 将拖拽样式和事件附着到原始行，继续转发业务属性及虚拟列表所需的 ref。 */
 function SortableRow({
+  enabled,
   rowKey,
   draggable,
   handleEnabled,
@@ -108,12 +82,12 @@ function SortableRow({
     isDragging,
   } = useSortable({
     id: rowKey,
-    disabled: { draggable: !draggable, droppable: false },
+    disabled: { draggable: !draggable, droppable: !enabled },
     animateLayoutChanges: state.treeMode ? disableLayoutAnimation : undefined,
   });
   const { styles } = useStyles();
-  const isTarget = state.candidate?.targetKey === rowKey;
-  const isDragged = state.draggedKeys.has(rowKey);
+  const isTarget = state.active && state.candidate?.targetKey === rowKey;
+  const isDragged = state.active && state.draggedKeys.has(rowKey);
   const dropClass = isTarget
     ? `row-drag-over-${state.candidate?.placement}`
     : undefined;
@@ -186,9 +160,15 @@ function SortableRow({
               ? { pointerEvents: 'none' }
               : {}
             : {
-                transform: CSS.Translate.toString(transform),
-                transition,
-                ...(isDragging ? { position: 'relative', zIndex: 1 } : {}),
+                ...(state.active
+                  ? {
+                      transform: CSS.Translate.toString(transform),
+                      transition,
+                      ...(isDragging
+                        ? { position: 'relative', zIndex: 1 }
+                        : {}),
+                    }
+                  : {}),
               }),
           ...(!handleEnabled && draggable ? { cursor: 'move' } : {}),
         }}
@@ -197,6 +177,7 @@ function SortableRow({
   );
 }
 
+/** Antd 行入口：普通辅助行直接透传，具有业务键的行连接拖拽能力。 */
 export const RowAdapter = React.forwardRef(function RowAdapter(
   props: React.HTMLAttributes<HTMLTableRowElement> & {
     'data-row-key'?: React.Key;
@@ -210,18 +191,19 @@ export const RowAdapter = React.forwardRef(function RowAdapter(
     return <Row {...props} ref={ref} />;
   }
   const meta = runtime.registry.meta.get(key);
-  if (!meta) {
-    const Row = runtime.rowComponent ?? 'tr';
-    return <Row {...props} ref={ref} />;
-  }
   return (
     <SortableRow
       {...props}
+      enabled={runtime.enabled && Boolean(meta)}
       forwardedRef={ref}
       rowKey={key}
-      draggable={runtime.canDrag ? runtime.canDrag(meta.record) : true}
+      draggable={
+        runtime.enabled &&
+        Boolean(meta) &&
+        (!runtime.canDrag || runtime.canDrag(meta!.record))
+      }
       handleEnabled={runtime.handleEnabled}
-      treeParent={runtime.treeMode && meta.childKeys.length > 0}
+      treeParent={runtime.treeMode && Boolean(meta?.childKeys.length)}
       rowComponent={runtime.rowComponent}
     />
   );

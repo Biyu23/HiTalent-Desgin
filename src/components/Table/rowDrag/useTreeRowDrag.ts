@@ -1,14 +1,12 @@
 import type { DragStartEvent, Modifier } from '@dnd-kit/core';
 import {
-  DndContext,
   KeyboardSensor,
   MeasuringStrategy,
   MouseSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { SortableContext } from '@dnd-kit/sortable';
-import React, {
+import {
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -17,7 +15,6 @@ import React, {
   useState,
 } from 'react';
 import { unstable_batchedUpdates } from 'react-dom';
-import { silentDragAnnouncements } from '../../_util/silentDragAnnouncements';
 import { useLayoutMotion } from '../hooks/useLayoutMotion';
 import type {
   RowDragProviderProps,
@@ -26,7 +23,6 @@ import type {
 } from '../internal';
 import type { TableRowKey } from '../type';
 import { visibleTableRows } from '../utils/dragPreview';
-import { RowDragStateContext, RowRuntimeContext } from './SortableRow';
 import { useRowCollisionDetection } from './useRowCollisionDetection';
 import {
   collectSubtreeKeys,
@@ -48,7 +44,8 @@ const restrictToVertical: Modifier = ({ transform }) => ({
 });
 const rowModifiers = [restrictToVertical];
 
-export default function TreeRowDragProvider<RecordType>(
+/** 树形策略：冻结数据快照、显示候选位置、按需展开，松手后移动整棵子树。 */
+export default function useTreeRowDrag<RecordType>(
   props: RowDragProviderProps<RecordType>,
 ) {
   const propsRef = useRef(props);
@@ -59,13 +56,13 @@ export default function TreeRowDragProvider<RecordType>(
   );
   const originalKeys = useMemo(
     () =>
-      props.registry.keys.filter((key) => {
+      (props.enabled ? props.registry.keys : []).filter((key) => {
         const meta = props.registry.meta.get(key);
         return meta?.path
           .slice(0, -1)
           .every((parent) => props.expandedKeys.has(parent));
       }),
-    [props.expandedKeys, props.registry],
+    [props.enabled, props.expandedKeys, props.registry],
   );
   const {
     collisionDetection,
@@ -110,6 +107,7 @@ export default function TreeRowDragProvider<RecordType>(
     expandTimerRef.current = null;
   }, []);
 
+  // 取消、提交和输入变化共用清理路径，统一释放帧、计时器及临时展开。
   const clear = useCallback(() => {
     clearFrame();
     clearExpandTimer();
@@ -170,6 +168,7 @@ export default function TreeRowDragProvider<RecordType>(
     signatureRef.current = '';
   }, [clearExpandTimer, props.autoExpandDelay]);
 
+  // 同一候选位置不重复计算树结构；松手强制重算以采用最新业务约束。
   const evaluate = useCallback(
     (force = false): DragResult<RecordType> | null => {
       const registry = registryRef.current;
@@ -236,6 +235,7 @@ export default function TreeRowDragProvider<RecordType>(
   const start = useCallback((event: DragStartEvent) => {
     if (!isTableRowKey(event.active.id)) return;
     const current = propsRef.current;
+    if (!current.enabled) return;
     activeKeyRef.current = event.active.id;
     snapshotRef.current = current.dataSource;
     registryRef.current = current.registry;
@@ -280,14 +280,16 @@ export default function TreeRowDragProvider<RecordType>(
     });
   }, [captureRows, clear, clearFrame, evaluate]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (
       activeKeyRef.current !== null &&
-      (snapshotRef.current !== props.dataSource || !props.enabled)
+      (snapshotRef.current !== props.dataSource ||
+        registryRef.current !== props.registry ||
+        !props.enabled)
     ) {
       clear();
     }
-  }, [clear, props.dataSource, props.enabled]);
+  }, [clear, props.dataSource, props.enabled, props.registry]);
 
   useEffect(() => {
     const abort = () => {
@@ -326,40 +328,19 @@ export default function TreeRowDragProvider<RecordType>(
     () => ({ candidate, treeMode: true, draggedKeys }),
     [candidate, draggedKeys],
   );
-  const runtimeValue = useMemo(
-    () => ({
-      registry: props.registry as RowRegistry<unknown>,
-      treeMode: true,
-      canDrag: props.canDrag as ((record: unknown) => boolean) | undefined,
-      handleEnabled: props.handleEnabled,
-      rowComponent: props.rowComponent,
-    }),
-    [props.canDrag, props.handleEnabled, props.registry, props.rowComponent],
-  );
-
-  return (
-    <DndContext
-      accessibility={silentDragAnnouncements}
-      modifiers={rowModifiers}
-      sensors={sensors}
-      collisionDetection={collisionDetection}
-      measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
-      onDragStart={start}
-      onDragMove={move}
-      onDragOver={move}
-      onDragEnd={end}
-      onDragCancel={clear}
-    >
-      <SortableContext
-        items={[...props.renderKeys]}
-        strategy={noSortingTransform}
-      >
-        <RowRuntimeContext.Provider value={runtimeValue}>
-          <RowDragStateContext.Provider value={stateValue}>
-            {props.children}
-          </RowDragStateContext.Provider>
-        </RowRuntimeContext.Provider>
-      </SortableContext>
-    </DndContext>
-  );
+  return {
+    context: {
+      modifiers: rowModifiers,
+      sensors,
+      collisionDetection,
+      measuring: { droppable: { strategy: MeasuringStrategy.Always } },
+      onDragStart: start,
+      onDragMove: move,
+      onDragOver: move,
+      onDragEnd: end,
+      onDragCancel: clear,
+    },
+    strategy: noSortingTransform,
+    state: stateValue,
+  };
 }

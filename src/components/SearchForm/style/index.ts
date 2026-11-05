@@ -360,11 +360,59 @@ export const useStyles = createStyles(({ token }) => {
     `,
 
     // === Menu 模式专属样式 ===
+    menuRoot: css`
+      min-height: 0;
+      gap: 0;
+      background: ${token.colorBgContainer};
+    `,
+
+    menuCollapsed: css`
+      width: ${token.controlHeight + token.paddingXS * 2}px;
+    `,
+
+    menuHeader: css`
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: ${token.marginXS}px;
+      flex-shrink: 0;
+      min-height: ${token.controlHeight + token.paddingXS * 2}px;
+      padding: ${token.paddingXS}px;
+      > .ant-btn {
+        flex-shrink: 0;
+      }
+    `,
+
+    menuTitle: css`
+      min-width: 0;
+      padding-inline-start: ${token.paddingXS}px;
+      color: ${token.colorText};
+      font-size: ${token.fontSizeLG}px;
+      font-weight: 500;
+      overflow-wrap: anywhere;
+    `,
+
+    // 标题与操作区不参与滚动；收起时隐藏内容而不卸载字段。
+    menuPanel: css`
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      min-width: 0;
+      &[hidden] {
+        display: none;
+      }
+    `,
+
     menuContainer: css`
       display: flex;
       flex-direction: column;
+      flex: 1;
+      min-height: 0;
       min-width: 0;
       width: 100%;
+      overflow-y: auto;
+      overscroll-behavior-y: contain;
     `,
 
     menuCollapse: css`

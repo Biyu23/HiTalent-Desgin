@@ -101,10 +101,10 @@ export default defineConfig({
               link: '/components/number-range-input',
             },
             // 暂时隐藏 SearchForm，恢复展示时取消注释。
-            // {
-            //   title: 'SearchForm 搜索表单',
-            //   link: '/components/search-form',
-            // },
+            {
+              title: 'SearchForm 搜索表单',
+              link: '/components/search-form',
+            },
           ],
         },
         {
@@ -155,10 +155,10 @@ export default defineConfig({
               link: '/en-US/components/number-range-input',
             },
             // Temporarily hidden; uncomment to restore.
-            // {
-            //   title: 'SearchForm',
-            //   link: '/en-US/components/search-form',
-            // },
+            {
+              title: 'SearchForm',
+              link: '/en-US/components/search-form',
+            },
           ],
         },
         {

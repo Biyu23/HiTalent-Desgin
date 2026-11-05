@@ -15,6 +15,7 @@ interface ColumnSettingProps<RecordType> {
   title?: React.ReactNode;
 }
 
+/** 弹层只管理未保存的显隐草稿，保存后通过 onChange 交回列状态层。 */
 function ColumnSetting<RecordType>({
   columns,
   visibleKeys,
@@ -28,6 +29,7 @@ function ColumnSetting<RecordType>({
   const [open, setOpen] = useState(false);
   const [checkedKeys, setCheckedKeys] = useState<TableColumnKey[]>([]);
 
+  // 每次打开读取最新状态；已打开期间的父级重渲染不覆盖草稿。
   const changeOpen = (next: boolean) => {
     if (next) setCheckedKeys([...visibleKeys]);
     setOpen(next);

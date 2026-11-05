@@ -47,6 +47,7 @@ interface ColumnDragProviderProps<RecordType> {
   onCancel: () => void;
 }
 
+/** 原生指针会话；高频坐标放在 ref 中，React 只接收激活列和顺序预览。 */
 interface ActiveDrag {
   key: TableColumnKey;
   direction: number;
@@ -82,6 +83,7 @@ function isInsideHeader(drag: ActiveDrag, y: number) {
   );
 }
 
+/** 编排列拖拽会话；布局投影与动画分别交给 utils 和 useColumnMotion。 */
 export default function ColumnDragProvider<RecordType>({
   children,
   enabled,
@@ -109,6 +111,7 @@ export default function ColumnDragProvider<RecordType>({
     cancelLayout,
   } = useColumnMotion(rootRef);
 
+  // 所有退出路径共用清理：释放滚动帧、页面交互锁和浮层。
   const clear = useCallback(() => {
     if (scrollFrameRef.current !== undefined)
       cancelAnimationFrame(scrollFrameRef.current);
@@ -321,6 +324,7 @@ export default function ColumnDragProvider<RecordType>({
     };
   }, [abort, finish, listening, move, rootRef]);
 
+  // 在指针入口检查触发区域，业务控件、固定列及嵌套表格不参与本次拖动。
   const start = useCallback(
     (event: React.PointerEvent<HTMLElement>, key: TableColumnKey) => {
       if (

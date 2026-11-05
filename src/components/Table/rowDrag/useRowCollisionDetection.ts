@@ -2,7 +2,7 @@ import type {
   CollisionDetection,
   KeyboardCoordinateGetter,
 } from '@dnd-kit/core';
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import type { RowDropPlacement, TableRowKey } from '../type';
 import { getTableViewport, tableRows } from '../utils/dragPreview';
 
@@ -11,13 +11,18 @@ interface RowTarget {
   placement: RowDropPlacement;
 }
 
+/** 将鼠标几何位置或键盘选择转成逻辑落点；业务准入交给拖拽策略判断。 */
 export function useRowCollisionDetection(
   rootRef: React.RefObject<HTMLElement>,
   originalKeys: readonly TableRowKey[],
   draggedKeys: ReadonlySet<TableRowKey>,
 ) {
-  const options = useRef({ originalKeys, draggedKeys });
-  options.current = { originalKeys, draggedKeys };
+  const keyMap = useMemo(
+    () => new Map(originalKeys.map((key) => [String(key), key])),
+    [originalKeys],
+  );
+  const options = useRef({ originalKeys, draggedKeys, keyMap });
+  options.current = { originalKeys, draggedKeys, keyMap };
   const target = useRef<RowTarget | null>(null);
   const keyboardTarget = useRef<RowTarget | null>(null);
   const reset = useCallback(() => {
@@ -106,9 +111,7 @@ export function useRowCollisionDetection(
       )
         return [];
 
-      const keyMap = new Map(
-        options.current.originalKeys.map((key) => [String(key), key]),
-      );
+      const { keyMap } = options.current;
       // 释放前保持树形行的顺序，使用已挂载节点的实际矩形，
       // 以兼顾详情行、展开状态和虚拟滚动。
       for (const row of tableRows(root)) {

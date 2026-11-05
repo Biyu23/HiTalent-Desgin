@@ -27,6 +27,8 @@ Table 在 Ant Design Table 基础上提供列状态、列设置、列宽调整�
 - 所有可增强叶子列必须提供唯一字符串 `key`。
 - 排序和行拖拽表达不同的数据顺序语义，建议由业务场景互斥启用。
 - 列状态中的 `width` 表示显式覆盖值；未设置时跟随 `columns.width` 更新。调整列宽后保留用户宽度，调用 `resetColumnState()` 恢复默认列状态。
+- 列宽拖动时显示参考线，松手后一次性应用新宽度并触发 `onColumnStateChange`，避免拖动过程中反复渲染业务单元格。
+- 原生 `columns.hidden=true` 是业务侧隐藏约束，优先于列状态；隐藏的列或分组不会出现在列设置中。需要用户自由切换的列请使用 `columnState.visible`。
 - 子节点字段按 `rowDrag.childrenKey`、`expandable.childrenColumnName`、顶层 `childrenColumnName`、`children` 的顺序解析，表格展示与拖拽使用相同字段。
 - `virtual` 模式默认使用 `div` 行和单元格；自定义 `components.body.row` 时需透传属性并通过 `forwardRef` 转发 DOM ref，以支持行高测量与拖拽。
 - 函数形式的 `components.body` 完整接管表体，保持原样透传，同时禁用内置行拖拽；需要内置行拖拽时请使用对象形式的 `components.body`。
@@ -37,6 +39,7 @@ Table 在 Ant Design Table 基础上提供列状态、列设置、列宽调整�
 - `rowDrag.autoExpandDelay` 默认 600ms，对树节点与详情行统一生效；设置为 `false` 时禁用自动展开并取消待执行的展开。松手提交前会重新校验最新的 `canDrag` 和 `canDrop`。
 - 列宽调整与列拖拽跟随实际 LTR/RTL 布局方向；固定分组下的子列继承 `fixed`，遵循固定列不可拖动的约束。
 - 切换行拖拽模式保留展开状态；移除受控 `expandedRowKeys` 后，从最后一次受控值继续本地管理。自动展开会合并当前展开键。
+- 开关行拖拽和切换 flat/tree 模式保持表格实例，保留当前分页、选择和排序状态。
 - 拖拽期间关闭行拖拽、切换模式或替换行数据会取消当前行拖拽。调整列宽期间关闭 `columnResize` 或将该列设为 `resizable: false` 会取消调整。
 - `onCell`、`onHeaderCell` 返回的业务属性（包括 `column`）会保留并传给自定义单元格组件。
 - 列设置中的未保存选择保留至保存或关闭；父组件重渲染不会覆盖草稿，重新打开时读取最新列状态。

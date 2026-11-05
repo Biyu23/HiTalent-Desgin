@@ -43,6 +43,8 @@ const en_US = {
   },
   SearchForm: {
     searchCriteria: 'Search Criteria',
+    collapseMenu: 'Collapse search sidebar',
+    expandMenu: 'Expand search sidebar',
     quickFilters: 'Quick Filters',
     basicInfo: 'Basic Information',
     search: 'Search',

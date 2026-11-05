@@ -43,6 +43,8 @@ const zh_CN = {
   },
   SearchForm: {
     searchCriteria: '搜索条件',
+    collapseMenu: '收起搜索侧栏',
+    expandMenu: '展开搜索侧栏',
     quickFilters: '快捷筛选',
     basicInfo: '基础信息',
     search: '搜索',

@@ -35,6 +35,10 @@ import { processColumns } from './utils/columns';
 
 const EMPTY_DATA_SOURCE: readonly never[] = [];
 
+/**
+ * 组件入口仅负责能力组装和 Antd 属性适配。
+ * 列状态由 useColumnState 管理；行数据及展开由 useRowDrag 组合。
+ */
 function InternalTable<RecordType = Record<string, unknown>>(
   props: TableProps<RecordType>,
   ref: React.Ref<TableRef>,
@@ -84,6 +88,7 @@ function InternalTable<RecordType = Record<string, unknown>>(
     onChange: onColumnStateChange,
   });
 
+  // 函数式表体已接管所有行，内置行适配器无法参与，应关闭行拖拽。
   const rowDragEnabled =
     Boolean(rowDragProp) && typeof userComponents?.body !== 'function';
   const rowDragOptions = useMemo<RowDragOptions<RecordType>>(() => {
@@ -129,8 +134,10 @@ function InternalTable<RecordType = Record<string, unknown>>(
     options: rowDragOptions,
     expandable: expandableConfig,
     onDragEnd: onRowDragEnd,
+    selectionEnabled: Boolean(tableProps.rowSelection),
   });
 
+  // 列设置仅处理业务列；手柄属于组件内部列，在列处理完成后插入。
   const processedColumns = useMemo(() => {
     const result = processColumns(columns, column.state);
     if (row.enabled && rowDragOptions.handle !== false) {
@@ -154,21 +161,15 @@ function InternalTable<RecordType = Record<string, unknown>>(
     rowDragOptions.handle,
   ]);
 
+  // 只向子组件共享语义样式与列操作，避免把整份表格状态放入 Context。
   const contextValue = useMemo(
     () => ({
       classNames,
       styles,
-      previewColumnWidth: column.previewColumnWidth,
       commitColumnWidth: column.commitColumnWidth,
       cancelColumnPreview: column.cancelPreview,
     }),
-    [
-      classNames,
-      column.cancelPreview,
-      column.commitColumnWidth,
-      column.previewColumnWidth,
-      styles,
-    ],
+    [classNames, column.cancelPreview, column.commitColumnWidth, styles],
   );
 
   const defaultToolbar = useMemo(
@@ -194,10 +195,10 @@ function InternalTable<RecordType = Record<string, unknown>>(
     : defaultToolbar;
   const componentAdapters = useTableComponents(
     userComponents,
-    row.enabled,
     tableProps.virtual,
   );
 
+  // 命令式接口沿用 Antd，重置操作仍走列状态的统一提交路径。
   useImperativeHandle(
     ref,
     () => ({
@@ -210,6 +211,7 @@ function InternalTable<RecordType = Record<string, unknown>>(
     [column.reset],
   );
 
+  // Provider 的层级保持稳定，切换拖拽模式时不重建表格及业务单元格。
   return (
     <TableContext.Provider value={contextValue}>
       <div
@@ -237,6 +239,7 @@ function InternalTable<RecordType = Record<string, unknown>>(
             rowComponent={componentAdapters.bodyRow}
           >
             <TableCellAdapterProvider
+              zebraStripe={zebraStripe}
               columns={column.columnMeta}
               resizeEnabled={columnResize}
               dragEnabled={columnDrag}
@@ -246,7 +249,7 @@ function InternalTable<RecordType = Record<string, unknown>>(
               <AntdTable<RecordType>
                 {...tableProps}
                 ref={tableRef}
-                className={cx(prefixCls, tableStyles.root, classNames?.table, {
+                className={cx(prefixCls, classNames?.table, {
                   zebra: zebraStripe,
                   'row-drag-tree':
                     row.enabled && rowDragOptions.mode === 'tree',

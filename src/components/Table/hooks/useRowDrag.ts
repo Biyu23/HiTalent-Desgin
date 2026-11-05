@@ -1,18 +1,13 @@
 import type { TableProps as AntdTableProps } from 'antd';
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { RowKeyGetter } from '../internal';
 import {
   buildRowRegistry,
   collectVisibleRowKeys,
   isTableRowKey,
 } from '../rowDrag/utils';
-import type { RowDragEndEvent, RowDragOptions, TableRowKey } from '../type';
+import type { RowDragEndEvent, RowDragOptions } from '../type';
+import { useRowExpansion } from './useRowExpansion';
 
 interface UseRowDragOptions<RecordType> {
   dataSource: readonly RecordType[];
@@ -21,8 +16,10 @@ interface UseRowDragOptions<RecordType> {
   options: RowDragOptions<RecordType>;
   expandable?: AntdTableProps<RecordType>['expandable'];
   onDragEnd?: (event: RowDragEndEvent<RecordType>) => void;
+  selectionEnabled?: boolean;
 }
 
+/** 行拖拽的数据入口：统一行键、建立索引，并组合展开状态与拖拽预览。 */
 export function useRowDrag<RecordType>({
   dataSource,
   rowKey,
@@ -30,7 +27,9 @@ export function useRowDrag<RecordType>({
   options,
   expandable,
   onDragEnd,
+  selectionEnabled = false,
 }: UseRowDragOptions<RecordType>) {
+  // 只在业务记录转为行索引的边界校验键类型，后续使用 TableRowKey。
   const getKey = useMemo<RowKeyGetter<RecordType>>(() => {
     if (typeof rowKey === 'function') {
       return (record, index) => {
@@ -50,6 +49,7 @@ export function useRowDrag<RecordType>({
     () => buildRowRegistry(dataSource, getKey, childrenKey, treeMode),
     [childrenKey, dataSource, getKey, treeMode],
   );
+  // 重复键无法唯一确定拖拽节点；缺少键的单行则由注册表排除。
   const effectiveEnabled = enabled && registry.duplicateKeys.size === 0;
 
   useEffect(() => {
@@ -67,113 +67,19 @@ export function useRowDrag<RecordType>({
     }
   }, [registry]);
 
-  const controlledExpandedKeys = useMemo(
-    () => expandable?.expandedRowKeys?.filter(isTableRowKey),
-    [expandable?.expandedRowKeys],
-  );
-  const [innerExpandedKeys, setInnerExpandedKeys] = useState<TableRowKey[]>(
-    () => {
-      if (expandable?.defaultExpandedRowKeys !== undefined)
-        return expandable.defaultExpandedRowKeys.filter(isTableRowKey);
-      if (expandable?.defaultExpandAllRows) {
-        // 展开状态独立于当前拖拽模式。
-        const treeRegistry = buildRowRegistry(
-          dataSource,
-          getKey,
-          childrenKey,
-          true,
-        );
-        return treeRegistry.keys.filter((key) =>
-          Boolean(
-            expandable.expandedRowRender ||
-              treeRegistry.meta.get(key)?.childKeys.length,
-          ),
-        );
-      }
-      return [];
-    },
-  );
-  const expandedKeys = controlledExpandedKeys ?? innerExpandedKeys;
-  useLayoutEffect(() => {
-    // 退出受控模式时保留最后一次受控值。
-    if (controlledExpandedKeys !== undefined)
-      setInnerExpandedKeys(controlledExpandedKeys);
-  }, [controlledExpandedKeys]);
-  const setExpandedKeys = useCallback(
-    (keys: TableRowKey[]) => {
-      if (controlledExpandedKeys === undefined) setInnerExpandedKeys(keys);
-      expandable?.onExpandedRowsChange?.(keys);
-    },
-    [controlledExpandedKeys, expandable?.onExpandedRowsChange],
-  );
-  const [dragExpandedKeys, setDragExpandedKeys] = useState<TableRowKey[]>([]);
-  const mergedExpandedKeys = useMemo(
-    () => [...new Set([...expandedKeys, ...dragExpandedKeys])],
-    [dragExpandedKeys, expandedKeys],
-  );
-  const expandedKeySet = useMemo(
-    () => new Set(mergedExpandedKeys),
-    [mergedExpandedKeys],
-  );
-
-  useEffect(() => {
-    if (
-      !treeMode ||
-      !effectiveEnabled ||
-      controlledExpandedKeys !== undefined ||
-      expandedKeys.every((key) => registry.meta.has(key))
-    )
-      return;
-    setExpandedKeys(expandedKeys.filter((key) => registry.meta.has(key)));
-  }, [
-    controlledExpandedKeys,
-    effectiveEnabled,
-    expandedKeys,
+  const expansion = useRowExpansion({
+    dataSource,
+    getKey,
+    childrenKey,
     registry,
-    setExpandedKeys,
     treeMode,
-  ]);
-
-  const handleExpandedRowsChange = useCallback(
-    (keys: readonly React.Key[]) => setExpandedKeys(keys.filter(isTableRowKey)),
-    [setExpandedKeys],
-  );
-  const autoExpand = useCallback(
-    (key: TableRowKey, record: RecordType) => {
-      setDragExpandedKeys((keys) =>
-        keys.includes(key) ? keys : [...keys, key],
-      );
-      setExpandedKeys([...new Set([...mergedExpandedKeys, key])]);
-      expandable?.onExpand?.(true, record);
-    },
-    [expandable, mergedExpandedKeys, setExpandedKeys],
-  );
-
-  const mergedExpandable = useMemo<
-    AntdTableProps<RecordType>['expandable']
-  >(() => {
-    return {
-      ...expandable,
-      ...(treeMode && effectiveEnabled
-        ? {
-            indentSize: expandable?.indentSize ?? 24,
-            expandIconColumnIndex:
-              expandable?.expandIconColumnIndex ??
-              (options.handle === false ? 0 : 1),
-          }
-        : {}),
-      expandedRowKeys: mergedExpandedKeys,
-      onExpandedRowsChange: handleExpandedRowsChange,
-    };
-  }, [
+    enabled: effectiveEnabled,
+    handleEnabled: options.handle !== false,
+    selectionEnabled,
     expandable,
-    effectiveEnabled,
-    handleExpandedRowsChange,
-    mergedExpandedKeys,
-    options.handle,
-    treeMode,
-  ]);
+  });
 
+  // 树拖拽保存开始时的数据快照；松手后恢复使用外部 dataSource。
   const [previewDataSource, setPreviewDataSource] = useState<
     readonly RecordType[] | null
   >(null);
@@ -185,20 +91,23 @@ export function useRowDrag<RecordType>({
         getKey,
         childrenKey,
         treeMode,
-        expandedKeySet,
+        expansion.expandedKeys,
       ),
-    [childrenKey, expandedKeySet, getKey, renderedDataSource, treeMode],
+    [childrenKey, expansion.expandedKeys, getKey, renderedDataSource, treeMode],
   );
 
-  const clearPreview = useCallback((next: readonly RecordType[] | null) => {
-    setPreviewDataSource(next);
-    if (next === null) setDragExpandedKeys([]);
-  }, []);
+  const clearPreview = useCallback(
+    (next: readonly RecordType[] | null) => {
+      setPreviewDataSource(next);
+      if (next === null) expansion.clearDragExpansion();
+    },
+    [expansion.clearDragExpansion],
+  );
 
   return {
     enabled: effectiveEnabled,
     dataSource: renderedDataSource,
-    expandable: mergedExpandable,
+    expandable: expansion.expandable,
     childrenKey,
     providerProps: {
       enabled: effectiveEnabled,
@@ -208,13 +117,13 @@ export function useRowDrag<RecordType>({
       childrenKey,
       treeMode,
       renderKeys,
-      expandedKeys: expandedKeySet,
+      expandedKeys: expansion.expandedKeys,
       canDrag: options.canDrag,
       canDrop: options.canDrop,
       autoExpandDelay: options.autoExpandDelay ?? 600,
       handleEnabled: options.handle !== false,
       onPreview: clearPreview,
-      onAutoExpand: autoExpand,
+      onAutoExpand: expansion.autoExpand,
       onCommit: onDragEnd,
     },
   };

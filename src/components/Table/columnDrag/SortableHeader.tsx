@@ -8,6 +8,7 @@ interface SortableHeaderProps {
   children: React.ReactNode;
 }
 
+/** 提供拖拽测量标记和光标，事件会话由表级 Provider 统一维护。 */
 export default function SortableHeader({
   columnKey,
   fixed,

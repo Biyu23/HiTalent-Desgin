@@ -98,6 +98,7 @@ export type SearchFormSlot =
   | 'actions'
   | 'activeFilters'
   | 'menu'
+  | 'menuHeader'
   | 'drawer'
   | 'quickFilters'
   | 'group';
@@ -167,8 +168,12 @@ export interface SearchFormProps<
   searchText?: React.ReactNode;
   /** 重置按钮文案，默认 "重置" */
   resetText?: React.ReactNode;
-  /** 抽屉面板标题（combined 模式下的侧抽屉），默认 "搜索条件" */
+  /** 菜单侧栏及 combined 抽屉的标题，默认 "搜索条件" */
   menuTitle?: React.ReactNode;
+  /** 菜单侧栏的受控收起状态，仅 menu 模式有效；未传时内部管理，默认展开。 */
+  menuCollapsed?: boolean;
+  /** 菜单侧栏收起状态变化，可用于同步业务布局。 */
+  onMenuCollapsedChange?: (collapsed: boolean) => void;
   /** 唤起抽屉的按钮文案或节点（combined 模式），默认 "高级筛选" */
   menuTrigger?: React.ReactNode;
   /** 自定义操作区额外内容渲染 */

@@ -1,4 +1,5 @@
-import { Form } from 'antd';
+import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import { Button, Form } from 'antd';
 import React, {
   forwardRef,
   memo,
@@ -47,6 +48,8 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
     searchText,
     resetText,
     menuTitle,
+    menuCollapsed: controlledMenuCollapsed,
+    onMenuCollapsedChange,
     menuTrigger,
     actionExtra,
     disabled = false,
@@ -74,6 +77,15 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
 
   // combined 模式下的高级筛选抽屉状态。
   const [menuOpen, setMenuOpen] = useState(false);
+  // 页面内侧栏的收起独立于 combined 抽屉开关，支持业务侧同步布局。
+  const [menuCollapsed, setMenuCollapsed] = useMergeState<boolean>({
+    defaultValue: false,
+    ...(controlledMenuCollapsed !== undefined
+      ? { value: controlledMenuCollapsed }
+      : {}),
+    onChange: onMenuCollapsedChange,
+  });
+  const isMenuCollapsed = mode === 'menu' && menuCollapsed;
 
   const { defaults, currentValues, visibleFields } = useSearchFormFields({
     fields,
@@ -82,10 +94,11 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
   });
   const [validationAttempt, setValidationAttempt] = useState(0);
   const handleValidationFailed = useCallback(() => {
+    if (mode === 'menu') setMenuCollapsed(false);
     if (mode !== 'menu' && inlineLayout === 'form') setExpanded(true);
     if (mode === 'combined') setMenuOpen(true);
     setValidationAttempt((attempt) => attempt + 1);
-  }, [mode, inlineLayout, setExpanded]);
+  }, [mode, inlineLayout, setExpanded, setMenuCollapsed]);
   const {
     handleSubmit,
     handleReset,
@@ -126,15 +139,33 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
     [form, handleReset, handleSubmit],
   );
 
+  const activeFiltersBar = showActiveFilters ? (
+    <ActiveFiltersBar
+      prefixCls={prefixCls}
+      filters={activeFilters}
+      onClearAll={handleReset}
+      disabled={disabled}
+      locale={locale}
+      classNames={classNames}
+      styles={customStyles}
+    />
+  ) : null;
+
   return (
     <div
       className={cx(
         prefixCls,
         `${prefixCls}-${mode}`,
         formStyles.root,
+        mode === 'menu' && formStyles.menuRoot,
+        isMenuCollapsed && formStyles.menuCollapsed,
         className,
       )}
-      style={style}
+      style={
+        isMenuCollapsed
+          ? { ...style, width: undefined, flex: '0 0 auto' }
+          : style
+      }
     >
       <Form
         form={form}
@@ -174,21 +205,68 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
           />
         )}
 
-        {/* 菜单模式：直接在页面像侧边菜单一样渲染所有分组及字段，无弹窗抽屉 */}
+        {/* 菜单由标题、独立滚动的条件区和底部操作区组成；收起时保留表单挂载。 */}
         {mode === 'menu' && (
-          <MenuFormView
-            validationAttempt={validationAttempt}
-            prefixCls={prefixCls}
-            form={form}
-            fields={visibleFields}
-            groups={groups}
-            currentValues={currentValues}
-            onRemove={handleRemove}
-            disabled={disabled}
-            locale={locale}
-            classNames={classNames}
-            styles={customStyles}
-          />
+          <>
+            <div
+              className={cx(formStyles.menuHeader, classNames?.menuHeader)}
+              style={customStyles?.menuHeader}
+            >
+              {!isMenuCollapsed && (
+                <div className={formStyles.menuTitle}>
+                  {menuTitle ?? locale.searchCriteria}
+                </div>
+              )}
+              <Button
+                type="text"
+                disabled={false}
+                icon={
+                  isMenuCollapsed ? (
+                    <MenuUnfoldOutlined />
+                  ) : (
+                    <MenuFoldOutlined />
+                  )
+                }
+                aria-label={
+                  isMenuCollapsed ? locale.expandMenu : locale.collapseMenu
+                }
+                title={
+                  isMenuCollapsed ? locale.expandMenu : locale.collapseMenu
+                }
+                aria-expanded={!isMenuCollapsed}
+                onClick={() => setMenuCollapsed(!menuCollapsed)}
+              />
+            </div>
+            <div className={formStyles.menuPanel} hidden={isMenuCollapsed}>
+              <MenuFormView
+                validationAttempt={validationAttempt}
+                prefixCls={prefixCls}
+                form={form}
+                fields={visibleFields}
+                groups={groups}
+                currentValues={currentValues}
+                onRemove={handleRemove}
+                disabled={disabled}
+                locale={locale}
+                classNames={classNames}
+                styles={customStyles}
+              />
+              {activeFiltersBar}
+              <SearchActions
+                actionExtra={actionExtra}
+                showSearchButton={showSearchButton}
+                showResetButton={showResetButton}
+                searchText={searchText}
+                resetText={resetText}
+                disabled={disabled}
+                classNames={classNames}
+                styles={customStyles}
+                onSubmit={handleSubmit}
+                onReset={handleReset}
+                locale={locale}
+              />
+            </div>
+          </>
         )}
 
         {/* 联合模式下的侧边抽屉高级筛选表单 */}
@@ -216,35 +294,10 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
             styles={customStyles}
           />
         )}
-        {mode === 'menu' && (
-          <SearchActions
-            actionExtra={actionExtra}
-            showSearchButton={showSearchButton}
-            showResetButton={showResetButton}
-            searchText={searchText}
-            resetText={resetText}
-            disabled={disabled}
-            classNames={classNames}
-            styles={customStyles}
-            onSubmit={handleSubmit}
-            onReset={handleReset}
-            locale={locale}
-          />
-        )}
       </Form>
 
       {/* 已选条件区（Active Filters Bar） */}
-      {showActiveFilters && (
-        <ActiveFiltersBar
-          prefixCls={prefixCls}
-          filters={activeFilters}
-          onClearAll={handleReset}
-          disabled={disabled}
-          locale={locale}
-          classNames={classNames}
-          styles={customStyles}
-        />
-      )}
+      {mode !== 'menu' && activeFiltersBar}
     </div>
   );
 };

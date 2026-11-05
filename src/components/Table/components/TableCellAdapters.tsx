@@ -1,8 +1,11 @@
 import type { TableProps as AntdTableProps } from 'antd';
+import clsx from 'clsx';
 import React, { useContext, useMemo } from 'react';
 import type { ColumnMeta, InternalLeafColumn } from '../internal';
 import { INTERNAL_CELL_COLUMN, INTERNAL_COLUMN_KEY } from '../internal';
-import { RowAdapter, RowRuntimeContext } from '../rowDrag/SortableRow';
+import { RowRuntimeContext } from '../rowDrag/RowDragContext';
+import { RowAdapter } from '../rowDrag/SortableRow';
+import { useStyles } from '../style';
 import type { TableColumnKey } from '../type';
 import EnhancedHeaderCell from './EnhancedHeaderCell';
 
@@ -12,6 +15,9 @@ interface AdapterContextValue {
   dragEnabled: boolean;
   headerCell?: React.ElementType;
   bodyCell?: React.ElementType;
+  bodyCellClassName?: string;
+  headerCellClassName?: string;
+  treeCellClassName?: string;
 }
 
 const AdapterContext = React.createContext<AdapterContextValue>({
@@ -21,6 +27,7 @@ const AdapterContext = React.createContext<AdapterContextValue>({
 });
 
 interface TableCellAdapterProviderProps<RecordType> {
+  zebraStripe: boolean;
   children: React.ReactNode;
   columns: readonly ColumnMeta<RecordType>[];
   resizeEnabled: boolean;
@@ -29,7 +36,9 @@ interface TableCellAdapterProviderProps<RecordType> {
   bodyCell?: React.ElementType;
 }
 
+/** 只提供单元格增强配置，业务自定义组件仍接收原始属性。 */
 export function TableCellAdapterProvider<RecordType>({
+  zebraStripe,
   children,
   columns,
   resizeEnabled,
@@ -37,6 +46,11 @@ export function TableCellAdapterProvider<RecordType>({
   headerCell,
   bodyCell,
 }: TableCellAdapterProviderProps<RecordType>) {
+  const { styles, cx } = useStyles();
+  const bodyCellClassName = cx(
+    styles.bodyCell,
+    zebraStripe && styles.zebraCell,
+  );
   const value = useMemo(
     () => ({
       metaMap: new Map(columns.map((item) => [item.key, item])) as ReadonlyMap<
@@ -47,14 +61,27 @@ export function TableCellAdapterProvider<RecordType>({
       dragEnabled,
       headerCell,
       bodyCell,
+      bodyCellClassName,
+      headerCellClassName: styles.fixedHeaderCell,
+      treeCellClassName: styles.treeCell,
     }),
-    [bodyCell, columns, dragEnabled, headerCell, resizeEnabled],
+    [
+      bodyCell,
+      bodyCellClassName,
+      columns,
+      dragEnabled,
+      headerCell,
+      resizeEnabled,
+      styles.fixedHeaderCell,
+      styles.treeCell,
+    ],
   );
   return (
     <AdapterContext.Provider value={value}>{children}</AdapterContext.Provider>
   );
 }
 
+/** 私有列字段在此消化；选择列、分组标题等无元数据的单元格直接透传。 */
 function HeaderCellAdapter(
   props: React.ThHTMLAttributes<HTMLTableCellElement> & {
     [INTERNAL_CELL_COLUMN]?: InternalLeafColumn<unknown>;
@@ -62,6 +89,7 @@ function HeaderCellAdapter(
 ) {
   const context = useContext(AdapterContext);
   const { [INTERNAL_CELL_COLUMN]: column, ...cellProps } = props;
+  cellProps.className = clsx(cellProps.className, context.headerCellClassName);
   const key = column?.[INTERNAL_COLUMN_KEY];
   const meta = key === undefined ? undefined : context.metaMap.get(key);
   if (!meta) {
@@ -79,6 +107,7 @@ function HeaderCellAdapter(
   );
 }
 
+/** 表体适配：合并样式与列标记，并在树形模式下安排缩进和正文。 */
 function BodyCellAdapter(
   props: React.TdHTMLAttributes<HTMLTableCellElement> & {
     [INTERNAL_CELL_COLUMN]?: InternalLeafColumn<unknown>;
@@ -106,15 +135,20 @@ function BodyCellAdapter(
   return (
     <Cell
       {...cellProps}
+      className={clsx(
+        cellProps.className,
+        adapter.bodyCellClassName,
+        treeCell && adapter.treeCellClassName,
+      )}
       data-table-column-key={adapter.dragEnabled ? key : undefined}
       data-table-column-fixed={column?.fixed ? '' : undefined}
     />
   );
 }
 
+/** 固定适配器组件身份，配置变化通过 Context 传递，保留单元格内部状态。 */
 export function useTableComponents<RecordType>(
   components: AntdTableProps<RecordType>['components'],
-  rowDragEnabled: boolean,
   virtual = false,
 ) {
   return useMemo(() => {
@@ -127,7 +161,7 @@ export function useTableComponents<RecordType>(
     const bodyRow = body.row ?? (virtual ? 'div' : 'tr');
     header.cell = HeaderCellAdapter;
     body.cell = BodyCellAdapter;
-    if (rowDragEnabled) body.row = RowAdapter;
+    body.row = RowAdapter;
     return {
       components: {
         ...components,
@@ -138,5 +172,5 @@ export function useTableComponents<RecordType>(
       bodyCell,
       bodyRow,
     };
-  }, [components, rowDragEnabled, virtual]);
+  }, [components, virtual]);
 }

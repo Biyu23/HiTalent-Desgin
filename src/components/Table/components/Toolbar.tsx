@@ -13,6 +13,7 @@ interface ToolbarProps<RecordType> {
   extra?: React.ReactNode;
 }
 
+/** 工具栏仅组合业务扩展区与列设置，不持有列配置状态。 */
 function Toolbar<RecordType>({
   columns,
   visibleKeys,

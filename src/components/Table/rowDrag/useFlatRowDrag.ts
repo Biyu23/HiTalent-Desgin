@@ -1,22 +1,18 @@
 import type { DragEndEvent, Modifier } from '@dnd-kit/core';
 import {
   closestCenter,
-  DndContext,
   KeyboardSensor,
   MouseSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
 import {
-  SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import React, { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
-import { silentDragAnnouncements } from '../../_util/silentDragAnnouncements';
-import type { RowDragProviderProps, RowRegistry } from '../internal';
+import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
+import type { RowDragProviderProps } from '../internal';
 import type { TableRowKey } from '../type';
-import { RowDragStateContext, RowRuntimeContext } from './SortableRow';
 import {
   createRowDragEndEvent,
   isTableRowKey,
@@ -55,7 +51,8 @@ const restrictToVertical: Modifier = ({
 };
 const flatModifiers = [restrictToVertical];
 
-export default function FlatRowDragProvider<RecordType>(
+/** 平铺策略：拖动时使用排序位移，松手后才计算新的数据顺序。 */
+export default function useFlatRowDrag<RecordType>(
   props: RowDragProviderProps<RecordType>,
 ) {
   const propsRef = useRef(props);
@@ -68,7 +65,7 @@ export default function FlatRowDragProvider<RecordType>(
       mountedRef.current = false;
       draggingRef.current = false;
     };
-  }, [props.registry]);
+  }, [props.enabled, props.registry]);
   const start = useCallback(() => {
     draggingRef.current = mountedRef.current && propsRef.current.enabled;
   }, []);
@@ -86,16 +83,6 @@ export default function FlatRowDragProvider<RecordType>(
       scrollBehavior: 'auto',
     }),
   );
-  const runtimeValue = useMemo(
-    () => ({
-      registry: props.registry as RowRegistry<unknown>,
-      treeMode: false,
-      canDrag: props.canDrag as ((record: unknown) => boolean) | undefined,
-      handleEnabled: props.handleEnabled,
-      rowComponent: props.rowComponent,
-    }),
-    [props.canDrag, props.handleEnabled, props.registry, props.rowComponent],
-  );
   const end = useCallback((event: DragEndEvent) => {
     if (!mountedRef.current || !draggingRef.current) return;
     draggingRef.current = false;
@@ -110,7 +97,7 @@ export default function FlatRowDragProvider<RecordType>(
     const current = propsRef.current;
     const source = current.registry.meta.get(active.id);
     const target = current.registry.meta.get(over.id);
-    if (!source || !target) return;
+    if (!current.enabled || !source || !target) return;
     if (current.canDrag?.(source.record) === false) return;
     const candidate = resolveRowDrop(
       current.registry,
@@ -138,26 +125,16 @@ export default function FlatRowDragProvider<RecordType>(
     if (finalEvent) current.onCommit?.(finalEvent);
   }, []);
 
-  return (
-    <DndContext
-      accessibility={silentDragAnnouncements}
-      modifiers={flatModifiers}
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={start}
-      onDragCancel={cancel}
-      onDragEnd={end}
-    >
-      <SortableContext
-        items={[...props.renderKeys]}
-        strategy={verticalListSortingStrategy}
-      >
-        <RowRuntimeContext.Provider value={runtimeValue}>
-          <RowDragStateContext.Provider value={flatDragState}>
-            {props.children}
-          </RowDragStateContext.Provider>
-        </RowRuntimeContext.Provider>
-      </SortableContext>
-    </DndContext>
-  );
+  return {
+    context: {
+      modifiers: flatModifiers,
+      sensors,
+      collisionDetection: closestCenter,
+      onDragStart: start,
+      onDragCancel: cancel,
+      onDragEnd: end,
+    },
+    strategy: verticalListSortingStrategy,
+    state: flatDragState,
+  };
 }

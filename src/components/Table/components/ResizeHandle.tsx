@@ -7,11 +7,13 @@ interface ResizeHandleProps {
   onPointerDown: React.PointerEventHandler<HTMLDivElement>;
 }
 
+/** 手柄操作不能冒泡成表头排序或双击行为。 */
 function stopHeaderAction(event: React.MouseEvent<HTMLDivElement>) {
   event.preventDefault();
   event.stopPropagation();
 }
 
+/** 列宽交互入口；测量、参考线与提交交给 useColumnResize。 */
 export default function ResizeHandle({
   active,
   disabled = false,

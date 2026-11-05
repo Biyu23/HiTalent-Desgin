@@ -1,3 +1,4 @@
+/** 将表内节点统一定位到所属 Table 容器。 */
 function getRoot(element: HTMLElement) {
   return (
     element.closest<HTMLElement>('[data-table-root]') ??
@@ -17,12 +18,14 @@ export function tableElements(
   );
 }
 
+/** 通过实际 Antd 前缀生成选择器，兼容 ConfigProvider 的自定义前缀。 */
 export function tableSelector(root: HTMLElement, suffix = '') {
   return `.${CSS.escape(
     getRoot(root).dataset.tablePrefix ?? 'ant-table',
   )}${suffix}`;
 }
 
+/** 普通表格与虚拟表格使用不同滚动容器，在此统一识别。 */
 export function getTableViewport(root: HTMLElement) {
   const prefix = tableSelector(root);
   return (
@@ -33,6 +36,7 @@ export function getTableViewport(root: HTMLElement) {
   );
 }
 
+/** 虚拟表格由表头维护 DOM 横向滚动，表体另用命令式接口同步。 */
 export function getHorizontalScroller(root: HTMLElement) {
   const viewport = getTableViewport(root);
   return viewport.matches(`${tableSelector(root)}-tbody-virtual-holder`)
@@ -40,6 +44,7 @@ export function getHorizontalScroller(root: HTMLElement) {
     : viewport;
 }
 
+/** 同步表头、虚拟表体和固定汇总行的横向偏移。 */
 export function scrollTableHorizontally(
   root: HTMLElement,
   delta: number,
@@ -61,6 +66,7 @@ export function scrollTableHorizontally(
   }
 }
 
+/** 只选择当前表格的数据行，排除详情辅助行与嵌套表格。 */
 export function tableRows(root: HTMLElement) {
   const prefix = tableSelector(root);
   return tableElements(root, `${prefix}-row[data-row-key]`).filter(
@@ -68,6 +74,7 @@ export function tableRows(root: HTMLElement) {
   );
 }
 
+/** 动画仅测量视口内的数据行，避免长表格全部参与布局读取。 */
 export function visibleTableRows(root: HTMLElement) {
   const viewport = getTableViewport(root).getBoundingClientRect();
   return tableRows(root).filter((row) => {

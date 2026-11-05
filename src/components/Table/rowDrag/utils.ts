@@ -11,10 +11,12 @@ import type {
   TableRowKey,
 } from '../type';
 
+/** 识别业务数据及 Antd、拖拽库事件传入的行键。 */
 export function isTableRowKey(value: unknown): value is TableRowKey {
   return typeof value === 'string' || typeof value === 'number';
 }
 
+/** 业务树字段的读取边界：字段名由调用方配置，仅接受数组子节点。 */
 export function getRowChildren<RecordType>(
   record: RecordType,
   childrenKey: string,
@@ -24,6 +26,7 @@ export function getRowChildren<RecordType>(
   return Array.isArray(value) ? (value as readonly RecordType[]) : undefined;
 }
 
+/** 遍历数据生成键、路径与父子关系索引；平铺模式仅登记顶层行。 */
 export function buildRowRegistry<RecordType>(
   dataSource: readonly RecordType[],
   getKey: RowKeyGetter<RecordType>,
@@ -79,6 +82,7 @@ export function buildRowRegistry<RecordType>(
   return { keys, meta, duplicateKeys, missingKeyCount };
 }
 
+/** 收集整棵子树，碰撞检测用它排除被拖动节点及其后代。 */
 export function collectSubtreeKeys<RecordType>(
   registry: RowRegistry<RecordType>,
   rootKey: TableRowKey,
@@ -92,6 +96,7 @@ export function collectSubtreeKeys<RecordType>(
   return result;
 }
 
+/** 按实际展开状态生成渲染顺序，折叠后代不进入排序列表。 */
 export function collectVisibleRowKeys<RecordType>(
   dataSource: readonly RecordType[],
   getKey: RowKeyGetter<RecordType>,
@@ -114,6 +119,7 @@ export function collectVisibleRowKeys<RecordType>(
   return result;
 }
 
+/** 将内部键落点转换成对外业务事件，保持原始记录和路径引用。 */
 export function createRowDropEvent<RecordType>(
   registry: RowRegistry<RecordType>,
   candidate: RowDropCandidate,
@@ -128,6 +134,7 @@ export function createRowDropEvent<RecordType>(
   };
 }
 
+/** 相邻位置与原位置等价时，不生成移动结果或触发提交。 */
 function isNoopDrop<RecordType>(
   registry: RowRegistry<RecordType>,
   candidate: RowDropCandidate,
@@ -151,6 +158,7 @@ function isNoopDrop<RecordType>(
   );
 }
 
+/** 汇合结构约束与业务 canDrop：禁止自投放、移动到后代和无效移动。 */
 export function resolveRowDrop<RecordType>(
   registry: RowRegistry<RecordType>,
   candidate: RowDropCandidate,
@@ -189,6 +197,7 @@ interface MoveRowOptions<RecordType> {
   treeMode: boolean;
 }
 
+/** 仅复制受影响的父节点，空 children 恢复为 undefined 以符合 Antd 树展示约定。 */
 function replaceChildren<RecordType>(
   record: RecordType,
   childrenKey: string,
@@ -200,6 +209,7 @@ function replaceChildren<RecordType>(
   } as RecordType;
 }
 
+/** 从原位置不可变地摘出节点；与移动路径无关的节点保留引用。 */
 function detachRow<RecordType>(
   records: readonly RecordType[],
   key: TableRowKey,
@@ -228,6 +238,7 @@ function detachRow<RecordType>(
   return { records, row: null };
 }
 
+/** 将已摘出的整棵子树插入目标位置，仅复制目标路径。 */
 function insertRow<RecordType>(
   records: readonly RecordType[],
   row: RecordType,
@@ -274,6 +285,7 @@ function insertRow<RecordType>(
   return { records, inserted: false };
 }
 
+/** 纯数据移动：先摘出再插入，失败时返回 null，不改写外部 dataSource。 */
 export function moveRow<RecordType>(
   dataSource: readonly RecordType[],
   options: MoveRowOptions<RecordType>,
@@ -300,6 +312,7 @@ export function moveRow<RecordType>(
   return inserted.inserted ? inserted.records : null;
 }
 
+/** 为有效落点附加新的完整数据源，供业务方决定是否采纳。 */
 export function createRowDragEndEvent<RecordType>(
   registry: RowRegistry<RecordType>,
   candidate: RowDropCandidate,

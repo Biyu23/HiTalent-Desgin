@@ -11,6 +11,7 @@ interface ProjectColumnOrderOptions {
   fixedKeys: ReadonlySet<TableColumnKey>;
 }
 
+/** 读取当前表格的叶子列表头矩形，作为本次拖拽的布局快照。 */
 export function captureColumnLayout(
   root: HTMLElement | null,
 ): Map<TableColumnKey, ColumnLayoutRect> {
@@ -34,6 +35,7 @@ export function captureColumnLayout(
   return result;
 }
 
+/** 仅替换可见列所在的位置，隐藏列继续保留在完整顺序中。 */
 export function mergeVisibleColumnOrder(
   fullOrder: readonly TableColumnKey[],
   visibleOrder: readonly TableColumnKey[],
@@ -45,6 +47,7 @@ export function mergeVisibleColumnOrder(
   );
 }
 
+/** 根据指针越过列中心的位置投影顺序，并限制在固定列及分组边界内。 */
 export function projectColumnOrder({
   order,
   activeKey,

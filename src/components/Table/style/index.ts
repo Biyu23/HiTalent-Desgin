@@ -1,18 +1,15 @@
 import { createStyles, css } from 'antd-style';
 import { useAntdPrefixCls } from '../../../configProvider/usePrefixCls';
 
+/** 样式按单元格和交互部件挂载，避免外层表格样式泄漏到嵌套表格。 */
 const useTableStyles = createStyles(
   ({ token }, antdPrefix: string = 'ant') => ({
     wrapper: css`
       position: relative;
     `,
-    root: css`
-      .${antdPrefix}-table-thead
-        > tr
-        > .${antdPrefix}-table-cell-fix-left,
-        .${antdPrefix}-table-thead
-        > tr
-        > .${antdPrefix}-table-cell-fix-right {
+    fixedHeaderCell: css`
+      &&.${antdPrefix}-table-cell-fix-left,
+        &&.${antdPrefix}-table-cell-fix-right {
         z-index: 4;
         background: linear-gradient(
             ${token.colorFillAlter},
@@ -21,54 +18,51 @@ const useTableStyles = createStyles(
           ${token.colorBgContainer};
         background-clip: padding-box;
       }
-
-      &.zebra
-        .${antdPrefix}-table-row:nth-child(even):not(
+    `,
+    zebraCell: css`
+      .${antdPrefix}-table-row:nth-child(even):not(
           .${antdPrefix}-table-row-selected
         )
-        > .${antdPrefix}-table-cell:not(.${antdPrefix}-table-cell-row-hover) {
+        > &:not(.${antdPrefix}-table-cell-row-hover) {
         background-color: ${token.colorFillQuaternary};
       }
 
-      &.zebra
-        .${antdPrefix}-table-row:not(.${antdPrefix}-table-row-selected)
-        > .${antdPrefix}-table-cell-row-hover {
+      .${antdPrefix}-table-row:not(.${antdPrefix}-table-row-selected)
+        > &.${antdPrefix}-table-cell-row-hover {
         background-color: ${token.colorFillTertiary};
       }
-
-      .row-drag-over-before > .${antdPrefix}-table-cell {
+    `,
+    bodyCell: css`
+      .row-drag-over-before > & {
         box-shadow: inset 0 2px 0 ${token.colorPrimary};
       }
-      .row-drag-over-after
-        > .${antdPrefix}-table-cell,
-        .row-drag-over-inside
-        > .${antdPrefix}-table-cell {
+      .row-drag-over-after > &,
+      .row-drag-over-inside > & {
         box-shadow: inset 0 -2px 0 ${token.colorPrimary};
       }
-      .row-drag-over-inside {
+      .row-drag-over-inside > & {
         opacity: 0.5;
       }
-
-      [data-table-tree-cell] {
+    `,
+    treeCell: css`
+      > [data-table-tree-cell] {
         display: flex;
         align-items: center;
         min-width: 0;
       }
-      [data-table-tree-cell]
+      > [data-table-tree-cell]
         > .${antdPrefix}-table-row-indent,
-        [data-table-tree-cell]
+        > [data-table-tree-cell]
         > .${antdPrefix}-table-row-expand-icon {
         flex: none;
       }
-      [data-table-tree-content] {
+      > [data-table-tree-cell] > [data-table-tree-content] {
         flex: 1;
         min-width: 0;
         overflow-wrap: anywhere;
       }
 
-      &.row-drag-tree
-        .${antdPrefix}-table-tbody
-        .${antdPrefix}-table-row-indent {
+      > [data-table-tree-cell] > .${antdPrefix}-table-row-indent {
         --tree-indent-size: var(--table-tree-indent-size, 24px);
         position: relative;
         height: calc(1em + ${token.padding * 2}px);
@@ -82,12 +76,6 @@ const useTableStyles = createStyles(
           transparent calc(var(--tree-indent-size) / 2 + 0.5px),
           transparent var(--tree-indent-size)
         );
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .${antdPrefix}-table-tbody > tr {
-          transition: none !important;
-        }
       }
     `,
     toolbar: css`
@@ -162,6 +150,13 @@ const useTableStyles = createStyles(
       text-overflow: ellipsis;
       white-space: nowrap;
     `,
+    resizePreview: css`
+      position: absolute;
+      z-index: 11;
+      width: ${token.lineWidthBold}px;
+      background: ${token.colorPrimary};
+      pointer-events: none;
+    `,
     resizeHandle: css`
       position: absolute;
       top: 0;
@@ -231,6 +226,7 @@ const useTableStyles = createStyles(
   }),
 );
 
+/** 跟随全局 Antd 类名前缀生成样式。 */
 export function useStyles() {
   return useTableStyles(useAntdPrefixCls());
 }

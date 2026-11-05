@@ -20,7 +20,7 @@ toc: content
 
 <code src="./demo/inline-form.tsx" title="Direct Form Layout" description="Set inlineLayout to form for responsive control columns with search, reset, and validation."></code>
 
-<code src="./demo/menu.tsx" title="Menu Mode & Business Groups" description="Display categorized filters and search/reset actions directly on the page."></code>
+<code src="./demo/menu.tsx" title="Sidebar Filters" description="A title and sidebar toggle, expandable filter rows, and persistent search/reset actions around a scrollable condition list."></code>
 
 <code src="./demo/combined.tsx" title="Combined Mode" description="Inline high-frequency filters on top with a button to invoke the advanced drawer, sharing unified state."></code>
 
@@ -36,50 +36,53 @@ Removing a tag or clearing a field triggers a `tag-remove` search and preserves 
 
 Menu mode renders groups and action buttons on the page; only combined mode uses a drawer. The previously ineffective `span` property has been removed. Default tags use plain value text; use `formatTag` for localized booleans or array summaries.
 
-Use `className` and `style` for the root. Both `classNames` and `styles` support `form`, `actions`, `activeFilters`, `menu`, `drawer`, `quickFilters`, and `group`. `actions` also targets the drawer action area.
+Use `className` and `style` for the root. Both `classNames` and `styles` support `form`, `actions`, `activeFilters`, `menu`, `menuHeader`, `drawer`, `quickFilters`, and `group`. `actions` also targets the drawer action area.
 
 ### Layout and extension
 
 - `inlineLayout="popover"` (default) uses equal-height filter buttons with selected-value summaries. `formatTag` also controls the button summary.
 - `inlineLayout="form"` renders controls directly. `inlineMinWidth` sets the minimum column width; narrow containers use one column. Search validates visible, enabled fields, including collapsed fields, and expands on failure. Collapsing preserves values. Hidden fields retain values but are excluded from this validation.
-- `menu` renders filter content only, without a title, fixed dimensions, or a scroll container. `quick` fields appear in a separate, initially collapsed section. Groups use trailing arrows; fields use plus/minus icons.
-- Menu actions stay in normal document flow. `actionExtra` works in all modes. Hide both built-in buttons to supply your own actions.
+- `menu` includes a title set by `menuTitle` and a sidebar toggle. Collapsing preserves field values and expansion state, leaving a button to restore the sidebar. Use `menuCollapsed` and `onMenuCollapsedChange` to coordinate application layout.
+- Ungrouped fields render directly as top-level rows with plus/minus icons. Explicit business groups remain supported. `quick` fields appear in a separate, initially collapsed section.
+- The title and bottom actions remain visible while the condition list scrolls. When enabled, active filters appear above the actions and collapse with the sidebar. `actionExtra` works in all modes. Hide both built-in buttons to supply your own actions.
 - `fields[].disabled` disables editing and individual tag removal; a full reset still restores all initial values. Tag removal also calls `onValuesChange`, including related fields changed by `onClear`.
 
-For a fixed-height menu, set `style={{ height: 560 }}` and `styles={{ menu: { flex: 1, minHeight: 0, overflowY: 'auto' } }}`. The surrounding title and layout belong to the application.
+Set `style={{ width: 360, height: 560 }}` for a fixed-size sidebar. The component handles internal scrolling; no additional scroll styles are required.
 
 Menu and combined-mode submissions validate visible, enabled fields, including collapsed groups and controls. Validation failure expands the panels and keeps the drawer open. Stale async submissions do not search or expand panels; resetting cancels pending submissions.
 
 ### SearchForm
 
-| Property            | Description                                                               | Type                                                                                          | Default             |
-| ------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------- |
-| mode                | Display mode: `inline` \| `menu` \| `combined`                            | `'inline' \| 'menu' \| 'combined'`                                                            | `'inline'`          |
-| inlineLayout        | Inline layout: filter buttons or direct controls                          | `'popover' \| 'form'`                                                                         | `'popover'`         |
-| inlineMinWidth      | Minimum direct-form column width in pixels                                | `number`                                                                                      | `200`               |
-| fields              | List of field definitions                                                 | `SearchFormFieldItem[]`                                                                       | `[]`                |
-| groups              | Business groups configuration (used in menu mode and the combined drawer) | `SearchFieldGroup[]`                                                                          | -                   |
-| form                | Ant Design Form instance                                                  | `FormInstance`                                                                                | -                   |
-| initialValues       | Initial default values                                                    | `Record<string, unknown>`                                                                     | -                   |
-| onSearch            | Callback when a search query is triggered                                 | `(values: Values, info: { source: 'submit' \| 'change' \| 'tag-remove' \| 'reset' }) => void` | -                   |
-| onReset             | Callback when reset is triggered                                          | `() => void`                                                                                  | -                   |
-| onValuesChange      | Callback when field values change                                         | `(changedValues: Partial<Values>, allValues: Values) => void`                                 | -                   |
-| searchMode          | Search trigger mode: `submit` \| `change`                                 | `'submit' \| 'change'`                                                                        | `'submit'`          |
-| defaultVisibleCount | Default visible field count threshold in inline mode                      | `number`                                                                                      | `4`                 |
-| defaultExpanded     | Whether inline fields are expanded by default                             | `boolean`                                                                                     | `false`             |
-| expanded            | Controlled expanded state                                                 | `boolean`                                                                                     | -                   |
-| onExpandedChange    | Callback when expand state changes                                        | `(expanded: boolean) => void`                                                                 | -                   |
-| showActiveFilters   | Whether to display the Active Filters Bar                                 | `boolean`                                                                                     | `true`              |
-| showSearchButton    | Whether to display search button                                          | `boolean`                                                                                     | `true`              |
-| showResetButton     | Whether to display reset button                                           | `boolean`                                                                                     | `true`              |
-| searchText          | Search button text                                                        | `ReactNode`                                                                                   | `'Search'`          |
-| resetText           | Reset button text                                                         | `ReactNode`                                                                                   | `'Reset'`           |
-| menuTitle           | Title of drawer panel                                                     | `ReactNode`                                                                                   | `'Search Criteria'` |
-| menuTrigger         | Trigger button content to open drawer                                     | `ReactNode`                                                                                   | `'Advanced Search'` |
-| actionExtra         | Additional action content rendering                                       | `ReactNode`                                                                                   | -                   |
-| disabled            | Whether to disable all fields                                             | `boolean`                                                                                     | `false`             |
-| classNames          | Semantic class names                                                      | `SearchFormClassNames`                                                                        | -                   |
-| styles              | Semantic styles                                                           | `SearchFormStyles`                                                                            | -                   |
+| Property              | Description                                                               | Type                                                                                          | Default             |
+| --------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------- |
+| mode                  | Display mode: `inline` \| `menu` \| `combined`                            | `'inline' \| 'menu' \| 'combined'`                                                            | `'inline'`          |
+| inlineLayout          | Inline layout: filter buttons or direct controls                          | `'popover' \| 'form'`                                                                         | `'popover'`         |
+| inlineMinWidth        | Minimum direct-form column width in pixels                                | `number`                                                                                      | `200`               |
+| fields                | List of field definitions                                                 | `SearchFormFieldItem[]`                                                                       | `[]`                |
+| groups                | Business groups configuration (used in menu mode and the combined drawer) | `SearchFieldGroup[]`                                                                          | -                   |
+| form                  | Ant Design Form instance                                                  | `FormInstance`                                                                                | -                   |
+| initialValues         | Initial default values                                                    | `Record<string, unknown>`                                                                     | -                   |
+| onSearch              | Callback when a search query is triggered                                 | `(values: Values, info: { source: 'submit' \| 'change' \| 'tag-remove' \| 'reset' }) => void` | -                   |
+| onReset               | Callback when reset is triggered                                          | `() => void`                                                                                  | -                   |
+| onValuesChange        | Callback when field values change                                         | `(changedValues: Partial<Values>, allValues: Values) => void`                                 | -                   |
+| searchMode            | Search trigger mode: `submit` \| `change`                                 | `'submit' \| 'change'`                                                                        | `'submit'`          |
+| defaultVisibleCount   | Default visible field count threshold in inline mode                      | `number`                                                                                      | `4`                 |
+| defaultExpanded       | Whether inline fields are expanded by default                             | `boolean`                                                                                     | `false`             |
+| expanded              | Controlled expanded state                                                 | `boolean`                                                                                     | -                   |
+| onExpandedChange      | Callback when expand state changes                                        | `(expanded: boolean) => void`                                                                 | -                   |
+| showActiveFilters     | Whether to display the Active Filters Bar                                 | `boolean`                                                                                     | `true`              |
+| showSearchButton      | Whether to display search button                                          | `boolean`                                                                                     | `true`              |
+| showResetButton       | Whether to display reset button                                           | `boolean`                                                                                     | `true`              |
+| searchText            | Search button text                                                        | `ReactNode`                                                                                   | `'Search'`          |
+| resetText             | Reset button text                                                         | `ReactNode`                                                                                   | `'Reset'`           |
+| menuTitle             | Title of menu sidebar and combined drawer                                 | `ReactNode`                                                                                   | `'Search Criteria'` |
+| menuCollapsed         | Controlled collapsed state of the menu sidebar                            | `boolean`                                                                                     | `false`             |
+| onMenuCollapsedChange | Callback when the menu sidebar collapses or expands                       | `(collapsed: boolean) => void`                                                                | -                   |
+| menuTrigger           | Trigger button content to open drawer                                     | `ReactNode`                                                                                   | `'Advanced Search'` |
+| actionExtra           | Additional action content rendering                                       | `ReactNode`                                                                                   | -                   |
+| disabled              | Whether to disable all fields                                             | `boolean`                                                                                     | `false`             |
+| classNames            | Semantic class names                                                      | `SearchFormClassNames`                                                                        | -                   |
+| styles                | Semantic styles                                                           | `SearchFormStyles`                                                                            | -                   |
 
 ### SearchFormFieldItem
 

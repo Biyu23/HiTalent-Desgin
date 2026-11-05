@@ -15,6 +15,7 @@ interface UseColumnStateOptions<RecordType> {
   onChange?: (state: TableColumnState) => void;
 }
 
+/** 重排已归一化的状态项，宽度和显隐配置随列一起移动。 */
 function orderColumnState(
   state: TableColumnState,
   keys: readonly TableColumnKey[],
@@ -25,31 +26,41 @@ function orderColumnState(
     .filter((item): item is NonNullable<typeof item> => item !== undefined);
 }
 
+/** 列状态唯一写入口：外部输入、临时预览与正式提交在此汇合。 */
 export function useColumnState<RecordType>({
   columns,
   value,
   defaultValue,
   onChange,
 }: UseColumnStateOptions<RecordType>) {
+  // 列定义仅遍历一次，设置面板、拖拽与状态归一化共享同一份元数据。
+  const columnMeta = useMemo(() => collectColumnMeta(columns), [columns]);
+  const metaMap = useMemo(
+    () => new Map(columnMeta.map((item) => [item.key, item])),
+    [columnMeta],
+  );
   const controlledValue = useMemo(
     () =>
-      value === undefined ? undefined : normalizeColumnState(columns, value),
-    [columns, value],
+      value === undefined ? undefined : normalizeColumnState(columnMeta, value),
+    [columnMeta, value],
   );
   const [mergedState, setMergedState] = useMergeState<TableColumnState>({
-    defaultValue: () => normalizeColumnState(columns, defaultValue),
+    defaultValue: () => normalizeColumnState(columnMeta, defaultValue),
     ...(controlledValue !== undefined ? { value: controlledValue } : {}),
     onChange,
   });
-  const committedState = useMemo(
-    () => normalizeColumnState(columns, mergedState),
-    [columns, mergedState],
+  // 受控输入已在入口归一化，直接复用；本地状态还需对齐动态增删的列定义。
+  const committedState = useMemo<TableColumnState>(
+    () => controlledValue ?? normalizeColumnState(columnMeta, mergedState),
+    [columnMeta, controlledValue, mergedState],
   );
   const [previewState, setPreviewState] = useState<TableColumnState | null>(
     null,
   );
+  // 预览只影响渲染；正式提交前不会触发业务回调。
   const currentState = previewState ?? committedState;
 
+  // 原生指针事件读取最新状态；React state 仍负责驱动界面。
   const committedRef = useRef(committedState);
   const previewRef = useRef(previewState);
   committedRef.current = committedState;
@@ -58,41 +69,28 @@ export function useColumnState<RecordType>({
   useEffect(() => {
     previewRef.current = null;
     setPreviewState(null);
-  }, [columns, controlledValue]);
-
-  const setPreview = useCallback(
-    (next: TableColumnState) => {
-      const normalized = normalizeColumnState(columns, next);
-      previewRef.current = normalized;
-      setPreviewState(normalized);
-    },
-    [columns],
-  );
+  }, [columns, value]);
 
   const commit = useCallback(
     (next: TableColumnState) => {
-      const normalized = normalizeColumnState(columns, next);
       // React 17 中的指针监听使用原生事件；清除预览与保存结果之间，
       // 不得短暂渲染旧的已提交顺序。
       unstable_batchedUpdates(() => {
-        if (!areColumnStatesEqual(committedRef.current, normalized)) {
+        if (!areColumnStatesEqual(committedRef.current, next)) {
           // 受控值由父组件确认；未采纳的请求不能成为后续操作的基准。
-          if (controlledValue === undefined) committedRef.current = normalized;
-          setMergedState(normalized);
+          if (value === undefined) committedRef.current = next;
+          setMergedState(next);
         }
         previewRef.current = null;
         setPreviewState(null);
       });
     },
-    [columns, controlledValue, setMergedState],
+    [value, setMergedState],
   );
 
   const setVisibleKeys = useCallback(
     (keys: readonly TableColumnKey[]) => {
       const visibleKeys = new Set(keys);
-      const metaMap = new Map(
-        collectColumnMeta(columns).map((item) => [item.key, item]),
-      );
       commit(
         committedRef.current.map((item) => ({
           ...item,
@@ -102,23 +100,12 @@ export function useColumnState<RecordType>({
         })),
       );
     },
-    [columns, commit],
+    [metaMap, commit],
   );
 
-  const previewColumnWidth = useCallback(
-    (key: TableColumnKey, width: number) => {
-      if (!Number.isFinite(width)) return;
-      const source = previewRef.current ?? committedRef.current;
-      setPreview(
-        source.map((item) => (item.key === key ? { ...item, width } : item)),
-      );
-    },
-    [setPreview],
-  );
-
+  // 宽度来自 usePointerResize 的数值计算，无需在内部再次做输入校验。
   const commitColumnWidth = useCallback(
     (key: TableColumnKey, width: number) => {
-      if (!Number.isFinite(width)) return;
       const source = previewRef.current ?? committedRef.current;
       commit(
         source.map((item) => (item.key === key ? { ...item, width } : item)),
@@ -127,12 +114,11 @@ export function useColumnState<RecordType>({
     [commit],
   );
 
-  const previewColumnOrder = useCallback(
-    (keys: readonly TableColumnKey[]) => {
-      setPreview(orderColumnState(committedRef.current, keys));
-    },
-    [setPreview],
-  );
+  const previewColumnOrder = useCallback((keys: readonly TableColumnKey[]) => {
+    const next = orderColumnState(committedRef.current, keys);
+    previewRef.current = next;
+    setPreviewState(next);
+  }, []);
 
   const commitColumnOrder = useCallback(
     (keys: readonly TableColumnKey[]) => {
@@ -147,23 +133,10 @@ export function useColumnState<RecordType>({
   }, []);
 
   const reset = useCallback(
-    () => commit(normalizeColumnState(columns, defaultValue)),
-    [columns, commit, defaultValue],
+    () => commit(normalizeColumnState(columnMeta, defaultValue)),
+    [columnMeta, commit, defaultValue],
   );
 
-  const columnMeta = useMemo(() => collectColumnMeta(columns), [columns]);
-  // useEffect(() => {
-  //   if (process.env.NODE_ENV === 'production') return;
-  //   const seen = new Set<TableColumnKey>();
-  //   const duplicates = new Set<TableColumnKey>();
-  //   columnMeta.forEach((item) => {
-  //     if (seen.has(item.key)) duplicates.add(item.key);
-  //     else seen.add(item.key);
-  //   });
-  //   if (duplicates.size) {
-  //     console.warn('[Table] Column keys must be unique.', [...duplicates]);
-  //   }
-  // }, [columnMeta]);
   const orderedKeys = useMemo(
     () => currentState.map((item) => item.key),
     [currentState],
@@ -182,7 +155,6 @@ export function useColumnState<RecordType>({
     orderedKeys,
     visibleKeys,
     setVisibleKeys,
-    previewColumnWidth,
     commitColumnWidth,
     previewColumnOrder,
     commitColumnOrder,

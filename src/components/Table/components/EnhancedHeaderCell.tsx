@@ -15,6 +15,7 @@ interface EnhancedHeaderCellProps<RecordType>
   cellComponent?: React.ElementType;
 }
 
+/** 组合表头拖动、列宽手柄与业务事件；不直接管理列状态。 */
 function EnhancedHeaderCell<RecordType>({
   meta,
   resizeEnabled,
@@ -32,7 +33,7 @@ function EnhancedHeaderCell<RecordType>({
     columnKey: meta.key,
     disabled: !canResize || drag.activeKey !== null,
     minWidth: meta.column.minWidth,
-    onResize: context.previewColumnWidth,
+    previewClassName: styles.resizePreview,
     onResizeEnd: context.commitColumnWidth,
     onCancel: context.cancelColumnPreview,
   });

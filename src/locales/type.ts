@@ -79,6 +79,8 @@ export interface NumberRangeInputLocale {
 /** SearchForm 组件的国际化文案 */
 export interface SearchFormLocale {
   searchCriteria: string;
+  collapseMenu: string;
+  expandMenu: string;
   quickFilters: string;
   basicInfo: string;
   search: string;
