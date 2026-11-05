@@ -127,7 +127,7 @@ export default function PopoverSelectList<
     <SortableOptions
       options={options}
       enabled={sortingEnabled}
-      onSortChange={config.onSortChange}
+      onSortChange={context.sortOptions}
       renderOption={renderOption}
       listItemHeight={listItemHeight}
     >

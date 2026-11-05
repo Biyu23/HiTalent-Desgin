@@ -34,9 +34,9 @@ function InternalPopoverSelect<
       placeholder={
         props.placeholder === undefined ? locale.placeholder : props.placeholder
       }
-      separator={props.separator ?? ', '}
+      separator={props.separator}
       maxTagCount={props.maxTagCount}
-      ellipsis={props.ellipsis ?? true}
+      ellipsis={props.ellipsis}
     />
   );
   return withNativeProps(

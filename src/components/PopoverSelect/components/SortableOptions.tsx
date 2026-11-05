@@ -28,7 +28,7 @@ interface SortableOptionsProps<
 > {
   options: readonly MappedOption<ValueType, OptionType>[];
   enabled: boolean;
-  onSortChange?: (options: OptionType[]) => void;
+  onSortChange?: (options: MappedOption<ValueType, OptionType>[]) => void;
   renderOption: (
     option: MappedOption<ValueType, OptionType>,
   ) => React.ReactNode;
@@ -118,9 +118,7 @@ export default function SortableOptions<
     const from = items.indexOf(String(active.id));
     const to = items.indexOf(String(over.id));
     if (from < 0 || to < 0 || options[from].disabled) return;
-    onSortChange?.(
-      arrayMove([...options], from, to).map((option) => option.source),
-    );
+    onSortChange?.(arrayMove([...options], from, to));
   };
 
   return (

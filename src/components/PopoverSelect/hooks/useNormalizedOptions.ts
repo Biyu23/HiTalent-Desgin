@@ -4,7 +4,7 @@ import type {
   PopoverSelectFieldNames,
   RawValueType,
 } from '../type';
-import { getNodeText, readField } from '../utils';
+import { getNodeText } from '../utils';
 
 /**
  * 规范化选项数据 Hook：
@@ -20,35 +20,29 @@ export function useNormalizedOptions<
   fieldNames: PopoverSelectFieldNames<OptionType> | undefined,
   searchValue: string,
 ) {
-  const options = useMemo(() => {
+  // 字段映射和索引在同一次遍历中完成，搜索时复用结果。
+  const { options, optionMap, stringValueMap } = useMemo(() => {
     const labelKey = fieldNames?.label ?? 'label';
     const valueKey = fieldNames?.value ?? 'value';
     const disabledKey = fieldNames?.disabled ?? 'disabled';
-
-    return source.map((option) => ({
-      label: readField(option, labelKey) as React.ReactNode,
-      value: readField(option, valueKey) as ValueType,
-      disabled: Boolean(readField(option, disabledKey)),
-      source: option,
-    }));
-  }, [fieldNames?.disabled, fieldNames?.label, fieldNames?.value, source]);
-
-  const optionMap = useMemo(
-    () =>
-      new Map<ValueType, MappedOption<ValueType, OptionType>>(
-        options.map((option) => [option.value, option]),
-      ),
-    [options],
-  );
-
-  const stringValueMap = useMemo(() => {
-    const map = new Map<string, ValueType>();
-    options.forEach((option) => {
+    const optionMap = new Map<ValueType, MappedOption<ValueType, OptionType>>();
+    const stringValueMap = new Map<string, ValueType>();
+    const options = source.map((source) => {
+      const fields = source as Record<PropertyKey, unknown>;
+      const option = {
+        label: fields[labelKey] as React.ReactNode,
+        value: fields[valueKey] as ValueType,
+        disabled: Boolean(fields[disabledKey]),
+        source,
+      };
+      optionMap.set(option.value, option);
       const key = String(option.value);
-      if (!map.has(key)) map.set(key, option.value);
+      // 字符串模式无法区分 1 和 '1'，沿用首个匹配项。
+      if (!stringValueMap.has(key)) stringValueMap.set(key, option.value);
+      return option;
     });
-    return map;
-  }, [options]);
+    return { options, optionMap, stringValueMap };
+  }, [fieldNames?.disabled, fieldNames?.label, fieldNames?.value, source]);
 
   const displayOptions = useMemo(() => {
     const query = searchValue.trim().toLocaleLowerCase();

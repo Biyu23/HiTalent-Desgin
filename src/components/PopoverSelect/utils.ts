@@ -20,16 +20,6 @@ export function getOptionKey(value: RawValueType): string {
 }
 
 /**
- * 读取对象指定属性值的辅助函数
- */
-export function readField<OptionType extends object>(
-  option: OptionType,
-  key: PropertyKey,
-): unknown {
-  return (option as Record<PropertyKey, unknown>)[key];
-}
-
-/**
  * 将外部传入的受控/非受控值解析为内部统一维护的数组格式：
  * 1. 空值解析为空数组 []
  * 2. 多选字符串模式（valueType === 'string'）：按分隔符拆分并根据选项恢复原始值类型

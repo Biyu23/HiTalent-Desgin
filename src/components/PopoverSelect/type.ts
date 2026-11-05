@@ -75,6 +75,8 @@ export interface PopoverSelectRenderContext<
   searchValue: string;
   mode: 'single' | 'multiple';
   confirmRequired: boolean;
+  /** 重排候选项，并按新顺序更新已选值；值更新遵循确认模式。 */
+  sortOptions(options: readonly MappedOption<ValueType, OptionType>[]): void;
   toggleValue(value: ValueType): void;
   selectAll(checked: boolean): void;
   clear(): void;

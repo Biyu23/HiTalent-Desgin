@@ -41,7 +41,7 @@ Enable `sortable` and feed the result of `onSortChange` back into `options`:
 ```
 
 - `options` controls the displayed order. The callback returns a new full array containing the original option objects, including custom fields. The input array is never mutated. Without updating `options`, the original order is retained.
-- `onSortChange` fires immediately after reordering. It does not trigger `onChange` or reorder selected values. Confirm and Cancel only affect selection drafts; they do not undo option sorting.
+- `onSortChange` fires immediately after reordering. Multiple selected values follow the new option order: confirmation mode updates the draft and commits via `onChange` on Confirm; immediate mode fires `onChange` when the selected order changes. Cancel discards draft changes but does not undo option sorting.
 - Sorting pauses while the search contains non-whitespace text. Disabled options cannot initiate dragging but may shift when other options move.
 - Handles support mouse, touch, and keyboard: focus a handle, press Space to start, use Up/Down to move, then Space to finish or Escape to cancel.
 - `optionRender` still customizes option content. If `dropdownRender` replaces the default menu entirely, the custom menu is responsible for its own drag behavior.

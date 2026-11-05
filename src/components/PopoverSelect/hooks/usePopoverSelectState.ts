@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMergeState } from '../../../hooks';
 import type {
+  MappedOption,
   PopoverSelectProps,
   PopoverSelectRenderContext,
   RawValueType,
@@ -71,7 +72,6 @@ export function usePopoverSelectState<V extends RawValueType, O extends object>(
     [O[]]
   >({
     ...props,
-    defaultValue: props.defaultValue,
     onChange,
     transformToOrigin,
     transformToResult,
@@ -140,90 +140,95 @@ export function usePopoverSelectState<V extends RawValueType, O extends object>(
   );
   const targetValues = confirmRequired ? normalizedDraftValues : selectedValues;
 
-  const emitValue = useCallback(
-    (values: V[]) => {
-      if (disabled) {
-        return;
-      }
+  const emitValue = (values: V[]) => {
+    if (disabled) {
+      return;
+    }
 
-      const selectedOptions = values
-        .map((value) => optionMap.get(value)?.source)
-        .filter((option): option is O => option !== undefined);
-      setSelectedValues(values, selectedOptions);
-    },
-    [disabled, optionMap, setSelectedValues],
-  );
+    const selectedOptions = values
+      .map((value) => optionMap.get(value)?.source)
+      .filter((option): option is O => option !== undefined);
+    setSelectedValues(values, selectedOptions);
+  };
 
-  const updateSelection = useCallback(
-    (values: V[]) => {
-      if (disabled) {
-        return;
-      }
+  const updateSelection = (values: V[]) => {
+    if (disabled) {
+      return;
+    }
 
-      if (confirmRequired) {
-        setDraftValues(values);
-      } else {
-        emitValue(values);
-      }
-    },
-    [disabled, confirmRequired, emitValue],
-  );
+    if (confirmRequired) {
+      setDraftValues(values);
+    } else {
+      emitValue(values);
+    }
+  };
 
-  const toggleValue = useCallback(
-    (value: V) => {
-      const option = optionMap.get(value);
-      if (disabled || !option || option.disabled) {
-        return;
-      }
+  const sortOptions = (options: readonly MappedOption<V, O>[]) => {
+    if (disabled) return;
 
-      updateSelection(
-        mode === 'multiple'
-          ? targetValues.includes(value)
-            ? targetValues.filter((item) => item !== value)
-            : [...targetValues, value]
-          : [value],
+    if (mode === 'multiple') {
+      // 只调整已选值的顺序；未加载到 options 中的值保留在末尾，不丢失选择。
+      const positions = new Map(
+        options.map((option, index) => [option.value, index]),
       );
-      if (mode === 'single') {
-        setOpen(false);
-      }
-    },
-    [disabled, optionMap, updateSelection, mode, targetValues, setOpen],
-  );
-
-  const selectAll = useCallback(
-    (checked: boolean) => {
-      if (mode !== 'multiple') {
-        return;
-      }
-
-      const values = displayOptions
-        .filter((option) => !option.disabled)
-        .map((option) => option.value);
-      const enabled = new Set(values);
-      updateSelection(
-        checked
-          ? Array.from(new Set([...targetValues, ...values]))
-          : targetValues.filter((value) => !enabled.has(value)),
+      const values = [...targetValues].sort(
+        (a, b) =>
+          (positions.get(a) ?? options.length) -
+          (positions.get(b) ?? options.length),
       );
-    },
-    [mode, displayOptions, targetValues, updateSelection],
-  );
+      if (values.some((value, index) => value !== targetValues[index])) {
+        updateSelection(values);
+      }
+    }
 
-  const clear = useCallback(() => {
-    updateSelection([]);
-  }, [updateSelection]);
+    props.onSortChange?.(options.map((option) => option.source));
+  };
 
-  const clearCommitted = useCallback(() => {
+  const toggleValue = (value: V) => {
+    const option = optionMap.get(value);
+    if (disabled || !option || option.disabled) {
+      return;
+    }
+
+    updateSelection(
+      mode === 'multiple'
+        ? targetValues.includes(value)
+          ? targetValues.filter((item) => item !== value)
+          : [...targetValues, value]
+        : [value],
+    );
+    if (mode === 'single') {
+      setOpen(false);
+    }
+  };
+
+  const selectAll = (checked: boolean) => {
+    if (mode !== 'multiple') {
+      return;
+    }
+
+    const values = displayOptions
+      .filter((option) => !option.disabled)
+      .map((option) => option.value);
+    const enabled = new Set(values);
+    updateSelection(
+      checked
+        ? Array.from(new Set([...targetValues, ...values]))
+        : targetValues.filter((value) => !enabled.has(value)),
+    );
+  };
+
+  const clearCommitted = () => {
     emitValue([]);
     setDraftValues([]);
-  }, [emitValue]);
+  };
 
-  const cancel = useCallback(() => {
+  const cancel = () => {
     setDraftValues(selectedValues);
     setOpen(false);
-  }, [selectedValues, setOpen]);
+  };
 
-  const confirm = useCallback(() => {
+  const confirm = () => {
     if (disabled) {
       return;
     }
@@ -233,7 +238,7 @@ export function usePopoverSelectState<V extends RawValueType, O extends object>(
     }
 
     setOpen(false);
-  }, [disabled, confirmRequired, emitValue, normalizedDraftValues, setOpen]);
+  };
 
   const context: PopoverSelectRenderContext<V, O> = {
     options: normalized.options,
@@ -242,9 +247,10 @@ export function usePopoverSelectState<V extends RawValueType, O extends object>(
     searchValue,
     mode,
     confirmRequired,
+    sortOptions,
     toggleValue,
     selectAll,
-    clear,
+    clear: () => updateSelection([]),
     confirm,
     cancel,
   };
