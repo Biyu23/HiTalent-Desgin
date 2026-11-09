@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import type { ResponsiveButtonGroupItem } from '../type';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { areArraysEqual } from '../../../utils';
+import type { ResponsiveButtonGroupProps } from '../type';
+import { calculateLayout } from '../utils/layout';
 
 interface Measurements {
   containerWidth: number | null;
@@ -13,13 +15,26 @@ const initialMeasurements: Measurements = {
   overflowWidth: null,
 };
 
-/** 仅监听容器与隐藏测量节点，尺寸变化记录中已包含宽度。 */
-export function useResponsiveMeasurements(
-  enabled: boolean,
-  items: readonly ResponsiveButtonGroupItem[],
-) {
+/** 测量按钮尺寸，计算布局并通知实际发生的可见项变化。 */
+export function useResponsiveLayout({
+  items,
+  mode = 'responsive',
+  gap: gapProp = 8,
+  minVisibleCount: minVisibleCountProp = 0,
+  onVisibleChange,
+}: Pick<
+  ResponsiveButtonGroupProps,
+  'items' | 'mode' | 'gap' | 'minVisibleCount' | 'onVisibleChange'
+>) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [measurements, setMeasurements] = useState(initialMeasurements);
+  const previousKeysRef = useRef<{ visible: string[]; collapsed: string[] }>();
+  const measuring = mode === 'responsive' && items.length > 0;
+
+  const gap = Number.isFinite(gapProp) && gapProp >= 0 ? gapProp : 8;
+  const minVisibleCount = Number.isFinite(minVisibleCountProp)
+    ? Math.min(items.length, Math.max(0, Math.floor(minVisibleCountProp)))
+    : 0;
 
   const itemKeys = JSON.stringify(items.map((item) => item.key));
 
@@ -27,12 +42,7 @@ export function useResponsiveMeasurements(
     const container = containerRef.current;
     setMeasurements(initialMeasurements);
     const keysInOrder: string[] = JSON.parse(itemKeys);
-    if (
-      !enabled ||
-      !container ||
-      keysInOrder.length === 0 ||
-      typeof ResizeObserver === 'undefined'
-    )
+    if (!measuring || !container || typeof ResizeObserver === 'undefined')
       return;
 
     const nodes = Array.from(
@@ -76,7 +86,36 @@ export function useResponsiveMeasurements(
     observer.observe(container);
     nodes.forEach((node) => observer.observe(node));
     return () => observer.disconnect();
-  }, [enabled, itemKeys]);
+  }, [measuring, itemKeys]);
 
-  return { ...measurements, containerRef };
+  const layout = useMemo(
+    () =>
+      calculateLayout(
+        items,
+        mode,
+        minVisibleCount,
+        gap,
+        measurements.containerWidth,
+        measurements.itemWidths,
+        measurements.overflowWidth,
+      ),
+    [items, mode, minVisibleCount, gap, measurements],
+  );
+
+  useEffect(() => {
+    if (!layout.ready) return;
+    const visible = layout.visibleItems.map((item) => item.key);
+    const collapsed = layout.collapsedItems.map((item) => item.key);
+    const previous = previousKeysRef.current;
+    if (
+      previous &&
+      areArraysEqual(previous.visible, visible) &&
+      areArraysEqual(previous.collapsed, collapsed)
+    )
+      return;
+    previousKeysRef.current = { visible, collapsed };
+    onVisibleChange?.(visible, collapsed);
+  }, [layout, onVisibleChange]);
+
+  return { ...layout, gap, measuring, containerRef };
 }

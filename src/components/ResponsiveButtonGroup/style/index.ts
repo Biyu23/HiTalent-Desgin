@@ -51,9 +51,6 @@ export const useStyles = createStyles(({ token }) => {
       display: inline-flex;
       flex: 0 0 auto;
     `,
-    popup: css`
-      /* 下拉弹层容器 */
-    `,
     menuItemContent: css`
       display: inline-flex;
       align-items: center;
