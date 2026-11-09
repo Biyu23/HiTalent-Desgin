@@ -9,9 +9,6 @@ type Listener = () => void;
 
 const ZERO_OFFSET: DockDragOffset = { x: 0, y: 0 };
 
-const sameOffset = (left: DockDragOffset, right: DockDragOffset): boolean =>
-  left.x === right.x && left.y === right.y;
-
 export class DockStore {
   private items = new Map<MinimizePosition, DockItem[]>();
   private itemListeners = new Map<MinimizePosition, Set<Listener>>();
@@ -22,29 +19,14 @@ export class DockStore {
     return this.items.get(position) || [];
   }
 
-  register(item: DockItem): () => void {
-    const current = this.getItems(item.position);
-    const existingIndex = current.findIndex((entry) => entry.id === item.id);
-
-    if (existingIndex >= 0) {
-      const next = [...current];
-      next[existingIndex] = item;
-      this.items.set(item.position, next);
-    } else {
-      this.items.set(item.position, [...current, item]);
-    }
-    this.notify(this.itemListeners, item.position);
-
-    return () => this.unregister(item.position, item.id);
-  }
-
-  update(item: DockItem): void {
+  setItem(item: DockItem): void {
     const current = this.getItems(item.position);
     const index = current.findIndex((entry) => entry.id === item.id);
-    if (index < 0 || current[index] === item) return;
+    if (current[index] === item) return;
 
     const next = [...current];
-    next[index] = item;
+    if (index < 0) next.push(item);
+    else next[index] = item;
     this.items.set(item.position, next);
     this.notify(this.itemListeners, item.position);
   }
@@ -76,7 +58,7 @@ export class DockStore {
     offset: DockDragOffset,
   ): DockDragOffset {
     const current = this.getDragOffset(position);
-    if (sameOffset(current, offset)) return current;
+    if (current.x === offset.x && current.y === offset.y) return current;
 
     const next = { x: offset.x, y: offset.y };
     this.dragOffsets.set(position, next);

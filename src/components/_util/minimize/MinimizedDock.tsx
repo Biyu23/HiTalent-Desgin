@@ -3,34 +3,25 @@ import React, {
   useEffect,
   useLayoutEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { usePrefixCls } from '../../../configProvider/usePrefixCls';
 import DockStack from './components/DockStack';
 import { acquireDockContainer } from './dockRegistry';
-import useDockId from './hooks/useDockId';
 import useDockItems from './hooks/useDockItems';
 import { dockStore } from './store/dockStore';
 import { useContainerStyles } from './style';
 import type { DockItem, MinimizedDockProps } from './type';
 
-const MinimizedDockInner = memo<MinimizedDockProps>(
-  ({
-    id: propId,
-    title,
-    position: dockPosition,
-    className,
-    style,
-    stack,
-    locale,
-    onRestore,
-    onClose,
-  }) => {
+let dockIdSeed = 0;
+
+const MinimizedDockInner = memo<Omit<MinimizedDockProps, 'open' | 'minimized'>>(
+  (props) => {
+    const { position: dockPosition } = props;
     const dockPrefixCls = usePrefixCls('minimize');
     const { styles: containerStyles, cx } = useContainerStyles();
-    const dockId = useDockId(propId);
+    const [dockId] = useState(() => props.id || `dock-${++dockIdSeed}`);
     const items = useDockItems(dockPosition);
     const [dockContainer, setDockContainer] = useState<ReturnType<
       typeof acquireDockContainer
@@ -51,38 +42,17 @@ const MinimizedDockInner = memo<MinimizedDockProps>(
     );
 
     const item = useMemo<DockItem>(
-      () => ({
-        id: dockId,
-        title,
-        position: dockPosition,
-        className,
-        style,
-        stack,
-        locale,
-        onRestore,
-        onClose,
-      }),
-      [
-        className,
-        dockId,
-        dockPosition,
-        locale,
-        onClose,
-        onRestore,
-        stack,
-        style,
-        title,
-      ],
+      () => ({ ...props, id: dockId }),
+      [props, dockId],
     );
-    const itemRef = useRef(item);
-    itemRef.current = item;
+    // 更新卡片不注销，保留排列顺序和当前拖拽位置。
     useEffect(
-      () => dockStore.register(itemRef.current),
+      () => () => dockStore.unregister(dockPosition, dockId),
       [dockId, dockPosition],
     );
 
     useEffect(() => {
-      dockStore.update(item);
+      dockStore.setItem(item);
     }, [item]);
 
     useLayoutEffect(() => {
@@ -101,8 +71,8 @@ const MinimizedDockInner = memo<MinimizedDockProps>(
       scrollWrapperClassName,
     ]);
 
-    // 每个位置由最早注册的承载容器
-    const isLeader = items.length > 0 && items[0].id === dockId;
+    // 每个位置由最早注册的卡片承载容器。
+    const isLeader = items[0]?.id === dockId;
     if (!dockContainer || !isLeader) return null;
 
     return createPortal(
@@ -117,9 +87,9 @@ const MinimizedDockInner = memo<MinimizedDockProps>(
   },
 );
 
-const MinimizedDock = memo<MinimizedDockProps>((props) => {
-  if (!props.open || !props.minimized) return null;
-  return <MinimizedDockInner {...props} />;
-});
+const MinimizedDock = memo<MinimizedDockProps>(
+  ({ open, minimized, ...itemProps }) =>
+    open && minimized ? <MinimizedDockInner {...itemProps} /> : null,
+);
 
 export default MinimizedDock;
