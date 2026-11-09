@@ -5,9 +5,6 @@ export const useStyles = createStyles(({ token }) => {
   const handleHitOffset = -(token.marginXXS - token.lineWidth); // 约 -3px
 
   return {
-    root: css`
-      /* 抽屉根样式 */
-    `,
     headerActions: css`
       button {
         color: ${token.colorTextSecondary};
@@ -19,9 +16,6 @@ export const useStyles = createStyles(({ token }) => {
     `,
     emptyTitle: css`
       display: inline-block;
-    `,
-    wrapper: css`
-      /* 抽屉面板基础样式 */
     `,
     wrapperResizing: css`
       transition: none !important;

@@ -11,7 +11,6 @@ import { useStackStyles } from '../style';
 import type { DockItem, MinimizePosition } from '../type';
 import {
   getCollapsedStackScale,
-  getStackBadgeCount,
   NOTIFICATION_STACK_LAYERS,
   NOTIFICATION_STACK_OFFSET,
   shouldCollapseStack,
@@ -46,7 +45,7 @@ export const DockStack = memo<DockStackProps>(
       () => displayItems.map((item) => item.id),
       [displayItems],
     );
-    const itemRevision = useMemo(() => itemIds.join('|'), [itemIds]);
+    const itemRevision = itemIds.join('|');
     const totalCount = displayItems.length;
     const latestItem = displayItems[0];
     const collapsible = shouldCollapseStack(totalCount, latestItem?.stack);
@@ -61,7 +60,6 @@ export const DockStack = memo<DockStackProps>(
     const metrics = useDockMetrics({
       contentRef,
       itemIds,
-      revision: itemRevision,
       fallbackHeight: DEFAULT_CARD_HEIGHT,
       gap: token.margin,
     });
@@ -117,7 +115,7 @@ export const DockStack = memo<DockStackProps>(
         onStart={onStart}
         onDrag={setDragOffset}
         handle={`.${styles.header}`}
-        className={cx(styles.stackWrapper)}
+        className={styles.stackWrapper}
         style={{
           height: containerHeight,
           maxHeight: maxAllowedHeight,
@@ -132,7 +130,6 @@ export const DockStack = memo<DockStackProps>(
           ref={viewportRef}
           className={cx(
             styles.viewport,
-            isScrollable && styles.viewportExpanded,
             isScrollable && styles.viewportScrollable,
           )}
         >
@@ -188,7 +185,9 @@ export const DockStack = memo<DockStackProps>(
                     interactive={interactive}
                     draggable={draggable}
                     elevated={!expanded && index < NOTIFICATION_STACK_LAYERS}
-                    count={getStackBadgeCount(totalCount, index === 0)}
+                    count={
+                      index === 0 && totalCount > 1 ? totalCount : undefined
+                    }
                   />
                 </div>
               );

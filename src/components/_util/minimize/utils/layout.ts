@@ -5,47 +5,21 @@ export const NOTIFICATION_STACK_OFFSET = 8;
 export const NOTIFICATION_STACK_LAYERS = 3;
 export const MIN_STACK_SCALE = 0.72;
 
-export interface NormalizedMinimizeStack {
-  enabled: boolean;
-  threshold: number;
-}
-
-export const normalizeMinimizeStack = (
-  stack?: MinimizeStack,
-): NormalizedMinimizeStack => {
-  if (stack === false) {
-    return { enabled: false, threshold: DEFAULT_STACK_THRESHOLD };
-  }
-
-  const threshold =
-    stack && typeof stack === 'object' ? stack.threshold : undefined;
-  if (threshold === undefined) {
-    return { enabled: true, threshold: DEFAULT_STACK_THRESHOLD };
-  }
-
-  if (
-    !Number.isFinite(threshold) ||
-    !Number.isInteger(threshold) ||
-    threshold < 1
-  ) {
-    return { enabled: true, threshold: DEFAULT_STACK_THRESHOLD };
-  }
-
-  return { enabled: true, threshold };
-};
-
 export const shouldCollapseStack = (
   count: number,
   stack?: MinimizeStack,
 ): boolean => {
-  const config = normalizeMinimizeStack(stack);
-  return config.enabled && count > config.threshold;
+  if (stack === false) return false;
+  const threshold =
+    (typeof stack === 'object' ? stack.threshold : undefined) ??
+    DEFAULT_STACK_THRESHOLD;
+  return (
+    count >
+    (Number.isInteger(threshold) && threshold > 0
+      ? threshold
+      : DEFAULT_STACK_THRESHOLD)
+  );
 };
-
-export const getStackBadgeCount = (
-  count: number,
-  isTopCard: boolean,
-): number | undefined => (isTopCard && count > 1 ? count : undefined);
 
 export const getCollapsedStackScale = (
   latestWidth: number,

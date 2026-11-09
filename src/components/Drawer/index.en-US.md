@@ -28,7 +28,7 @@ Extends Ant Design Drawer with directional resize handles, minimization to a glo
 
 ## API
 
-Inherits all native properties from [Ant Design Drawer](https://ant.design/components/drawer#api), with the following extensions:
+Inherits non-deprecated native properties from [Ant Design Drawer](https://ant.design/components/drawer#api). Use `size` instead of `width` or `height`, `destroyOnHidden` for destruction after closing, and `styles` for styling. The following extensions are available:
 
 ### DrawerProps
 

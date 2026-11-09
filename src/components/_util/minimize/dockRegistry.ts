@@ -14,11 +14,6 @@ interface DockRegistryEntry {
 
 const registry = new Map<string, DockRegistryEntry>();
 
-const getRegistryKey = (
-  dockPrefixCls: string,
-  position: MinimizePosition,
-): string => `${dockPrefixCls}:${position}`;
-
 const addClassReference = (
   references: ClassReferences,
   className?: string,
@@ -73,7 +68,7 @@ export function acquireDockContainer(options: AcquireDockContainerOptions): {
     scrollWrapperClassName,
     position,
   } = options;
-  const key = getRegistryKey(dockPrefixCls, position);
+  const key = `${dockPrefixCls}:${position}`;
   let entry = registry.get(key);
 
   if (!entry) {

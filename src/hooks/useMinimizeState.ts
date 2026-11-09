@@ -22,7 +22,7 @@ export const useMinimizeState = ({
   const onMinimizeChangeRef = useRef(onMinimizeChange);
   onMinimizeChangeRef.current = onMinimizeChange;
 
-  const isMinimized = isControlled ? !!controlledMinimized : internalMinimized;
+  const isMinimized = controlledMinimized ?? internalMinimized;
 
   const minimize = useCallback(() => {
     if (!isControlled) setInternalMinimized(true);

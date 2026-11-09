@@ -21,7 +21,6 @@ export interface DockMetrics extends DockMetricsState {
 export interface UseDockMetricsOptions {
   contentRef: React.RefObject<HTMLElement>;
   itemIds: string[];
-  revision: string;
   fallbackHeight: number;
   gap: number;
 }
@@ -50,7 +49,6 @@ const sameCardMetrics = (
 const useDockMetrics = ({
   contentRef,
   itemIds,
-  revision,
   fallbackHeight,
   gap,
 }: UseDockMetricsOptions): DockMetrics => {
@@ -108,9 +106,6 @@ const useDockMetrics = ({
 
   useLayoutEffect(() => {
     measure();
-  }, [measure, revision]);
-
-  useLayoutEffect(() => {
     const content = contentRef.current;
     if (!content) return undefined;
 
@@ -126,7 +121,7 @@ const useDockMetrics = ({
 
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
-  }, [contentRef, itemIds, measure, revision]);
+  }, [contentRef, itemIds, measure]);
 
   return { ...metrics, getCardRef };
 };

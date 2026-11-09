@@ -73,7 +73,21 @@ export interface DrawerStyles extends NonNullable<AntdDrawerProps['styles']> {
 export interface DrawerProps
   extends Omit<
     AntdDrawerProps,
-    'size' | 'width' | 'height' | 'classNames' | 'styles' | 'onClose'
+    | 'size'
+    | 'width'
+    | 'height'
+    | 'classNames'
+    | 'styles'
+    | 'onClose'
+    | 'visible'
+    | 'afterVisibleChange'
+    | 'destroyOnClose'
+    | 'headerStyle'
+    | 'bodyStyle'
+    | 'footerStyle'
+    | 'contentWrapperStyle'
+    | 'maskStyle'
+    | 'drawerStyle'
   > {
   /**
    * @description Drawer 的轴向尺寸。left/right 表示宽度，top/bottom 表示高度。传入时为受控模式。
@@ -136,17 +150,4 @@ export interface DrawerProps
    * @description Antd 原生样式配置，额外支持最小化卡片 `minimizedDock`
    */
   styles?: DrawerStyles;
-  /**
-   * @deprecated 请使用 size
-   */
-  width?: number | string;
-  /**
-   * @deprecated 请使用 size
-   */
-  height?: number | string;
-}
-
-export interface ManualSizes {
-  horizontal?: number;
-  vertical?: number;
 }

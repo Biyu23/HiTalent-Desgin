@@ -59,33 +59,17 @@ export function usePointerResize<Value>(
     if (active) configRef.current.onMove(active.latestValue);
   }, []);
 
-  const handlerImplRef = useRef<PointerListeners>({
-    move: () => {},
-    up: () => {},
-    cancel: () => {},
-    blur: () => {},
-  });
-  const listenersRef = useRef<PointerListeners>({
-    move: (event) => handlerImplRef.current.move(event),
-    up: (event) => handlerImplRef.current.up(event),
-    cancel: (event) => handlerImplRef.current.cancel(event),
-    blur: () => handlerImplRef.current.blur(),
-  });
+  const listenersRef = useRef<PointerListeners>();
 
-  const removeListeners = useCallback(() => {
-    const listeners = listenersRef.current;
+  const finish = useCallback((commit: boolean) => {
+    const active = activeRef.current;
+    if (!active) return;
+    activeRef.current = undefined;
+    const listeners = listenersRef.current!;
     window.removeEventListener('pointermove', listeners.move);
     window.removeEventListener('pointerup', listeners.up);
     window.removeEventListener('pointercancel', listeners.cancel);
     window.removeEventListener('blur', listeners.blur);
-  }, []);
-
-  const finishRef = useRef<(commit: boolean) => void>(() => {});
-  finishRef.current = (commit) => {
-    const active = activeRef.current;
-    if (!active) return;
-    activeRef.current = undefined;
-    removeListeners();
     if (frameRef.current !== undefined) {
       cancelAnimationFrame(frameRef.current);
       frameRef.current = undefined;
@@ -98,38 +82,14 @@ export function usePointerResize<Value>(
     setResizing(false);
     if (commit) configRef.current.onCommit?.(active.latestValue);
     else configRef.current.onCancel?.();
-  };
+  }, []);
 
-  handlerImplRef.current.move = (event) => {
-    const active = activeRef.current;
-    if (!active || event.pointerId !== active.pointerId) return;
-    active.latestValue = configRef.current.getNextValue(
-      active.initialValue,
-      active.start,
-      { clientX: event.clientX, clientY: event.clientY },
-    );
-    if (frameRef.current === undefined) {
-      frameRef.current = requestAnimationFrame(flushFrame);
-    }
-  };
-  handlerImplRef.current.up = (event) => {
-    if (event.pointerId === activeRef.current?.pointerId) {
-      finishRef.current(true);
-    }
-  };
-  handlerImplRef.current.cancel = (event) => {
-    if (event.pointerId === activeRef.current?.pointerId) {
-      finishRef.current(false);
-    }
-  };
-  handlerImplRef.current.blur = () => finishRef.current(false);
-
-  const cancel = useCallback(() => finishRef.current(false), []);
+  const cancel = useCallback(() => finish(false), [finish]);
 
   const onPointerDown = useCallback<React.PointerEventHandler<HTMLElement>>(
     (event) => {
       if (configRef.current.disabled || event.button !== 0) return;
-      finishRef.current(false);
+      finish(false);
       const target = event.currentTarget;
       const initialValue = configRef.current.getInitialValue(event);
       const releaseBody = lockBodyInteraction(configRef.current.cursor);
@@ -143,8 +103,29 @@ export function usePointerResize<Value>(
           start: { clientX: event.clientX, clientY: event.clientY },
           releaseBody,
         };
+        const listeners: PointerListeners = {
+          move: (event) => {
+            const active = activeRef.current;
+            if (!active || event.pointerId !== active.pointerId) return;
+            active.latestValue = configRef.current.getNextValue(
+              active.initialValue,
+              active.start,
+              { clientX: event.clientX, clientY: event.clientY },
+            );
+            if (frameRef.current === undefined) {
+              frameRef.current = requestAnimationFrame(flushFrame);
+            }
+          },
+          up: (event) => {
+            if (event.pointerId === activeRef.current?.pointerId) finish(true);
+          },
+          cancel: (event) => {
+            if (event.pointerId === activeRef.current?.pointerId) cancel();
+          },
+          blur: cancel,
+        };
+        listenersRef.current = listeners;
         configRef.current.onStart?.(initialValue);
-        const listeners = listenersRef.current;
         window.addEventListener('pointermove', listeners.move);
         window.addEventListener('pointerup', listeners.up);
         window.addEventListener('pointercancel', listeners.cancel);
@@ -163,7 +144,7 @@ export function usePointerResize<Value>(
         throw error;
       }
     },
-    [],
+    [cancel, finish, flushFrame],
   );
 
   useEffect(() => cancel, [cancel]);

@@ -35,12 +35,7 @@ export class DockStore {
     }
     this.notify(this.itemListeners, item.position);
 
-    let registered = true;
-    return () => {
-      if (!registered) return;
-      registered = false;
-      this.unregister(item.position, item.id);
-    };
+    return () => this.unregister(item.position, item.id);
   }
 
   update(item: DockItem): void {
@@ -113,8 +108,8 @@ export class DockStore {
     set.add(listener);
 
     return () => {
-      set?.delete(listener);
-      if (set?.size === 0) {
+      set.delete(listener);
+      if (set.size === 0) {
         listeners.delete(position);
       }
     };

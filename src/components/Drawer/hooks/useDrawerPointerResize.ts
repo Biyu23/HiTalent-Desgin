@@ -6,8 +6,6 @@ import {
   clampSize,
   DEFAULT_DRAWER_SIZE,
   DEFAULT_MIN_DRAWER_SIZE,
-  getAxisSize,
-  getResizeCursor,
   toValidNumber,
 } from '../utils/resize';
 
@@ -22,8 +20,8 @@ interface UseDrawerPointerResizeOptions {
   minSize?: number;
   maxSize?: number;
   active: boolean;
-  config: DrawerResizableConfig;
-  currentSize?: number | string;
+  config?: DrawerResizableConfig;
+  currentSize: number | string;
   onSizeChange: (size: number) => void;
 }
 
@@ -45,28 +43,21 @@ export function useDrawerPointerResize(
     onSizeChange,
   } = options;
   const axis = getDrawerAxis(placement);
+  const dimension = axis === 'horizontal' ? 'width' : 'height';
   const resize = usePointerResize<DrawerResizeValue>({
-    cursor: getResizeCursor(axis),
+    cursor: axis === 'horizontal' ? 'col-resize' : 'row-resize',
     disabled: !active,
     getInitialValue: (event) => {
-      const wrapper = event.currentTarget.parentElement;
-      const wrapperRect = wrapper?.getBoundingClientRect();
-      const measuredSize = wrapperRect
-        ? getAxisSize(wrapperRect, axis)
-        : undefined;
+      // 把手固定挂在内容容器下，不受 drawerRender 内部结构影响。
+      const wrapper = event.currentTarget.parentElement!;
+      const measuredSize = wrapper.getBoundingClientRect()[dimension];
       const startSize =
-        measuredSize && Number.isFinite(measuredSize) && measuredSize > 0
-          ? measuredSize
-          : typeof currentSize === 'number'
-          ? currentSize
-          : DEFAULT_DRAWER_SIZE;
-      // 缩放把手是内容容器的直接子节点，位于 userDrawerRender 自定义内容之外，
-      // 因此其父级结构不会随自定义内容的包裹层变化。
-      const container = wrapper?.parentElement || document.documentElement;
-      const rect = container.getBoundingClientRect();
+        measuredSize ||
+        (typeof currentSize === 'number' ? currentSize : DEFAULT_DRAWER_SIZE);
+      const rect = wrapper.parentElement!.getBoundingClientRect();
       const fallback =
         axis === 'horizontal' ? window.innerWidth : window.innerHeight;
-      const containerSize = Math.max(1, getAxisSize(rect, axis) || fallback);
+      const containerSize = Math.max(1, rect[dimension] || fallback);
       const configuredMin = toValidNumber(minSize);
       const configuredMax = toValidNumber(maxSize);
       const min = Math.max(
@@ -95,13 +86,13 @@ export function useDrawerPointerResize(
         ),
       };
     },
-    onStart: () => config.onResizeStart?.(),
+    onStart: config?.onResizeStart,
     onMove: (value) => {
       onSizeChange(value.size);
-      config.onResize?.(value.size);
+      config?.onResize?.(value.size);
     },
-    onCommit: () => config.onResizeEnd?.(),
-    onCancel: () => config.onResizeEnd?.(),
+    onCommit: config?.onResizeEnd,
+    onCancel: config?.onResizeEnd,
   });
 
   useEffect(() => resize.cancel, [placement, resize.cancel]);

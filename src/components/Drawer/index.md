@@ -28,7 +28,7 @@ toc: content
 
 ## API
 
-继承 [Ant Design Drawer](https://ant.design/components/drawer-cn#api) 的所有原生属性，新增以下扩展属性：
+继承 [Ant Design Drawer](https://ant.design/components/drawer-cn#api) 的非废弃原生属性，尺寸统一使用 `size`，不再支持 `width`、`height`。关闭后销毁使用 `destroyOnHidden`，样式使用 `styles`。新增以下扩展属性：
 
 ### DrawerProps
 

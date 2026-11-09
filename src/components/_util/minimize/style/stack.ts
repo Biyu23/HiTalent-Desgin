@@ -45,10 +45,8 @@ export const useStackStyles = createStyles(({ token }) => ({
     overflow: visible;
     background: transparent;
   `,
-  viewportExpanded: css`
-    overflow: hidden;
-  `,
   viewportScrollable: css`
+    overflow: hidden;
     overscroll-behavior: contain;
     touch-action: none;
   `,

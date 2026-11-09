@@ -94,11 +94,11 @@ export const MenuDrawer = <Values extends object>({
     <Drawer
       title={menuTitle ?? locale.searchCriteria}
       placement="right"
-      width={360}
+      size={360}
       open={open}
       onClose={onClose}
       forceRender={forceRender}
-      destroyOnClose={false}
+      destroyOnHidden={false}
       classNames={{
         wrapper: classNames?.drawer,
       }}

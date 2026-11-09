@@ -30,31 +30,11 @@ export interface DockItem {
   stack?: MinimizeStack;
   locale: MinimizeLocale;
   onRestore: () => void;
-  onClose: () => void;
+  onClose?: () => void;
 }
 
-export interface MinimizedDockProps {
+export interface MinimizedDockProps extends Omit<DockItem, 'id'> {
   id?: string;
   open?: boolean;
   minimized: boolean;
-  title?: React.ReactNode;
-  position: MinimizePosition;
-  className?: string;
-  style?: React.CSSProperties;
-  stack?: MinimizeStack;
-  locale: MinimizeLocale;
-  onRestore: () => void;
-  onClose: () => void;
-}
-
-export interface UseMinimizeStateOptions {
-  minimized?: boolean;
-  onMinimizeChange?: (minimized: boolean) => void;
-}
-
-export interface UseMinimizeStateReturn {
-  isMinimized: boolean;
-  minimize: () => void;
-  restore: () => void;
-  reset: () => void;
 }
