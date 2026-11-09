@@ -8,7 +8,7 @@ export interface ActionRunnerOptions {
 
 export interface ActionRunnerResult<Args extends unknown[]> {
   pending: boolean;
-  run: (action: (...args: Args) => unknown, ...args: Args) => void;
+  run: (action: (...args: Args) => unknown, ...args: Args) => unknown;
 }
 
 export function useActionRunner<Args extends unknown[]>(
@@ -42,7 +42,7 @@ export function useActionRunner<Args extends unknown[]>(
       }
 
       const result = action(...args);
-      if (!trackPending || !isThenable(result)) return;
+      if (!trackPending || !isThenable(result)) return result;
       const operation = ++operationRef.current;
       setPending(true);
       const finalize = () => {
@@ -50,7 +50,16 @@ export function useActionRunner<Args extends unknown[]>(
           setPending(false);
         }
       };
-      Promise.resolve(result).then(finalize, finalize);
+      return Promise.resolve(result).then(
+        (value) => {
+          finalize();
+          return value;
+        },
+        (error: unknown) => {
+          finalize();
+          throw error;
+        },
+      );
     },
     [pending, throttle, trackPending],
   );

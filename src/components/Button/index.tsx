@@ -27,7 +27,7 @@ const Button = React.forwardRef<ButtonRef, ButtonProps>((props, ref) => {
   const handleClick = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
     const isBusy = Boolean(pending || propsLoading);
     if (isBusy || disabled) return;
-    if (onClick) run(onClick, e);
+    if (onClick) return run(onClick, e);
   };
 
   const buttonElement = (

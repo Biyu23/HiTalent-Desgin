@@ -44,7 +44,9 @@ export function parseTooltipConfig(
     tooltipTitle = tooltip;
   }
 
-  const needTooltip = !isNullOrBlank(tooltipTitle) && tooltipTitle !== false;
+  const needTooltip =
+    (!isNullOrBlank(tooltipTitle) && tooltipTitle !== false) ||
+    (!isNullOrBlank(tooltipProps.overlay) && tooltipProps.overlay !== false);
 
   return {
     needTooltip,
