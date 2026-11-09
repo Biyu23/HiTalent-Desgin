@@ -54,7 +54,6 @@ export type ModalStaticMethods = Pick<
   | 'confirm'
   | 'useModal'
   | 'destroyAll'
-  | 'config'
 >;
 
 /**
@@ -118,7 +117,16 @@ export interface ModalStyles extends NonNullable<AntdModalProps['styles']> {
  * Modal 组件属性
  */
 export interface ModalProps
-  extends Omit<AntdModalProps, 'title' | 'onCancel' | 'classNames' | 'styles'> {
+  extends Omit<
+    AntdModalProps,
+    | 'onCancel'
+    | 'classNames'
+    | 'styles'
+    | 'visible'
+    | 'destroyOnClose'
+    | 'bodyStyle'
+    | 'maskStyle'
+  > {
   /**
    * @description Antd 原生类名配置，额外支持最小化卡片 `minimizedDock`
    */
@@ -128,17 +136,8 @@ export interface ModalProps
    */
   styles?: ModalStyles;
   /**
-   * @description 是否显示右上角的关闭按钮，或提供配置对象
-   * @default true
-   */
-  closable?: AntdModalProps['closable'];
-  /**
-   * @description 弹窗标题
-   */
-  title?: React.ReactNode;
-  /**
    * @description 关闭回调。注意：事件可能来自按钮点击（MouseEvent）或 ESC 按键（KeyboardEvent）。
-   * 通过 Modal.destroyAll() 程序化关闭时，event 为 undefined。
+   * 从最小化 Dock 程序化关闭时，event 可为 undefined。
    */
   onCancel?: (
     e?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,

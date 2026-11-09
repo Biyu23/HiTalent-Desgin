@@ -29,7 +29,7 @@ Enhances Ant Design Modal with dragging (`draggable`), free resizing (`resizable
 
 ## API
 
-Inherits all properties from [Ant Design Modal](https://ant.design/components/modal#api), with the following enhanced properties:
+Inherits non-deprecated properties from [Ant Design Modal](https://ant.design/components/modal#api). Use `open` for visibility, `destroyOnHidden` for destruction after closing, and `styles` for styling. The deprecated `Modal.config` is no longer exposed; use Ant Design `ConfigProvider.config` for global configuration. The following enhanced properties are available:
 
 ### ModalProps
 

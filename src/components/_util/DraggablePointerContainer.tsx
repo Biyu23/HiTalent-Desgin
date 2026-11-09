@@ -28,6 +28,7 @@ export interface DraggablePointerContainerProps {
 
 interface DragState {
   pointerId: number;
+  captureTarget: HTMLElement;
   startX: number;
   startY: number;
   originX: number;
@@ -69,19 +70,12 @@ export const DraggablePointerContainer: React.FC<
       if (cancel && target.closest(cancel)) return;
       if (handle && !target.closest(handle)) return;
 
-      const container = containerRef.current;
-      if (!container) return;
-
-      if (typeof container.setPointerCapture === 'function') {
-        try {
-          container.setPointerCapture(event.pointerId);
-        } catch {
-          // 部分测试环境或非标准 DOM 不支持 pointer capture。
-        }
-      }
+      // 保留原始点击目标，避免标题栏双击被重定向到拖拽容器。
+      target.setPointerCapture(event.pointerId);
 
       draggingRef.current = {
         pointerId: event.pointerId,
+        captureTarget: target,
         startX: event.clientX,
         startY: event.clientY,
         originX: position.x,
@@ -93,7 +87,7 @@ export const DraggablePointerContainer: React.FC<
       onStart?.(event, { x: position.x, y: position.y });
       event.stopPropagation();
     },
-    [cancel, containerRef, disabled, handle, onStart, position.x, position.y],
+    [cancel, disabled, handle, onStart, position.x, position.y],
   );
 
   const handlePointerMove = useCallback(
@@ -127,25 +121,16 @@ export const DraggablePointerContainer: React.FC<
       if (!state || state.pointerId !== event.pointerId) return;
 
       draggingRef.current = null;
-      const container = containerRef.current;
       if (
         releasePointerCapture &&
-        container &&
-        typeof container.hasPointerCapture === 'function' &&
-        typeof container.releasePointerCapture === 'function'
+        state.captureTarget.hasPointerCapture(event.pointerId)
       ) {
-        try {
-          if (container.hasPointerCapture(event.pointerId)) {
-            container.releasePointerCapture(event.pointerId);
-          }
-        } catch {
-          // pointer capture 可能已由浏览器自动释放。
-        }
+        state.captureTarget.releasePointerCapture(event.pointerId);
       }
 
       onStop?.(event, { x: state.lastX, y: state.lastY });
     },
-    [containerRef, onStop],
+    [onStop],
   );
 
   const handlePointerUp = useCallback(

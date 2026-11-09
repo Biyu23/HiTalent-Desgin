@@ -29,7 +29,7 @@ toc: content
 
 ## API
 
-继承 [Ant Design Modal](https://ant.design/components/modal-cn#api) 的所有原生属性，新增以下扩展属性：
+继承 [Ant Design Modal](https://ant.design/components/modal-cn#api) 的非废弃原生属性。显示状态使用 `open`，关闭后销毁使用 `destroyOnHidden`，样式使用 `styles`。不再提供已废弃的 `Modal.config`，全局配置使用 Ant Design `ConfigProvider.config`。新增以下扩展属性：
 
 ### ModalProps
 

@@ -12,46 +12,36 @@ interface ResizeValue extends ModalWindowSize {
 const DEFAULT_MIN_WIDTH = 320;
 const DEFAULT_MIN_HEIGHT = 200;
 
-function getContainerBounds(element: HTMLElement, antdPrefixCls: string) {
-  const root =
-    element.closest(`.${antdPrefixCls}-modal-root`) ||
-    element.closest(`.${antdPrefixCls}-modal-wrap`);
-  const container = root?.parentElement;
-  if (
-    container &&
-    container !== document.body &&
-    container !== document.documentElement
-  ) {
-    const rect = container.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) return rect;
-  }
-  return new DOMRect(
-    0,
-    0,
-    window.innerWidth || document.documentElement.clientWidth,
-    window.innerHeight || document.documentElement.clientHeight,
-  );
-}
-
 export function useModalPointerResize(options: {
-  modalRef: React.RefObject<HTMLElement>;
+  modal: HTMLElement | null;
   antdPrefixCls: string;
   resizable?: boolean | ModalResizableConfig;
   active: boolean;
   setSize: (size: ModalWindowSize) => void;
 }) {
-  const { modalRef, antdPrefixCls, resizable, active, setSize } = options;
+  const { modal, antdPrefixCls, resizable, active, setSize } = options;
   const config = typeof resizable === 'object' ? resizable : undefined;
   return usePointerResize<ResizeValue>({
     cursor: 'nwse-resize',
     disabled: !active,
     getInitialValue: () => {
-      const modal = modalRef.current;
-      if (!modal) throw new Error('Modal resize target is unavailable.');
-      const rect = modal.getBoundingClientRect();
-      const bounds = getContainerBounds(modal, antdPrefixCls);
-      const configuredMinWidth = config?.minWidth ?? DEFAULT_MIN_WIDTH;
-      const configuredMinHeight = config?.minHeight ?? DEFAULT_MIN_HEIGHT;
+      // 缩放把手仅在内容节点挂载后渲染。
+      const rect = modal!.getBoundingClientRect();
+      const root =
+        modal!.closest(`.${antdPrefixCls}-modal-root`) ||
+        modal!.closest(`.${antdPrefixCls}-modal-wrap`);
+      const container = root?.parentElement;
+      let bounds = new DOMRect(0, 0, window.innerWidth, window.innerHeight);
+      if (
+        container &&
+        container !== document.body &&
+        container !== document.documentElement
+      ) {
+        const containerRect = container.getBoundingClientRect();
+        if (containerRect.width > 0 && containerRect.height > 0) {
+          bounds = containerRect;
+        }
+      }
       const maxWidth = Math.max(
         1,
         Math.min(
@@ -71,8 +61,8 @@ export function useModalPointerResize(options: {
       return {
         width: Math.round(rect.width),
         height: Math.round(rect.height),
-        minWidth: Math.min(configuredMinWidth, maxWidth),
-        minHeight: Math.min(configuredMinHeight, maxHeight),
+        minWidth: Math.min(config?.minWidth ?? DEFAULT_MIN_WIDTH, maxWidth),
+        minHeight: Math.min(config?.minHeight ?? DEFAULT_MIN_HEIGHT, maxHeight),
         maxWidth,
         maxHeight,
       };
@@ -94,13 +84,13 @@ export function useModalPointerResize(options: {
         ),
       ),
     }),
-    onStart: () => config?.onResizeStart?.(),
+    onStart: config?.onResizeStart,
     onMove: (value) => {
       const size = { width: value.width, height: value.height };
       setSize(size);
       config?.onResize?.(size);
     },
-    onCommit: () => config?.onResizeEnd?.(),
-    onCancel: () => config?.onResizeEnd?.(),
+    onCommit: config?.onResizeEnd,
+    onCancel: config?.onResizeEnd,
   });
 }

@@ -51,12 +51,9 @@ export const useStyles = createStyles(({ token }) => {
         }
       }
 
-      &.manual-size {
-        box-sizing: border-box;
-        max-width: none;
-
+      &.manual-size,
+      &.maximized {
         .ant-modal-content {
-          height: 100%;
           display: flex;
           flex-direction: column;
         }
@@ -73,6 +70,15 @@ export const useStyles = createStyles(({ token }) => {
         }
       }
 
+      &.manual-size {
+        box-sizing: border-box;
+        max-width: none;
+
+        .ant-modal-content {
+          height: 100%;
+        }
+      }
+
       &.maximized {
         top: 0 !important;
         width: 100% !important;
@@ -83,20 +89,7 @@ export const useStyles = createStyles(({ token }) => {
 
         .ant-modal-content {
           height: 100vh !important;
-          display: flex;
-          flex-direction: column;
           border-radius: 0;
-        }
-
-        .ant-modal-header,
-        .ant-modal-footer {
-          flex-shrink: 0;
-        }
-
-        .ant-modal-body {
-          flex: 1;
-          min-height: 0;
-          overflow: auto;
         }
       }
     `,
