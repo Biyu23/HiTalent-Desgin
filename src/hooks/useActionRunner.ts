@@ -50,16 +50,7 @@ export function useActionRunner<Args extends unknown[]>(
           setPending(false);
         }
       };
-      return Promise.resolve(result).then(
-        (value) => {
-          finalize();
-          return value;
-        },
-        (error: unknown) => {
-          finalize();
-          throw error;
-        },
-      );
+      return Promise.resolve(result).finally(finalize);
     },
     [pending, throttle, trackPending],
   );
@@ -132,16 +123,7 @@ export function useKeyedActionRunner<
         pendingRef.current = next;
         setPendingKeys(next);
       };
-      return Promise.resolve(result).then(
-        (value) => {
-          finalize();
-          return value;
-        },
-        (error: unknown) => {
-          finalize();
-          throw error;
-        },
-      );
+      return Promise.resolve(result).finally(finalize);
     },
     [],
   );

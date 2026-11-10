@@ -43,6 +43,7 @@ const restrictToVertical: Modifier = ({ transform }) => ({
   x: 0,
 });
 const rowModifiers = [restrictToVertical];
+const mouseOptions = { activationConstraint: { distance: 4 } };
 
 /** 树形策略：冻结数据快照、显示候选位置、按需展开，松手后移动整棵子树。 */
 export default function useTreeRowDrag<RecordType>(
@@ -274,11 +275,10 @@ export default function useTreeRowDrag<RecordType>(
           )
         : null;
     unstable_batchedUpdates(() => {
-      if (finalEvent) captureRows();
       clear();
       if (finalEvent) propsRef.current.onCommit?.(finalEvent);
     });
-  }, [captureRows, clear, clearFrame, evaluate]);
+  }, [clear, clearFrame, evaluate]);
 
   useLayoutEffect(() => {
     if (
@@ -313,10 +313,6 @@ export default function useTreeRowDrag<RecordType>(
     [clearExpandTimer, clearFrame],
   );
 
-  const mouseOptions = useMemo(
-    () => ({ activationConstraint: { distance: 4 } }),
-    [],
-  );
   const sensors = useSensors(
     useSensor(MouseSensor, mouseOptions),
     useSensor(KeyboardSensor, {

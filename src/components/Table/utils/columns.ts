@@ -1,3 +1,4 @@
+import { areArraysEqual } from '../../../utils';
 import type { ColumnMeta, InternalLeafColumn } from '../internal';
 import { INTERNAL_CELL_COLUMN, INTERNAL_COLUMN_KEY } from '../internal';
 import type {
@@ -98,16 +99,10 @@ export function areColumnStatesEqual(
   left: TableColumnState,
   right: TableColumnState,
 ): boolean {
-  return (
-    left.length === right.length &&
-    left.every((item, index) => {
-      const other = right[index];
-      return (
-        item.key === other?.key &&
-        item.visible === other.visible &&
-        item.width === other.width
-      );
-    })
+  return areArraysEqual(
+    left,
+    right,
+    (a, b) => a.key === b.key && a.visible === b.visible && a.width === b.width,
   );
 }
 

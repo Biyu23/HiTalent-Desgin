@@ -1,4 +1,5 @@
 import type { LocaleOverrides } from '../locales';
+import { isNullOrBlank } from '../utils';
 
 /** 按字段覆盖组件文案，空白值继续继承原文案。 */
 export function mergeComponentLocale<T extends object>(
@@ -10,12 +11,7 @@ export function mergeComponentLocale<T extends object>(
   let merged = base;
   for (const key of Object.keys(overrides) as (keyof T)[]) {
     const value: T[keyof T] | undefined = overrides[key];
-    if (
-      value === undefined ||
-      value === null ||
-      (typeof value === 'string' && !value.trim()) ||
-      value === base[key]
-    ) {
+    if (isNullOrBlank(value) || value === base[key]) {
       continue;
     }
     if (merged === base) merged = { ...base };

@@ -15,7 +15,6 @@ import { InlinePopoverField } from './InlinePopoverField';
 import { SearchActions } from './SearchActions';
 
 interface InlineFormProps<Values extends object> {
-  prefixCls?: string;
   form: FormInstance<Values>;
   fields: SearchFormFieldItem<Values>[];
   mode: SearchFormMode;
@@ -87,6 +86,10 @@ export const InlineForm = <Values extends object>({
       ? inlineMinWidth
       : 200;
 
+  const hasExtra =
+    hasThreshold ||
+    mode === 'combined' ||
+    (actionExtra !== null && actionExtra !== undefined);
   const extra = (
     <>
       {hasThreshold && (
@@ -160,17 +163,14 @@ export const InlineForm = <Values extends object>({
             )}
           </div>
         ))}
-        {!direct &&
-          (hasThreshold ||
-            mode === 'combined' ||
-            (actionExtra !== null && actionExtra !== undefined)) && (
-            <div
-              className={cx(styles.actionsWrapper, classNames?.actions)}
-              style={customStyles?.actions}
-            >
-              {extra}
-            </div>
-          )}
+        {!direct && hasExtra && (
+          <div
+            className={cx(styles.actionsWrapper, classNames?.actions)}
+            style={customStyles?.actions}
+          >
+            {extra}
+          </div>
+        )}
       </div>
       {direct && (
         <SearchActions
@@ -185,13 +185,7 @@ export const InlineForm = <Values extends object>({
           onSubmit={onSubmit}
           onReset={onReset}
           locale={locale}
-          actionExtra={
-            hasThreshold ||
-            mode === 'combined' ||
-            (actionExtra !== null && actionExtra !== undefined)
-              ? extra
-              : undefined
-          }
+          actionExtra={hasExtra ? extra : undefined}
         />
       )}
     </div>

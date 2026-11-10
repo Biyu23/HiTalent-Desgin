@@ -1,5 +1,6 @@
 import type React from 'react';
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { areMapsEqual } from '../../../../utils';
 
 export interface DockCardMetrics {
   // 距离停靠边缘的累计偏移，与卡片动画中的实际位置解耦。
@@ -28,23 +29,12 @@ export interface UseDockMetricsOptions {
 const sameCardMetrics = (
   left: Map<string, DockCardMetrics>,
   right: Map<string, DockCardMetrics>,
-): boolean => {
-  if (left.size !== right.size) return false;
-
-  for (const [id, metrics] of left) {
-    const next = right.get(id);
-    if (
-      !next ||
-      next.top !== metrics.top ||
-      next.width !== metrics.width ||
-      next.height !== metrics.height
-    ) {
-      return false;
-    }
-  }
-
-  return true;
-};
+): boolean =>
+  areMapsEqual(
+    left,
+    right,
+    (a, b) => a.top === b.top && a.width === b.width && a.height === b.height,
+  );
 
 const useDockMetrics = ({
   contentRef,

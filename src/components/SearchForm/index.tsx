@@ -141,7 +141,6 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
 
   const activeFiltersBar = showActiveFilters ? (
     <ActiveFiltersBar
-      prefixCls={prefixCls}
       filters={activeFilters}
       onClearAll={handleReset}
       disabled={disabled}
@@ -178,7 +177,6 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
         {/* 平铺模式及联合模式下的顶部平铺表单 */}
         {(mode === 'inline' || mode === 'combined') && (
           <InlineForm
-            prefixCls={prefixCls}
             form={form}
             fields={visibleFields}
             mode={mode}
@@ -240,7 +238,6 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
             <div className={formStyles.menuPanel} hidden={isMenuCollapsed}>
               <MenuFormView
                 validationAttempt={validationAttempt}
-                prefixCls={prefixCls}
                 form={form}
                 fields={visibleFields}
                 groups={groups}
@@ -274,7 +271,6 @@ const InternalSearchForm = <Values extends object = Record<string, unknown>>(
           <MenuDrawer
             forceRender={inlineLayout === 'popover'}
             validationAttempt={validationAttempt}
-            prefixCls={prefixCls}
             open={menuOpen}
             onClose={() => setMenuOpen(false)}
             form={form}

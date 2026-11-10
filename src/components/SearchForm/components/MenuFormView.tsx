@@ -14,7 +14,6 @@ import { FieldRenderer } from './FieldRenderer';
 import { MenuFieldItem } from './MenuFieldItem';
 
 interface MenuFormViewProps<Values extends object> {
-  prefixCls?: string;
   validationAttempt: number;
   form: FormInstance<Values>;
   fields: SearchFormFieldItem<Values>[];

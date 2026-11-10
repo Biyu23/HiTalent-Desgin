@@ -10,7 +10,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
 import type { RowDragProviderProps } from '../internal';
 import type { TableRowKey } from '../type';
 import {
@@ -50,6 +50,7 @@ const restrictToVertical: Modifier = ({
   };
 };
 const flatModifiers = [restrictToVertical];
+const mouseOptions = { activationConstraint: { distance: 4 } };
 
 /** 平铺策略：拖动时使用排序位移，松手后才计算新的数据顺序。 */
 export default function useFlatRowDrag<RecordType>(
@@ -72,10 +73,6 @@ export default function useFlatRowDrag<RecordType>(
   const cancel = useCallback(() => {
     draggingRef.current = false;
   }, []);
-  const mouseOptions = useMemo(
-    () => ({ activationConstraint: { distance: 4 } }),
-    [],
-  );
   const sensors = useSensors(
     useSensor(MouseSensor, mouseOptions),
     useSensor(KeyboardSensor, {

@@ -15,7 +15,6 @@ import { FieldRenderer } from './FieldRenderer';
 import { SearchActions } from './SearchActions';
 
 interface MenuDrawerProps<Values extends object> {
-  prefixCls?: string;
   open: boolean;
   forceRender: boolean;
   onClose: () => void;

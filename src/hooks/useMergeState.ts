@@ -114,8 +114,12 @@ export function useMergeState<
   const internalValueRef = useRef<TOrigin>(mergedValue);
   internalValueRef.current = mergedValue;
 
-  const triggerChange = useCallback(
-    (nextValue: TOrigin, ...args: ChangeArgs) => {
+  const set = useCallback(
+    (val: TOrigin | ((prev: TOrigin) => TOrigin), ...args: ChangeArgs) => {
+      const nextValue =
+        typeof val === 'function'
+          ? (val as (prev: TOrigin) => TOrigin)(internalValueRef.current)
+          : val;
       if (!isControlledRef.current) {
         setInternalValue(nextValue);
       }
@@ -129,17 +133,6 @@ export function useMergeState<
       }
     },
     [],
-  );
-
-  const set = useCallback(
-    (val: TOrigin | ((prev: TOrigin) => TOrigin), ...args: ChangeArgs) => {
-      const nextValue =
-        typeof val === 'function'
-          ? (val as (prev: TOrigin) => TOrigin)(internalValueRef.current)
-          : val;
-      triggerChange(nextValue, ...args);
-    },
-    [triggerChange],
   );
 
   return [mergedValue, set] as const;

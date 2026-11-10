@@ -6,7 +6,6 @@ import { useStyles } from '../style';
 import type { SearchFormClassNames, SearchFormStyles } from '../type';
 
 interface ActiveFiltersBarProps {
-  prefixCls?: string;
   filters: ActiveFilterItem[];
   onClearAll: () => void;
   disabled?: boolean;

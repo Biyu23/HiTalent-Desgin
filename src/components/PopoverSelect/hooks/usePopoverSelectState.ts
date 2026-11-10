@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMergeState } from '../../../hooks';
+import { areArraysEqual } from '../../../utils';
 import type {
   MappedOption,
   PopoverSelectProps,
@@ -105,13 +106,11 @@ export function usePopoverSelectState<V extends RawValueType, O extends object>(
 
   useEffect(() => {
     const last = previous.current;
-    const changed =
-      last.selectedValues.length !== selectedValues.length ||
-      last.selectedValues.some((value, index) =>
-        valueType === 'string'
-          ? String(value) !== String(selectedValues[index])
-          : value !== selectedValues[index],
-      );
+    const changed = !areArraysEqual(
+      last.selectedValues,
+      selectedValues,
+      (a, b) => (valueType === 'string' ? String(a) === String(b) : a === b),
+    );
 
     // 重排 options 会重新解析 value；等值结果不覆盖未确认的草稿。
     if (
