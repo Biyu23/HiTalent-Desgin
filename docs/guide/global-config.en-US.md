@@ -7,19 +7,24 @@ toc: content
 
 ConfigProvider is the shared runtime configuration entry for HiTalent Design. It controls the CSS prefix, locale package, scoped message overrides, and text direction. See the complete [ConfigProvider API](/en-US/components/config-provider).
 
+Use this provider alone at the application root; Antd props such as `theme` and `componentSize` are forwarded directly. An existing Antd provider can also supply the theme, native prefix, and language. Add a HiTalent provider when you need a shared HiTalent prefix or scoped messages.
+
 ## Set the CSS prefix and locale
 
 ```tsx | pure
-import { ConfigProvider, en_US } from 'hi-talent-design';
+import { ConfigProvider } from 'hi-talent-design';
+import antdEnUS from 'antd/locale/en_US';
 
 export default () => (
-  <ConfigProvider prefixCls="my-app" locale={en_US} direction="ltr">
+  <ConfigProvider prefixCls="my-app" antdLocale={antdEnUS}>
     <App />
   </ConfigProvider>
 );
 ```
 
-`prefixCls` isolates component class names, `locale` accepts a complete locale package, and `direction` supports `ltr` or `rtl`.
+`prefixCls` sets the HiTalent component class prefix. In this example, `antdLocale` switches messages in both libraries.
+
+Without an explicit HiTalent locale, components follow the nearest Antd language: English maps to `en_US`, while other languages fall back to `zh_CN`. Chinese and English applications can therefore set only `antdLocale`. An explicit `locale` changes HiTalent messages only; also set `antdLocale` to switch Antd messages.
 
 ## Override selected messages
 
@@ -43,27 +48,43 @@ export default () => (
 );
 ```
 
-A nested ConfigProvider inherits the surrounding configuration and replaces only values provided at the current level.
+A nested ConfigProvider merges `localeOverrides` by message field. Passing a new complete `locale` resets the inherited language and its message overrides.
 
 ## Follow application locale state
 
-The library does not require a specific internationalization framework. This example selects a package from react-i18next state:
+The application owns i18n initialization, language changes, and translation resource loading. The component library keeps its default messages, receives the active package through `locale`, and accepts application `t()` results through `localeOverrides`.
+
+This Chinese and English example uses the application's initialized react-i18next instance to switch both HiTalent Design and Ant Design locales:
 
 ```tsx | pure
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import antdEnUS from 'antd/locale/en_US';
+import antdZhCN from 'antd/locale/zh_CN';
 import { ConfigProvider, en_US, zh_CN } from 'hi-talent-design';
+import App from './App';
 
 export default () => {
-  const { i18n } = useTranslation();
-  const locale = i18n.resolvedLanguage?.startsWith('en') ? en_US : zh_CN;
+  const { t, i18n } = useTranslation('common');
+  const isZh = i18n.language.startsWith('zh');
+  const localeOverrides = useMemo(
+    () => ({ EditableField: { save: t('save') } }),
+    [t],
+  );
 
   return (
-    <ConfigProvider locale={locale}>
+    <ConfigProvider
+      locale={isZh ? zh_CN : en_US}
+      antdLocale={isZh ? antdZhCN : antdEnUS}
+      localeOverrides={localeOverrides}
+    >
       <App />
     </ConfigProvider>
   );
 };
 ```
+
+Replace `common` and `save` with the application's existing namespace and translation key. The example uses `i18n.language` for compatibility with i18next 20. The component library does not depend on, create, or initialize an i18next instance.
 
 ## Change text direction
 
@@ -73,10 +94,10 @@ export default () => {
 </ConfigProvider>
 ```
 
-A nested provider can switch only the region that needs RTL. Components read direction from the nearest provider.
+A nested provider can configure RTL for a specific region. `direction` is forwarded to Antd and exposed through HiTalent's `useConfig()`. Set `dir="rtl"` on a container to control the direction of application HTML.
 
 ## Notes
 
-- Ant Design theme and locale remain the responsibility of Ant Design ConfigProvider; the two providers can be composed at the application root.
+- `theme` and `antdLocale` are forwarded to the internal Ant Design ConfigProvider and can be set together at the application root.
 - Use `localeOverrides` for a small set of workflow messages, not as a replacement for a complete locale package.
-- When changing `prefixCls`, ensure the application loads component styles that use the same prefix.
+- Component styles are generated through CSS-in-JS, so a custom `prefixCls` requires no additional stylesheet. Update any application CSS selectors that reference the prefix.

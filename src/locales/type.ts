@@ -1,5 +1,3 @@
-import type { DeepPartial } from '../types';
-
 export type { DeepPartial } from '../types';
 
 /** PopoverSelect 组件的国际化文案 */
@@ -114,4 +112,6 @@ export type HtdLocale = {
 } & LocaleComponentMap;
 
 /** 基于完整语言包进行局部文案覆盖 */
-export type LocaleOverrides = DeepPartial<LocaleComponentMap>;
+export type LocaleOverrides = {
+  [K in keyof LocaleComponentMap]?: Partial<LocaleComponentMap[K]>;
+};

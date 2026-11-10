@@ -8,26 +8,13 @@ toc: content
 
 Uses React Context to provide a shared CSS prefix, Ant Design prefix coordination, theme customization (Theme Token), locale package, scoped messages, and text direction to HiTalent Design components.
 
-## When to use
+## Getting started
 
-- The application needs to switch the component locale from one place, including underlying Ant Design components.
-- Need to customize Ant Design 5 primary color, border radius, dark algorithm, or Design Tokens.
-- The default `htd` prefix conflicts with an existing style system, or microfrontend style isolation (qiankun / Module Federation) is needed.
-- Need to coordinate class prefixes for both custom components and underlying Ant Design components.
-- A workflow region needs scoped copy or RTL.
-- Nested modules should inherit surrounding settings and adjust only selected values.
+- Use HiTalent Design's `ConfigProvider` as the application entry point to configure both libraries. Native props such as `theme` and `componentSize` are forwarded to Antd.
+- If the application already has an Antd `ConfigProvider`, components can reuse its theme, native prefix, and language directly. Without an explicit HiTalent locale, the nearest Antd English locale maps to `en_US`; other languages fall back to `zh_CN`.
+- Add a HiTalent `ConfigProvider` when you need a shared HiTalent `prefixCls`, a complete `locale`, or `localeOverrides`. Nested providers can override settings for a specific region.
 
-## Core capabilities
-
-- `prefixCls` changes the shared HiTalent Design component class prefix.
-- `antdPrefixCls` and `iconPrefixCls` forward to Ant Design ConfigProvider for underlying component prefix isolation.
-- `theme` natively supports Ant Design 5 Design Tokens and theme algorithms (Dark mode, Compact mode, etc.).
-- `usePrefixCls`, `useAntdPrefixCls`, and `useConfig` provide simple and robust access to prefixes and configuration.
-- `locale` accepts `zh_CN`, `en_US`, or a complete custom locale.
-- `antdLocale` forwards to underlying Ant Design components for synced i18n.
-- `localeOverrides` replaces messages only for selected components (with deep merge and default fallback).
-- Nested providers merge with surrounding configuration (follows native `theme.inherit: false` semantics).
-- `direction` supports `ltr` and `rtl`.
+When no explicit HiTalent `locale` is set or inherited, setting only `antdLocale` lets HiTalent follow Chinese and English automatically. When setting `locale` explicitly, also set `antdLocale` to switch messages in both libraries.
 
 ## Demos
 
@@ -41,30 +28,30 @@ Uses React Context to provide a shared CSS prefix, Ant Design prefix coordinatio
 
 ## API
 
-| Property          | Description                                                                             | Type              | Default             |
-| ----------------- | --------------------------------------------------------------------------------------- | ----------------- | ------------------- |
-| `prefixCls`       | Class prefix for HiTalent Design components                                             | `string`          | `htd`               |
-| `antdPrefixCls`   | Class prefix for underlying Ant Design components                                       | `string`          | `ant`               |
-| `iconPrefixCls`   | Class prefix for icons                                                                  | `string`          | `anticon`           |
-| `theme`           | Ant Design 5 theme config (Tokens, algorithms and component tokens; native inheritance) | `ThemeConfig`     | -                   |
-| `locale`          | Complete component locale package                                                       | `HtdLocale`       | `zh_CN`             |
-| `antdLocale`      | Underlying Ant Design locale package                                                    | `Locale`          | -                   |
-| `localeOverrides` | Component-level copy merged onto the locale                                             | `LocaleOverrides` | -                   |
-| `direction`       | Text and layout direction                                                               | `ltr \| rtl`      | inherited from Antd |
-| `children`        | Descendants that consume this configuration                                             | `ReactNode`       | -                   |
+| Property          | Description                                                                             | Type              | Default                                              |
+| ----------------- | --------------------------------------------------------------------------------------- | ----------------- | ---------------------------------------------------- |
+| `prefixCls`       | Class prefix for HiTalent Design components                                             | `string`          | `htd`                                                |
+| `antdPrefixCls`   | Class prefix for underlying Ant Design components                                       | `string`          | `ant`                                                |
+| `iconPrefixCls`   | Class prefix for icons                                                                  | `string`          | `anticon`                                            |
+| `theme`           | Ant Design 5 theme config (Tokens, algorithms and component tokens; native inheritance) | `ThemeConfig`     | -                                                    |
+| `locale`          | Complete component locale package                                                       | `HtdLocale`       | inherited or mapped from Antd; falls back to `zh_CN` |
+| `antdLocale`      | Underlying Ant Design locale package                                                    | `Locale`          | -                                                    |
+| `localeOverrides` | Component-level copy merged onto the locale                                             | `LocaleOverrides` | -                                                    |
+| `direction`       | Text and layout direction                                                               | `ltr \| rtl`      | inherited from Antd                                  |
+| `children`        | Descendants that consume this configuration                                             | `ReactNode`       | -                                                    |
 
-> `ConfigProvider` also inherits all configuration properties from Ant Design 5's native `ConfigProvider` (such as `componentSize`, `getPopupContainer`, `wave`, etc.) and forwards them directly to child components.
+> `prefixCls` and `locale` configure HiTalent Design. Other Ant Design 5 props, such as `componentSize`, `getPopupContainer`, and `wave`, are forwarded directly. Use `antdPrefixCls` and `antdLocale` for the native prefix and locale.
 
 ## Hooks
 
-- `useConfig(): ConfigContextValue`: Returns the full active global configuration object.
+- `useConfig(): ConfigContextValue`: Reads the HiTalent prefix, merged locale, direction, and Antd prefix, icon prefix, locale, and theme. Read `componentDisabled` and `componentSize` through Antd's `ConfigProvider.useConfig()`.
 - `usePrefixCls(suffixCls?: string, customPrefix?: string): string`: Returns the resolved HiTalent Design class prefix string.
 - `useAntdPrefixCls(customAntdPrefix?: string): string`: Returns the resolved underlying Ant Design class prefix string.
 - `useLocale(componentName: keyof LocaleComponentMap, customLocale?: Partial<ComponentLocale>)`: Returns the current locale copy object for the specified component (with automatic Chinese fallback and instance-level override support).
 
 ## How to Customize Prefix and Theme
 
-Because HiTalent Design deeply integrates **Ant Design 5 CSS-in-JS**, **no pre-compiled Less variable configuration is required in Webpack / Vite**. All class prefixes and Design Tokens are dynamically generated at runtime:
+Component styles use CSS-in-JS. Custom prefixes and themes require no additional stylesheet or Less variable configuration:
 
 ```tsx | pure
 import { ConfigProvider, zh_CN } from 'hi-talent-design';
@@ -89,14 +76,11 @@ export default () => (
 );
 ```
 
----
-
 ## Notes
 
-- `antdPrefixCls` forwards directly to the underlying Ant Design 5 `<ConfigProvider>` to synchronously control Ant Design class names and CSS-in-JS style rendering.
 - `theme` is forwarded directly to Ant Design, which owns token, component, algorithm, and CSS variable inheritance. `inherit: false` follows native Antd isolation rules.
-- `localeOverrides` merges deeply on top of the complete locale, so untouched fields continue to inherit.
+- `localeOverrides` merges message fields by component. Missing fields, `undefined`, and blank strings preserve existing messages; function-valued messages are replaced directly.
 - Locale precedence is the current explicit `locale`, an inherited explicit locale, the nearest Antd language (English maps to `en_US`), then `zh_CN`. Setting `locale` does not automatically set `antdLocale`.
 - While following the host language, `localeOverrides` is reapplied after language changes. A new complete `locale` replaces the inherited language and inherited copy overrides.
 - Direction precedence is the current `direction`, the current explicit `locale.direction`, the nearest Antd direction, then the locale default. Empty nested providers preserve host RTL.
-- `useConfig` and `useAntdPrefixCls` read native settings from the nearest Antd Context, including mixed provider nesting. Direct `ConfigContext` reads return the nearest HiTalent provider snapshot; use the hooks to observe native providers nested below it.
+- Set language through `ConfigProvider.locale` and `ConfigProvider.localeOverrides`. `ConfigContext` exposes the nearest HiTalent provider snapshot. `useConfig`, `useLocale`, and `useAntdPrefixCls` read the nearest Antd Context and observe native providers nested below it.

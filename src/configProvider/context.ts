@@ -1,49 +1,14 @@
-import type {
-  ConfigProviderProps as AntdConfigProviderProps,
-  ThemeConfig,
-} from 'antd';
 import { ConfigProvider as AntdConfigProvider } from 'antd';
 import { createContext, useContext, useMemo } from 'react';
-import type { HtdLocale, LocaleDirection, LocaleOverrides } from '../locales';
+import type { HtdLocale, LocaleOverrides } from '../locales';
 import { en_US, zh_CN } from '../locales';
 import { isNullOrBlank } from '../utils';
 import { mergeLocale } from './mergeLocale';
+import type { ConfigContextValue } from './type';
 
-export interface ConfigContextValue {
-  /** HiTalent Design 默认/全局组件前缀，默认为 'htd' */
-  prefixCls: string;
-  /** 底层 Ant Design 组件 class 前缀（可选） */
-  antdPrefixCls?: string;
-  /** 图标 class 前缀（可选） */
-  iconPrefixCls?: string;
-  /** 获取指定组件的完整类名前缀 */
-  getPrefixCls: (suffixCls?: string, customPrefix?: string) => string;
-  /** 当前语言包 */
-  locale: HtdLocale;
-  /** 底层 Ant Design 语言包（可选） */
-  antdLocale?: AntdConfigProviderProps['locale'];
-  /** 当前布局方向 */
-  direction: LocaleDirection;
-  /** 主题配置（可选） */
-  theme?: ThemeConfig;
-}
+export type { ConfigContextValue } from './type';
 
 export const defaultPrefixCls = 'htd';
-
-// 通过对象引用识别内部快照，使对象展开后的配置仍被视为外部覆盖。
-const resolvedLocales = new WeakMap<ConfigContextValue, HtdLocale>();
-
-export const markResolvedConfig = (
-  config: ConfigContextValue,
-): ConfigContextValue => {
-  resolvedLocales.set(config, config.locale);
-  return config;
-};
-
-export const getExplicitLocale = (
-  config: ConfigContextValue,
-): HtdLocale | undefined =>
-  config.locale !== resolvedLocales.get(config) ? config.locale : undefined;
 
 export const createGetPrefixCls =
   (prefixCls: string) =>
@@ -56,55 +21,45 @@ export const createGetPrefixCls =
 export const LocaleSettingsContext = createContext<{
   locale?: HtdLocale;
   overrides?: LocaleOverrides;
-  /** 已由最近的 HTD 配置提供者合并的公共上下文。 */
-  sourceConfig?: ConfigContextValue;
 }>({});
 
-export const defaultConfig = markResolvedConfig({
+const defaultConfig: ConfigContextValue = {
   prefixCls: defaultPrefixCls,
   getPrefixCls: createGetPrefixCls(defaultPrefixCls),
   locale: zh_CN,
   direction: zh_CN.direction,
-});
+};
 
 export const ConfigContext = createContext<ConfigContextValue>(defaultConfig);
 
 export const useLocaleSettings = () => {
-  const config = useContext(ConfigContext);
-  const { locale, overrides, sourceConfig } = useContext(LocaleSettingsContext);
+  const { locale, overrides } = useContext(LocaleSettingsContext);
   const antd = useContext(AntdConfigProvider.ConfigContext);
   const base =
-    (config !== sourceConfig ? getExplicitLocale(config) : undefined) ??
     locale ??
     (antd.locale?.locale?.toLowerCase().startsWith('en') ? en_US : zh_CN);
-  const direction = antd.direction ?? base.direction;
-  return { base, overrides, direction };
+  return { base, overrides, antd };
 };
 
-export const useResolvedLocale = (): HtdLocale => {
-  const { base, overrides, direction } = useLocaleSettings();
-  return useMemo(() => {
+/** 读取 HiTalent 配置，并同步最近的 Ant Design 配置。 */
+export const useConfig = (): ConfigContextValue => {
+  const config = useContext(ConfigContext);
+  const { base, overrides, antd } = useLocaleSettings();
+  const direction = antd.direction ?? base.direction;
+  const locale = useMemo(() => {
     const merged = mergeLocale(base, overrides);
     return merged.direction === direction ? merged : { ...merged, direction };
   }, [base, overrides, direction]);
-};
-
-/** 获取当前全局 ConfigContext 配置。 */
-export const useConfig = (): ConfigContextValue => {
-  const config = useContext(ConfigContext);
-  const antd = useContext(AntdConfigProvider.ConfigContext);
-  const locale = useResolvedLocale();
   return useMemo(
-    () =>
-      markResolvedConfig({
-        ...config,
-        antdPrefixCls: antd.getPrefixCls(),
-        iconPrefixCls: antd.iconPrefixCls,
-        antdLocale: antd.locale,
-        theme: antd.theme,
-        direction: locale.direction,
-        locale,
-      }),
-    [config, antd, locale],
+    () => ({
+      ...config,
+      antdPrefixCls: antd.getPrefixCls(),
+      iconPrefixCls: antd.iconPrefixCls,
+      antdLocale: antd.locale,
+      theme: antd.theme,
+      direction,
+      locale,
+    }),
+    [config, antd, direction, locale],
   );
 };

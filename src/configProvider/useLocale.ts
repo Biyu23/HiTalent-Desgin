@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { LocaleComponentMap } from '../locales';
 import { useLocaleSettings } from './context';
-import { deepMergeLocale } from './mergeLocale';
+import { mergeComponentLocale } from './mergeLocale';
 
 /** 显式指定的 HTD 语言包优先于宿主语言；实例文案覆盖两者。 */
 export const useLocale = <K extends keyof LocaleComponentMap>(
@@ -12,11 +12,11 @@ export const useLocale = <K extends keyof LocaleComponentMap>(
   const locale = base[componentName];
   const componentOverrides = overrides?.[componentName];
   const merged = useMemo(
-    () => deepMergeLocale(locale, componentOverrides),
+    () => mergeComponentLocale(locale, componentOverrides),
     [locale, componentOverrides],
   );
   return useMemo(
-    () => deepMergeLocale(merged, customLocale),
+    () => mergeComponentLocale(merged, customLocale),
     [merged, customLocale],
   );
 };

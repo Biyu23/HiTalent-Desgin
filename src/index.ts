@@ -17,7 +17,6 @@ export type { ConfigContextValue, ConfigProviderProps } from './configProvider';
 export { en_US, zh_CN } from './locales';
 export type {
   ButtonLocale,
-  DeepPartial,
   DrawerLocale,
   EditableFieldLocale,
   HtdLocale,
@@ -36,5 +35,6 @@ export type {
 export type {
   CSSPropertiesWithVars,
   CSSVariableName,
+  DeepPartial,
   NativeProps,
 } from './types';

@@ -4,27 +4,18 @@ import {
   ConfigContext,
   createGetPrefixCls,
   defaultPrefixCls,
-  getExplicitLocale,
   LocaleSettingsContext,
-  markResolvedConfig,
   useConfig,
 } from './context';
-import { deepMergeLocale } from './mergeLocale';
+import { mergeLocale } from './mergeLocale';
 import type { ConfigProviderProps } from './type';
 
 export { ConfigContext, defaultPrefixCls, useConfig } from './context';
-export type { ConfigContextValue } from './context';
-export type { ConfigProviderProps } from './type';
+export type { ConfigContextValue, ConfigProviderProps } from './type';
 export { useLocale } from './useLocale';
 export { useAntdPrefixCls, usePrefixCls } from './usePrefixCls';
 
-export interface ConfigProviderType extends React.FC<ConfigProviderProps> {
-  useConfig: typeof useConfig;
-  ConfigContext: typeof ConfigContext;
-  defaultPrefixCls: typeof defaultPrefixCls;
-}
-
-// 在 AntdConfigProvider 下读取原生配置，不再合并或重复应用。
+// 在内部 AntdConfigProvider 生效后生成 HiTalent 配置快照。
 const ConfigContextBridge: React.FC<{ prefixCls?: string }> = ({
   prefixCls,
   children,
@@ -36,12 +27,11 @@ const ConfigContextBridge: React.FC<{ prefixCls?: string }> = ({
     [mergedPrefixCls],
   );
   const config = useMemo(
-    () =>
-      markResolvedConfig({
-        ...inherited,
-        prefixCls: mergedPrefixCls,
-        getPrefixCls,
-      }),
+    () => ({
+      ...inherited,
+      prefixCls: mergedPrefixCls,
+      getPrefixCls,
+    }),
     [inherited, mergedPrefixCls, getPrefixCls],
   );
   return (
@@ -60,26 +50,16 @@ const InternalConfigProvider: React.FC<ConfigProviderProps> = ({
   ...antdProps
 }) => {
   const parentLocale = useContext(LocaleSettingsContext);
-  const parentConfig = useContext(ConfigContext);
-  const inheritedLocale =
-    getExplicitLocale(parentConfig) ?? parentLocale.locale;
-  const localeSettings = useMemo(
-    () => ({
-      locale: locale ?? inheritedLocale,
-      sourceConfig: parentConfig,
+  const localeSettings = useMemo(() => {
+    if (!locale && !localeOverrides) return parentLocale;
+    return {
+      locale: locale ?? parentLocale.locale,
       // 新的完整语言包替换父级文案；否则继承父级覆盖配置。
       overrides: locale
         ? localeOverrides
-        : deepMergeLocale(parentLocale.overrides, localeOverrides),
-    }),
-    [
-      locale,
-      localeOverrides,
-      inheritedLocale,
-      parentLocale.overrides,
-      parentConfig,
-    ],
-  );
+        : mergeLocale(parentLocale.overrides ?? {}, localeOverrides),
+    };
+  }, [locale, localeOverrides, parentLocale]);
 
   return (
     <AntdConfigProvider
@@ -97,7 +77,10 @@ const InternalConfigProvider: React.FC<ConfigProviderProps> = ({
   );
 };
 
-export const ConfigProvider = InternalConfigProvider as ConfigProviderType;
-ConfigProvider.useConfig = useConfig;
-ConfigProvider.ConfigContext = ConfigContext;
-ConfigProvider.defaultPrefixCls = defaultPrefixCls;
+export const ConfigProvider = Object.assign(InternalConfigProvider, {
+  useConfig,
+  ConfigContext,
+  defaultPrefixCls,
+});
+
+export type ConfigProviderType = typeof ConfigProvider;

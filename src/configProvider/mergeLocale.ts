@@ -1,40 +1,45 @@
-import type { HtdLocale, LocaleOverrides } from '../locales';
-import { isNullOrBlank, isPlainObject } from '../utils';
+import type { LocaleOverrides } from '../locales';
 
-/**
- * 递归深度合并语言包对象，保留所有默认兜底字段
- */
-export function deepMergeLocale<T>(base: T, overrides?: unknown): T {
-  if (isNullOrBlank(overrides) || Object.is(base, overrides)) return base;
-
-  if (!isPlainObject(base) || !isPlainObject(overrides)) {
-    return overrides as T;
-  }
+/** 按字段覆盖组件文案，空白值继续继承原文案。 */
+export function mergeComponentLocale<T extends object>(
+  base: T,
+  overrides?: Partial<T>,
+): T {
+  if (!overrides) return base;
 
   let merged = base;
-
-  Object.keys(overrides).forEach((key) => {
-    const overrideVal = (overrides as Record<string, unknown>)[key];
-    const value = deepMergeLocale(base[key], overrideVal);
-    if (!Object.is(value, base[key])) {
-      // 仅复制发生变化的分支，保持未修改的组件语言包引用稳定。
-      if (merged === base) merged = { ...base };
-      Object.defineProperty(merged, key, {
-        value,
-        enumerable: true,
-        configurable: true,
-        writable: true,
-      });
+  for (const key of Object.keys(overrides) as (keyof T)[]) {
+    const value: T[keyof T] | undefined = overrides[key];
+    if (
+      value === undefined ||
+      value === null ||
+      (typeof value === 'string' && !value.trim()) ||
+      value === base[key]
+    ) {
+      continue;
     }
-  });
-
-  return merged as T;
+    if (merged === base) merged = { ...base };
+    merged[key] = value;
+  }
+  return merged;
 }
 
-/** 在完整语言包上应用局部文案覆盖，不修改传入对象。 */
-export function mergeLocale(
-  locale: HtdLocale,
+/** 语言包只合并到组件字段层，保留未变化组件的引用。 */
+export function mergeLocale<T extends LocaleOverrides>(
+  base: T,
   overrides?: LocaleOverrides,
-): HtdLocale {
-  return deepMergeLocale(locale, overrides);
+): T {
+  if (!overrides) return base;
+
+  let merged = base;
+  for (const key of Object.keys(overrides) as (keyof LocaleOverrides)[]) {
+    const componentOverrides = overrides[key];
+    if (!componentOverrides) continue;
+    const componentLocale = base[key] ?? {};
+    const locale = mergeComponentLocale(componentLocale, componentOverrides);
+    if (locale === componentLocale) continue;
+    if (merged === base) merged = { ...base };
+    Object.assign(merged, { [key]: locale });
+  }
+  return merged;
 }
