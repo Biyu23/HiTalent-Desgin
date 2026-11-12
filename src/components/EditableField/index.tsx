@@ -1,137 +1,165 @@
 import { EditOutlined } from '@ant-design/icons';
-import { Button, ConfigProvider, Popover } from 'antd';
+import { Button, ConfigProvider, Modal, Popover } from 'antd';
 import React, { useState } from 'react';
-import { useLocale, usePrefixCls } from '../../configProvider';
+import { useLocale } from '../../configProvider/useLocale';
+import { usePrefixCls } from '../../configProvider/usePrefixCls';
 import { useStyles } from './style';
 import type { EditableFieldProps } from './type';
 
 export type * from './type';
 
-/** 管理只读与编辑切换；校验规则和保存请求均由调用方处理。 */
+/** 只管理编辑入口、容器和确认结果；草稿与业务保存由 children 管理。 */
 export default function EditableField<Value>(props: EditableFieldProps<Value>) {
   const {
     value,
     onChange,
     renderValue,
-    renderEditor,
-    onSave,
-    mode = 'popup',
+    children,
+    readOnly = false,
     disabled: customDisabled,
+    trigger = 'action',
     actionVisibility = 'hover',
+    renderAction,
+    mode = 'popup',
     popupWidth = 320,
-    placement = 'bottomLeft',
-    getPopupContainer,
+    popoverProps,
+    modalProps,
     prefixCls: customPrefixCls,
     className,
     style,
     styles: customStyles,
     classNames,
+    onClickCapture,
     ...rest
   } = props;
   const locale = useLocale('EditableField');
   const prefixCls = usePrefixCls('editable-field', customPrefixCls);
   const { componentDisabled } = ConfigProvider.useConfig();
-  const disabled = customDisabled ?? componentDisabled;
-  const { styles, cx } = useStyles();
+  const blocked = readOnly || (customDisabled ?? componentDisabled);
+  const canEdit = !blocked && !!children;
+  const { styles, cx } = useStyles(prefixCls);
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(value);
-  const [saving, setSaving] = useState(false);
+
+  // 权限变化立即结束本次编辑，恢复权限后也不重新打开旧草稿。
+  if (editing && !canEdit) setEditing(false);
 
   const startEdit = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
     event.stopPropagation();
-    // 每次进入编辑读取最新值；编辑期间不因外部刷新覆盖正在输入的草稿。
-    setDraft(value);
+    if (!canEdit || editing) return;
     setEditing(true);
   };
-
-  const save = async () => {
-    if (saving || disabled) return;
-    setSaving(true);
-    try {
-      // Promise resolve 后才提交；reject 则保留编辑状态。
-      await onSave?.(draft);
-    } catch {
-      // 校验和错误提示由业务处理，这里只结束 Loading 并保留草稿。
-      return;
-    } finally {
-      setSaving(false);
-    }
-    onChange(draft);
+  const cancel = () => setEditing(false);
+  const submit = (nextValue: Value) => {
+    if (!canEdit) return;
+    onChange?.(nextValue);
     setEditing(false);
   };
-
-  const editor = editing ? (
-    <div
-      data-mode={mode}
-      className={cx(styles.editor, classNames?.editor)}
-      style={{
-        ...(mode === 'popup'
-          ? { width: popupWidth, maxWidth: 'calc(100vw - 48px)' }
-          : undefined),
-        ...customStyles?.editor,
-      }}
-      // React Portal 的事件仍向父组件冒泡，编辑操作不应触发外层详情跳转。
-      onClick={(event) => event.stopPropagation()}
-    >
-      {renderEditor({ value: draft, onChange: setDraft, saving })}
+  const editor =
+    editing && canEdit ? (
       <div
-        className={cx(styles.footer, classNames?.footer)}
-        style={customStyles?.footer}
+        className={cx(`${prefixCls}-editor`, styles.editor, classNames?.editor)}
+        style={{
+          ...(mode === 'popup'
+            ? { width: popupWidth, maxWidth: 'calc(100vw - 48px)' }
+            : undefined),
+          ...customStyles?.editor,
+        }}
+        // Portal 的点击同样会沿 React 树冒泡，避免触发外层列表操作。
+        onClick={(event) => event.stopPropagation()}
       >
-        <Button disabled={saving} onClick={() => setEditing(false)}>
-          {locale.cancel}
-        </Button>
-        <Button
-          type="primary"
-          loading={saving}
-          disabled={disabled}
-          onClick={save}
-        >
-          {locale.save}
-        </Button>
+        {children?.({ value, submit, cancel })}
       </div>
-    </div>
-  ) : null;
-
+    ) : null;
+  const valueTrigger = canEdit && trigger === 'value';
   const field = (
     <div
       {...rest}
-      className={cx(prefixCls, styles.root, classNames?.root, className)}
+      className={cx(prefixCls, styles.root, classNames?.root, className, {
+        [`${prefixCls}-editable`]: canEdit,
+        [`${prefixCls}-editing`]: editing && canEdit,
+        [`${prefixCls}-action-visible`]: actionVisibility === 'always',
+      })}
       style={{ ...customStyles?.root, ...style }}
-      data-editable={!disabled}
-      data-editing={editing}
-      data-action-visible={actionVisibility === 'always'}
+      onClickCapture={(event) => {
+        if (blocked) {
+          event.preventDefault();
+          event.stopPropagation();
+        } else onClickCapture?.(event);
+      }}
     >
-      {editing && mode === 'inline' ? editor : renderValue(value)}
-      {!disabled && !editing && (
-        <Button
-          data-edit-action
-          className={cx(styles.action, classNames?.action)}
+      <div
+        // React 17 尚未声明 inert 类型；空字符串启用原生鼠标和键盘隔离。
+        {...{ inert: blocked ? '' : undefined }}
+        hidden={editing && canEdit && mode === 'inline'}
+        className={cx(styles.value, classNames?.value, {
+          [`${prefixCls}-value-trigger`]: valueTrigger,
+        })}
+        style={customStyles?.value}
+        onClick={valueTrigger ? startEdit : undefined}
+      >
+        {renderValue(value)}
+      </div>
+      {canEdit && trigger === 'action' && (
+        <div
+          hidden={editing}
+          className={cx(
+            `${prefixCls}-action`,
+            styles.action,
+            classNames?.action,
+          )}
           style={customStyles?.action}
-          type="text"
-          size="small"
-          icon={<EditOutlined />}
-          title={locale.edit}
-          onClick={startEdit}
-        />
+        >
+          {renderAction ? (
+            renderAction({ onClick: startEdit })
+          ) : (
+            <Button
+              type="text"
+              size="small"
+              icon={<EditOutlined />}
+              title={locale.edit}
+              onClick={startEdit}
+            />
+          )}
+        </div>
       )}
+      {mode === 'inline' && editor}
     </div>
   );
 
-  // 只由明确的保存或取消结束编辑，点击外部及嵌套选择器不会丢失草稿。
-  return mode === 'popup' ? (
-    <Popover
-      open={editing}
-      trigger={[]}
-      content={editor}
-      rootClassName={classNames?.popup}
-      styles={{ root: customStyles?.popup }}
-      placement={placement}
-      getPopupContainer={getPopupContainer}
-    >
-      {field}
-    </Popover>
-  ) : (
-    field
-  );
+  let content = field;
+  if (mode === 'popup') {
+    content = (
+      <Popover
+        placement="bottomLeft"
+        {...popoverProps}
+        open={editing && canEdit}
+        trigger={[]}
+        content={editor}
+        fresh
+        destroyOnHidden
+      >
+        {field}
+      </Popover>
+    );
+  }
+  if (mode === 'modal') {
+    content = (
+      <>
+        {field}
+        <Modal
+          title={locale.edit}
+          {...modalProps}
+          open={editing && canEdit}
+          footer={null}
+          maskClosable={false}
+          onCancel={cancel}
+          destroyOnHidden
+        >
+          {editor}
+        </Modal>
+      </>
+    );
+  }
+  return <ConfigProvider componentDisabled={blocked}>{content}</ConfigProvider>;
 }

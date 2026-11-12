@@ -6,112 +6,109 @@ toc: content
 
 # EditableField 可编辑字段
 
-默认只读，鼠标移入后显示编辑入口，点击后展示业务提供的编辑器。
+管理展示与编辑切换，支持原位、Popover、Modal 三种编辑容器。编辑器通过函数式 children 提供，自行管理草稿、校验、保存请求和操作按钮。
 
-<code src="./demo/basic.tsx">浮层编辑、原位编辑与保存校验</code>
+<code src="./demo/basic.tsx">悬停入口、自定义按钮、Modal、只读和 Form 接入</code>
 
-## 交互约定
+## 数据与提交
 
-- **悬停不挤动布局**：高亮只改变背景，编辑按钮绝对定位覆盖在右侧，不改变宽高、边距。长内容末尾可能被按钮遮住；组件不自动添加留白。
-- **平滑过渡**：背景与按钮使用主题 motion token，编辑按钮轻移 3px；浮层沿用 Popover 动画，原位编辑单独淡入。
-- **浮层编辑（默认）**：只读内容始终保留，编辑器不参与原页面布局。
-- **原位编辑**：编辑器替换只读内容，高度由编辑器和操作区决定，不承诺编辑期间高度不变。
-- **草稿隔离**：进入编辑时读取最新 value，编辑中外部 value 更新不会覆盖草稿。对象和数组需不可变更新。
-- **保存顺序**：执行 onSave，成功后触发 onChange，再退出编辑。调用方须在 onChange 中更新受控 value。
-- **失败重试**：onSave 抛出 Error 或返回拒绝的 Promise 时保留草稿，组件不展示错误；业务在 onSave 中自行校验并提示。
-- **明确退出**：取消丢弃草稿；移出鼠标、点击外部均不退出，嵌套选择器可以正常操作。保存中禁用保存和取消，编辑器请使用 saving 禁用输入。
-- 原内容的链接保持可点击；编辑按钮和编辑区点击不会冒泡触发外层点击事件。
-- 组件会增加一个无额外内边距的块级容器。在 flex/grid 表单中，请把原布局需要的 className/style 设置在组件上。
-
-## 最小用法
+- `value` 是已确认的受控值；调用方或 Form.Item 负责更新。
+- `renderValue(value)` 渲染展示内容，需处理未初始化的 `undefined`。
+- `children({ value, submit, cancel })` 仅在编辑期间渲染。用传入的 value 初始化编辑器自己的草稿。
+- `submit(nextValue)` 同步触发外层 onChange，然后退出编辑。输入和取消均不触发 onChange。
+- `cancel()` 退出并卸载编辑器。再次打开重新初始化；编辑中外部值刷新不会重置使用 useState 初始化的草稿。
+- 不提供默认保存、取消按钮，也不提供 onSave、saving 或内部草稿 onChange。
+- children 是渲染函数，不能在其中直接调用 Hook；有状态的编辑逻辑放在独立组件中。
 
 ```tsx | pure
+function NameEditor({ value, submit, cancel }) {
+  const [draft, setDraft] = useState(value ?? '');
+  return (
+    <Space>
+      <Input value={draft} onChange={(event) => setDraft(event.target.value)} />
+      <Button onClick={cancel}>取消</Button>
+      <Button type="primary" onClick={() => submit(draft)}>
+        保存
+      </Button>
+    </Space>
+  );
+}
+
 <EditableField
   value={name}
   onChange={setName}
-  renderValue={(value) => <>姓名　{value}</>}
-  renderEditor={({ value, onChange, saving }) => (
-    <Input
-      autoFocus
-      disabled={saving}
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-    />
-  )}
-  onSave={(value) => api.saveName(value)}
-/>
+  renderValue={(value) => value ?? '未填写'}
+>
+  {(context) => <NameEditor {...context} />}
+</EditableField>;
 ```
 
-## onSave 返回约定
+业务需要校验或异步保存时，在编辑器内完成后再调用 submit。onChange 只是同步值通知，不等待其返回的 Promise。请求失败时不调用 submit，编辑器保持打开；错误提示和 loading 也由编辑器负责。
 
-编辑器的规则、校验时机和错误提示由调用方决定，组件不提供 rules，也不接入 Form。
+## 编辑入口与只读
 
-- 传入 onSave 时必须返回 Promise，pending 期间保持 Loading。
-- resolve 表示成功，触发 onChange 并关闭编辑区；resolve 的返回值不参与更新，提交的仍是草稿。
-- reject 表示失败，只结束 Loading，保留草稿供修改或重试。
-- 不传 onSave 时直接提交。不要用 resolve(false) 表示失败，也不要捕获失败后不重新 reject。
+- `trigger="action"`：点击右侧编辑按钮打开，默认悬停显示；触屏下常驻显示。
+- `actionVisibility="always"`：按钮常驻显示。
+- `renderAction({ onClick })`：替换整个右侧按钮，将 onClick 绑定到编辑入口。
+- `trigger="value"`：点击展示值打开，不显示右侧按钮。建议此时展示内容使用文本等非交互节点，避免链接与编辑动作冲突。
+- `readOnly`：不显示入口，禁止展示区域内链接、按钮的鼠标和键盘操作。只读时可以不传 children。
+- `disabled`：操作限制与只读一致，默认继承 Ant Design ConfigProvider 的 componentDisabled；实例 disabled 可覆盖全局设置，readOnly 始终优先。
+- 编辑中切换为只读或禁用会关闭编辑器。只读内容通过原生 inert 隔离交互，需要支持 inert 的浏览器；业务渲染到组件之外的独立 Portal 仍应自行遵守权限。
+
+悬停只改变背景和按钮透明度，不改变布局。按钮绝对定位覆盖右侧，长文本可通过 styles.value 预留右侧空间。默认保留 action 模式下展示内容的链接交互；编辑入口和编辑区点击不会冒泡到外层列表。
+
+## 编辑容器
+
+| mode   | 行为                                             |
+| ------ | ------------------------------------------------ |
+| inline | 在原位置显示编辑器，隐藏展示区，高度随编辑器变化 |
+| popup  | 默认；保留展示区，在 Popover 中编辑，不挤动页面  |
+| modal  | 保留展示区，在 Ant Design Modal 中编辑           |
+
+三种容器共用相同的 children 协议。关闭时卸载编辑器，下次打开从外部最新值开始。
+
+Popover 默认 bottomLeft、宽度 320px，点击外部不关闭，不拦截嵌套 Select 的交互。通过 popoverProps 配置方向、标题、挂载位置和外框样式。
+
+Modal 默认使用“编辑”作为标题，footer 为 null，不生成额外保存按钮。关闭按钮、Esc 执行取消；遮罩点击不关闭。通过 modalProps 设置 title、width、centered、closable、keyboard、getContainer 和外框样式。需要保存期间禁止关闭时，业务将 saving 状态提升到外层，并设置 closable=false、keyboard=false。
+
+## Ant Design Form
 
 ```tsx | pure
-onSave={async (value) => {
-  // 这里也可以等待调用方自己的 form.validateFields()。
-  if (!value.trim()) {
-    message.error('请输入名称');
-    throw new Error('请输入名称'); // 等同于 Promise.reject(...)
-  }
-  await api.saveName(value); // 成功后 async 函数自动 resolve
-}}
+<Form initialValues={{ name: '张三' }}>
+  <Form.Item name="name">
+    <EditableField<string> renderValue={(value) => value ?? '未填写'}>
+      {(context) => <NameEditor {...context} />}
+    </EditableField>
+  </Form.Item>
+</Form>
 ```
 
-## 样式定制
+Form.Item 注入 value 和 onChange，不需要额外配置 trigger。输入和取消不改变 Form，只有 submit 更新字段值。id 会传到字段根元素，支持 Form 定位。
 
-默认使用 Ant Design 的中性背景、文字、圆角和间距 token，随主题切换，不额外定义品牌色。保存按钮沿用主题主色。
-
-`styles` 和 `classNames` 支持 `root / action / editor / footer / popup` 五个区域；popup 对应浮层外框。容器 `style` 优先于 `styles.root`。
-
-```tsx | pure
-<EditableField
-  value={name}
-  onChange={setName}
-  renderValue={(value) => value}
-  renderEditor={({ value, onChange, saving }) => (
-    <Input
-      disabled={saving}
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-    />
-  )}
-  style={{
-    '--editable-field-hover-bg': 'var(--field-hover-background)',
-    '--editable-field-action-bg': 'var(--field-action-background)',
-  }}
-  styles={{
-    root: { borderRadius: 6 },
-    editor: { gap: 16 },
-    footer: { justifyContent: 'flex-end' },
-  }}
-/>
-```
-
-以上背景变量由业务定义。不传配置时，悬停背景使用 colorFillTertiary，按钮背景使用 colorBgContainer。编辑入口始终绝对定位，不改变只读字段尺寸。
+外层 Form.Item 的 rules 在收集值后校验，不会自动阻止编辑器关闭。需要“校验成功才关闭”时，应在编辑器内校验通过后调用 submit。内联编辑器若使用独立 Antd Form，应设置 component={false}，避免嵌套原生 form 标签。
 
 ## API
 
-| 属性                | 说明                                                    | 默认值       |
-| ------------------- | ------------------------------------------------------- | ------------ |
-| value               | 已提交的受控值，支持泛型                                | 必填         |
-| onChange            | 保存成功后更新受控值                                    | 必填         |
-| renderValue         | 只读内容渲染                                            | 必填         |
-| renderEditor        | 编辑器渲染，参数为 `{ value, onChange, saving }`        | 必填         |
-| onSave              | 业务校验和保存，返回 Promise；resolve 成功，reject 失败 | —            |
-| mode                | `popup` 或 `inline`                                     | `popup`      |
-| disabled            | 禁止进入编辑；默认继承 ConfigProvider                   | —            |
-| actionVisibility    | `hover` 或 `always`                                     | `hover`      |
-| popupWidth          | 浮层编辑区宽度，受视口宽度限制                          | `320`        |
-| placement           | 浮层方向，沿用 Popover                                  | `bottomLeft` |
-| getPopupContainer   | 自定义浮层挂载容器                                      | —            |
-| styles / classNames | root、action、editor、footer、popup 的样式和类名        | —            |
-| className / style   | 字段容器样式                                            | —            |
+| 属性                          | 类型 / 说明                                                                                         | 默认值       |
+| ----------------------------- | --------------------------------------------------------------------------------------------------- | ------------ |
+| value                         | Value，外部已确认值                                                                                 | —            |
+| onChange                      | (nextValue: Value) => void，仅确认时通知                                                            | —            |
+| renderValue                   | (value: Value \| undefined) => ReactNode                                                            | 必填         |
+| children                      | ({ value, submit, cancel }) => ReactNode                                                            | —            |
+| readOnly                      | boolean，禁止所有区域内操作                                                                         | false        |
+| disabled                      | boolean，默认继承全局禁用                                                                           | —            |
+| trigger                       | action / value                                                                                      | action       |
+| actionVisibility              | hover / always，仅影响 action 入口                                                                  | hover        |
+| renderAction                  | ({ onClick }) => ReactNode                                                                          | 编辑图标按钮 |
+| mode                          | inline / popup / modal                                                                              | popup        |
+| popupWidth                    | number                                                                                              | 320          |
+| popoverProps                  | title、placement、arrow、getPopupContainer、styles、classNames、rootClassName、zIndex               | —            |
+| modalProps                    | title、width、centered、closable、keyboard、getContainer、styles、classNames、rootClassName、zIndex | —            |
+| styles / classNames           | root、value、action、editor 插槽                                                                    | —            |
+| className / style / prefixCls | 容器样式和类名前缀                                                                                  | —            |
 
-中英文文案接入 ConfigProvider，可通过 `localeOverrides.EditableField` 覆盖编辑、保存和取消文案。
+使用 Ant Design 主题 token，支持浅色、暗色主题。可通过根样式中的 --editable-field-hover-bg、--editable-field-action-bg 覆盖背景。编辑入口和默认弹窗标题使用 ConfigProvider.localeOverrides.EditableField.edit。
 
-第一版不包含自动保存、失焦提交和通用表单校验器。需要复合编辑时，通过 renderEditor 组合现有组件即可。
+## 从旧接口迁移
+
+renderEditor 改为函数式 children；编辑器自己的 useState 管理草稿；原 onSave 逻辑移到编辑器里，成功后调用 submit。默认 footer 已移除，操作按钮由 children 提供。原 placement、getPopupContainer 移到 popoverProps；浮层外框样式移到 popoverProps.styles / classNames。

@@ -1,14 +1,8 @@
-import type { PopoverProps } from 'antd';
+import type { ModalProps, PopoverProps } from 'antd';
 import type React from 'react';
 import type { CSSPropertiesWithVars } from '../../types';
 
-/** popup 对应浮层外框，其他插槽对应组件内部区域。 */
-export type EditableFieldSlot =
-  | 'root'
-  | 'action'
-  | 'editor'
-  | 'footer'
-  | 'popup';
+export type EditableFieldSlot = 'root' | 'value' | 'action' | 'editor';
 export type EditableFieldStyles = Partial<
   Record<EditableFieldSlot, CSSPropertiesWithVars>
 >;
@@ -17,11 +11,12 @@ export type EditableFieldClassNames = Partial<
 >;
 
 export interface EditableFieldEditorContext<Value> {
-  /** 当前草稿；对象和数组请通过 onChange 返回新值，不要原地修改。 */
-  value: Value;
-  onChange: (value: Value) => void;
-  /** 校验和保存期间编辑器应禁用输入。 */
-  saving: boolean;
+  /** 已确认的外部值；编辑器自行初始化和管理草稿。 */
+  value: Value | undefined;
+  /** 确认新值，触发外层 onChange 并退出编辑，不负责请求或校验。 */
+  submit: (nextValue: Value) => void;
+  /** 退出编辑并卸载编辑器，不触发 onChange。 */
+  cancel: () => void;
 }
 
 export interface EditableFieldProps<Value>
@@ -29,33 +24,58 @@ export interface EditableFieldProps<Value>
     React.HTMLAttributes<HTMLDivElement>,
     'children' | 'defaultValue' | 'onChange'
   > {
-  /** 已提交的受控值。 */
-  value: Value;
-  /** 保存成功后通知业务更新 value；取消、保存失败均不触发。 */
-  onChange: (value: Value) => void;
-  /** 渲染原有只读内容，链接等交互保持可用。 */
-  renderValue: (value: Value) => React.ReactNode;
-  /** 仅在编辑时渲染；可接入任意受控编辑器。 */
-  renderEditor: (context: EditableFieldEditorContext<Value>) => React.ReactNode;
-  /** 调用方负责校验和保存：resolve 后提交并关闭，reject 保留草稿；错误提示由业务处理。不传时直接提交。 */
-  onSave?: (value: Value) => Promise<unknown>;
-  /** popup 不改变原布局；inline 原位替换，高度由编辑器决定。 */
-  mode?: 'popup' | 'inline';
-  /** 禁止编辑，仍显示原只读内容。 */
+  /** 已确认的受控值，也可以由 Form.Item 注入。 */
+  value?: Value;
+  /** 仅在编辑器调用 submit 时触发；调用方负责更新受控值。 */
+  onChange?: (nextValue: Value) => void;
+  /** 展示值，需处理尚未初始化的 undefined。 */
+  renderValue: (value: Value | undefined) => React.ReactNode;
+  /** 编辑区域，负责草稿、校验、请求和操作按钮；只读时可省略。 */
+  children?: (context: EditableFieldEditorContext<Value>) => React.ReactNode;
+  /** 禁止整个展示区域的鼠标、键盘操作，并关闭编辑器。 */
+  readOnly?: boolean;
+  /** 禁用时与只读一样不可操作；默认继承 Ant Design 的全局禁用配置。 */
   disabled?: boolean;
-  /** 默认悬停显示；always 适合需要常驻编辑入口的页面。 */
+  /** action 点击右侧按钮；value 点击展示值，不显示右侧按钮。 */
+  trigger?: 'action' | 'value';
+  /** 仅影响右侧按钮；hover 在鼠标移入时显示，触屏下常驻显示。 */
   actionVisibility?: 'hover' | 'always';
-  /** 浮层编辑区宽度，默认 320px，不超过视口宽度。 */
+  /** 自定义完整按钮，将 onClick 绑定到编辑入口。 */
+  renderAction?: (props: {
+    onClick: React.MouseEventHandler<HTMLElement>;
+  }) => React.ReactNode;
+  /** inline 原位编辑；popup 浮层编辑；modal 弹窗编辑。默认 popup。 */
+  mode?: 'inline' | 'popup' | 'modal';
+  /** 浮层编辑区宽度，默认 320px。 */
   popupWidth?: number;
-  /** 浮层位置，默认 bottomLeft。 */
-  placement?: PopoverProps['placement'];
-  /** 自定义浮层挂载位置。 */
-  getPopupContainer?: PopoverProps['getPopupContainer'];
-  /** 容器样式，可设置 --editable-field-hover-bg 和 --editable-field-action-bg。 */
+  /** 浮层外观配置，打开状态由 EditableField 管理。 */
+  popoverProps?: Pick<
+    PopoverProps,
+    | 'title'
+    | 'placement'
+    | 'arrow'
+    | 'getPopupContainer'
+    | 'styles'
+    | 'classNames'
+    | 'rootClassName'
+    | 'zIndex'
+  >;
+  /** 弹窗外观配置；关闭按钮和 Esc 执行取消，遮罩点击不关闭，不提供默认页脚。 */
+  modalProps?: Pick<
+    ModalProps,
+    | 'title'
+    | 'width'
+    | 'centered'
+    | 'closable'
+    | 'keyboard'
+    | 'getContainer'
+    | 'styles'
+    | 'classNames'
+    | 'rootClassName'
+    | 'zIndex'
+  >;
   style?: CSSPropertiesWithVars;
-  /** 各区域的样式覆盖，优先于默认样式。 */
   styles?: EditableFieldStyles;
-  /** 各区域的自定义类名。 */
   classNames?: EditableFieldClassNames;
   prefixCls?: string;
 }
